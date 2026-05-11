@@ -984,7 +984,7 @@ namespace NtingCampusMapEditor
             light.pointLightOuterRadius = outerRadius;
             light.falloffIntensity = 0.05f;
             light.targetSortingLayers = GetAllSortingLayerIds();
-            CampusDynamicShadowUtility.ConfigureLightShadows(light, false, 0f, 0.55f, 0.8f);
+            CampusDynamicShadowUtility.ConfigureLightShadows(light, true, 0.45f, 0.75f, 0.85f);
 
             ConfigureLight2DNormalMap(light, Light2D.NormalMapQuality.Accurate, SunNormalMapDistance);
             EditorUtility.SetDirty(light);

@@ -42,9 +42,6 @@ TagManager:
   - name: Nting Ground
     uniqueID: 2137051741
     locked: 0
-  - name: GroundShadow
-    uniqueID: 1900553123
-    locked: 0
   - name: Default
     uniqueID: 0
     locked: 0

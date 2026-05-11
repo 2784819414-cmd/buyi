@@ -10,7 +10,6 @@ namespace NtingCampusMapEditor
     public static class CampusRenderSortingUtility
     {
         public const string GroundShadowSortingLayerName = "Nting Ground";
-        public const string SunShadowSortingLayerName = "GroundShadow";
         public const int FloorOffset = 0;
         public const int WallLogicOffset = 90;
         public const int WallFaceOffset = 120;
@@ -83,13 +82,6 @@ namespace NtingCampusMapEditor
         public static bool TryGetGroundShadowSortingLayerId(out int id)
         {
             return TryGetSortingLayerIdByName(GroundShadowSortingLayerName, out id);
-        }
-
-        public static int ResolveSunShadowSortingLayerId(int fallbackSortingLayerId)
-        {
-            return TryGetSortingLayerIdByName(SunShadowSortingLayerName, out int id)
-                ? id
-                : fallbackSortingLayerId;
         }
 
         public static void ApplyObjectSortingGroups(Transform root, int sortingLayerId, int sortingOrder)

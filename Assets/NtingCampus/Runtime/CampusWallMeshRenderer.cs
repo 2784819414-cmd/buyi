@@ -7,7 +7,7 @@ namespace NtingCampusMapEditor
 {
     /// <summary>
     /// Builds real 3D wall model pieces from the wall logic tilemap.
-    /// Each generated cell model is made from trapezoidal prisms.
+    /// Each generated cell model is made from isosceles trapezoidal prisms.
     /// </summary>
     public static class CampusWallMeshRenderer
     {
@@ -23,9 +23,6 @@ namespace NtingCampusMapEditor
         private const float HalfCell = 0.5f;
         private const float TopHalfWidth = 0.205f;
         private const float BottomHalfWidth = 0.330f;
-        private const float HorizontalCenterYOffset = 0.0975f;
-        private const float HorizontalSouthBottomHalfWidth = 0.430f;
-        private const float HorizontalNorthBottomHalfWidth = 0.235f;
         private const float TopDepth = -0.015f;
         private const float BaseDepth = 0.46f;
         private const float WallTextureDensity = 1.45f;
@@ -246,25 +243,15 @@ namespace NtingCampusMapEditor
                 }
             }
 
-            bool hasHorizontalArm = eastArm || westArm;
-            float centerTopMinY = hasHorizontalArm ? HorizontalCenterYOffset - TopHalfWidth : -TopHalfWidth;
-            float centerTopMaxY = hasHorizontalArm ? HorizontalCenterYOffset + TopHalfWidth : TopHalfWidth;
-            float centerBottomMinY = hasHorizontalArm ? HorizontalCenterYOffset - HorizontalSouthBottomHalfWidth : -BottomHalfWidth;
-            float centerBottomMaxY = hasHorizontalArm ? HorizontalCenterYOffset + HorizontalNorthBottomHalfWidth : BottomHalfWidth;
-            float horizontalTopMinY = HorizontalCenterYOffset - TopHalfWidth;
-            float horizontalTopMaxY = HorizontalCenterYOffset + TopHalfWidth;
-            float horizontalBottomMinY = HorizontalCenterYOffset - HorizontalSouthBottomHalfWidth;
-            float horizontalBottomMaxY = HorizontalCenterYOffset + HorizontalNorthBottomHalfWidth;
-
             builder.AddPrism(
                 -TopHalfWidth,
-                centerTopMinY,
+                -TopHalfWidth,
                 TopHalfWidth,
-                centerTopMaxY,
+                TopHalfWidth,
                 -BottomHalfWidth,
-                centerBottomMinY,
+                -BottomHalfWidth,
                 BottomHalfWidth,
-                centerBottomMaxY,
+                BottomHalfWidth,
                 !northArm,
                 !eastArm,
                 !southArm,
@@ -274,13 +261,13 @@ namespace NtingCampusMapEditor
             {
                 builder.AddPrism(
                     TopHalfWidth,
-                    horizontalTopMinY,
+                    -TopHalfWidth,
                     HalfCell,
-                    horizontalTopMaxY,
+                    TopHalfWidth,
                     BottomHalfWidth,
-                    horizontalBottomMinY,
+                    -BottomHalfWidth,
                     HalfCell,
-                    horizontalBottomMaxY,
+                    BottomHalfWidth,
                     true,
                     !eastConnected,
                     true,
@@ -291,13 +278,13 @@ namespace NtingCampusMapEditor
             {
                 builder.AddPrism(
                     -HalfCell,
-                    horizontalTopMinY,
                     -TopHalfWidth,
-                    horizontalTopMaxY,
+                    -TopHalfWidth,
+                    TopHalfWidth,
                     -HalfCell,
-                    horizontalBottomMinY,
                     -BottomHalfWidth,
-                    horizontalBottomMaxY,
+                    -BottomHalfWidth,
+                    BottomHalfWidth,
                     true,
                     false,
                     true,
@@ -308,11 +295,11 @@ namespace NtingCampusMapEditor
             {
                 builder.AddPrism(
                     -TopHalfWidth,
-                    centerTopMaxY,
+                    TopHalfWidth,
                     TopHalfWidth,
                     HalfCell,
                     -BottomHalfWidth,
-                    centerBottomMaxY,
+                    BottomHalfWidth,
                     BottomHalfWidth,
                     HalfCell,
                     !northConnected,
@@ -327,11 +314,11 @@ namespace NtingCampusMapEditor
                     -TopHalfWidth,
                     -HalfCell,
                     TopHalfWidth,
-                    centerTopMinY,
+                    -TopHalfWidth,
                     -BottomHalfWidth,
                     -HalfCell,
                     BottomHalfWidth,
-                    centerBottomMinY,
+                    -BottomHalfWidth,
                     false,
                     true,
                     !southConnected,
