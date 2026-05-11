@@ -1,0 +1,60 @@
+﻿%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f59c4e2399796f94c8c65c86f03fe4e0, type: 3}
+  m_Name: "\u9ED8\u8BA4\u539F\u578B\u5899\u4F53\u914D\u7F6E"
+  m_EditorClassIdentifier: Assembly-CSharp::NtingCampusMapEditor.CampusWallRenderProfile
+  ProfileId: DefaultPrototypeWall
+  FaceSourceTexture: {fileID: 2800000, guid: 790417124789a1d449ff072ab4eec100, type: 3}
+  CapSourceTexture: {fileID: 2800000, guid: 1e11825aa27622c46924cc6db5ab2976, type: 3}
+  FaceMaterial: {fileID: 2100000, guid: 21fc996f610193a48addcc53a6642a0c, type: 2}
+  CapMaterial: {fileID: 2100000, guid: 5226da92ca768c24d994e3ec56ab4ec9, type: 2}
+  EdgeMaterial: {fileID: 2100000, guid: 915014b31080e9c438f20a697a90cb19, type: 2}
+  LogicTile: {fileID: 11400000, guid: bc42c6cdd93ba5f4281ea9e7becca663, type: 2}
+  DefaultCapTile: {fileID: 11400000, guid: 394a0457837d13249b825a8292fa57fb, type: 2}
+  CapTilesByExposedMask:
+  - {fileID: 11400000, guid: 394a0457837d13249b825a8292fa57fb, type: 2}
+  - {fileID: 11400000, guid: 0a6516db7f871754d80b18743a47bece, type: 2}
+  - {fileID: 11400000, guid: 667c4801e7801384ba48c785071fdbeb, type: 2}
+  - {fileID: 11400000, guid: 7f75e9f2c09023e4eb1802b8ab563e91, type: 2}
+  - {fileID: 11400000, guid: f8223e6f9d5d7c347a24bfd78c3e15d2, type: 2}
+  - {fileID: 11400000, guid: 2e4f4eb5a0a4dda4e9758f468f46312b, type: 2}
+  - {fileID: 11400000, guid: d1e13bca86661f2419a9ab9e9399371c, type: 2}
+  - {fileID: 11400000, guid: a381382404fa36f498ffaf15df34f1c4, type: 2}
+  - {fileID: 11400000, guid: eea4ea62a3b674544a91fe9c26afd083, type: 2}
+  - {fileID: 11400000, guid: c64eb73e7c128224ab80d4ede96dc5c0, type: 2}
+  - {fileID: 11400000, guid: c8673d3497eb2fb4b80f5e90a4639889, type: 2}
+  - {fileID: 11400000, guid: e498021d02a08524784f26f43297a52b, type: 2}
+  - {fileID: 11400000, guid: fc8deba29e312b748a889d52f7dc2161, type: 2}
+  - {fileID: 11400000, guid: 3cfcbd711acee114ebcca10602f38285, type: 2}
+  - {fileID: 11400000, guid: da82edf9e59d19b4cba30182639505a9, type: 2}
+  - {fileID: 11400000, guid: 6fb5fb241e6f0604381072053d1246e8, type: 2}
+  SouthFaceTile: {fileID: 11400000, guid: af2047abfce9a7242be7746f5b4afe38, type: 2}
+  WestSideTile: {fileID: 11400000, guid: 76ef6773e38dce84ba40abbda62c5529, type: 2}
+  EastSideTile: {fileID: 11400000, guid: b8d8f3ff2ba2e6947a2a0a0f87732893, type: 2}
+  BothSideTile: {fileID: 11400000, guid: 5fe2fab85cab186478aea736652c411a, type: 2}
+  EndNorth: {fileID: 11400000, guid: a2d1b57ff7c1d474cbd3efceee7dfefe, type: 2}
+  EndEast: {fileID: 11400000, guid: ed3dbbe6ee6afe644a722faf0ec685ab, type: 2}
+  EndSouth: {fileID: 11400000, guid: dc5be7c83854640479ab20ecbb5ad141, type: 2}
+  EndWest: {fileID: 11400000, guid: ae4b67011563bca4fab7871db8655d12, type: 2}
+  OuterCornerNE: {fileID: 11400000, guid: 8d3d74db8e03dd54c99143ccdfdaa02e, type: 2}
+  OuterCornerNW: {fileID: 11400000, guid: efdc9bd644d3fc5438e849f0320ed693, type: 2}
+  OuterCornerSE: {fileID: 11400000, guid: b586f71ee053f9f4bbb2b5699b8e4681, type: 2}
+  OuterCornerSW: {fileID: 11400000, guid: d95f0e3228975f34aabfb1341537f8b5, type: 2}
+  InnerCornerNE: {fileID: 11400000, guid: a02aa60b11fad3c4eb58f3ad2f516648, type: 2}
+  InnerCornerNW: {fileID: 11400000, guid: 4cc2bae35597f9043baf629d9ea74c24, type: 2}
+  InnerCornerSE: {fileID: 11400000, guid: 56388c31daf1c5d44ba76c260bae40af, type: 2}
+  InnerCornerSW: {fileID: 11400000, guid: d63c86a0d0fbab54b96bb7586c3bbc55, type: 2}
+  TJunctionNorth: {fileID: 11400000, guid: c596fb05d6065dc408b0894b61fbd33e, type: 2}
+  TJunctionEast: {fileID: 11400000, guid: 6bb32de4e352df54cad6ee64936586a2, type: 2}
+  TJunctionSouth: {fileID: 11400000, guid: 6f2cdf2f00fcf0b4587dac9fc1d1efe4, type: 2}
+  TJunctionWest: {fileID: 11400000, guid: fad963d3188664449acb18796aa2e8b4, type: 2}
+  Cross: {fileID: 11400000, guid: 0523800b1f829b041a810cbdb4114c84, type: 2}

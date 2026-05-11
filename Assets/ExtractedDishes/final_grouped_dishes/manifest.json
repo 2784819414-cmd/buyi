@@ -1,0 +1,122 @@
+[
+  {
+    "index": 1,
+    "name": "ingredient_display",
+    "source_box": [
+      43,
+      263,
+      304,
+      452
+    ],
+    "file": "E:\\UnityProject\\Unrighteous Campus\\Assets\\ExtractedDishes\\final_grouped_dishes\\01_ingredient_display.png",
+    "size": [
+      276,
+      199
+    ]
+  },
+  {
+    "index": 2,
+    "name": "hot_tray_set_a",
+    "source_box": [
+      593,
+      278,
+      772,
+      407
+    ],
+    "file": "E:\\UnityProject\\Unrighteous Campus\\Assets\\ExtractedDishes\\final_grouped_dishes\\02_hot_tray_set_a.png",
+    "size": [
+      184,
+      136
+    ]
+  },
+  {
+    "index": 3,
+    "name": "hot_tray_set_b",
+    "source_box": [
+      782,
+      278,
+      931,
+      407
+    ],
+    "file": "E:\\UnityProject\\Unrighteous Campus\\Assets\\ExtractedDishes\\final_grouped_dishes\\03_hot_tray_set_b.png",
+    "size": [
+      155,
+      136
+    ]
+  },
+  {
+    "index": 4,
+    "name": "small_plate_set",
+    "source_box": [
+      943,
+      283,
+      1072,
+      403
+    ],
+    "file": "E:\\UnityProject\\Unrighteous Campus\\Assets\\ExtractedDishes\\final_grouped_dishes\\04_small_plate_set.png",
+    "size": [
+      133,
+      126
+    ]
+  },
+  {
+    "index": 5,
+    "name": "square_tray_set",
+    "source_box": [
+      1085,
+      283,
+      1207,
+      417
+    ],
+    "file": "E:\\UnityProject\\Unrighteous Campus\\Assets\\ExtractedDishes\\final_grouped_dishes\\05_square_tray_set.png",
+    "size": [
+      127,
+      139
+    ]
+  },
+  {
+    "index": 6,
+    "name": "wok_rice",
+    "source_box": [
+      1221,
+      275,
+      1386,
+      417
+    ],
+    "file": "E:\\UnityProject\\Unrighteous Campus\\Assets\\ExtractedDishes\\final_grouped_dishes\\06_wok_rice.png",
+    "size": [
+      170,
+      147
+    ]
+  },
+  {
+    "index": 7,
+    "name": "skewer_display",
+    "source_box": [
+      1397,
+      259,
+      1547,
+      447
+    ],
+    "file": "E:\\UnityProject\\Unrighteous Campus\\Assets\\ExtractedDishes\\final_grouped_dishes\\07_skewer_display.png",
+    "size": [
+      163,
+      186
+    ]
+  },
+  {
+    "index": 8,
+    "name": "bakery_shelf",
+    "source_box": [
+      1552,
+      265,
+      1752,
+      447
+    ],
+    "file": "E:\\UnityProject\\Unrighteous Campus\\Assets\\ExtractedDishes\\final_grouped_dishes\\08_bakery_shelf.png",
+    "size": [
+      224,
+      197
+    ]
+  }
+]

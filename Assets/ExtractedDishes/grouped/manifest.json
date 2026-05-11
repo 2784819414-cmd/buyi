@@ -1,0 +1,197 @@
+[
+  {
+    "index": 1,
+    "name": "ingredient_display",
+    "source_box": [
+      43,
+      263,
+      304,
+      452
+    ],
+    "file": "E:\\UnityProject\\Unrighteous Campus\\Assets\\ExtractedDishes\\grouped\\01_ingredient_display.png",
+    "size": [
+      273,
+      197
+    ]
+  },
+  {
+    "index": 2,
+    "name": "plate_stack_and_forks",
+    "source_box": [
+      304,
+      263,
+      354,
+      452
+    ],
+    "file": "E:\\UnityProject\\Unrighteous Campus\\Assets\\ExtractedDishes\\grouped\\02_plate_stack_and_forks.png",
+    "size": [
+      70,
+      199
+    ]
+  },
+  {
+    "index": 3,
+    "name": "sauce_station",
+    "source_box": [
+      354,
+      270,
+      480,
+      452
+    ],
+    "file": "E:\\UnityProject\\Unrighteous Campus\\Assets\\ExtractedDishes\\grouped\\03_sauce_station.png",
+    "size": [
+      146,
+      188
+    ]
+  },
+  {
+    "index": 4,
+    "name": "tableware_station",
+    "source_box": [
+      478,
+      268,
+      584,
+      452
+    ],
+    "file": "E:\\UnityProject\\Unrighteous Campus\\Assets\\ExtractedDishes\\grouped\\04_tableware_station.png",
+    "size": [
+      117,
+      188
+    ]
+  },
+  {
+    "index": 5,
+    "name": "hot_tray_set_a",
+    "source_box": [
+      593,
+      278,
+      772,
+      407
+    ],
+    "file": "E:\\UnityProject\\Unrighteous Campus\\Assets\\ExtractedDishes\\grouped\\05_hot_tray_set_a.png",
+    "size": [
+      182,
+      134
+    ]
+  },
+  {
+    "index": 6,
+    "name": "hot_tray_set_b",
+    "source_box": [
+      782,
+      278,
+      931,
+      407
+    ],
+    "file": "E:\\UnityProject\\Unrighteous Campus\\Assets\\ExtractedDishes\\grouped\\06_hot_tray_set_b.png",
+    "size": [
+      153,
+      134
+    ]
+  },
+  {
+    "index": 7,
+    "name": "small_plate_set",
+    "source_box": [
+      943,
+      283,
+      1072,
+      403
+    ],
+    "file": "E:\\UnityProject\\Unrighteous Campus\\Assets\\ExtractedDishes\\grouped\\07_small_plate_set.png",
+    "size": [
+      131,
+      124
+    ]
+  },
+  {
+    "index": 8,
+    "name": "square_tray_set",
+    "source_box": [
+      1085,
+      283,
+      1207,
+      417
+    ],
+    "file": "E:\\UnityProject\\Unrighteous Campus\\Assets\\ExtractedDishes\\grouped\\08_square_tray_set.png",
+    "size": [
+      125,
+      137
+    ]
+  },
+  {
+    "index": 9,
+    "name": "wok_station",
+    "source_box": [
+      1221,
+      275,
+      1386,
+      417
+    ],
+    "file": "E:\\UnityProject\\Unrighteous Campus\\Assets\\ExtractedDishes\\grouped\\09_wok_station.png",
+    "size": [
+      168,
+      145
+    ]
+  },
+  {
+    "index": 10,
+    "name": "skewer_station",
+    "source_box": [
+      1397,
+      259,
+      1547,
+      447
+    ],
+    "file": "E:\\UnityProject\\Unrighteous Campus\\Assets\\ExtractedDishes\\grouped\\10_skewer_station.png",
+    "size": [
+      161,
+      184
+    ]
+  },
+  {
+    "index": 11,
+    "name": "bakery_shelf",
+    "source_box": [
+      1552,
+      265,
+      1752,
+      447
+    ],
+    "file": "E:\\UnityProject\\Unrighteous Campus\\Assets\\ExtractedDishes\\grouped\\11_bakery_shelf.png",
+    "size": [
+      220,
+      195
+    ]
+  },
+  {
+    "index": 12,
+    "name": "counter_tools",
+    "source_box": [
+      1747,
+      348,
+      1800,
+      451
+    ],
+    "file": "E:\\UnityProject\\Unrighteous Campus\\Assets\\ExtractedDishes\\grouped\\12_counter_tools.png",
+    "size": [
+      73,
+      114
+    ]
+  },
+  {
+    "index": 13,
+    "name": "cash_register",
+    "source_box": [
+      1799,
+      349,
+      1890,
+      451
+    ],
+    "file": "E:\\UnityProject\\Unrighteous Campus\\Assets\\ExtractedDishes\\grouped\\13_cash_register.png",
+    "size": [
+      102,
+      105
+    ]
+  }
+]

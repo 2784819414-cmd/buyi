@@ -1,0 +1,26 @@
+* text=auto
+
+*.cs text eol=lf
+*.shader text eol=lf
+*.json text eol=lf
+*.asmdef text eol=lf
+*.asset text eol=lf
+*.mat text eol=lf
+*.meta text eol=lf
+*.prefab text eol=lf
+*.unity text eol=lf
+*.controller text eol=lf
+*.overrideController text eol=lf
+*.anim text eol=lf
+*.inputactions text eol=lf
+
+*.png binary
+*.jpg binary
+*.jpeg binary
+*.psd binary
+*.tga binary
+*.wav binary
+*.mp3 binary
+*.fbx binary
+*.ttf binary
+*.otf binary

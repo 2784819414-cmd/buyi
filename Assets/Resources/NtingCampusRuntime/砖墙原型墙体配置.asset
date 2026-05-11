@@ -1,0 +1,63 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f59c4e2399796f94c8c65c86f03fe4e0, type: 3}
+  m_Name: "\u7816\u5899\u539F\u578B\u5899\u4F53\u914D\u7F6E"
+  m_EditorClassIdentifier: Assembly-CSharp::NtingCampusMapEditor.CampusWallRenderProfile
+  ProfileId: BrickPrototypeWall
+  FaceSourceTexture: {fileID: 2800000, guid: e9bd25c5fc57e834b947d3f1eed990c5, type: 3}
+  CapSourceTexture: {fileID: 2800000, guid: 1e11825aa27622c46924cc6db5ab2976, type: 3}
+  ShadowMaterial: {fileID: 2100000, guid: 5d40cd6d18cc8db4cb4051c7d911ba36, type: 2}
+  FaceMaterial: {fileID: 2100000, guid: 6de10052ab3a19e42b2bfac22db0d4f0, type: 2}
+  CapMaterial: {fileID: 2100000, guid: 51df2161b88c1b749b839eb54d9f7f37, type: 2}
+  EdgeMaterial: {fileID: 2100000, guid: 1b309c9f9e7699a4ba729fbd024ec18f, type: 2}
+  LogicTile: {fileID: 11400000, guid: 47acd98cb03f56b4fb6028b936295574, type: 2}
+  DefaultCapTile: {fileID: 11400000, guid: 4591848e58a65e545972fabbd68488ae, type: 2}
+  CapTilesByExposedMask:
+  - {fileID: 11400000, guid: 4591848e58a65e545972fabbd68488ae, type: 2}
+  - {fileID: 11400000, guid: 9b4bc5b165f8d8e44ab9f2edaaa952e6, type: 2}
+  - {fileID: 11400000, guid: 4f0b960cce0de65449afb242387a1b1b, type: 2}
+  - {fileID: 11400000, guid: 7df2bad9d84cf43449f11c25b545a929, type: 2}
+  - {fileID: 11400000, guid: 56d6985d92893f542a1a2d7b61fb55bd, type: 2}
+  - {fileID: 11400000, guid: d7fd72621d4a31044821affb3a471b3d, type: 2}
+  - {fileID: 11400000, guid: a7c6351d8f4c2c645b1ff94e2d9a9fbc, type: 2}
+  - {fileID: 11400000, guid: 201dbbf9b5dec8742b9ee9435ffdcbce, type: 2}
+  - {fileID: 11400000, guid: 86041349d78c7fe4f9655598c314d825, type: 2}
+  - {fileID: 11400000, guid: 14aba2b5365517847ad4d032cc1294d9, type: 2}
+  - {fileID: 11400000, guid: 00133c42fd70e7841929ca5050756865, type: 2}
+  - {fileID: 11400000, guid: 5961e7713f770e64793e49fd06182527, type: 2}
+  - {fileID: 11400000, guid: 41f74428e8b45994a8f70f9d258707a4, type: 2}
+  - {fileID: 11400000, guid: b3339bca64d36c74eafa3e45596c172c, type: 2}
+  - {fileID: 11400000, guid: ed3797794fd151b4aa5162f80ca1dd7c, type: 2}
+  - {fileID: 11400000, guid: d6e19de5a27d1264fa837a0a769c403b, type: 2}
+  SouthFaceTile: {fileID: 11400000, guid: fd1bb9f1c6229414a84c7e283675021b, type: 2}
+  WestSideTile: {fileID: 11400000, guid: 0eec8959200ceef46b2ce727326546f6, type: 2}
+  EastSideTile: {fileID: 11400000, guid: bc5df49a46a0bba4786fe05d4fcea5b6, type: 2}
+  BothSideTile: {fileID: 11400000, guid: 4250e6bcbd6cf31408a08007cee7c25e, type: 2}
+  SouthShadowTile: {fileID: 11400000, guid: 053d93c981178c64eb70ed1d0de36b61, type: 2}
+  InnerCornerShadowTile: {fileID: 11400000, guid: d63d0968737459842bc1000adc9bd6a9, type: 2}
+  EndNorth: {fileID: 11400000, guid: faeee86a4b9259b419d7ac55f4e6af79, type: 2}
+  EndEast: {fileID: 11400000, guid: b998aefaf57e620419417b9d8ba5143d, type: 2}
+  EndSouth: {fileID: 11400000, guid: 508fe86853d214a45b0a04b76109172c, type: 2}
+  EndWest: {fileID: 11400000, guid: 3c14d7d113f617f4a934798617b4c43b, type: 2}
+  OuterCornerNE: {fileID: 11400000, guid: a087cad7dc5c10646a2faf1a3c4fd726, type: 2}
+  OuterCornerNW: {fileID: 11400000, guid: bd443739e7676314ca360a9fa88c43a6, type: 2}
+  OuterCornerSE: {fileID: 11400000, guid: e787305d9722fcf4687bba84430820a9, type: 2}
+  OuterCornerSW: {fileID: 11400000, guid: 9d107dc2900f1a54c81e64d0ddde7ee5, type: 2}
+  InnerCornerNE: {fileID: 11400000, guid: de5dab619869182428d0ebfb8c1c5d8d, type: 2}
+  InnerCornerNW: {fileID: 11400000, guid: b555764991d88ff40980303dff168c57, type: 2}
+  InnerCornerSE: {fileID: 11400000, guid: 0139ce75a9d68114d97ea08f8a45e39c, type: 2}
+  InnerCornerSW: {fileID: 11400000, guid: f6e3f7ac8dc805f468eb53f44e5f6d84, type: 2}
+  TJunctionNorth: {fileID: 11400000, guid: c5d4d1dd83ee0d247bbfe3e31d6b5bf0, type: 2}
+  TJunctionEast: {fileID: 11400000, guid: bbc3d33bd4f4431408629ba08775d0b3, type: 2}
+  TJunctionSouth: {fileID: 11400000, guid: b681ceed5f6bd9f4dbd646b4a716a0c7, type: 2}
+  TJunctionWest: {fileID: 11400000, guid: 5aa86f01ade505b49a478ff9c41795db, type: 2}
+  Cross: {fileID: 11400000, guid: e4c2d35638d37da4a8c77d6134142d5e, type: 2}
