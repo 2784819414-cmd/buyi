@@ -10,7 +10,6 @@ namespace NtingCampusMapEditor
     public static class CampusWallAutoRenderer
     {
         private static readonly bool enableWallSelfShadowCasters = false;
-        private static readonly bool useProjectedWallShadowMesh = true;
 
         public static void RebuildAll(CampusMapRoot root, CampusWallRenderProfile profile)
         {
@@ -55,16 +54,10 @@ namespace NtingCampusMapEditor
                     CampusDynamicShadowUtility.ClearWallShadowCasters(floor);
                 }
 
-                if (useProjectedWallShadowMesh)
-                {
-                    CampusDynamicShadowUtility.ClearWallGroundShadowCasters(floor);
-                    CampusProjectedWallShadowRenderer.EnsureForFloor(floor);
-                }
-                else
-                {
-                    CampusProjectedWallShadowRenderer.ClearForFloor(floor);
-                    CampusDynamicShadowUtility.RebuildWallGroundShadowCasters(floor);
-                }
+                CampusProjectedWallShadowRenderer.ClearForFloor(floor);
+                CampusDynamicShadowUtility.RebuildWallGroundShadowCasters(floor);
+                NtingFiniteWallSunShadowRenderer.EnsureForFloor(floor);
+                CampusDynamicShadowUtility.EnsureObjectShadowCasters(floor);
 
                 floor.RefreshUsedBounds();
             }
@@ -82,6 +75,7 @@ namespace NtingCampusMapEditor
             CampusDynamicShadowUtility.ClearWallShadowCasters(floor);
             CampusDynamicShadowUtility.ClearWallGroundShadowCasters(floor);
             CampusProjectedWallShadowRenderer.ClearForFloor(floor);
+            NtingFiniteWallSunShadowRenderer.ClearForFloor(floor);
         }
 
         public static void ApplyDebugView(CampusFloorRoot floor, CampusWallDebugView view)

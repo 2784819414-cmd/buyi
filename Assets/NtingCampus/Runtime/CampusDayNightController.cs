@@ -26,6 +26,9 @@ namespace NtingCampusMapEditor
         public float ShadowLengthFactor { get; private set; }
         public float ShadowOpacityFactor { get; private set; }
         public Vector2 ShadowDirection { get; private set; } = Vector2.down;
+        public Vector2 SunDirection2D => ShadowDirection;
+        public float SunElevation => SunHeight01;
+        public float SunLowFactor => 1f - Mathf.Clamp01(SunHeight01);
         public float GameHour { get; private set; }
         public float Day01 { get; private set; }
         public float RealSecondsPerGameDay
@@ -147,8 +150,8 @@ namespace NtingCampusMapEditor
             ResolveSceneReferences();
             GameHour = Mathf.Repeat(Day01 * HoursPerDay, HoursPerDay);
             UpdateSunPosition();
-            UpdateSunIntensityAndColor();
             UpdateShadowParameters();
+            UpdateSunIntensityAndColor();
         }
 
         private void UpdateSunPosition()
@@ -181,6 +184,8 @@ namespace NtingCampusMapEditor
             sunLight.pointLightOuterAngle = 360f;
             sunLight.pointLightInnerRadius = Mathf.Max(sunLight.pointLightInnerRadius, orbitRadius * 1.15f);
             sunLight.pointLightOuterRadius = Mathf.Max(sunLight.pointLightOuterRadius, orbitRadius * 1.5f);
+            sunLight.shadowsEnabled = false;
+            sunLight.shadowIntensity = 0f;
         }
 
         private void UpdateShadowParameters()
@@ -217,15 +222,6 @@ namespace NtingCampusMapEditor
                 }
             }
 
-            for (int i = 0; i < lights.Length; i++)
-            {
-                Light2D light = lights[i];
-                if (light != null && light.lightType != Light2D.LightType.Global)
-                {
-                    return light;
-                }
-            }
-
             return null;
         }
 
@@ -242,7 +238,11 @@ namespace NtingCampusMapEditor
             for (int i = 0; i < renderers.Length; i++)
             {
                 Renderer renderer = renderers[i];
-                if (renderer == null || renderer.GetComponent<Light2D>() != null || renderer.GetComponent<CampusProjectedWallShadowRenderer>() != null)
+                if (renderer == null ||
+                    renderer.GetComponent<Light2D>() != null ||
+                    renderer.GetComponent<CampusProjectedWallShadowRenderer>() != null ||
+                    renderer.GetComponentInParent<NtingFiniteWallSunShadowRenderer>() != null ||
+                    renderer.gameObject.name == NtingFiniteSunShadow.ProxyName)
                 {
                     continue;
                 }

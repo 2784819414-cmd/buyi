@@ -1,4 +1,5 @@
 using System.Reflection;
+using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Rendering;
 using UnityEngine.Rendering.Universal;
@@ -10,16 +11,19 @@ namespace NtingCampusMapEditor
     {
         private const string WallShadowCasterRootName = "Dynamic Wall ShadowCasters 2D";
         private const string WallGroundShadowCasterRootName = "Wall Ground Shadow Casters 2D";
-        private const string ObjectFallbackCasterName = "Dynamic Object ShadowCaster 2D";
+        private const string LegacyObjectFallbackCasterName = "Dynamic Object ShadowCaster 2D";
         private const float GroundShadowTopHalfWidth = 0.205f;
         private const float GroundShadowCellHalf = 0.5f;
-        private const float ObjectGroundShadowInsetFromCellEdge = GroundShadowCellHalf - GroundShadowTopHalfWidth;
-        private static readonly bool useProjectedObjectShadowMesh = true;
+        private const float ShadowPointMergeTolerance = 0.0005f;
         private static readonly FieldInfo ShadowCasterSortingLayersField = typeof(ShadowCaster2D).GetField("m_ApplyToSortingLayers", BindingFlags.Instance | BindingFlags.NonPublic);
         private static readonly FieldInfo ShadowCasterShapePathField = typeof(ShadowCaster2D).GetField("m_ShapePath", BindingFlags.Instance | BindingFlags.NonPublic);
         private static readonly FieldInfo ShadowCasterShapePathHashField = typeof(ShadowCaster2D).GetField("m_ShapePathHash", BindingFlags.Instance | BindingFlags.NonPublic);
         private static readonly FieldInfo ShadowCasterCastingSourceField = typeof(ShadowCaster2D).GetField("m_ShadowCastingSource", BindingFlags.Instance | BindingFlags.NonPublic);
+        private static readonly FieldInfo ShadowCasterShapeComponentField = typeof(ShadowCaster2D).GetField("m_ShadowShape2DComponent", BindingFlags.Instance | BindingFlags.NonPublic);
+        private static readonly FieldInfo ShadowCasterShapeProviderField = typeof(ShadowCaster2D).GetField("m_ShadowShape2DProvider", BindingFlags.Instance | BindingFlags.NonPublic);
+        private static readonly FieldInfo ShadowCasterPreviousShapeSourceField = typeof(ShadowCaster2D).GetField("m_PreviousShadowShape2DSource", BindingFlags.Instance | BindingFlags.NonPublic);
         private static readonly FieldInfo ShadowCasterForceMeshRebuildField = typeof(ShadowCaster2D).GetField("m_ForceShadowMeshRebuild", BindingFlags.Instance | BindingFlags.NonPublic);
+        private static readonly System.Type SpriteRendererShapeProviderType = typeof(ShadowCaster2D).Assembly.GetType("UnityEngine.Rendering.Universal.ShadowShape2DProvider_SpriteRenderer");
 
         public static void ApplyHighestRuntimeShadowQuality()
         {
@@ -85,6 +89,7 @@ namespace NtingCampusMapEditor
             }
 
             RemoveFixedWallShadowTilemaps(floor);
+            CampusProjectedWallShadowRenderer.ClearForFloor(floor);
             if (!CampusRenderSortingUtility.TryGetGroundShadowSortingLayerId(out int groundSortingLayerId))
             {
                 ClearWallGroundShadowCasters(floor);
@@ -126,22 +131,13 @@ namespace NtingCampusMapEditor
                 return;
             }
 
-            Transform root = floor.WallMeshRoot.Find(WallShadowCasterRootName);
-            if (root != null)
-            {
-                root.gameObject.SetActive(false);
-                DestroyObject(root.gameObject);
-            }
+            DestroyGeneratedChildrenByName(floor.WallMeshRoot, WallShadowCasterRootName);
         }
 
         public static void ClearWallGroundShadowCasters(CampusFloorRoot floor)
         {
-            Transform root = FindWallGroundShadowCasterRoot(floor);
-            if (root != null)
-            {
-                root.gameObject.SetActive(false);
-                DestroyObject(root.gameObject);
-            }
+            Transform parent = floor != null && floor.Grid != null ? floor.Grid.transform : floor != null ? floor.transform : null;
+            DestroyGeneratedChildrenByName(parent, WallGroundShadowCasterRootName);
         }
 
         public static void EnsureObjectShadowCasters(CampusFloorRoot floor)
@@ -151,11 +147,10 @@ namespace NtingCampusMapEditor
                 return;
             }
 
-            if (useProjectedObjectShadowMesh)
+            CampusProjectedWallShadowRenderer.ClearForFloor(floor);
+            if (CampusRenderSortingUtility.TryGetGroundShadowSortingLayerId(out int groundSortingLayerId))
             {
-                ClearObjectShadowCasters(floor);
-                CampusProjectedWallShadowRenderer.EnsureForFloor(floor);
-                return;
+                EnsureLightsTargetGroundShadowLayer(groundSortingLayerId);
             }
 
             if (floor.PropsRoot != null)
@@ -187,51 +182,13 @@ namespace NtingCampusMapEditor
                 return;
             }
 
-            if (useProjectedObjectShadowMesh)
+            DestroyGeneratedChildrenByName(placed.transform, LegacyObjectFallbackCasterName);
+            if (placed.GetComponentInChildren<SpriteRenderer>(true) != null)
             {
-                ClearObjectShadowCasters(placed.gameObject);
-                CampusFloorRoot floor = placed.GetComponentInParent<CampusFloorRoot>();
-                if (floor == null && grid != null)
-                {
-                    floor = grid.GetComponentInParent<CampusFloorRoot>();
-                }
-
-                if (floor != null)
-                {
-                    CampusProjectedWallShadowRenderer.EnsureForFloor(floor);
-                }
-
-                return;
+                NtingFiniteSunShadow.EnsureForPlacedObject(placed);
             }
 
-            RemoveRendererShadowCasters(placed.gameObject);
-
-            Transform fallback = placed.transform.Find(ObjectFallbackCasterName);
-            if (fallback == null)
-            {
-                GameObject fallbackObject = new GameObject(ObjectFallbackCasterName);
-                fallback = fallbackObject.transform;
-                fallback.SetParent(placed.transform, false);
-            }
-
-            fallback.localPosition = Vector3.zero;
-            fallback.localRotation = Quaternion.identity;
-            fallback.localScale = Vector3.one;
-            ShadowCaster2D caster = fallback.GetComponent<ShadowCaster2D>();
-            if (caster == null)
-            {
-                caster = fallback.gameObject.AddComponent<ShadowCaster2D>();
-            }
-
-            if (!CampusRenderSortingUtility.TryGetGroundShadowSortingLayerId(out int groundSortingLayerId))
-            {
-                caster.enabled = false;
-                return;
-            }
-
-            Vector3[] shapePath = BuildObjectGroundShadowShape(placed, grid);
-            ConfigureCaster(caster, new[] { groundSortingLayerId });
-            ApplyCasterShape(caster, shapePath);
+            EnsureRendererShadowCasters(placed.gameObject);
         }
 
         public static void ClearObjectShadowCasters(CampusFloorRoot floor)
@@ -252,11 +209,6 @@ namespace NtingCampusMapEditor
                     }
                 }
             }
-
-            if (floor.StairsRoot != null)
-            {
-                RemoveRendererShadowCasters(floor.StairsRoot.gameObject);
-            }
         }
 
         private static void ClearObjectShadowCasters(GameObject root)
@@ -266,14 +218,7 @@ namespace NtingCampusMapEditor
                 return;
             }
 
-            Transform fallback = root.transform.Find(ObjectFallbackCasterName);
-            if (fallback != null)
-            {
-                fallback.gameObject.SetActive(false);
-                DestroyObject(fallback.gameObject);
-            }
-
-            RemoveRendererShadowCasters(root);
+            DestroyGeneratedChildrenByName(root.transform, LegacyObjectFallbackCasterName);
         }
 
         public static void ConfigureLightShadows(Light2D light, bool enabled, float intensity, float softness, float softnessFalloff)
@@ -281,6 +226,12 @@ namespace NtingCampusMapEditor
             if (light == null)
             {
                 return;
+            }
+
+            if (CampusObjectNames.MatchesAny(light.gameObject.name, CampusObjectNames.SunLight2D, CampusObjectNames.LegacySunLight2D))
+            {
+                enabled = false;
+                intensity = 0f;
             }
 
             light.shadowsEnabled = enabled;
@@ -314,48 +265,30 @@ namespace NtingCampusMapEditor
 
         private static Transform EnsureWallShadowCasterRoot(Transform wallMeshRoot)
         {
-            Transform root = wallMeshRoot.Find(WallShadowCasterRootName);
-            if (root != null)
-            {
-                return root;
-            }
-
-            GameObject rootObject = new GameObject(WallShadowCasterRootName);
-            root = rootObject.transform;
-            root.SetParent(wallMeshRoot, false);
+            Transform root = GetOrCreateSingleGeneratedChild(wallMeshRoot, WallShadowCasterRootName);
             root.localPosition = Vector3.zero;
             root.localRotation = Quaternion.identity;
             root.localScale = Vector3.one;
-            rootObject.AddComponent<CompositeShadowCaster2D>();
+            if (root.GetComponent<CompositeShadowCaster2D>() == null)
+            {
+                root.gameObject.AddComponent<CompositeShadowCaster2D>();
+            }
+
             return root;
         }
 
         private static Transform EnsureWallGroundShadowCasterRoot(CampusFloorRoot floor)
         {
             Transform parent = floor.Grid != null ? floor.Grid.transform : floor.transform;
-            Transform root = parent.Find(WallGroundShadowCasterRootName);
-            if (root != null)
-            {
-                root.name = WallGroundShadowCasterRootName;
-                root.SetParent(parent, false);
-                root.localPosition = Vector3.zero;
-                root.localRotation = Quaternion.identity;
-                root.localScale = Vector3.one;
-                if (root.GetComponent<CompositeShadowCaster2D>() == null)
-                {
-                    root.gameObject.AddComponent<CompositeShadowCaster2D>();
-                }
-
-                return root;
-            }
-
-            GameObject rootObject = new GameObject(WallGroundShadowCasterRootName);
-            root = rootObject.transform;
-            root.SetParent(parent, false);
+            Transform root = GetOrCreateSingleGeneratedChild(parent, WallGroundShadowCasterRootName);
             root.localPosition = Vector3.zero;
             root.localRotation = Quaternion.identity;
             root.localScale = Vector3.one;
-            rootObject.AddComponent<CompositeShadowCaster2D>();
+            if (root.GetComponent<CompositeShadowCaster2D>() == null)
+            {
+                root.gameObject.AddComponent<CompositeShadowCaster2D>();
+            }
+
             return root;
         }
 
@@ -367,7 +300,7 @@ namespace NtingCampusMapEditor
             }
 
             Transform parent = floor.Grid != null ? floor.Grid.transform : floor.transform;
-            return parent != null ? parent.Find(WallGroundShadowCasterRootName) : null;
+            return FindSingleGeneratedChild(parent, WallGroundShadowCasterRootName, true);
         }
 
         private static void AddWallGroundShadowCasters(Transform shadowRoot, Tilemap wallLogic, Vector3Int cell, int connectionMask, Vector2 cellSize, int[] groundSortingLayerIds)
@@ -446,12 +379,12 @@ namespace NtingCampusMapEditor
 
             ShadowCaster2D caster = casterObject.AddComponent<ShadowCaster2D>();
             ConfigureCaster(caster, groundSortingLayerIds);
-            ApplyCasterShape(caster, BuildRectShape(minX * cellSize.x, minY * cellSize.y, maxX * cellSize.x, maxY * cellSize.y));
+            ApplyShapeEditorCasterShape(caster, BuildRectShape(minX * cellSize.x, minY * cellSize.y, maxX * cellSize.x, maxY * cellSize.y));
         }
 
         private static void ClearWallShadowCasterRoot(Transform wallMeshRoot)
         {
-            Transform root = wallMeshRoot != null ? wallMeshRoot.Find(WallShadowCasterRootName) : null;
+            Transform root = FindSingleGeneratedChild(wallMeshRoot, WallShadowCasterRootName, true);
             if (root != null)
             {
                 ClearChildren(root);
@@ -470,7 +403,10 @@ namespace NtingCampusMapEditor
             for (int i = 0; i < renderers.Length; i++)
             {
                 Renderer renderer = renderers[i];
-                if (renderer == null || renderer is TilemapRenderer)
+                if (renderer == null ||
+                    renderer is TilemapRenderer ||
+                    renderer.gameObject.name == NtingFiniteSunShadow.ProxyName ||
+                    renderer.GetComponentInParent<NtingFiniteWallSunShadowRenderer>() != null)
                 {
                     continue;
                 }
@@ -485,6 +421,18 @@ namespace NtingCampusMapEditor
                 if (CampusRenderSortingUtility.TryGetGroundShadowSortingLayerId(out int groundSortingLayerId))
                 {
                     ConfigureCaster(caster, new[] { groundSortingLayerId });
+
+                    SpriteRenderer spriteRenderer = renderer as SpriteRenderer;
+                    if (spriteRenderer != null && ApplySpriteRendererShapeProvider(caster, spriteRenderer))
+                    {
+                        continue;
+                    }
+
+                    Vector3[] shapePath = BuildRendererShadowShape(renderer, renderer.transform);
+                    if (!ApplyShapeEditorCasterShape(caster, shapePath))
+                    {
+                        caster.enabled = false;
+                    }
                 }
                 else
                 {
@@ -546,7 +494,7 @@ namespace NtingCampusMapEditor
             }
         }
 
-        private static bool ApplyCasterShape(ShadowCaster2D caster, Vector3[] shapePath)
+        private static bool ApplyShapeEditorCasterShape(ShadowCaster2D caster, Vector3[] shapePath)
         {
             if (caster == null || shapePath == null || shapePath.Length < 3 || ShadowCasterShapePathField == null)
             {
@@ -587,6 +535,50 @@ namespace NtingCampusMapEditor
             }
         }
 
+        private static bool ApplySpriteRendererShapeProvider(ShadowCaster2D caster, SpriteRenderer renderer)
+        {
+            if (caster == null ||
+                renderer == null ||
+                renderer.sprite == null ||
+                ShadowCasterCastingSourceField == null ||
+                ShadowCasterShapeComponentField == null ||
+                ShadowCasterShapeProviderField == null ||
+                SpriteRendererShapeProviderType == null)
+            {
+                return false;
+            }
+
+            try
+            {
+                object provider = System.Activator.CreateInstance(SpriteRendererShapeProviderType, true);
+                ShadowCasterShapeComponentField.SetValue(caster, renderer);
+                ShadowCasterShapeProviderField.SetValue(caster, provider);
+                object shapeProviderValue = System.Enum.ToObject(ShadowCasterCastingSourceField.FieldType, 2);
+                ShadowCasterCastingSourceField.SetValue(caster, shapeProviderValue);
+                if (ShadowCasterPreviousShapeSourceField != null)
+                {
+                    ShadowCasterPreviousShapeSourceField.SetValue(caster, null);
+                }
+
+                if (ShadowCasterForceMeshRebuildField != null)
+                {
+                    ShadowCasterForceMeshRebuildField.SetValue(caster, true);
+                }
+
+                if (caster.isActiveAndEnabled)
+                {
+                    caster.Update();
+                }
+
+                return true;
+            }
+            catch (System.Exception exception)
+            {
+                Debug.LogWarning("[NtingCampus] Failed to use SpriteRenderer shadow shape provider on '" + caster.gameObject.name + "': " + exception.Message);
+                return false;
+            }
+        }
+
         private static int CalculateShapeHash(Vector3[] shapePath)
         {
             unchecked
@@ -601,13 +593,165 @@ namespace NtingCampusMapEditor
             }
         }
 
-        private static Vector3[] BuildObjectGroundShadowShape(CampusPlacedObject placed, Grid grid)
+        private static Vector3[] BuildRendererShadowShape(Renderer renderer, Transform casterTransform)
         {
-            Vector2Int footprint = placed != null ? placed.NormalizedFootprintSize : Vector2Int.one;
-            Vector2 cellSize = GetGridCellSize(grid);
-            float halfWidth = Mathf.Max(GroundShadowTopHalfWidth * cellSize.x, footprint.x * cellSize.x * 0.5f - ObjectGroundShadowInsetFromCellEdge * cellSize.x);
-            float halfHeight = Mathf.Max(GroundShadowTopHalfWidth * cellSize.y, footprint.y * cellSize.y * 0.5f - ObjectGroundShadowInsetFromCellEdge * cellSize.y);
-            return BuildRectShape(-halfWidth, -halfHeight, halfWidth, halfHeight);
+            if (renderer == null || casterTransform == null)
+            {
+                return null;
+            }
+
+            List<Vector2> points = new List<Vector2>(16);
+            CollectRendererShadowPoints(renderer, casterTransform, points);
+            return BuildConvexShapePath(points);
+        }
+
+        private static void CollectRendererShadowPoints(Renderer renderer, Transform casterTransform, List<Vector2> points)
+        {
+            if (renderer == null || casterTransform == null || points == null || !renderer.enabled || !renderer.gameObject.activeInHierarchy)
+            {
+                return;
+            }
+
+            if (renderer is TilemapRenderer)
+            {
+                return;
+            }
+
+            SpriteRenderer spriteRenderer = renderer as SpriteRenderer;
+            if (spriteRenderer != null)
+            {
+                CollectBoundsShadowPoints(spriteRenderer.bounds, casterTransform, points);
+                return;
+            }
+
+            MeshRenderer meshRenderer = renderer as MeshRenderer;
+            if (meshRenderer != null)
+            {
+                CollectMeshShadowPoints(meshRenderer, casterTransform, points);
+                return;
+            }
+
+            CollectBoundsShadowPoints(renderer.bounds, casterTransform, points);
+        }
+
+        private static void CollectMeshShadowPoints(MeshRenderer renderer, Transform casterTransform, List<Vector2> points)
+        {
+            MeshFilter filter = renderer != null ? renderer.GetComponent<MeshFilter>() : null;
+            Mesh mesh = filter != null ? filter.sharedMesh : null;
+            if (mesh == null || mesh.vertexCount < 3)
+            {
+                if (renderer != null)
+                {
+                    CollectBoundsShadowPoints(renderer.bounds, casterTransform, points);
+                }
+
+                return;
+            }
+
+            Vector3[] vertices = mesh.vertices;
+            Transform meshTransform = renderer.transform;
+            for (int i = 0; i < vertices.Length; i++)
+            {
+                AddLocalShadowPoint(points, casterTransform, meshTransform.TransformPoint(vertices[i]));
+            }
+        }
+
+        private static void CollectBoundsShadowPoints(Bounds bounds, Transform casterTransform, List<Vector2> points)
+        {
+            if (bounds.size.sqrMagnitude <= 0.0001f)
+            {
+                return;
+            }
+
+            AddLocalShadowPoint(points, casterTransform, new Vector3(bounds.min.x, bounds.min.y, 0f));
+            AddLocalShadowPoint(points, casterTransform, new Vector3(bounds.min.x, bounds.max.y, 0f));
+            AddLocalShadowPoint(points, casterTransform, new Vector3(bounds.max.x, bounds.max.y, 0f));
+            AddLocalShadowPoint(points, casterTransform, new Vector3(bounds.max.x, bounds.min.y, 0f));
+        }
+
+        private static void AddLocalShadowPoint(List<Vector2> points, Transform casterTransform, Vector3 worldPoint)
+        {
+            Vector3 local = casterTransform.InverseTransformPoint(worldPoint);
+            AddUniquePoint(points, new Vector2(local.x, local.y));
+        }
+
+        private static void AddUniquePoint(List<Vector2> points, Vector2 point)
+        {
+            for (int i = 0; i < points.Count; i++)
+            {
+                if ((points[i] - point).sqrMagnitude <= ShadowPointMergeTolerance * ShadowPointMergeTolerance)
+                {
+                    return;
+                }
+            }
+
+            points.Add(point);
+        }
+
+        private static Vector3[] BuildConvexShapePath(List<Vector2> points)
+        {
+            if (points == null || points.Count < 3)
+            {
+                return null;
+            }
+
+            List<Vector2> hull = new List<Vector2>(points.Count);
+            BuildConvexHull(points, hull);
+            if (hull.Count < 3)
+            {
+                return null;
+            }
+
+            Vector3[] shape = new Vector3[hull.Count];
+            for (int i = 0; i < hull.Count; i++)
+            {
+                shape[i] = new Vector3(hull[i].x, hull[i].y, 0f);
+            }
+
+            return shape;
+        }
+
+        private static void BuildConvexHull(List<Vector2> points, List<Vector2> hull)
+        {
+            hull.Clear();
+            points.Sort(ComparePoints);
+
+            for (int i = 0; i < points.Count; i++)
+            {
+                while (hull.Count >= 2 && Cross(hull[hull.Count - 2], hull[hull.Count - 1], points[i]) <= 0f)
+                {
+                    hull.RemoveAt(hull.Count - 1);
+                }
+
+                hull.Add(points[i]);
+            }
+
+            int lowerCount = hull.Count;
+            for (int i = points.Count - 2; i >= 0; i--)
+            {
+                while (hull.Count > lowerCount && Cross(hull[hull.Count - 2], hull[hull.Count - 1], points[i]) <= 0f)
+                {
+                    hull.RemoveAt(hull.Count - 1);
+                }
+
+                hull.Add(points[i]);
+            }
+
+            if (hull.Count > 1)
+            {
+                hull.RemoveAt(hull.Count - 1);
+            }
+        }
+
+        private static int ComparePoints(Vector2 a, Vector2 b)
+        {
+            int xCompare = a.x.CompareTo(b.x);
+            return xCompare != 0 ? xCompare : a.y.CompareTo(b.y);
+        }
+
+        private static float Cross(Vector2 origin, Vector2 a, Vector2 b)
+        {
+            return (a.x - origin.x) * (b.y - origin.y) - (a.y - origin.y) * (b.x - origin.x);
         }
 
         private static Vector3[] BuildRectShape(float minX, float minY, float maxX, float maxY)
@@ -619,30 +763,6 @@ namespace NtingCampusMapEditor
                 new Vector3(maxX, maxY, 0f),
                 new Vector3(maxX, minY, 0f)
             };
-        }
-
-        private static void RemoveRendererShadowCasters(GameObject root)
-        {
-            if (root == null)
-            {
-                return;
-            }
-
-            Renderer[] renderers = root.GetComponentsInChildren<Renderer>(true);
-            for (int i = 0; i < renderers.Length; i++)
-            {
-                Renderer renderer = renderers[i];
-                if (renderer == null)
-                {
-                    continue;
-                }
-
-                ShadowCaster2D caster = renderer.GetComponent<ShadowCaster2D>();
-                if (caster != null)
-                {
-                    DestroyObject(caster);
-                }
-            }
         }
 
         private static void EnsureLightsTargetGroundShadowLayer(int groundSortingLayerId)
@@ -755,6 +875,79 @@ namespace NtingCampusMapEditor
             for (int i = parent.childCount - 1; i >= 0; i--)
             {
                 DestroyObject(parent.GetChild(i).gameObject);
+            }
+        }
+
+        private static Transform GetOrCreateSingleGeneratedChild(Transform parent, string childName)
+        {
+            if (parent == null)
+            {
+                return null;
+            }
+
+            Transform child = FindSingleGeneratedChild(parent, childName, true);
+            if (child != null)
+            {
+                child.gameObject.name = childName;
+                child.SetParent(parent, false);
+                return child;
+            }
+
+            GameObject childObject = new GameObject(childName);
+            child = childObject.transform;
+            child.SetParent(parent, false);
+            return child;
+        }
+
+        private static Transform FindSingleGeneratedChild(Transform parent, string childName, bool destroyDuplicates)
+        {
+            if (parent == null || string.IsNullOrEmpty(childName))
+            {
+                return null;
+            }
+
+            Transform keep = null;
+            for (int i = 0; i < parent.childCount; i++)
+            {
+                Transform child = parent.GetChild(i);
+                if (child != null && child.name == childName)
+                {
+                    keep = child;
+                    break;
+                }
+            }
+
+            if (destroyDuplicates)
+            {
+                for (int i = parent.childCount - 1; i >= 0; i--)
+                {
+                    Transform child = parent.GetChild(i);
+                    if (child != null && child.name == childName && child != keep)
+                    {
+                        child.gameObject.SetActive(false);
+                        DestroyObject(child.gameObject);
+                    }
+                }
+            }
+
+            return keep;
+        }
+
+        private static void DestroyGeneratedChildrenByName(Transform parent, string childName)
+        {
+            if (parent == null || string.IsNullOrEmpty(childName))
+            {
+                return;
+            }
+
+            for (int i = parent.childCount - 1; i >= 0; i--)
+            {
+                Transform child = parent.GetChild(i);
+                if (child != null && child.name == childName)
+                {
+                    child.gameObject.SetActive(false);
+                    DestroyObject(child.gameObject);
+                }
             }
         }
 
