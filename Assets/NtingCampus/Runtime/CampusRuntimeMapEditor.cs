@@ -1138,13 +1138,14 @@ namespace NtingCampusMapEditor
 
             CampusPlacedObject prefabPlaced = prefab.GetComponent<CampusPlacedObject>();
             Vector2Int footprint = prefabPlaced != null ? prefabPlaced.NormalizedFootprintSize : Vector2Int.one;
-            Vector2Int rotatedFootprint = CampusPlacedObject.RotateFootprintSize(footprint, rotation90);
+            int effectiveRotation90 = prefabPlaced != null ? prefabPlaced.ResolveAllowedRotation90(rotation90) : 0;
+            Vector2Int rotatedFootprint = CampusPlacedObject.RotateFootprintSize(footprint, effectiveRotation90);
             EraseObjectsAtCells(floor, cell, rotatedFootprint);
 
             GameObject instance = Instantiate(prefab, floor.PropsRoot);
             instance.SetActive(true);
             instance.name = CampusObjectNames.GetDisplayName(prefab.name) + "_F" + floor.FloorIndex + "_" + cell.x + "_" + cell.y;
-            instance.transform.rotation = Quaternion.Euler(0f, 0f, rotation90 * 90f);
+            instance.transform.rotation = Quaternion.identity;
             CampusPlacedObject placed = instance.GetComponent<CampusPlacedObject>();
             if (placed == null)
             {
@@ -1155,7 +1156,7 @@ namespace NtingCampusMapEditor
             placed.FloorIndex = floor.FloorIndex;
             placed.Cell = cell;
             placed.FootprintSize = footprint;
-            placed.Rotation90 = rotation90;
+            placed.ApplyPlacementRotation(effectiveRotation90);
             if (prefabPlaced != null)
             {
                 placed.BlocksMovement = prefabPlaced.BlocksMovement;
@@ -1848,7 +1849,6 @@ namespace NtingCampusMapEditor
                 GameObject instance = Instantiate(prefab, floor.PropsRoot);
                 instance.SetActive(true);
                 instance.name = CampusObjectNames.GetDisplayName(prefab.name) + "_F" + floor.FloorIndex + "_" + objectSnapshot.Cell.x + "_" + objectSnapshot.Cell.y;
-                instance.transform.rotation = Quaternion.Euler(0f, 0f, objectSnapshot.Rotation90 * 90f);
                 CampusPlacedObject placed = instance.GetComponent<CampusPlacedObject>();
                 if (placed == null)
                 {
@@ -1860,6 +1860,14 @@ namespace NtingCampusMapEditor
                 placed.Cell = objectSnapshot.Cell;
                 placed.FootprintSize = objectSnapshot.FootprintSize;
                 placed.Rotation90 = objectSnapshot.Rotation90;
+                if (placed.AllowRotation)
+                {
+                    placed.ApplyRotationVisualState();
+                }
+                else
+                {
+                    instance.transform.rotation = Quaternion.Euler(0f, 0f, objectSnapshot.Rotation90 * 90f);
+                }
                 placed.BlocksMovement = objectSnapshot.BlocksMovement;
                 placed.BlocksSight = objectSnapshot.BlocksSight;
                 placed.IsInteractable = objectSnapshot.IsInteractable;
@@ -2831,6 +2839,7 @@ namespace NtingCampusMapEditor
             else if (brushMode == CampusRuntimeBrushMode.PlaceObject)
             {
                 Vector2Int footprint = GetSelectedObjectFootprint();
+                DrawObjectPlacementPreview(floor.Grid, hoverCell, footprint);
                 DrawCellGrid(floor.Grid, hoverCell, footprint, new Color(1f, 0.96f, 0.25f, 0.72f), 2f);
             }
             else if (brushMode == CampusRuntimeBrushMode.PlaceStair)
@@ -2908,6 +2917,64 @@ namespace NtingCampusMapEditor
             }
 
             GUI.color = Color.white;
+        }
+
+        private void DrawObjectPlacementPreview(Grid grid, Vector3Int anchor, Vector2Int footprint)
+        {
+            GameObject prefab = GetSelectedObjectPrefab();
+            if (grid == null || prefab == null)
+            {
+                return;
+            }
+
+            CampusPlacedObject placed = prefab.GetComponent<CampusPlacedObject>();
+            SpriteRenderer renderer = prefab.GetComponentInChildren<SpriteRenderer>(true);
+            Sprite sprite = ResolvePrefabPreviewSprite(prefab, placed, out bool usesAuthoredDirectionalSprite, out int effectiveRotation90);
+            if (sprite == null || renderer == null)
+            {
+                return;
+            }
+
+            Vector3 worldCenter = CampusPlacedObject.GetFootprintWorldCenter(grid, anchor, footprint);
+            Rect rect = BuildWorldPreviewRect(worldCenter, sprite, renderer.transform.localScale);
+            if (rect.width <= 0f || rect.height <= 0f)
+            {
+                return;
+            }
+
+            float previewRotation = placed != null && placed.AllowRotation && !usesAuthoredDirectionalSprite ? -effectiveRotation90 * 90f : 0f;
+            Matrix4x4 oldMatrix = GUI.matrix;
+            Color oldColor = GUI.color;
+            GUI.color = new Color(1f, 1f, 1f, 0.58f);
+            if (!Mathf.Approximately(previewRotation, 0f))
+            {
+                GUIUtility.RotateAroundPivot(previewRotation, rect.center);
+            }
+
+            DrawSprite(rect, sprite);
+            GUI.matrix = oldMatrix;
+            GUI.color = oldColor;
+        }
+
+        private Rect BuildWorldPreviewRect(Vector3 worldCenter, Sprite sprite, Vector3 visualScale)
+        {
+            if (sceneCamera == null || sprite == null)
+            {
+                return Rect.zero;
+            }
+
+            Vector2 spriteWorldSize = sprite.bounds.size;
+            float worldWidth = Mathf.Abs(spriteWorldSize.x * visualScale.x);
+            float worldHeight = Mathf.Abs(spriteWorldSize.y * visualScale.y);
+            if (worldWidth <= 0f || worldHeight <= 0f)
+            {
+                return Rect.zero;
+            }
+
+            Vector2 center = WorldToGuiPoint(worldCenter);
+            float guiWidth = Mathf.Abs(WorldToGuiPoint(worldCenter + Vector3.right * worldWidth).x - center.x);
+            float guiHeight = Mathf.Abs(WorldToGuiPoint(worldCenter + Vector3.up * worldHeight).y - center.y);
+            return new Rect(center.x - guiWidth * 0.5f, center.y - guiHeight * 0.5f, guiWidth, guiHeight);
         }
 
         private void DrawGuiLine(Vector2 pointA, Vector2 pointB, float thickness)
@@ -4504,7 +4571,8 @@ namespace NtingCampusMapEditor
             GameObject prefab = GetSelectedObjectPrefab();
             CampusPlacedObject placed = prefab != null ? prefab.GetComponent<CampusPlacedObject>() : null;
             Vector2Int footprint = placed != null ? placed.NormalizedFootprintSize : Vector2Int.one;
-            return CampusPlacedObject.RotateFootprintSize(footprint, rotation90);
+            int effectiveRotation90 = placed != null ? placed.ResolveAllowedRotation90(rotation90) : 0;
+            return CampusPlacedObject.RotateFootprintSize(footprint, effectiveRotation90);
         }
 
         private Matrix4x4 BuildTileTransform()
@@ -4739,6 +4807,24 @@ namespace NtingCampusMapEditor
             if (prefab == null)
             {
                 return null;
+            }
+
+            SpriteRenderer renderer = prefab.GetComponentInChildren<SpriteRenderer>(true);
+            return renderer != null ? renderer.sprite : null;
+        }
+
+        private Sprite ResolvePrefabPreviewSprite(GameObject prefab, CampusPlacedObject placed, out bool usesAuthoredDirectionalSprite, out int effectiveRotation90)
+        {
+            usesAuthoredDirectionalSprite = false;
+            effectiveRotation90 = 0;
+            if (prefab == null)
+            {
+                return null;
+            }
+
+            if (placed != null)
+            {
+                return placed.ResolveSpriteForRotation(rotation90, out usesAuthoredDirectionalSprite, out effectiveRotation90);
             }
 
             SpriteRenderer renderer = prefab.GetComponentInChildren<SpriteRenderer>(true);

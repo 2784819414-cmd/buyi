@@ -1,4 +1,4 @@
-﻿%YAML 1.1
+%YAML 1.1
 %TAG !u! tag:unity3d.com,2011:
 --- !u!1 &522332454266628753
 GameObject:
@@ -13,7 +13,7 @@ GameObject:
   - component: {fileID: 3449471303981517592}
   - component: {fileID: 6557554650066504739}
   m_Layer: 0
-  m_Name: 测试箱
+  m_Name: "\u6D4B\u8BD5\u7BB1"
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -91,7 +91,7 @@ SpriteRenderer:
   m_Size: {x: 1, y: 1}
   m_AdaptiveModeThreshold: 0.5
   m_SpriteTileMode: 0
-  m_WasSpriteAssigned: 1
+  m_WasSpriteAssigned: 0
   m_SpriteSortPoint: 0
 --- !u!61 &3449471303981517592
 BoxCollider2D:
@@ -152,10 +152,11 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::NtingCampusMapEditor.CampusPlacedObject
   FloorIndex: 1
-  ObjectId: 测试箱
+  ObjectId: "\u6D4B\u8BD5\u7BB1"
   Cell: {x: 0, y: 0, z: 0}
+  FootprintSize: {x: 1, y: 1}
   Rotation90: 0
+  SortingOrderOffset: 0
   BlocksMovement: 1
   BlocksSight: 0
   IsInteractable: 0
-

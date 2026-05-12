@@ -2813,7 +2813,6 @@ namespace NtingCampusMapEditor
                         continue;
                     }
 
-                    instance.transform.rotation = Quaternion.Euler(0f, 0f, objectData.Rotation90 * 90f);
                     CampusPlacedObject placed = instance.GetComponent<CampusPlacedObject>();
                     if (placed == null)
                     {
@@ -2825,6 +2824,14 @@ namespace NtingCampusMapEditor
                     placed.Cell = objectData.Cell;
                     placed.FootprintSize = ResolveObjectFootprintSize(prefab, objectData.FootprintSize);
                     placed.Rotation90 = objectData.Rotation90;
+                    if (placed.AllowRotation)
+                    {
+                        placed.ApplyRotationVisualState();
+                    }
+                    else
+                    {
+                        instance.transform.rotation = Quaternion.Euler(0f, 0f, objectData.Rotation90 * 90f);
+                    }
                     if (!HasSerializedCell(placed.Cell, objectData.Position))
                     {
                         instance.transform.position = objectData.Position;
@@ -4148,6 +4155,5 @@ namespace NtingCampusMapEditor
         }
     }
 }
-
 
 

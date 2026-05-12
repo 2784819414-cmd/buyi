@@ -140,6 +140,8 @@ namespace NtingCampusMapEditor
                 sunLight.lightType = Light2D.LightType.Point;
                 sunLight.blendStyleIndex = 0;
             }
+
+            NormalizePointLightRotation(sunLight);
         }
 
         private void ApplyCurrentTimeState()
@@ -181,6 +183,7 @@ namespace NtingCampusMapEditor
             sunLight.pointLightOuterAngle = 360f;
             sunLight.pointLightInnerRadius = Mathf.Max(sunLight.pointLightInnerRadius, orbitRadius * 1.15f);
             sunLight.pointLightOuterRadius = Mathf.Max(sunLight.pointLightOuterRadius, orbitRadius * 1.5f);
+            NormalizePointLightRotation(sunLight);
         }
 
         private void UpdateShadowParameters()
@@ -227,6 +230,14 @@ namespace NtingCampusMapEditor
             }
 
             return null;
+        }
+
+        private static void NormalizePointLightRotation(Light2D light)
+        {
+            if (light != null && light.lightType == Light2D.LightType.Point)
+            {
+                light.transform.localRotation = Quaternion.identity;
+            }
         }
 
         private static Vector2 CalculateCampusCenter(CampusMapRoot root)
