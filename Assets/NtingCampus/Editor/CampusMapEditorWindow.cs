@@ -43,7 +43,6 @@ namespace NtingCampusMapEditor
         private const string LanguageEditorPrefsKey = "NtingCampusMapEditor.Language";
         private static readonly int[] RotationValues = { 0, 1, 2, 3 };
         private static readonly string[] RotationLabels = { "0", "90", "180", "270" };
-        private static readonly int[] FloorTileSizeValues = { 1, 2, 3 };
         private static readonly string[] LanguageLabels = { "English", "简体中文" };
 
         [SerializeField] private CampusMapRoot mapRoot;
@@ -62,7 +61,6 @@ namespace NtingCampusMapEditor
         [SerializeField] private CampusBrushMode brushMode = CampusBrushMode.PaintFloorTile;
         [SerializeField] private int currentFloorIndex = 1;
         [SerializeField] private int brushSize = 1;
-        [SerializeField] private CampusFloorTileSize floorTileSize = CampusFloorTileSize.Small;
         [SerializeField] private bool snapToGrid = true;
         [SerializeField] private int rotation90;
         [SerializeField] private bool flipX;
@@ -83,7 +81,7 @@ namespace NtingCampusMapEditor
         public CampusBrushMode ActiveBrushMode => temporaryPanOverride ? CampusBrushMode.Pan : brushMode;
         public int CurrentFloorIndex => currentFloorIndex;
         public int BrushSize => Mathf.Max(1, brushSize);
-        public int FloorTileSizeCells => Mathf.Clamp((int)floorTileSize, 1, 3);
+        public int FloorTileSizeCells => 1;
         public bool SnapToGrid => snapToGrid;
         public int Rotation90 => Mathf.Clamp(rotation90, 0, 3);
         public bool FlipX => flipX;
@@ -287,7 +285,6 @@ namespace NtingCampusMapEditor
 
         public void SetFloorTileSizeCells(int size)
         {
-            floorTileSize = (CampusFloorTileSize)Mathf.Clamp(size, 1, 3);
             Repaint();
         }
 
@@ -435,27 +432,9 @@ namespace NtingCampusMapEditor
             };
         }
 
-        private string[] FloorTileSizeLabels()
-        {
-            return new[]
-            {
-                Text("Small 1x1", "小 1x1"),
-                Text("Medium 2x2", "中 2x2"),
-                Text("Large 3x3", "大 3x3")
-            };
-        }
-
         public string FloorTileSizeLabel()
         {
-            switch (FloorTileSizeCells)
-            {
-                case 2:
-                    return Text("Medium 2x2", "中 2x2");
-                case 3:
-                    return Text("Large 3x3", "大 3x3");
-                default:
-                    return Text("Small 1x1", "小 1x1");
-            }
+            return "1x1";
         }
 
         private void DrawMapRootSection()
@@ -1077,7 +1056,7 @@ namespace NtingCampusMapEditor
         {
             EditorGUILayout.LabelField(Text("Brush Settings", "工具设置"), CampusMapEditorStyles.Header);
             EditorGUILayout.BeginVertical(CampusMapEditorStyles.HelpBox);
-            floorTileSize = (CampusFloorTileSize)EditorGUILayout.IntPopup(Text("Floor Tile Size", "地砖尺寸"), FloorTileSizeCells, FloorTileSizeLabels(), FloorTileSizeValues);
+            EditorGUILayout.LabelField(Text("Floor / Wall Unit", "地板/墙体单位"), FloorTileSizeLabel());
             brushSize = Mathf.Max(1, EditorGUILayout.IntField(Text("Wall / Erase Brush Size", "墙体/擦除笔刷尺寸"), brushSize));
             snapToGrid = EditorGUILayout.Toggle(Text("Snap To Grid", "吸附网格"), snapToGrid);
             rotation90 = EditorGUILayout.IntPopup(Text("Rotate", "旋转"), Rotation90, RotationLabels, RotationValues);

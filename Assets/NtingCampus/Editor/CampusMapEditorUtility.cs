@@ -49,7 +49,7 @@ namespace NtingCampusMapEditor
         public const string ExternalWallFolderName = "墙";
         private const string WallLitShaderName = "Universal Render Pipeline/2D/Sprite-Lit-Default";
         private const string WallMeshLitShaderName = "Universal Render Pipeline/2D/Mesh2D-Lit-Default";
-        private const float AmbientLightIntensity = 0.28f;
+        private const float AmbientLightIntensity = 0.3f;
         private const float SunLightIntensity = 1.15f;
         private const float SunNormalMapDistance = 4f;
         private static readonly Vector2 SunDirectionToLight = new Vector2(-0.52f, 0.85f).normalized;
@@ -2813,7 +2813,6 @@ namespace NtingCampusMapEditor
                         continue;
                     }
 
-                    instance.transform.rotation = Quaternion.Euler(0f, 0f, objectData.Rotation90 * 90f);
                     CampusPlacedObject placed = instance.GetComponent<CampusPlacedObject>();
                     if (placed == null)
                     {
@@ -2821,10 +2820,29 @@ namespace NtingCampusMapEditor
                     }
 
                     placed.ObjectId = objectData.ObjectId;
+                    placed.DisplayNameOverride = objectData.DisplayNameOverride;
                     placed.FloorIndex = objectData.FloorIndex;
                     placed.Cell = objectData.Cell;
+                    placed.OverrideFootprintSize = objectData.OverrideFootprintSize;
                     placed.FootprintSize = ResolveObjectFootprintSize(prefab, objectData.FootprintSize);
+                    placed.VisualScale = CampusPlacedObject.NormalizeVisualScale(objectData.VisualScale);
+                    placed.LockVisualScaleAspect = objectData.LockVisualScaleAspect;
+                    if (objectData.OverrideAllowRotation)
+                    {
+                        placed.OverrideAllowRotation = true;
+                        placed.AllowRotation = objectData.AllowRotation;
+                    }
+
                     placed.Rotation90 = objectData.Rotation90;
+                    if (placed.AllowRotation)
+                    {
+                        placed.ApplyRotationVisualState();
+                    }
+                    else
+                    {
+                        instance.transform.rotation = Quaternion.Euler(0f, 0f, objectData.Rotation90 * 90f);
+                        placed.ApplyVisualScaleState();
+                    }
                     if (!HasSerializedCell(placed.Cell, objectData.Position))
                     {
                         instance.transform.position = objectData.Position;
@@ -2838,6 +2856,17 @@ namespace NtingCampusMapEditor
                     placed.BlocksMovement = objectData.BlocksMovement;
                     placed.BlocksSight = objectData.BlocksSight;
                     placed.IsInteractable = objectData.IsInteractable;
+                    placed.IsStorageContainer = objectData.IsStorageContainer;
+                    placed.StorageSize = CampusPlacedObject.NormalizeStorageSize(objectData.StorageSize);
+                    placed.StorageMaxWeight = CampusPlacedObject.NormalizeStorageMaxWeight(objectData.StorageMaxWeight);
+                    placed.UseCustomInteractionAnchor = objectData.UseCustomInteractionAnchor;
+                    placed.CustomInteractionAnchorLocalPosition = objectData.CustomInteractionAnchorLocalPosition;
+                    placed.CustomInteractionAnchorRadius = CampusPlacedObject.NormalizeInteractionAnchorRadius(objectData.CustomInteractionAnchorRadius);
+                    placed.CustomInteractionPromptText = string.IsNullOrWhiteSpace(objectData.CustomInteractionPromptText)
+                        ? "\u4ea4\u4e92"
+                        : objectData.CustomInteractionPromptText;
+                    placed.CustomInteractionAnchors = CampusPlacedObject.CloneInteractionAnchors(objectData.CustomInteractionAnchors);
+                    placed.ApplyInteractionState();
                 }
 
                 for (int stairIndex = 0; stairIndex < floorData.Stairs.Count; stairIndex++)
@@ -3410,6 +3439,7 @@ namespace NtingCampusMapEditor
                 }
 
                 Vector3Int cell = ResolvePlacedObjectCell(floor.Grid, placed);
+                placed.NormalizeCustomInteractionAnchors();
                 placed.Cell = cell;
                 placed.FloorIndex = floor.FloorIndex;
                 GameObject prefabSource = PrefabUtility.GetCorrespondingObjectFromSource(placed.gameObject);
@@ -3418,14 +3448,28 @@ namespace NtingCampusMapEditor
                 {
                     ObjectId = placed.ObjectId,
                     ObjectGuid = GetAssetGuid(prefabSource),
+                    DisplayNameOverride = placed.DisplayNameOverride,
                     Position = cellCenter,
                     Cell = cell,
                     FootprintSize = placed.NormalizedFootprintSize,
+                    OverrideFootprintSize = placed.OverrideFootprintSize,
+                    VisualScale = placed.NormalizedVisualScale,
+                    LockVisualScaleAspect = placed.LockVisualScaleAspect,
                     FloorIndex = floor.FloorIndex,
+                    OverrideAllowRotation = placed.OverrideAllowRotation,
+                    AllowRotation = placed.AllowRotation,
                     Rotation90 = placed.Rotation90,
                     BlocksMovement = placed.BlocksMovement,
                     BlocksSight = placed.BlocksSight,
-                    IsInteractable = placed.IsInteractable
+                    IsInteractable = placed.IsInteractable,
+                    IsStorageContainer = placed.IsStorageContainer,
+                    StorageSize = placed.NormalizedStorageSize,
+                    StorageMaxWeight = placed.NormalizedStorageMaxWeight,
+                    UseCustomInteractionAnchor = placed.UseCustomInteractionAnchor,
+                    CustomInteractionAnchorLocalPosition = placed.CustomInteractionAnchorLocalPosition,
+                    CustomInteractionAnchorRadius = placed.CustomInteractionAnchorRadius,
+                    CustomInteractionPromptText = placed.CustomInteractionPromptText,
+                    CustomInteractionAnchors = CampusPlacedObject.CloneInteractionAnchors(placed.CustomInteractionAnchors)
                 });
             }
         }
@@ -3964,22 +4008,105 @@ namespace NtingCampusMapEditor
             GameObject existing = AssetDatabase.LoadAssetAtPath<GameObject>(assetPath);
             if (existing != null)
             {
-                return existing;
+                GameObject prefabRoot = PrefabUtility.LoadPrefabContents(assetPath);
+                ConfigurePropPrefab(prefabRoot, sprite);
+                PrefabUtility.SaveAsPrefabAsset(prefabRoot, assetPath);
+                PrefabUtility.UnloadPrefabContents(prefabRoot);
+                return AssetDatabase.LoadAssetAtPath<GameObject>(assetPath);
             }
 
             GameObject prop = new GameObject(CampusObjectNames.TestPropBox);
-            SpriteRenderer renderer = prop.AddComponent<SpriteRenderer>();
-            renderer.sprite = sprite;
-            renderer.sortingOrder = 300;
-            BoxCollider2D collider = prop.AddComponent<BoxCollider2D>();
-            collider.isTrigger = false;
-            CampusPlacedObject placed = prop.AddComponent<CampusPlacedObject>();
-            placed.ObjectId = CampusObjectNames.TestPropBox;
-            placed.BlocksMovement = true;
+            ConfigurePropPrefab(prop, sprite);
 
             GameObject prefab = PrefabUtility.SaveAsPrefabAsset(prop, assetPath);
             Object.DestroyImmediate(prop);
             return prefab;
+        }
+
+        private static void ConfigurePropPrefab(GameObject prop, Sprite sprite)
+        {
+            if (prop == null)
+            {
+                return;
+            }
+
+            prop.name = CampusObjectNames.TestPropBox;
+
+            SpriteRenderer renderer = prop.GetComponent<SpriteRenderer>();
+            if (renderer == null)
+            {
+                renderer = prop.AddComponent<SpriteRenderer>();
+            }
+
+            renderer.sprite = sprite;
+            renderer.sortingOrder = 300;
+
+            BoxCollider2D collider = prop.GetComponent<BoxCollider2D>();
+            if (collider == null)
+            {
+                collider = prop.AddComponent<BoxCollider2D>();
+            }
+
+            collider.isTrigger = false;
+
+            CampusPlacedObject placed = prop.GetComponent<CampusPlacedObject>();
+            if (placed == null)
+            {
+                placed = prop.AddComponent<CampusPlacedObject>();
+            }
+
+            placed.ObjectId = CampusObjectNames.TestPropBox;
+            placed.BlocksMovement = true;
+            placed.BlocksSight = false;
+            placed.IsInteractable = true;
+            placed.IsStorageContainer = true;
+            placed.StorageSize = CampusPlacedObject.DefaultStorageSize;
+            placed.StorageMaxWeight = CampusPlacedObject.DefaultStorageMaxWeight;
+
+            ConfigureSimpleInteractable(prop, "打开 " + CampusObjectNames.TestPropBox, CampusObjectNames.TestPropBox + "已交互");
+        }
+
+        private static void ConfigureSimpleInteractable(GameObject target, string promptText, string interactionLogMessage)
+        {
+            System.Type interactableType = typeof(CampusInteractionPromptSource).Assembly.GetType("NtingCampusMapEditor.CampusSimpleInteractable");
+            if (interactableType == null)
+            {
+                Debug.LogWarning("Could not configure simple interactable because CampusSimpleInteractable is not available yet.");
+                return;
+            }
+
+            Component interactable = target.GetComponent(interactableType);
+            if (interactable == null)
+            {
+                interactable = target.AddComponent(interactableType);
+            }
+
+            SerializedObject serializedObject = new SerializedObject(interactable);
+            SetSerializedString(serializedObject, "PromptText", promptText);
+            SetSerializedBool(serializedObject, "IsAvailable", true);
+            SetSerializedBool(serializedObject, "HideWhenUnavailable", false);
+            SetSerializedBool(serializedObject, "LogInteraction", true);
+            SetSerializedString(serializedObject, "InteractionLogMessage", interactionLogMessage);
+            SetSerializedString(serializedObject, "DefaultActionId", CampusInteractionActionIds.OpenStorage);
+            serializedObject.ApplyModifiedPropertiesWithoutUndo();
+        }
+
+        private static void SetSerializedString(SerializedObject serializedObject, string propertyName, string value)
+        {
+            SerializedProperty property = serializedObject.FindProperty(propertyName);
+            if (property != null)
+            {
+                property.stringValue = value;
+            }
+        }
+
+        private static void SetSerializedBool(SerializedObject serializedObject, string propertyName, bool value)
+        {
+            SerializedProperty property = serializedObject.FindProperty(propertyName);
+            if (property != null)
+            {
+                property.boolValue = value;
+            }
         }
 
         private static GameObject EnsureStairPrefab(string assetPath, Sprite sprite)
@@ -4148,6 +4275,3 @@ namespace NtingCampusMapEditor
         }
     }
 }
-
-
-

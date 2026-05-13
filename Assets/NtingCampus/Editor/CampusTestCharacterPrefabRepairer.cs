@@ -19,35 +19,120 @@ namespace NtingCampusMapEditor
         [MenuItem("Tools/Nting Campus/Create Test Player In Scene")]
         private static void CreateInScene()
         {
+            EnsureInScene(true);
+        }
+
+        public static GameObject EnsureInScene(bool selectPlayer)
+        {
+            if (EditorApplication.isPlayingOrWillChangePlaymode)
+            {
+                return null;
+            }
+
             Repair(false);
             GameObject prefab = AssetDatabase.LoadAssetAtPath<GameObject>(CharacterPrefabPath);
             if (prefab == null)
             {
                 Debug.LogWarning("[NtingCampusMapEditor] Cannot create test player because the prefab is missing.");
-                return;
+                return null;
             }
 
-            GameObject instance = PrefabUtility.InstantiatePrefab(prefab) as GameObject;
+            GameObject instance = FindExistingScenePlayer(prefab);
+            bool created = instance == null;
+            if (created)
+            {
+                instance = PrefabUtility.InstantiatePrefab(prefab) as GameObject;
+            }
+
             if (instance == null)
             {
-                return;
+                return null;
             }
 
-            Undo.RegisterCreatedObjectUndo(instance, "Create Campus Test Player");
+            bool changed = created;
+            if (created)
+            {
+                Undo.RegisterCreatedObjectUndo(instance, "Create Campus Test Player");
+            }
+            else if (instance.name != CampusObjectNames.TestPlayer)
+            {
+                Undo.RecordObject(instance, "Rename Campus Test Player");
+                instance.name = CampusObjectNames.TestPlayer;
+                EditorUtility.SetDirty(instance);
+                changed = true;
+            }
+
             CampusFloorRoot floor = Object.FindFirstObjectByType<CampusFloorRoot>(FindObjectsInactive.Exclude);
             if (floor != null && floor.Grid != null)
             {
-                instance.transform.position = floor.Grid.GetCellCenterWorld(Vector3Int.zero);
-                CampusTestPlayerController controller = instance.GetComponent<CampusTestPlayerController>();
-                if (controller != null)
+                if (created)
                 {
+                    instance.transform.position = floor.Grid.GetCellCenterWorld(Vector3Int.zero);
+                }
+
+                CampusTestPlayerController controller = instance.GetComponent<CampusTestPlayerController>();
+                if (controller != null && controller.FloorIndex != floor.FloorIndex)
+                {
+                    Undo.RecordObject(controller, "Set Campus Test Player Floor");
                     controller.FloorIndex = floor.FloorIndex;
                     EditorUtility.SetDirty(controller);
+                    changed = true;
                 }
             }
 
-            Selection.activeGameObject = instance;
-            CampusMapEditorUtility.MarkSceneDirty();
+            if (selectPlayer)
+            {
+                Selection.activeGameObject = instance;
+            }
+
+            if (changed)
+            {
+                CampusMapEditorUtility.MarkSceneDirty();
+            }
+
+            return instance;
+        }
+
+        private static GameObject FindExistingScenePlayer(GameObject prefab)
+        {
+            CampusTestPlayerController[] controllers = Object.FindObjectsByType<CampusTestPlayerController>(FindObjectsInactive.Include, FindObjectsSortMode.None);
+            GameObject fallback = null;
+            for (int i = 0; i < controllers.Length; i++)
+            {
+                CampusTestPlayerController controller = controllers[i];
+                if (controller == null || !IsSceneObject(controller.gameObject))
+                {
+                    continue;
+                }
+
+                if (CampusObjectNames.MatchesAny(controller.gameObject.name, CampusObjectNames.TestPlayer, CampusObjectNames.LegacyTestPlayer) ||
+                    IsPrefabInstanceOf(controller.gameObject, prefab))
+                {
+                    return controller.gameObject;
+                }
+
+                if (fallback == null)
+                {
+                    fallback = controller.gameObject;
+                }
+            }
+
+            return fallback;
+        }
+
+        private static bool IsSceneObject(GameObject target)
+        {
+            return target != null && target.scene.IsValid();
+        }
+
+        private static bool IsPrefabInstanceOf(GameObject target, GameObject prefab)
+        {
+            if (target == null || prefab == null)
+            {
+                return false;
+            }
+
+            return PrefabUtility.GetCorrespondingObjectFromSource(target) == prefab;
         }
 
         private static void Repair(bool logResult)
@@ -128,6 +213,18 @@ namespace NtingCampusMapEditor
             controller.InteractionForwardOffset = 0.45f;
             controller.InteractionRadius = 0.55f;
             controller.InteractionMask = Physics2D.AllLayers;
+
+            CampusInteractionController interactionController = GetOrAdd<CampusInteractionController>(root);
+            interactionController.InteractKey = controller.InteractKey;
+            interactionController.PollInput = false;
+            interactionController.RefreshEveryFrame = false;
+            interactionController.AutoCreatePromptView = true;
+
+            CampusInteractionSensor sensor = interactionController.GetOrCreateSensor();
+            sensor.ScanOrigin = root.transform;
+            sensor.ForwardOffset = controller.InteractionForwardOffset;
+            sensor.Radius = controller.InteractionRadius;
+            sensor.InteractionMask = controller.InteractionMask;
         }
 
         private static Sprite LoadSprite(string path)

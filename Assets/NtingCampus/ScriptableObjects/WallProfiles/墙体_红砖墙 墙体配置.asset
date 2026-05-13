@@ -1,4 +1,4 @@
-﻿%YAML 1.1
+%YAML 1.1
 %TAG !u! tag:unity3d.com,2011:
 --- !u!114 &11400000
 MonoBehaviour:
@@ -10,11 +10,14 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: f59c4e2399796f94c8c65c86f03fe4e0, type: 3}
-  m_Name: 澧欎綋_绾㈢爾澧?澧欎綋閰嶇疆
+  m_Name: "\u6FA7\u6B0E\u7D8B_\u7EFE\u3222\u723E\u6FA7?\u6FA7\u6B0E\u7D8B\u95B0\u5D87\u7586"
   m_EditorClassIdentifier: Assembly-CSharp::NtingCampusMapEditor.CampusWallRenderProfile
   ProfileId: "WallVisual_WallTile_\u7EA2\u7816\u5899"
-  FaceSourceTexture: {fileID: 2800000, guid: e9bd25c5fc57e834b947d3f1eed990c5, type: 3}
-  CapSourceTexture: {fileID: 2800000, guid: a8a2102fa4394714390bb1f93a9c575b, type: 3}
+  FaceSourceTexture: {fileID: 2800000, guid: e45590f034294841a2baaeb20d15791a, type: 3}
+  CapSourceTexture: {fileID: 2800000, guid: e45590f034294841a2baaeb20d15791a, type: 3}
+  FaceMaterial: {fileID: 0}
+  CapMaterial: {fileID: 0}
+  EdgeMaterial: {fileID: 0}
   LogicTile: {fileID: 11400000, guid: 41c1bf3cb1edbbc40a26347e854fe871, type: 2}
   DefaultCapTile: {fileID: 11400000, guid: e420da2748f1cbd459a3813c98c53427, type: 2}
   CapTilesByExposedMask:

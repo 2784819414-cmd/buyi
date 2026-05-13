@@ -1,4 +1,4 @@
-﻿%YAML 1.1
+%YAML 1.1
 %TAG !u! tag:unity3d.com,2011:
 --- !u!114 &11400000
 MonoBehaviour:
@@ -13,8 +13,8 @@ MonoBehaviour:
   m_Name: "\u5899\u4F53_\u7070\u5899 \u5899\u4F53\u914D\u7F6E"
   m_EditorClassIdentifier: Assembly-CSharp::NtingCampusMapEditor.CampusWallRenderProfile
   ProfileId: "WallVisual_\u5899\u4F53_\u7070\u5899"
-  FaceSourceTexture: {fileID: 2800000, guid: 1e11825aa27622c46924cc6db5ab2976, type: 3}
-  CapSourceTexture: {fileID: 2800000, guid: a8a2102fa4394714390bb1f93a9c575b, type: 3}
+  FaceSourceTexture: {fileID: 2800000, guid: ed24c65ecf894b67b8dbb8f5417fa1bd, type: 3}
+  CapSourceTexture: {fileID: 2800000, guid: 1027620424df40ecb15b813c570ee299, type: 3}
   FaceMaterial: {fileID: 2100000, guid: 40e8431f765ae5b45bf810f393dde257, type: 2}
   CapMaterial: {fileID: 2100000, guid: 4d90bea181c2ca24e87a3614dd25fbd6, type: 2}
   EdgeMaterial: {fileID: 2100000, guid: 2a6e228ad01d4414fb0ad7b22eb02f87, type: 2}

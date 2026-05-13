@@ -23,6 +23,7 @@ namespace NtingCampusMapEditor
         private const float HalfCell = 0.5f;
         private const float TopHalfWidth = 0.205f;
         private const float BottomHalfWidth = 0.330f;
+        private const float HorizontalTopYOffset = 0.105f;
         private const float TopDepth = -0.015f;
         private const float BaseDepth = 0.46f;
         private const float WallTextureDensity = 1.45f;
@@ -243,11 +244,17 @@ namespace NtingCampusMapEditor
                 }
             }
 
+            bool hasHorizontalArm = eastArm || westArm;
+            float centerTopMinY = hasHorizontalArm ? HorizontalTopYOffset - TopHalfWidth : -TopHalfWidth;
+            float centerTopMaxY = hasHorizontalArm ? HorizontalTopYOffset + TopHalfWidth : TopHalfWidth;
+            float horizontalTopMinY = HorizontalTopYOffset - TopHalfWidth;
+            float horizontalTopMaxY = HorizontalTopYOffset + TopHalfWidth;
+
             builder.AddPrism(
                 -TopHalfWidth,
-                -TopHalfWidth,
+                centerTopMinY,
                 TopHalfWidth,
-                TopHalfWidth,
+                centerTopMaxY,
                 -BottomHalfWidth,
                 -BottomHalfWidth,
                 BottomHalfWidth,
@@ -261,9 +268,9 @@ namespace NtingCampusMapEditor
             {
                 builder.AddPrism(
                     TopHalfWidth,
-                    -TopHalfWidth,
+                    horizontalTopMinY,
                     HalfCell,
-                    TopHalfWidth,
+                    horizontalTopMaxY,
                     BottomHalfWidth,
                     -BottomHalfWidth,
                     HalfCell,
@@ -278,9 +285,9 @@ namespace NtingCampusMapEditor
             {
                 builder.AddPrism(
                     -HalfCell,
+                    horizontalTopMinY,
                     -TopHalfWidth,
-                    -TopHalfWidth,
-                    TopHalfWidth,
+                    horizontalTopMaxY,
                     -HalfCell,
                     -BottomHalfWidth,
                     -BottomHalfWidth,
@@ -295,7 +302,7 @@ namespace NtingCampusMapEditor
             {
                 builder.AddPrism(
                     -TopHalfWidth,
-                    TopHalfWidth,
+                    centerTopMaxY,
                     TopHalfWidth,
                     HalfCell,
                     -BottomHalfWidth,
@@ -314,7 +321,7 @@ namespace NtingCampusMapEditor
                     -TopHalfWidth,
                     -HalfCell,
                     TopHalfWidth,
-                    -TopHalfWidth,
+                    centerTopMinY,
                     -BottomHalfWidth,
                     -HalfCell,
                     BottomHalfWidth,

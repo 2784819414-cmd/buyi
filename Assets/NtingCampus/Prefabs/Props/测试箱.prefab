@@ -12,6 +12,7 @@ GameObject:
   - component: {fileID: 1136485909431911522}
   - component: {fileID: 3449471303981517592}
   - component: {fileID: 6557554650066504739}
+  - component: {fileID: 7759469812247025101}
   m_Layer: 0
   m_Name: 测试箱
   m_TagString: Untagged
@@ -157,5 +158,50 @@ MonoBehaviour:
   Rotation90: 0
   BlocksMovement: 1
   BlocksSight: 0
-  IsInteractable: 0
-
+  IsInteractable: 1
+  IsStorageContainer: 1
+  StorageSize: {x: 4, y: 4}
+  StorageMaxWeight: 12
+  UseCustomInteractionAnchor: 1
+  CustomInteractionAnchorLocalPosition: {x: 0, y: 0.5, z: 0}
+  CustomInteractionAnchorRadius: 0.75
+  CustomInteractionPromptText: 打开 测试箱
+  CustomInteractionAnchors:
+  - AnchorId: test_box_storage
+    DisplayName: 打开测试箱
+    Enabled: 1
+    LocalPosition: {x: 0, y: 0.5, z: 0}
+    Radius: 0.75
+    PromptText: 打开 测试箱
+    ActionId: open_storage
+    Payload: ""
+    TargetComponentType: ""
+    Priority: 130
+    UseTargetDoorStatePrompt: 0
+    LogInteraction: 0
+    InteractionLogMessage: ""
+--- !u!114 &7759469812247025101
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 522332454266628753}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 72060828d1d642b7b4e019df615fba27, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::NtingCampusMapEditor.CampusSimpleInteractable
+  PromptText: 打开 测试箱
+  KeyOverride: 
+  Icon: {fileID: 0}
+  Anchor: {fileID: 0}
+  WorldOffset: {x: 0, y: 0.85, z: 0}
+  AccentColor: {r: 0.95, g: 0.82, b: 0.38, a: 1}
+  Priority: 0
+  IsAvailable: 1
+  UnavailableText: 
+  HideWhenUnavailable: 0
+  LogInteraction: 1
+  InteractionLogMessage: 测试箱已交互
+  DefaultActionId: open_storage

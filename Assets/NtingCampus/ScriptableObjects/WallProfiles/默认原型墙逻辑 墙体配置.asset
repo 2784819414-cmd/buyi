@@ -1,4 +1,4 @@
-﻿%YAML 1.1
+%YAML 1.1
 %TAG !u! tag:unity3d.com,2011:
 --- !u!114 &11400000
 MonoBehaviour:
@@ -10,11 +10,14 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: f59c4e2399796f94c8c65c86f03fe4e0, type: 3}
-  m_Name: 榛樿鍘熷瀷澧欓€昏緫 澧欎綋閰嶇疆
+  m_Name: "\u699B\u6A3F\uE17B\u9358\u71B7\u7037\u6FA7\u6B13\u20AC\u660F\u7DEB \u6FA7\u6B0E\u7D8B\u95B0\u5D87\u7586"
   m_EditorClassIdentifier: Assembly-CSharp::NtingCampusMapEditor.CampusWallRenderProfile
   ProfileId: WallVisual_DefaultPrototypeWall_WallLogic
   FaceSourceTexture: {fileID: 0}
   CapSourceTexture: {fileID: 2800000, guid: a8a2102fa4394714390bb1f93a9c575b, type: 3}
+  FaceMaterial: {fileID: 0}
+  CapMaterial: {fileID: 0}
+  EdgeMaterial: {fileID: 0}
   LogicTile: {fileID: 11400000, guid: 1d2c8ea3c3eeab546be9306a08ba8108, type: 2}
   DefaultCapTile: {fileID: 11400000, guid: 001e5d612bf31724f8ed8e83e8a67b19, type: 2}
   CapTilesByExposedMask:
@@ -55,4 +58,3 @@ MonoBehaviour:
   TJunctionSouth: {fileID: 11400000, guid: ecdcf96fea5cf8d4a9f123fcb9221475, type: 2}
   TJunctionWest: {fileID: 11400000, guid: 25eb8ffaccc53384bbf38fd0ad38b58f, type: 2}
   Cross: {fileID: 11400000, guid: 03017737486eecd469da62be95167b7c, type: 2}
-
