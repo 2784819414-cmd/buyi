@@ -136,6 +136,11 @@ namespace NtingCampusMapEditor
                 mapRoot = Object.FindFirstObjectByType<CampusMapRoot>(FindObjectsInactive.Include);
             }
 
+            if (sunLight != null && !IsSunLight2D(sunLight))
+            {
+                sunLight = null;
+            }
+
             if (sunLight == null)
             {
                 sunLight = FindSunLight2D();
@@ -359,22 +364,19 @@ namespace NtingCampusMapEditor
             for (int i = 0; i < lights.Length; i++)
             {
                 Light2D light = lights[i];
-                if (light != null && CampusObjectNames.MatchesAny(light.gameObject.name, CampusObjectNames.SunLight2D, CampusObjectNames.LegacySunLight2D))
-                {
-                    return light;
-                }
-            }
-
-            for (int i = 0; i < lights.Length; i++)
-            {
-                Light2D light = lights[i];
-                if (light != null && light.lightType != Light2D.LightType.Global)
+                if (IsSunLight2D(light))
                 {
                     return light;
                 }
             }
 
             return null;
+        }
+
+        private static bool IsSunLight2D(Light2D light)
+        {
+            return light != null &&
+                   CampusObjectNames.MatchesAny(light.gameObject.name, CampusObjectNames.SunLight2D, CampusObjectNames.LegacySunLight2D);
         }
 
         private static Light2D FindGlobalLight2D()

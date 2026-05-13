@@ -9,7 +9,7 @@ namespace NtingCampus.Gameplay.Core
     [DisallowMultipleComponent]
     public sealed class CampusGameplayDebugPanel : MonoBehaviour
     {
-        private static readonly Rect PanelRect = new Rect(10f, 10f, 320f, 178f);
+        private static readonly Rect PanelRect = new Rect(10f, 10f, 360f, 238f);
 
         [SerializeField] private CampusGameBootstrap bootstrap;
 
@@ -39,14 +39,18 @@ namespace NtingCampus.Gameplay.Core
                 return;
             }
 
-            CampusGameState gameState = targetBootstrap.GameState;
+            CampusTimeController timeController = targetBootstrap.TimeController;
             CampusResourceState resourceState = targetBootstrap.ResourceState;
             CampusEventLog eventLog = targetBootstrap.EventLog;
 
             GUILayout.BeginArea(PanelRect, GUI.skin.box);
-            GUILayout.Label("Day: " + (gameState != null ? gameState.Day.ToString() : "-"));
+            GUILayout.Label("GameDate: " + (timeController != null ? timeController.CurrentDateText : "-"));
+            GUILayout.Label("Time: " + (timeController != null ? timeController.CurrentClockText : "-"));
+            GUILayout.Label("Segment: " + (timeController != null ? timeController.CurrentSegmentName : "-"));
+            GUILayout.Label("Schedule: " + (timeController != null ? timeController.CurrentTimeLabel : "-"));
             GUILayout.Label("Money: " + (resourceState != null ? resourceState.Money.ToString() : "-"));
             GUILayout.Label("DivinePower: " + (resourceState != null ? resourceState.DivinePower.ToString() : "-"));
+            GUILayout.Label("TimeScale: " + (timeController != null ? timeController.TimeScale.ToString("0.##") + "x" : "-"));
             GUILayout.Space(4f);
             GUILayout.Label("最近事件日志");
             DrawRecentLogs(eventLog);

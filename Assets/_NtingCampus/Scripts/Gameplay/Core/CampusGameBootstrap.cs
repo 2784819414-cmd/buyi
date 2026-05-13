@@ -12,6 +12,7 @@ namespace NtingCampus.Gameplay.Core
         [SerializeField, Min(0)] private int initialMoney = 500;
         [SerializeField, Min(0)] private int initialDivinePower;
         [SerializeField] private bool showDebugPanel = true;
+        [SerializeField] private CampusTimeController timeController;
         [SerializeField] private CampusGameState gameState = new CampusGameState();
         [SerializeField] private CampusResourceState resourceState = new CampusResourceState();
         [SerializeField] private CampusEventLog eventLog = new CampusEventLog();
@@ -37,6 +38,11 @@ namespace NtingCampus.Gameplay.Core
         public CampusEventLog EventLog => eventLog;
 
         /// <summary>
+        /// 当前时间系统控制器。
+        /// </summary>
+        public CampusTimeController TimeController => timeController;
+
+        /// <summary>
         /// 使用初始配置重置玩法状态，并写入初始化日志。
         /// </summary>
         public void InitializeGameplay()
@@ -48,9 +54,13 @@ namespace NtingCampus.Gameplay.Core
             resourceState.Reset(initialMoney, initialDivinePower);
 
             eventLog = new CampusEventLog();
-            eventLog.AddLog("Gameplay Core 初始化完成：Day=" + gameState.Day +
-                            ", Money=" + resourceState.Money +
-                            ", DivinePower=" + resourceState.DivinePower);
+
+            timeController = EnsureTimeController();
+            timeController.InitializeTimeSystem(this, true);
+
+            eventLog.AddLog("[系统] " + timeController.CurrentDateText +
+                            "，玩法核心初始化完成。Money=" + resourceState.Money +
+                            "，DivinePower=" + resourceState.DivinePower + "。");
         }
 
         private void Awake()
@@ -95,6 +105,22 @@ namespace NtingCampus.Gameplay.Core
             }
 
             debugPanel.Bind(this);
+        }
+
+        private CampusTimeController EnsureTimeController()
+        {
+            if (timeController != null)
+            {
+                return timeController;
+            }
+
+            timeController = GetComponent<CampusTimeController>();
+            if (timeController == null)
+            {
+                timeController = gameObject.AddComponent<CampusTimeController>();
+            }
+
+            return timeController;
         }
     }
 }

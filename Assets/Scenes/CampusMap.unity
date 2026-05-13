@@ -21547,6 +21547,7 @@ GameObject:
   m_Component:
   - component: {fileID: 2115000001}
   - component: {fileID: 2115000002}
+  - component: {fileID: 2115000004}
   - component: {fileID: 2115000003}
   m_Layer: 0
   m_Name: NtingCampus_GameplayBootstrap
@@ -21586,6 +21587,7 @@ MonoBehaviour:
   initialMoney: 500
   initialDivinePower: 0
   showDebugPanel: 1
+  timeController: {fileID: 2115000004}
   gameState:
     day: 1
   resourceState:
@@ -21593,6 +21595,33 @@ MonoBehaviour:
     divinePower: 0
   eventLog:
     entries: []
+--- !u!114 &2115000004
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2115000000}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d2cff23be742417b8b8937f6ed23fa86, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::NtingCampus.Gameplay.Core.CampusTimeController
+  bootstrap: {fileID: 2115000002}
+  initialDate:
+    year: 2021
+    month: 9
+    day: 1
+  currentDate:
+    year: 2021
+    month: 9
+    day: 1
+  currentSegment: 0
+  segmentElapsedMinutes: 0
+  autoAdvance: 1
+  syncWithDayNightSpeed: 1
+  fallbackTimeScale: 1
+  dayNightController: {fileID: 0}
 --- !u!114 &2115000003
 MonoBehaviour:
   m_ObjectHideFlags: 0
