@@ -36,6 +36,8 @@ Desktop.ini
 
 # Local backups and generated archives
 _Backups/
+/Backups/
+/备份/
 *.zip
 *.zip.meta
 grid_debug_*.png

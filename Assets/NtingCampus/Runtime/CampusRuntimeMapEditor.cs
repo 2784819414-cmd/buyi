@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.IO;
 using System.Runtime.InteropServices;
 using System.Text;
@@ -8,6 +9,9 @@ using UnityEngine;
 using UnityEngine.Rendering;
 using UnityEngine.Rendering.Universal;
 using UnityEngine.Tilemaps;
+#if UNITY_EDITOR
+using UnityEditor;
+#endif
 #if ENABLE_INPUT_SYSTEM && !ENABLE_LEGACY_INPUT_MANAGER
 using UnityEngine.InputSystem;
 using UnityEngine.InputSystem.Controls;
@@ -33,6 +37,8 @@ namespace NtingCampusMapEditor
         PlaceObject,
         PlaceStair,
         PlaceRoom,
+        CreateRoomPrefab,
+        PlaceRoomPrefab,
         PlaceLight,
         Erase,
         RectangleErase,
@@ -57,6 +63,7 @@ namespace NtingCampusMapEditor
         public string RoomName = "未命名房间";
         public int FloorIndex = 1;
         public Vector3Int Cell;
+        public bool HideMarkerVisual;
     }
 
     /// <summary>
@@ -69,9 +76,14 @@ namespace NtingCampusMapEditor
         private const string FloorImportFolder = "Floors";
         private const string WallImportFolder = "Walls";
         private const string ObjectImportFolder = "Objects";
+        private const string ObjectSettingsFolder = "ObjectSettings";
         private const string RoomImportFile = "Rooms.txt";
+        private const string RoomPrefabFolder = "RoomPrefabs";
+        private const string ProjectSyncFolder = "UserGeneratedRuntimeContent";
+        private const string ProjectSyncMapFile = "CampusMap_ProjectSync.json";
+        private const string ProjectSyncManifestFile = "sync_manifest.json";
         private const int MaxUndoSnapshots = 64;
-        private const float AmbientLightIntensity = 0.28f;
+        private const float AmbientLightIntensity = 0.3f;
         private const float PlacedLightIntensity = 1.15f;
         private const int PaletteTileSize = 72;
         private const int ToolbarButtonWidth = 82;
@@ -79,16 +91,24 @@ namespace NtingCampusMapEditor
         private const float PanelMargin = 20f;
         private const float TopMargin = 56f;
         private const float BottomToolbarHeight = 56f;
+        private const float ObjectSettingsMinScale = 0.05f;
+        private const float ObjectSettingsMaxScale = 8f;
+        private const string TextInputControlPrefix = "CampusRuntimeTextInput_";
 
         [SerializeField] private bool openOnStart = true;
         [SerializeField] private bool showGridOverlay = true;
         [SerializeField] private bool showHelpOverlay;
         [SerializeField] private bool showSettings;
+        [SerializeField] private bool showObjectSettings;
+        [SerializeField] private bool autoProjectSync = true;
+        [SerializeField] private bool autoRestoreProjectSyncOnStart = true;
+        [SerializeField] private float autoProjectSyncDelay = 1.5f;
         [SerializeField] private int selectedFloorIndex = 1;
         [SerializeField] private int selectedFloorTileIndex;
         [SerializeField] private int selectedWallTileIndex;
         [SerializeField] private int selectedObjectIndex;
         [SerializeField] private int selectedRoomIndex;
+        [SerializeField] private int selectedRoomPrefabIndex;
         [SerializeField] private int selectedWallProfileIndex;
         [SerializeField] private int brushSize = 1;
         [SerializeField] private int rotation90;
@@ -96,6 +116,8 @@ namespace NtingCampusMapEditor
         [SerializeField] private int newRoomRequiredCount = 1;
         [SerializeField] private int selectedObjectFootprintX = 1;
         [SerializeField] private int selectedObjectFootprintY = 1;
+        [SerializeField] private int objectSettingsPreviewRotation90;
+        [SerializeField] private int selectedObjectInteractionAnchorIndex;
         [SerializeField] private float minCameraSize = 3f;
         [SerializeField] private float maxCameraSize = 80f;
         [SerializeField] private float lightOuterRadius = 4f;
@@ -121,11 +143,16 @@ namespace NtingCampusMapEditor
         private bool strokeUndoRecorded;
         private bool rectangleDragActive;
         private bool cameraDragActive;
+        private bool projectSyncPending;
+        private bool projectSyncInProgress;
+        private bool suppressProjectSyncScheduling;
+        private float projectSyncDueTime;
         private Vector3Int rectangleStartCell;
         private Vector3Int hoverCell;
         private Vector3Int lastPaintCell = new Vector3Int(int.MinValue, int.MinValue, int.MinValue);
         private Vector2 lastCameraDragMouse;
         private string newRoomName = string.Empty;
+        private string newRoomPrefabName = string.Empty;
         private string statusText = "F10 打开/关闭运行时地图编辑器";
         private float statusUntil;
         private Vector2 leftScroll;
@@ -134,11 +161,13 @@ namespace NtingCampusMapEditor
         private Vector2 checklistScroll;
         private Vector2 lightScroll;
         private Vector2 settingsScroll;
+        private Vector2 objectSettingsScroll;
         private Rect leftPanelRect;
         private Rect floorPanelRect;
         private Rect checklistPanelRect;
         private Rect bottomToolbarRect;
         private Rect settingsPanelRect;
+        private Rect objectSettingsPanelRect;
         private Rect helpPanelRect;
         private Light2D selectedLight;
         private CampusDayNightController dayNightController;
@@ -149,7 +178,10 @@ namespace NtingCampusMapEditor
         private string customWallName = "Custom Wall";
         private Texture2D customWallFaceTexture;
         private Texture2D customWallCapTexture;
+        private GameObject lastObjectSettingsPrefab;
         private GameObject lastFootprintSyncedPrefab;
+        private string objectSettingsNameDraft = string.Empty;
+        private bool textInputFocused;
 #if UNITY_STANDALONE_WIN || UNITY_EDITOR_WIN
         private CampusRuntimeFileDropBridge fileDropBridge;
 #endif
@@ -162,12 +194,14 @@ namespace NtingCampusMapEditor
         private readonly List<CampusWallRenderProfile> runtimeCustomWallProfiles = new List<CampusWallRenderProfile>();
         private readonly List<string> roomNames = new List<string>();
         private readonly List<int> roomRequiredCounts = new List<int>();
+        private readonly List<CampusRuntimeRoomPrefab> roomPrefabs = new List<CampusRuntimeRoomPrefab>();
         private readonly List<Texture2D> importedTextures = new List<Texture2D>();
         private readonly List<Sprite> importedSprites = new List<Sprite>();
         private readonly List<UnityEngine.Object> importedAssets = new List<UnityEngine.Object>();
         private readonly List<string> pendingDroppedPaths = new List<string>();
         private readonly List<string> undoSnapshots = new List<string>();
         private readonly List<string> redoSnapshots = new List<string>();
+        private readonly Dictionary<string, string> textInputDrafts = new Dictionary<string, string>();
 
         private GUIStyle panelStyle;
         private GUIStyle headerStyle;
@@ -178,11 +212,16 @@ namespace NtingCampusMapEditor
         private GUIStyle selectedButtonStyle;
         private GUIStyle iconButtonStyle;
         private GUIStyle warningStyle;
+        private GUIStyle inputStyle;
+        private GUIStyle objectSettingsHighlightStyle;
         private Texture2D panelTexture;
         private Texture2D headerTexture;
         private Texture2D buttonTexture;
         private Texture2D selectedTexture;
         private Texture2D hoverTexture;
+        private Texture2D inputTexture;
+        private Texture2D inputFocusedTexture;
+        private Texture2D objectSettingsHighlightTexture;
         private Texture2D lineTexture;
         private Texture2D tileFallbackTexture;
         private Texture2D roomMarkerTexture;
@@ -207,6 +246,7 @@ namespace NtingCampusMapEditor
             CampusDynamicShadowUtility.ApplyHighestRuntimeShadowQuality();
             LoadRuntimeResources();
             RefreshSceneReferences();
+            TryAutoRestoreRuntimeContentFromProject();
             PrepareRuntimeMapPresentationSafe();
             EnsureRoomRequirements();
             isReady = true;
@@ -227,10 +267,15 @@ namespace NtingCampusMapEditor
 
         private void Update()
         {
-            if (WasKeyPressed(KeyCode.F10))
+            if (!IsEditingTextInput() && WasKeyPressed(KeyCode.F10))
             {
                 isOpen = !isOpen;
                 SetStatus(isOpen ? "已打开运行时地图编辑器。" : "已关闭运行时地图编辑器。");
+            }
+
+            if (isReady)
+            {
+                ProcessAutoProjectSync();
             }
 
             if (!isOpen || !isReady)
@@ -246,6 +291,7 @@ namespace NtingCampusMapEditor
             {
                 HandleBrushInput();
             }
+
         }
 
         private void OnGUI()
@@ -253,6 +299,7 @@ namespace NtingCampusMapEditor
             EnsureStyles();
             if (!isOpen)
             {
+                textInputFocused = false;
                 DrawClosedHint();
                 return;
             }
@@ -266,8 +313,10 @@ namespace NtingCampusMapEditor
             DrawChecklistPanel();
             DrawBottomToolbar();
             DrawSettingsPanel();
+            DrawObjectSettingsPanel();
             DrawHelpPanel();
             DrawStatusLine();
+            RefreshTextInputFocusState();
         }
 
         private void LoadRuntimeResources()
@@ -386,6 +435,7 @@ namespace NtingCampusMapEditor
             selectedWallTileIndex = Mathf.Clamp(selectedWallTileIndex, 0, Mathf.Max(0, wallTiles.Count - 1));
             selectedObjectIndex = Mathf.Clamp(selectedObjectIndex, 0, Mathf.Max(0, objectPrefabs.Count - 1));
             LoadUserImports();
+            ApplySavedObjectSettingsToPalette();
         }
 
         private void LoadUserImports()
@@ -394,10 +444,12 @@ namespace NtingCampusMapEditor
             LoadImportedTiles(GetWallImportFolder(), wallTiles);
             LoadImportedObjects(GetObjectImportFolder());
             LoadImportedRooms();
+            LoadImportedRoomPrefabs();
             selectedFloorTileIndex = Mathf.Clamp(selectedFloorTileIndex, 0, Mathf.Max(0, floorTiles.Count - 1));
             selectedWallTileIndex = Mathf.Clamp(selectedWallTileIndex, 0, Mathf.Max(0, wallTiles.Count - 1));
             selectedObjectIndex = Mathf.Clamp(selectedObjectIndex, 0, Mathf.Max(0, objectPrefabs.Count - 1));
             selectedRoomIndex = Mathf.Clamp(selectedRoomIndex, 0, Mathf.Max(0, roomNames.Count - 1));
+            selectedRoomPrefabIndex = Mathf.Clamp(selectedRoomPrefabIndex, 0, Mathf.Max(0, roomPrefabs.Count - 1));
         }
 
         private void ReloadUserImportsFromUi()
@@ -444,6 +496,8 @@ namespace NtingCampusMapEditor
             Directory.CreateDirectory(GetFloorImportFolder());
             Directory.CreateDirectory(GetWallImportFolder());
             Directory.CreateDirectory(GetObjectImportFolder());
+            Directory.CreateDirectory(GetObjectSettingsRootFolder());
+            Directory.CreateDirectory(GetRoomPrefabFolder());
             string roomFile = GetRoomImportFile();
             if (!File.Exists(roomFile))
             {
@@ -495,10 +549,7 @@ namespace NtingCampusMapEditor
 
                 string objectName = Path.GetFileNameWithoutExtension(files[i]);
                 Vector2Int footprint = ResolveImportedObjectFootprint(objectName, texture);
-                float pixelsPerUnit = Mathf.Max(1f, Mathf.Max(texture.width / (float)footprint.x, texture.height / (float)footprint.y));
-                Sprite sprite = Sprite.Create(texture, new Rect(0f, 0f, texture.width, texture.height), new Vector2(0.5f, 0.5f), pixelsPerUnit);
-                sprite.name = objectName;
-                sprite.hideFlags = HideFlags.DontSave;
+                Sprite sprite = CreateObjectSprite(texture, objectName, footprint);
 
                 GameObject prefab = new GameObject(objectName);
                 prefab.hideFlags = HideFlags.DontSave;
@@ -512,11 +563,30 @@ namespace NtingCampusMapEditor
                 placed.FootprintSize = footprint;
                 placed.BlocksMovement = true;
 
-                importedSprites.Add(sprite);
-                importedAssets.Add(sprite);
                 importedAssets.Add(prefab);
                 AddUnique(objectPrefabs, prefab);
             }
+        }
+
+        private Sprite CreateObjectSprite(Texture2D texture, string spriteName, Vector2Int footprint)
+        {
+            if (texture == null)
+            {
+                return null;
+            }
+
+            Vector2Int normalizedFootprint = CampusPlacedObject.NormalizeFootprintSize(footprint);
+            float pixelsPerUnit = Mathf.Max(
+                1f,
+                Mathf.Max(
+                    texture.width / (float)normalizedFootprint.x,
+                    texture.height / (float)normalizedFootprint.y));
+            Sprite sprite = Sprite.Create(texture, new Rect(0f, 0f, texture.width, texture.height), new Vector2(0.5f, 0.5f), pixelsPerUnit);
+            sprite.name = spriteName;
+            sprite.hideFlags = HideFlags.DontSave;
+            importedSprites.Add(sprite);
+            importedAssets.Add(sprite);
+            return sprite;
         }
 
         private void LoadImportedRooms()
@@ -528,6 +598,39 @@ namespace NtingCampusMapEditor
             }
 
             ImportRoomDefinitionsFromText(File.ReadAllText(roomFile));
+        }
+
+        private void LoadImportedRoomPrefabs()
+        {
+            roomPrefabs.Clear();
+            string folder = GetRoomPrefabFolder();
+            Directory.CreateDirectory(folder);
+            string[] files = Directory.GetFiles(folder, "*.json");
+            Array.Sort(files, StringComparer.OrdinalIgnoreCase);
+            for (int i = 0; i < files.Length; i++)
+            {
+                try
+                {
+                    CampusRuntimeRoomPrefab roomPrefab = JsonUtility.FromJson<CampusRuntimeRoomPrefab>(File.ReadAllText(files[i], Encoding.UTF8));
+                    if (roomPrefab == null)
+                    {
+                        continue;
+                    }
+
+                    NormalizeRoomPrefab(roomPrefab, Path.GetFileNameWithoutExtension(files[i]));
+                    roomPrefab.SourcePath = files[i];
+                    if (!string.IsNullOrWhiteSpace(roomPrefab.RoomName))
+                    {
+                        roomPrefabs.Add(roomPrefab);
+                    }
+                }
+                catch (Exception exception)
+                {
+                    Debug.LogWarning("[NtingCampusRuntimeMapEditor] Failed to load room prefab '" + files[i] + "': " + exception.Message);
+                }
+            }
+
+            selectedRoomPrefabIndex = roomPrefabs.Count > 0 ? Mathf.Clamp(selectedRoomPrefabIndex, 0, roomPrefabs.Count - 1) : 0;
         }
 
         private Texture2D LoadImportedTexture(string path)
@@ -661,9 +764,29 @@ namespace NtingCampusMapEditor
             return Path.Combine(GetImportRootFolder(), ObjectImportFolder);
         }
 
+        private string GetObjectSettingsRootFolder()
+        {
+            return Path.Combine(GetImportRootFolder(), ObjectSettingsFolder);
+        }
+
+        private string GetObjectSettingsFolder(string objectId)
+        {
+            return Path.Combine(GetObjectSettingsRootFolder(), SanitizeFileName(objectId));
+        }
+
+        private string GetObjectSettingsPath(string objectId)
+        {
+            return Path.Combine(GetObjectSettingsFolder(objectId), "settings.json");
+        }
+
         private string GetRoomImportFile()
         {
             return Path.Combine(GetImportRootFolder(), RoomImportFile);
+        }
+
+        private string GetRoomPrefabFolder()
+        {
+            return Path.Combine(GetImportRootFolder(), RoomPrefabFolder);
         }
 
         private void RefreshSceneReferences()
@@ -747,13 +870,23 @@ namespace NtingCampusMapEditor
             }
 
             selectedRoomIndex = roomNames.Count > 0 ? Mathf.Clamp(selectedRoomIndex, 0, roomNames.Count - 1) : 0;
+            selectedRoomPrefabIndex = roomPrefabs.Count > 0 ? Mathf.Clamp(selectedRoomPrefabIndex, 0, roomPrefabs.Count - 1) : 0;
         }
 
         private void HandleShortcuts()
         {
+            if (IsEditingTextInput())
+            {
+                return;
+            }
+
             if (WasKeyPressed(KeyCode.Escape))
             {
-                if (showHelpOverlay)
+                if (showObjectSettings)
+                {
+                    showObjectSettings = false;
+                }
+                else if (showHelpOverlay)
                 {
                     showHelpOverlay = false;
                 }
@@ -933,9 +1066,7 @@ namespace NtingCampusMapEditor
                 return;
             }
 
-            if (brushMode == CampusRuntimeBrushMode.RectangleFloor ||
-                brushMode == CampusRuntimeBrushMode.RectangleWall ||
-                brushMode == CampusRuntimeBrushMode.RectangleErase)
+            if (IsRectangleDragBrushMode(brushMode))
             {
                 if (leftDown)
                 {
@@ -945,8 +1076,16 @@ namespace NtingCampusMapEditor
 
                 if (rectangleDragActive && leftUp)
                 {
-                    RecordUndo();
-                    ApplyRectangleBrush(floor, rectangleStartCell, hoverCell, brushMode);
+                    if (brushMode == CampusRuntimeBrushMode.CreateRoomPrefab)
+                    {
+                        CreateRoomPrefabFromSelection(floor, rectangleStartCell, hoverCell);
+                    }
+                    else
+                    {
+                        RecordUndo();
+                        ApplyRectangleBrush(floor, rectangleStartCell, hoverCell, brushMode);
+                    }
+
                     rectangleDragActive = false;
                 }
 
@@ -997,6 +1136,14 @@ namespace NtingCampusMapEditor
                     {
                         RecordUndo();
                         PlaceRoomMarker(floor, hoverCell);
+                    }
+
+                    break;
+                case CampusRuntimeBrushMode.PlaceRoomPrefab:
+                    if (leftDown)
+                    {
+                        RecordUndo();
+                        PlaceRoomPrefab(floor, hoverCell);
                     }
 
                     break;
@@ -1064,6 +1211,14 @@ namespace NtingCampusMapEditor
 
             PaintTileArea(wallLogic, anchorCell, brushSize, tile, BuildTileTransform());
             RebuildWallVisuals(floor);
+        }
+
+        private static bool IsRectangleDragBrushMode(CampusRuntimeBrushMode mode)
+        {
+            return mode == CampusRuntimeBrushMode.RectangleFloor ||
+                   mode == CampusRuntimeBrushMode.RectangleWall ||
+                   mode == CampusRuntimeBrushMode.RectangleErase ||
+                   mode == CampusRuntimeBrushMode.CreateRoomPrefab;
         }
 
         private void ApplyRectangleBrush(CampusFloorRoot floor, Vector3Int start, Vector3Int end, CampusRuntimeBrushMode mode)
@@ -1144,7 +1299,8 @@ namespace NtingCampusMapEditor
 
             GameObject instance = Instantiate(prefab, floor.PropsRoot);
             instance.SetActive(true);
-            instance.name = CampusObjectNames.GetDisplayName(prefab.name) + "_F" + floor.FloorIndex + "_" + cell.x + "_" + cell.y;
+            string displayName = GetObjectDisplayName(prefab);
+            instance.name = displayName + "_F" + floor.FloorIndex + "_" + cell.x + "_" + cell.y;
             instance.transform.rotation = Quaternion.identity;
             CampusPlacedObject placed = instance.GetComponent<CampusPlacedObject>();
             if (placed == null)
@@ -1162,13 +1318,17 @@ namespace NtingCampusMapEditor
                 placed.BlocksMovement = prefabPlaced.BlocksMovement;
                 placed.BlocksSight = prefabPlaced.BlocksSight;
                 placed.IsInteractable = prefabPlaced.IsInteractable;
+                placed.IsStorageContainer = prefabPlaced.IsStorageContainer;
+                placed.StorageSize = prefabPlaced.NormalizedStorageSize;
+                placed.StorageMaxWeight = prefabPlaced.NormalizedStorageMaxWeight;
                 placed.SortingOrderOffset = prefabPlaced.SortingOrderOffset;
             }
 
             placed.ApplyCellToTransform(floor.Grid);
+            placed.ApplyInteractionState();
             CampusDynamicShadowUtility.EnsureObjectShadowCasters(placed, floor.Grid);
             CampusRenderSortingUtility.ApplyFloorSorting(floor, floor.FloorIndex * mapRoot.SortingOrderStepPerFloor);
-            SetStatus("已放置物体：" + CampusObjectNames.GetDisplayName(prefab.name));
+            SetStatus("已放置物体：" + displayName);
         }
 
         private void PlaceStair(CampusFloorRoot floor, Vector3Int cell)
@@ -1256,8 +1416,331 @@ namespace NtingCampusMapEditor
             marker.RoomName = roomName;
             marker.FloorIndex = floor.FloorIndex;
             marker.Cell = cell;
+            marker.HideMarkerVisual = false;
             AddRoomMarkerVisual(markerObject, floor);
             SetStatus("已标记房间：" + roomName);
+        }
+
+        private void CreateRoomPrefabFromSelection(CampusFloorRoot floor, Vector3Int start, Vector3Int end)
+        {
+            if (floor == null || floor.Grid == null)
+            {
+                return;
+            }
+
+            string roomName = ResolveNewRoomPrefabName();
+            if (string.IsNullOrWhiteSpace(roomName))
+            {
+                SetStatus("请先输入房间模块名称。");
+                return;
+            }
+
+            BoundsInt bounds = BuildInclusiveCellBounds(start, end);
+            CampusRuntimeRoomPrefab roomPrefab = CaptureRoomPrefab(floor, bounds, roomName.Trim());
+            if (!HasRoomPrefabContent(roomPrefab))
+            {
+                SetStatus("框选区域没有可预制的地面、墙体、物品或光源。");
+                return;
+            }
+
+            SaveRuntimeRoomPrefab(roomPrefab);
+            AddOrUpdateRoomDefinition(roomPrefab.RoomName, Mathf.Max(1, newRoomRequiredCount));
+            LoadImportedRoomPrefabs();
+            SelectRoomPrefabByName(roomPrefab.RoomName);
+            newRoomPrefabName = string.Empty;
+            brushMode = CampusRuntimeBrushMode.PlaceRoomPrefab;
+            ScheduleProjectSync();
+            SyncRuntimeContentToProject(false);
+            SetStatus("已预制房间：" + roomPrefab.RoomName + "（" + roomPrefab.Size.x + "x" + roomPrefab.Size.y + "）。");
+        }
+
+        private CampusRuntimeRoomPrefab CaptureRoomPrefab(CampusFloorRoot floor, BoundsInt bounds, string roomName)
+        {
+            CampusRuntimeRoomPrefab roomPrefab = new CampusRuntimeRoomPrefab();
+            roomPrefab.Schema = "NtingCampusRuntimeRoomPrefab.v1";
+            roomPrefab.RoomName = roomName;
+            roomPrefab.CreatedAtLocal = DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss");
+            roomPrefab.Size = new Vector2Int(Mathf.Max(1, bounds.size.x), Mathf.Max(1, bounds.size.y));
+            Vector3Int originCell = new Vector3Int(bounds.xMin, bounds.yMin, 0);
+
+            CaptureRoomTiles(floor.FloorTilemap, floorTiles, bounds, originCell, roomPrefab.FloorTiles);
+            CaptureRoomTiles(CampusWallTileUtility.GetWallLogicTilemap(floor), wallTiles, bounds, originCell, roomPrefab.WallTiles);
+            CaptureRoomObjects(floor, bounds, originCell, roomPrefab.Objects);
+            CaptureRoomMarkers(floor, bounds, originCell, roomPrefab.RoomMarkers);
+            EnsureRoomPrefabMarker(roomPrefab);
+            CaptureRoomLights(floor, bounds, originCell, roomPrefab.Lights);
+            return roomPrefab;
+        }
+
+        private void CaptureRoomTiles(Tilemap tilemap, List<TileBase> palette, BoundsInt bounds, Vector3Int originCell, List<CampusRuntimeTileSnapshot> output)
+        {
+            output.Clear();
+            if (tilemap == null)
+            {
+                return;
+            }
+
+            for (int y = bounds.yMin; y < bounds.yMax; y++)
+            {
+                for (int x = bounds.xMin; x < bounds.xMax; x++)
+                {
+                    Vector3Int cell = new Vector3Int(x, y, 0);
+                    TileBase tile = tilemap.GetTile(cell);
+                    if (tile == null)
+                    {
+                        continue;
+                    }
+
+                    CampusRuntimeTileSnapshot tileSnapshot = new CampusRuntimeTileSnapshot();
+                    tileSnapshot.Cell = ToRelativeCell(cell, originCell);
+                    tileSnapshot.AssetName = tile.name;
+                    tileSnapshot.PaletteIndex = palette.IndexOf(tile);
+                    tileSnapshot.Transform = tilemap.GetTransformMatrix(cell);
+                    output.Add(tileSnapshot);
+                }
+            }
+        }
+
+        private void CaptureRoomObjects(CampusFloorRoot floor, BoundsInt bounds, Vector3Int originCell, List<CampusRuntimeObjectSnapshot> output)
+        {
+            output.Clear();
+            if (floor == null || floor.PropsRoot == null || floor.Grid == null)
+            {
+                return;
+            }
+
+            Vector3 originWorld = floor.Grid.CellToWorld(originCell);
+            CampusPlacedObject[] objects = floor.PropsRoot.GetComponentsInChildren<CampusPlacedObject>(true);
+            for (int i = 0; i < objects.Length; i++)
+            {
+                CampusPlacedObject placed = objects[i];
+                if (placed == null)
+                {
+                    continue;
+                }
+
+                placed.RefreshCellFromTransform(floor.Grid);
+                if (!IsPlacedObjectFullyInsideBounds(placed, bounds))
+                {
+                    continue;
+                }
+
+                CampusRuntimeObjectSnapshot objectSnapshot = CreateObjectSnapshot(floor, placed);
+                objectSnapshot.Cell = ToRelativeCell(objectSnapshot.Cell, originCell);
+                objectSnapshot.FloorIndex = 0;
+                objectSnapshot.Position = placed.transform.position - originWorld;
+                output.Add(objectSnapshot);
+            }
+        }
+
+        private void CaptureRoomMarkers(CampusFloorRoot floor, BoundsInt bounds, Vector3Int originCell, List<CampusRuntimeRoomSnapshot> output)
+        {
+            output.Clear();
+            if (floor == null || floor.PropsRoot == null)
+            {
+                return;
+            }
+
+            CampusRuntimeRoomMarker[] markers = floor.PropsRoot.GetComponentsInChildren<CampusRuntimeRoomMarker>(true);
+            for (int i = 0; i < markers.Length; i++)
+            {
+                CampusRuntimeRoomMarker marker = markers[i];
+                if (marker == null || marker.FloorIndex != floor.FloorIndex || !CellInBounds(bounds, marker.Cell))
+                {
+                    continue;
+                }
+
+                CampusRuntimeRoomSnapshot roomSnapshot = new CampusRuntimeRoomSnapshot();
+                roomSnapshot.RoomName = marker.RoomName;
+                roomSnapshot.FloorIndex = 0;
+                roomSnapshot.Cell = ToRelativeCell(marker.Cell, originCell);
+                output.Add(roomSnapshot);
+            }
+        }
+
+        private void CaptureRoomLights(CampusFloorRoot floor, BoundsInt bounds, Vector3Int originCell, List<CampusRuntimeRoomLightSnapshot> output)
+        {
+            output.Clear();
+            if (floor == null || floor.Grid == null)
+            {
+                return;
+            }
+
+            Vector3 originWorld = floor.Grid.CellToWorld(originCell);
+            Light2D[] lights = FindObjectsByType<Light2D>(FindObjectsInactive.Include, FindObjectsSortMode.None);
+            for (int i = 0; i < lights.Length; i++)
+            {
+                Light2D light = lights[i];
+                if (light == null || light.lightType == Light2D.LightType.Global)
+                {
+                    continue;
+                }
+
+                CampusRuntimeLightSnapshot lightSnapshot = CreateLightSnapshot(light);
+                if (lightSnapshot.FloorIndex != floor.FloorIndex || !CellInBounds(bounds, lightSnapshot.Cell))
+                {
+                    continue;
+                }
+
+                CampusRuntimeRoomLightSnapshot roomLight = new CampusRuntimeRoomLightSnapshot();
+                roomLight.Light = lightSnapshot;
+                roomLight.Light.FloorIndex = 0;
+                roomLight.Light.Cell = ToRelativeCell(lightSnapshot.Cell, originCell);
+                roomLight.RelativeCell = roomLight.Light.Cell;
+                roomLight.RelativePosition = light.transform.position - originWorld;
+                roomLight.HasRelativePosition = true;
+                output.Add(roomLight);
+            }
+        }
+
+        private void PlaceRoomPrefab(CampusFloorRoot floor, Vector3Int anchorCell)
+        {
+            CampusRuntimeRoomPrefab roomPrefab = GetSelectedRoomPrefab();
+            if (roomPrefab == null)
+            {
+                SetStatus("请先选择房间模块，或用“框选预制”创建一个。");
+                return;
+            }
+
+            if (floor == null || floor.Grid == null)
+            {
+                return;
+            }
+
+            EraseRoomPrefabArea(floor, anchorCell, roomPrefab.Size);
+            ApplyRoomPrefabTiles(floor.FloorTilemap, roomPrefab.FloorTiles, floorTiles, anchorCell);
+            ApplyRoomPrefabTiles(CampusWallTileUtility.GetWallLogicTilemap(floor), roomPrefab.WallTiles, wallTiles, anchorCell);
+            ApplyRoomPrefabObjects(floor, roomPrefab.Objects, anchorCell);
+            ApplyRoomPrefabMarkers(floor, roomPrefab.RoomMarkers, anchorCell, roomPrefab.RoomName);
+            ApplyRoomPrefabLights(floor, roomPrefab.Lights, anchorCell);
+            AddOrUpdateRoomDefinition(roomPrefab.RoomName, Mathf.Max(1, newRoomRequiredCount));
+            RebuildWallVisuals(floor);
+            floor.RefreshUsedBounds();
+            CampusRenderSortingUtility.ApplyFloorSorting(floor, floor.FloorIndex * mapRoot.SortingOrderStepPerFloor);
+            SetStatus("已放置房间模块：" + roomPrefab.RoomName);
+        }
+
+        private void EraseRoomPrefabArea(CampusFloorRoot floor, Vector3Int anchorCell, Vector2Int size)
+        {
+            size = NormalizeRoomPrefabSize(size);
+            for (int y = 0; y < size.y; y++)
+            {
+                for (int x = 0; x < size.x; x++)
+                {
+                    EraseAtCell(floor, new Vector3Int(anchorCell.x + x, anchorCell.y + y, 0), false);
+                }
+            }
+        }
+
+        private void ApplyRoomPrefabTiles(Tilemap tilemap, List<CampusRuntimeTileSnapshot> tiles, List<TileBase> palette, Vector3Int anchorCell)
+        {
+            if (tilemap == null || tiles == null)
+            {
+                return;
+            }
+
+            for (int i = 0; i < tiles.Count; i++)
+            {
+                CampusRuntimeTileSnapshot tileSnapshot = tiles[i];
+                TileBase tile = ResolveTile(tileSnapshot, palette);
+                if (tile == null)
+                {
+                    continue;
+                }
+
+                Vector3Int cell = ToAbsoluteCell(anchorCell, tileSnapshot.Cell);
+                tilemap.SetTile(cell, tile);
+                tilemap.SetTileFlags(cell, TileFlags.None);
+                tilemap.SetTransformMatrix(cell, HasUsableMatrix(tileSnapshot.Transform) ? tileSnapshot.Transform : Matrix4x4.identity);
+            }
+
+            tilemap.RefreshAllTiles();
+        }
+
+        private void ApplyRoomPrefabObjects(CampusFloorRoot floor, List<CampusRuntimeObjectSnapshot> objects, Vector3Int anchorCell)
+        {
+            if (objects == null || objects.Count == 0)
+            {
+                return;
+            }
+
+            List<CampusRuntimeObjectSnapshot> shiftedObjects = new List<CampusRuntimeObjectSnapshot>(objects.Count);
+            for (int i = 0; i < objects.Count; i++)
+            {
+                CampusRuntimeObjectSnapshot shifted = CloneObjectSnapshot(objects[i]);
+                shifted.Cell = ToAbsoluteCell(anchorCell, objects[i].Cell);
+                shifted.FloorIndex = floor != null ? floor.FloorIndex : 1;
+                shiftedObjects.Add(shifted);
+            }
+
+            ApplyObjects(floor, shiftedObjects);
+        }
+
+        private void ApplyRoomPrefabMarkers(CampusFloorRoot floor, List<CampusRuntimeRoomSnapshot> markers, Vector3Int anchorCell, string fallbackRoomName)
+        {
+            List<CampusRuntimeRoomSnapshot> shiftedMarkers = new List<CampusRuntimeRoomSnapshot>();
+            if (markers != null)
+            {
+                for (int i = 0; i < markers.Count; i++)
+                {
+                    CampusRuntimeRoomSnapshot marker = markers[i];
+                    if (marker == null)
+                    {
+                        continue;
+                    }
+
+                    CampusRuntimeRoomSnapshot shifted = new CampusRuntimeRoomSnapshot();
+                    shifted.RoomName = string.IsNullOrWhiteSpace(marker.RoomName) ? fallbackRoomName : marker.RoomName;
+                    shifted.FloorIndex = floor != null ? floor.FloorIndex : 1;
+                    shifted.Cell = ToAbsoluteCell(anchorCell, marker.Cell);
+                    shifted.HideMarkerVisual = true;
+                    shiftedMarkers.Add(shifted);
+                }
+            }
+
+            if (shiftedMarkers.Count == 0)
+            {
+                CampusRuntimeRoomSnapshot fallback = new CampusRuntimeRoomSnapshot();
+                fallback.RoomName = fallbackRoomName;
+                fallback.FloorIndex = floor != null ? floor.FloorIndex : 1;
+                fallback.Cell = anchorCell;
+                fallback.HideMarkerVisual = true;
+                shiftedMarkers.Add(fallback);
+            }
+
+            ApplyRooms(floor, shiftedMarkers);
+        }
+
+        private void ApplyRoomPrefabLights(CampusFloorRoot floor, List<CampusRuntimeRoomLightSnapshot> lights, Vector3Int anchorCell)
+        {
+            if (floor == null || floor.Grid == null || lights == null)
+            {
+                return;
+            }
+
+            Vector3 originWorld = floor.Grid.CellToWorld(anchorCell);
+            for (int i = 0; i < lights.Count; i++)
+            {
+                CampusRuntimeRoomLightSnapshot roomLight = lights[i];
+                if (roomLight == null || roomLight.Light == null)
+                {
+                    continue;
+                }
+
+                CampusRuntimeLightSnapshot shifted = CloneLightSnapshot(roomLight.Light);
+                shifted.FloorIndex = floor.FloorIndex;
+                Vector3Int relativeCell = roomLight.RelativeCell;
+                if (relativeCell == Vector3Int.zero && roomLight.Light.Cell != Vector3Int.zero)
+                {
+                    relativeCell = roomLight.Light.Cell;
+                }
+
+                shifted.Cell = ToAbsoluteCell(anchorCell, relativeCell);
+                shifted.Position = roomLight.HasRelativePosition
+                    ? originWorld + roomLight.RelativePosition
+                    : floor.Grid.GetCellCenterWorld(shifted.Cell);
+                CreateLightInstance(shifted);
+            }
         }
 
         private void PlaceLight(CampusFloorRoot floor, Vector3Int cell, Vector3 mouseWorld)
@@ -1295,6 +1778,7 @@ namespace NtingCampusMapEditor
             }
 
             selectedLight = light;
+            ScheduleProjectSync();
             SetStatus("已放置光源。");
         }
 
@@ -1554,6 +2038,7 @@ namespace NtingCampusMapEditor
             }
 
             redoSnapshots.Clear();
+            ScheduleProjectSync();
         }
 
         private void UndoSnapshot()
@@ -1569,6 +2054,7 @@ namespace NtingCampusMapEditor
             undoSnapshots.RemoveAt(undoSnapshots.Count - 1);
             redoSnapshots.Add(current);
             LoadSnapshotJson(previous);
+            ScheduleProjectSync();
             SetStatus("已撤销。");
         }
 
@@ -1585,6 +2071,7 @@ namespace NtingCampusMapEditor
             redoSnapshots.RemoveAt(redoSnapshots.Count - 1);
             undoSnapshots.Add(current);
             LoadSnapshotJson(next);
+            ScheduleProjectSync();
             SetStatus("已重做。");
         }
 
@@ -1699,8 +2186,7 @@ namespace NtingCampusMapEditor
                 floor.RefreshUsedBounds();
             }
 
-            ClearRuntimeLights();
-            ApplyLights(snapshot.Lights);
+            ApplySnapshotLights(snapshot.Lights);
             selectedFloorIndex = snapshot.SelectedFloorIndex > 0 ? snapshot.SelectedFloorIndex : selectedFloorIndex;
             mapRoot.CurrentPreviewFloor = selectedFloorIndex;
             mapRoot.RebuildFloorReferences();
@@ -1715,6 +2201,160 @@ namespace NtingCampusMapEditor
             File.WriteAllText(path, BuildSnapshotJson());
             SetStatus("已导出：" + path);
             Debug.Log("[NtingCampusRuntimeMapEditor] Exported map to " + path);
+        }
+
+        private void SyncRuntimeContentToProject()
+        {
+            SyncRuntimeContentToProject(true);
+        }
+
+        private void SyncRuntimeContentToProject(bool showStatus)
+        {
+            if (projectSyncInProgress)
+            {
+                return;
+            }
+
+            try
+            {
+                projectSyncInProgress = true;
+                EnsureImportFolders();
+                string syncRoot = GetProjectSyncRootFolder();
+                string syncImportFolder = GetProjectSyncImportFolder();
+                Directory.CreateDirectory(syncRoot);
+                MirrorDirectory(GetImportRootFolder(), syncImportFolder, true);
+                File.WriteAllText(GetProjectSyncMapPath(), BuildSnapshotJson(), Encoding.UTF8);
+                CampusRuntimeProjectSyncManifest manifest = new CampusRuntimeProjectSyncManifest
+                {
+                    ExportedAtLocal = DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss"),
+                    UnityPersistentDataPath = Application.persistentDataPath,
+                    ImportRootFolderName = RuntimeImportFolder,
+                    MapFileName = ProjectSyncMapFile
+                };
+                File.WriteAllText(GetProjectSyncManifestPath(), JsonUtility.ToJson(manifest, true), Encoding.UTF8);
+                RefreshAssetDatabaseIfAvailable();
+                projectSyncPending = false;
+                if (showStatus)
+                {
+                    SetStatus("\u5df2\u540c\u6b65\u5230\u9879\u76ee\uff1a" + syncRoot);
+                }
+
+                Debug.Log("[NtingCampusRuntimeMapEditor] Synced runtime content to project folder: " + syncRoot);
+            }
+            catch (Exception exception)
+            {
+                Debug.LogWarning("[NtingCampusRuntimeMapEditor] Project sync failed: " + exception.Message);
+                if (showStatus)
+                {
+                    SetStatus("\u540c\u6b65\u5230\u9879\u76ee\u5931\u8d25\uff1a" + exception.Message);
+                }
+            }
+            finally
+            {
+                projectSyncInProgress = false;
+            }
+        }
+
+        private void RestoreRuntimeContentFromProject()
+        {
+            RestoreRuntimeContentFromProject(true, true);
+        }
+
+        private void RestoreRuntimeContentFromProject(bool recordUndo, bool showStatus)
+        {
+            string syncRoot = GetProjectSyncRootFolder();
+            string syncImportFolder = GetProjectSyncImportFolder();
+            string syncMapPath = GetProjectSyncMapPath();
+            if (!Directory.Exists(syncImportFolder) && !File.Exists(syncMapPath))
+            {
+                if (showStatus)
+                {
+                    SetStatus("\u6ca1\u6709\u627e\u5230\u9879\u76ee\u540c\u6b65\u5305\uff1a" + syncRoot);
+                }
+
+                return;
+            }
+
+            try
+            {
+                bool previousSuppress = suppressProjectSyncScheduling;
+                suppressProjectSyncScheduling = true;
+                if (recordUndo)
+                {
+                    RecordUndo();
+                }
+
+                BackupLocalRuntimeImportFolder();
+                if (Directory.Exists(syncImportFolder))
+                {
+                    MirrorDirectory(syncImportFolder, GetImportRootFolder(), true);
+                }
+
+                LoadRuntimeResources();
+                if (File.Exists(syncMapPath))
+                {
+                    LoadSnapshotJson(File.ReadAllText(syncMapPath, Encoding.UTF8));
+                }
+
+                suppressProjectSyncScheduling = previousSuppress;
+                projectSyncPending = false;
+                if (showStatus)
+                {
+                    SetStatus("\u5df2\u4ece\u9879\u76ee\u540c\u6b65\u5e76\u52a0\u8f7d\u5730\u56fe\u3002");
+                }
+
+                Debug.Log("[NtingCampusRuntimeMapEditor] Restored runtime content from project folder: " + syncRoot);
+            }
+            catch (Exception exception)
+            {
+                suppressProjectSyncScheduling = false;
+                Debug.LogWarning("[NtingCampusRuntimeMapEditor] Restore project sync failed: " + exception.Message);
+                if (showStatus)
+                {
+                    SetStatus("\u4ece\u9879\u76ee\u6062\u590d\u5931\u8d25\uff1a" + exception.Message);
+                }
+            }
+        }
+
+        private void TryAutoRestoreRuntimeContentFromProject()
+        {
+            if (!autoRestoreProjectSyncOnStart)
+            {
+                return;
+            }
+
+            if (!Directory.Exists(GetProjectSyncImportFolder()) && !File.Exists(GetProjectSyncMapPath()))
+            {
+                return;
+            }
+
+            RestoreRuntimeContentFromProject(false, false);
+        }
+
+        private void ScheduleProjectSync()
+        {
+            if (!autoProjectSync || suppressProjectSyncScheduling || projectSyncInProgress)
+            {
+                return;
+            }
+
+            projectSyncPending = true;
+            projectSyncDueTime = Time.realtimeSinceStartup + Mathf.Max(0.1f, autoProjectSyncDelay);
+        }
+
+        private void ProcessAutoProjectSync()
+        {
+            if (!autoProjectSync || !projectSyncPending || projectSyncInProgress)
+            {
+                return;
+            }
+
+            if (Time.realtimeSinceStartup < projectSyncDueTime)
+            {
+                return;
+            }
+
+            SyncRuntimeContentToProject(false);
         }
 
         private void ImportLatestJson()
@@ -1743,6 +2383,26 @@ namespace NtingCampusMapEditor
         private string GetExportFolder()
         {
             return Path.Combine(Application.persistentDataPath, "CampusMapExports");
+        }
+
+        private string GetProjectSyncRootFolder()
+        {
+            return Path.Combine(Application.dataPath, "NtingCampus", ProjectSyncFolder);
+        }
+
+        private string GetProjectSyncImportFolder()
+        {
+            return Path.Combine(GetProjectSyncRootFolder(), RuntimeImportFolder);
+        }
+
+        private string GetProjectSyncMapPath()
+        {
+            return Path.Combine(GetProjectSyncRootFolder(), ProjectSyncMapFile);
+        }
+
+        private string GetProjectSyncManifestPath()
+        {
+            return Path.Combine(GetProjectSyncRootFolder(), ProjectSyncManifestFile);
         }
 
         private void CaptureTiles(Tilemap tilemap, List<TileBase> palette, List<CampusRuntimeTileSnapshot> output)
@@ -1815,19 +2475,95 @@ namespace NtingCampusMapEditor
                 }
 
                 placed.RefreshCellFromTransform(floor.Grid);
-                CampusRuntimeObjectSnapshot objectSnapshot = new CampusRuntimeObjectSnapshot();
-                objectSnapshot.ObjectId = string.IsNullOrEmpty(placed.ObjectId) ? placed.gameObject.name : placed.ObjectId;
-                objectSnapshot.PaletteIndex = FindPrefabIndexByName(objectSnapshot.ObjectId);
-                objectSnapshot.Position = placed.transform.position;
-                objectSnapshot.Cell = placed.Cell;
-                objectSnapshot.FootprintSize = placed.NormalizedFootprintSize;
-                objectSnapshot.FloorIndex = floor.FloorIndex;
-                objectSnapshot.Rotation90 = placed.Rotation90;
-                objectSnapshot.BlocksMovement = placed.BlocksMovement;
-                objectSnapshot.BlocksSight = placed.BlocksSight;
-                objectSnapshot.IsInteractable = placed.IsInteractable;
-                output.Add(objectSnapshot);
+                placed.NormalizeCustomInteractionAnchors();
+                output.Add(CreateObjectSnapshot(floor, placed));
             }
+        }
+
+        private CampusRuntimeObjectSnapshot CreateObjectSnapshot(CampusFloorRoot floor, CampusPlacedObject placed)
+        {
+            CampusRuntimeObjectSnapshot objectSnapshot = new CampusRuntimeObjectSnapshot();
+            if (placed == null)
+            {
+                return objectSnapshot;
+            }
+
+            objectSnapshot.ObjectId = string.IsNullOrEmpty(placed.ObjectId) ? placed.gameObject.name : placed.ObjectId;
+            objectSnapshot.DisplayNameOverride = placed.DisplayNameOverride;
+            objectSnapshot.PaletteIndex = FindPrefabIndexByName(objectSnapshot.ObjectId);
+            objectSnapshot.Position = placed.transform.position;
+            objectSnapshot.Cell = placed.Cell;
+            objectSnapshot.FootprintSize = placed.NormalizedFootprintSize;
+            objectSnapshot.FloorIndex = floor != null ? floor.FloorIndex : placed.FloorIndex;
+            objectSnapshot.OverrideFootprintSize = placed.OverrideFootprintSize;
+            objectSnapshot.VisualScale = placed.NormalizedVisualScale;
+            objectSnapshot.LockVisualScaleAspect = placed.LockVisualScaleAspect;
+            objectSnapshot.OverrideAllowRotation = placed.OverrideAllowRotation;
+            objectSnapshot.AllowRotation = placed.AllowRotation;
+            objectSnapshot.OverrideRotation0Sprite = placed.OverrideRotation0Sprite;
+            objectSnapshot.Rotation0SpritePath = placed.Rotation0SpritePath;
+            objectSnapshot.OverrideRotation90Sprite = placed.OverrideRotation90Sprite;
+            objectSnapshot.Rotation90SpritePath = placed.Rotation90SpritePath;
+            objectSnapshot.OverrideRotation180Sprite = placed.OverrideRotation180Sprite;
+            objectSnapshot.Rotation180SpritePath = placed.Rotation180SpritePath;
+            objectSnapshot.OverrideRotation270Sprite = placed.OverrideRotation270Sprite;
+            objectSnapshot.Rotation270SpritePath = placed.Rotation270SpritePath;
+            objectSnapshot.Rotation90 = placed.Rotation90;
+            objectSnapshot.BlocksMovement = placed.BlocksMovement;
+            objectSnapshot.BlocksSight = placed.BlocksSight;
+            objectSnapshot.IsInteractable = placed.IsInteractable;
+            objectSnapshot.IsStorageContainer = placed.IsStorageContainer;
+            objectSnapshot.StorageSize = placed.NormalizedStorageSize;
+            objectSnapshot.StorageMaxWeight = placed.NormalizedStorageMaxWeight;
+            objectSnapshot.UseCustomInteractionAnchor = placed.UseCustomInteractionAnchor;
+            objectSnapshot.CustomInteractionAnchorLocalPosition = placed.CustomInteractionAnchorLocalPosition;
+            objectSnapshot.CustomInteractionAnchorRadius = placed.CustomInteractionAnchorRadius;
+            objectSnapshot.CustomInteractionPromptText = placed.CustomInteractionPromptText;
+            objectSnapshot.CustomInteractionAnchors = CampusPlacedObject.CloneInteractionAnchors(placed.CustomInteractionAnchors);
+            return objectSnapshot;
+        }
+
+        private static CampusRuntimeObjectSnapshot CloneObjectSnapshot(CampusRuntimeObjectSnapshot source)
+        {
+            CampusRuntimeObjectSnapshot clone = new CampusRuntimeObjectSnapshot();
+            if (source == null)
+            {
+                return clone;
+            }
+
+            clone.ObjectId = source.ObjectId;
+            clone.DisplayNameOverride = source.DisplayNameOverride;
+            clone.PaletteIndex = source.PaletteIndex;
+            clone.Position = source.Position;
+            clone.Cell = source.Cell;
+            clone.FootprintSize = source.FootprintSize;
+            clone.FloorIndex = source.FloorIndex;
+            clone.OverrideFootprintSize = source.OverrideFootprintSize;
+            clone.VisualScale = source.VisualScale;
+            clone.LockVisualScaleAspect = source.LockVisualScaleAspect;
+            clone.OverrideAllowRotation = source.OverrideAllowRotation;
+            clone.AllowRotation = source.AllowRotation;
+            clone.OverrideRotation0Sprite = source.OverrideRotation0Sprite;
+            clone.Rotation0SpritePath = source.Rotation0SpritePath;
+            clone.OverrideRotation90Sprite = source.OverrideRotation90Sprite;
+            clone.Rotation90SpritePath = source.Rotation90SpritePath;
+            clone.OverrideRotation180Sprite = source.OverrideRotation180Sprite;
+            clone.Rotation180SpritePath = source.Rotation180SpritePath;
+            clone.OverrideRotation270Sprite = source.OverrideRotation270Sprite;
+            clone.Rotation270SpritePath = source.Rotation270SpritePath;
+            clone.Rotation90 = source.Rotation90;
+            clone.BlocksMovement = source.BlocksMovement;
+            clone.BlocksSight = source.BlocksSight;
+            clone.IsInteractable = source.IsInteractable;
+            clone.IsStorageContainer = source.IsStorageContainer;
+            clone.StorageSize = source.StorageSize;
+            clone.StorageMaxWeight = source.StorageMaxWeight;
+            clone.UseCustomInteractionAnchor = source.UseCustomInteractionAnchor;
+            clone.CustomInteractionAnchorLocalPosition = source.CustomInteractionAnchorLocalPosition;
+            clone.CustomInteractionAnchorRadius = source.CustomInteractionAnchorRadius;
+            clone.CustomInteractionPromptText = source.CustomInteractionPromptText;
+            clone.CustomInteractionAnchors = CampusPlacedObject.CloneInteractionAnchors(source.CustomInteractionAnchors);
+            return clone;
         }
 
         private void ApplyObjects(CampusFloorRoot floor, List<CampusRuntimeObjectSnapshot> objects)
@@ -1848,7 +2584,10 @@ namespace NtingCampusMapEditor
 
                 GameObject instance = Instantiate(prefab, floor.PropsRoot);
                 instance.SetActive(true);
-                instance.name = CampusObjectNames.GetDisplayName(prefab.name) + "_F" + floor.FloorIndex + "_" + objectSnapshot.Cell.x + "_" + objectSnapshot.Cell.y;
+                string displayName = string.IsNullOrWhiteSpace(objectSnapshot.DisplayNameOverride)
+                    ? GetObjectDisplayName(prefab)
+                    : objectSnapshot.DisplayNameOverride.Trim();
+                instance.name = displayName + "_F" + floor.FloorIndex + "_" + objectSnapshot.Cell.x + "_" + objectSnapshot.Cell.y;
                 CampusPlacedObject placed = instance.GetComponent<CampusPlacedObject>();
                 if (placed == null)
                 {
@@ -1856,9 +2595,23 @@ namespace NtingCampusMapEditor
                 }
 
                 placed.ObjectId = objectSnapshot.ObjectId;
+                placed.DisplayNameOverride = objectSnapshot.DisplayNameOverride;
                 placed.FloorIndex = floor.FloorIndex;
                 placed.Cell = objectSnapshot.Cell;
+                placed.OverrideFootprintSize = objectSnapshot.OverrideFootprintSize;
                 placed.FootprintSize = objectSnapshot.FootprintSize;
+                placed.VisualScale = CampusPlacedObject.NormalizeVisualScale(objectSnapshot.VisualScale);
+                placed.LockVisualScaleAspect = objectSnapshot.LockVisualScaleAspect;
+                if (objectSnapshot.OverrideAllowRotation)
+                {
+                    placed.OverrideAllowRotation = true;
+                    placed.AllowRotation = objectSnapshot.AllowRotation;
+                }
+
+                AssignRuntimeObjectDirectionSprite(placed, 0, objectSnapshot.OverrideRotation0Sprite, objectSnapshot.Rotation0SpritePath, objectSnapshot.ObjectId);
+                AssignRuntimeObjectDirectionSprite(placed, 1, objectSnapshot.OverrideRotation90Sprite, objectSnapshot.Rotation90SpritePath, objectSnapshot.ObjectId);
+                AssignRuntimeObjectDirectionSprite(placed, 2, objectSnapshot.OverrideRotation180Sprite, objectSnapshot.Rotation180SpritePath, objectSnapshot.ObjectId);
+                AssignRuntimeObjectDirectionSprite(placed, 3, objectSnapshot.OverrideRotation270Sprite, objectSnapshot.Rotation270SpritePath, objectSnapshot.ObjectId);
                 placed.Rotation90 = objectSnapshot.Rotation90;
                 if (placed.AllowRotation)
                 {
@@ -1867,10 +2620,22 @@ namespace NtingCampusMapEditor
                 else
                 {
                     instance.transform.rotation = Quaternion.Euler(0f, 0f, objectSnapshot.Rotation90 * 90f);
+                    placed.ApplyVisualScaleState();
                 }
                 placed.BlocksMovement = objectSnapshot.BlocksMovement;
                 placed.BlocksSight = objectSnapshot.BlocksSight;
                 placed.IsInteractable = objectSnapshot.IsInteractable;
+                placed.IsStorageContainer = objectSnapshot.IsStorageContainer;
+                placed.StorageSize = CampusPlacedObject.NormalizeStorageSize(objectSnapshot.StorageSize);
+                placed.StorageMaxWeight = CampusPlacedObject.NormalizeStorageMaxWeight(objectSnapshot.StorageMaxWeight);
+                placed.UseCustomInteractionAnchor = objectSnapshot.UseCustomInteractionAnchor;
+                placed.CustomInteractionAnchorLocalPosition = objectSnapshot.CustomInteractionAnchorLocalPosition;
+                placed.CustomInteractionAnchorRadius = CampusPlacedObject.NormalizeInteractionAnchorRadius(objectSnapshot.CustomInteractionAnchorRadius);
+                placed.CustomInteractionPromptText = string.IsNullOrWhiteSpace(objectSnapshot.CustomInteractionPromptText)
+                    ? "\u4ea4\u4e92"
+                    : objectSnapshot.CustomInteractionPromptText;
+                placed.CustomInteractionAnchors = CampusPlacedObject.CloneInteractionAnchors(objectSnapshot.CustomInteractionAnchors);
+                placed.ApplyInteractionState();
                 if (floor.Grid != null)
                 {
                     placed.ApplyCellToTransform(floor.Grid);
@@ -1959,6 +2724,7 @@ namespace NtingCampusMapEditor
                 roomSnapshot.RoomName = marker.RoomName;
                 roomSnapshot.FloorIndex = floor.FloorIndex;
                 roomSnapshot.Cell = marker.Cell;
+                roomSnapshot.HideMarkerVisual = marker.HideMarkerVisual;
                 output.Add(roomSnapshot);
             }
         }
@@ -1984,7 +2750,11 @@ namespace NtingCampusMapEditor
                 marker.RoomName = roomSnapshot.RoomName;
                 marker.FloorIndex = floor.FloorIndex;
                 marker.Cell = roomSnapshot.Cell;
-                AddRoomMarkerVisual(markerObject, floor);
+                marker.HideMarkerVisual = roomSnapshot.HideMarkerVisual;
+                if (!marker.HideMarkerVisual)
+                {
+                    AddRoomMarkerVisual(markerObject, floor);
+                }
             }
         }
 
@@ -2000,25 +2770,63 @@ namespace NtingCampusMapEditor
                     continue;
                 }
 
-                CampusRuntimeLightSnapshot lightSnapshot = new CampusRuntimeLightSnapshot();
-                lightSnapshot.Name = light.gameObject.name;
-                lightSnapshot.LightType = light.lightType.ToString();
-                lightSnapshot.Position = light.transform.position;
-                lightSnapshot.Rotation = light.transform.eulerAngles;
-                lightSnapshot.Color = light.color;
-                lightSnapshot.Intensity = light.intensity;
-                lightSnapshot.InnerRadius = light.pointLightInnerRadius;
-                lightSnapshot.OuterRadius = light.pointLightOuterRadius;
-                lightSnapshot.InnerAngle = light.pointLightInnerAngle;
-                lightSnapshot.OuterAngle = light.pointLightOuterAngle;
-                lightSnapshot.FalloffIntensity = light.falloffIntensity;
-                lightSnapshot.ShadowsEnabled = light.shadowsEnabled;
-                lightSnapshot.ShadowIntensity = light.shadowIntensity;
-                lightSnapshot.ShadowSoftness = light.shadowSoftness;
-                lightSnapshot.ShadowSoftnessFalloff = light.shadowSoftnessFalloffIntensity;
-                ResolveLightCell(light, out lightSnapshot.FloorIndex, out lightSnapshot.Cell);
-                output.Add(lightSnapshot);
+                output.Add(CreateLightSnapshot(light));
             }
+        }
+
+        private CampusRuntimeLightSnapshot CreateLightSnapshot(Light2D light)
+        {
+            CampusRuntimeLightSnapshot lightSnapshot = new CampusRuntimeLightSnapshot();
+            if (light == null)
+            {
+                return lightSnapshot;
+            }
+
+            lightSnapshot.Name = light.gameObject.name;
+            lightSnapshot.LightType = light.lightType.ToString();
+            lightSnapshot.Position = light.transform.position;
+            lightSnapshot.Rotation = light.transform.eulerAngles;
+            lightSnapshot.Color = light.color;
+            lightSnapshot.Intensity = light.intensity;
+            lightSnapshot.InnerRadius = light.pointLightInnerRadius;
+            lightSnapshot.OuterRadius = light.pointLightOuterRadius;
+            lightSnapshot.InnerAngle = light.pointLightInnerAngle;
+            lightSnapshot.OuterAngle = light.pointLightOuterAngle;
+            lightSnapshot.FalloffIntensity = light.falloffIntensity;
+            lightSnapshot.ShadowsEnabled = light.shadowsEnabled;
+            lightSnapshot.ShadowIntensity = light.shadowIntensity;
+            lightSnapshot.ShadowSoftness = light.shadowSoftness;
+            lightSnapshot.ShadowSoftnessFalloff = light.shadowSoftnessFalloffIntensity;
+            ResolveLightCell(light, out lightSnapshot.FloorIndex, out lightSnapshot.Cell);
+            return lightSnapshot;
+        }
+
+        private static CampusRuntimeLightSnapshot CloneLightSnapshot(CampusRuntimeLightSnapshot source)
+        {
+            CampusRuntimeLightSnapshot clone = new CampusRuntimeLightSnapshot();
+            if (source == null)
+            {
+                return clone;
+            }
+
+            clone.Name = source.Name;
+            clone.LightType = source.LightType;
+            clone.Position = source.Position;
+            clone.Rotation = source.Rotation;
+            clone.Color = source.Color;
+            clone.Intensity = source.Intensity;
+            clone.InnerRadius = source.InnerRadius;
+            clone.OuterRadius = source.OuterRadius;
+            clone.InnerAngle = source.InnerAngle;
+            clone.OuterAngle = source.OuterAngle;
+            clone.FalloffIntensity = source.FalloffIntensity;
+            clone.ShadowsEnabled = source.ShadowsEnabled;
+            clone.ShadowIntensity = source.ShadowIntensity;
+            clone.ShadowSoftness = source.ShadowSoftness;
+            clone.ShadowSoftnessFalloff = source.ShadowSoftnessFalloff;
+            clone.FloorIndex = source.FloorIndex;
+            clone.Cell = source.Cell;
+            return clone;
         }
 
         private void ApplyLights(List<CampusRuntimeLightSnapshot> lights)
@@ -2032,31 +2840,43 @@ namespace NtingCampusMapEditor
             for (int i = 0; i < lights.Count; i++)
             {
                 CampusRuntimeLightSnapshot lightSnapshot = lights[i];
-                GameObject lightObject = new GameObject(string.IsNullOrEmpty(lightSnapshot.Name) ? "运行时光源" : lightSnapshot.Name);
-                lightObject.transform.position = lightSnapshot.Position;
-                lightObject.transform.rotation = Quaternion.Euler(lightSnapshot.Rotation);
-                Light2D light = lightObject.AddComponent<Light2D>();
-                Light2D.LightType type;
-                if (!Enum.TryParse(lightSnapshot.LightType, out type))
-                {
-                    type = Light2D.LightType.Point;
-                }
-
-                light.lightType = type;
-                light.blendStyleIndex = 0;
-                light.targetSortingLayers = GetAllSortingLayerIds();
-                light.color = lightSnapshot.Color;
-                light.intensity = lightSnapshot.Intensity;
-                CampusDynamicShadowUtility.ConfigureLightShadows(light, type != Light2D.LightType.Global && lightSnapshot.ShadowsEnabled, lightSnapshot.ShadowIntensity, lightSnapshot.ShadowSoftness, lightSnapshot.ShadowSoftnessFalloff);
-                if (type == Light2D.LightType.Point)
-                {
-                    light.pointLightInnerRadius = Mathf.Max(0f, lightSnapshot.InnerRadius);
-                    light.pointLightOuterRadius = Mathf.Max(light.pointLightInnerRadius + 0.1f, lightSnapshot.OuterRadius);
-                    light.pointLightInnerAngle = lightSnapshot.InnerAngle <= 0f ? 360f : lightSnapshot.InnerAngle;
-                    light.pointLightOuterAngle = lightSnapshot.OuterAngle <= 0f ? 360f : lightSnapshot.OuterAngle;
-                    light.falloffIntensity = lightSnapshot.FalloffIntensity;
-                }
+                CreateLightInstance(lightSnapshot);
             }
+        }
+
+        private Light2D CreateLightInstance(CampusRuntimeLightSnapshot lightSnapshot)
+        {
+            if (lightSnapshot == null)
+            {
+                return null;
+            }
+
+            GameObject lightObject = new GameObject(string.IsNullOrEmpty(lightSnapshot.Name) ? "运行时光源" : lightSnapshot.Name);
+            lightObject.transform.position = lightSnapshot.Position;
+            lightObject.transform.rotation = Quaternion.Euler(lightSnapshot.Rotation);
+            Light2D light = lightObject.AddComponent<Light2D>();
+            Light2D.LightType type;
+            if (!Enum.TryParse(lightSnapshot.LightType, out type))
+            {
+                type = Light2D.LightType.Point;
+            }
+
+            light.lightType = type;
+            light.blendStyleIndex = 0;
+            light.targetSortingLayers = GetAllSortingLayerIds();
+            light.color = lightSnapshot.Color;
+            light.intensity = lightSnapshot.Intensity;
+            CampusDynamicShadowUtility.ConfigureLightShadows(light, type != Light2D.LightType.Global && lightSnapshot.ShadowsEnabled, lightSnapshot.ShadowIntensity, lightSnapshot.ShadowSoftness, lightSnapshot.ShadowSoftnessFalloff);
+            if (type == Light2D.LightType.Point)
+            {
+                light.pointLightInnerRadius = Mathf.Max(0f, lightSnapshot.InnerRadius);
+                light.pointLightOuterRadius = Mathf.Max(light.pointLightInnerRadius + 0.1f, lightSnapshot.OuterRadius);
+                light.pointLightInnerAngle = lightSnapshot.InnerAngle <= 0f ? 360f : lightSnapshot.InnerAngle;
+                light.pointLightOuterAngle = lightSnapshot.OuterAngle <= 0f ? 360f : lightSnapshot.OuterAngle;
+                light.falloffIntensity = lightSnapshot.FalloffIntensity;
+            }
+
+            return light;
         }
 
         private void ClearFloorAuthoredContent(CampusFloorRoot floor)
@@ -2082,14 +2902,51 @@ namespace NtingCampusMapEditor
             DestroyChildren(floor.StairsRoot);
         }
 
-        private void ClearRuntimeLights()
+        private void ApplySnapshotLights(List<CampusRuntimeLightSnapshot> lightSnapshots)
         {
-            Light2D[] lights = FindObjectsByType<Light2D>(FindObjectsInactive.Include, FindObjectsSortMode.None);
-            for (int i = lights.Length - 1; i >= 0; i--)
+            ClearLightsReplacedBySnapshot(lightSnapshots);
+            ApplyLights(lightSnapshots);
+        }
+
+        private void ClearLightsReplacedBySnapshot(List<CampusRuntimeLightSnapshot> lightSnapshots)
+        {
+            HashSet<string> snapshotLightNames = new HashSet<string>(StringComparer.Ordinal);
+            if (lightSnapshots != null)
             {
-                if (lights[i] != null)
+                for (int i = 0; i < lightSnapshots.Count; i++)
                 {
-                    DestroyRuntimeObject(lights[i].gameObject);
+                    CampusRuntimeLightSnapshot lightSnapshot = lightSnapshots[i];
+                    if (lightSnapshot == null || string.IsNullOrWhiteSpace(lightSnapshot.Name))
+                    {
+                        continue;
+                    }
+
+                    string lightName = lightSnapshot.Name.Trim();
+                    snapshotLightNames.Add(lightName);
+                }
+            }
+
+            Light2D[] sceneLights = FindObjectsByType<Light2D>(FindObjectsInactive.Include, FindObjectsSortMode.None);
+            for (int i = sceneLights.Length - 1; i >= 0; i--)
+            {
+                Light2D light = sceneLights[i];
+                if (light == null)
+                {
+                    continue;
+                }
+
+                string lightName = light.gameObject.name;
+                bool isDayNightLight = CampusObjectNames.MatchesAny(
+                    lightName,
+                    CampusObjectNames.GlobalLight2D,
+                    CampusObjectNames.LegacyGlobalLight2D,
+                    CampusObjectNames.SunLight2D,
+                    CampusObjectNames.LegacySunLight2D);
+                bool isReplacedBySnapshot = snapshotLightNames.Contains(lightName);
+
+                if (isDayNightLight || isReplacedBySnapshot)
+                {
+                    DestroyRuntimeObject(light.gameObject);
                 }
             }
 
@@ -2128,6 +2985,16 @@ namespace NtingCampusMapEditor
             float checklistHeight = Mathf.Max(180f, toolbarY - checklistY - PanelMargin);
             checklistPanelRect = new Rect(rightX, checklistY, rightWidth, checklistHeight);
             settingsPanelRect = new Rect(Mathf.Clamp(Screen.width - 390f - PanelMargin, PanelMargin, Screen.width - 390f), Mathf.Max(TopMargin, toolbarY - 330f), 370f, Mathf.Min(300f, toolbarY - TopMargin - PanelMargin));
+            float objectSettingsWidth = Mathf.Clamp(Screen.width * 0.34f, 440f, 620f);
+            float objectSettingsHeight = Mathf.Clamp(toolbarY - TopMargin - PanelMargin, 420f, 690f);
+            float objectSettingsX = leftPanelRect.xMax + PanelMargin;
+            float objectSettingsRightLimit = floorPanelRect.x - PanelMargin;
+            if (objectSettingsRightLimit - objectSettingsX < objectSettingsWidth)
+            {
+                objectSettingsX = Mathf.Clamp((Screen.width - objectSettingsWidth) * 0.5f, PanelMargin, Mathf.Max(PanelMargin, Screen.width - objectSettingsWidth - PanelMargin));
+            }
+
+            objectSettingsPanelRect = new Rect(objectSettingsX, TopMargin, objectSettingsWidth, Mathf.Min(objectSettingsHeight, toolbarY - TopMargin - PanelMargin));
             helpPanelRect = new Rect(Mathf.Max(PanelMargin, Screen.width * 0.5f - 285f), TopMargin + 24f, Mathf.Min(570f, Screen.width - PanelMargin * 2f), Mathf.Min(390f, toolbarY - TopMargin - 48f));
         }
 
@@ -2219,8 +3086,9 @@ namespace NtingCampusMapEditor
 
         private float GetRoomContentHeight(float width)
         {
-            float height = 34f + 40f;
-            height += 34f + 38f + 80f + 8f;
+            float height = 34f + 40f * 2f;
+            height += 34f + 38f + 42f + (roomPrefabs.Count == 0 ? 66f : roomPrefabs.Count * 42f) + 46f;
+            height += 12f + 34f + 38f + 80f + 8f;
             height += roomNames.Count == 0 ? 66f : roomNames.Count * 40f;
             height += 12f + (roomNames.Count > 0 ? 42f : 0f) + 70f;
             return height;
@@ -2229,7 +3097,7 @@ namespace NtingCampusMapEditor
         private float GetObjectContentHeight(float width)
         {
             float height = 34f + 40f * 2f + 8f + 44f;
-            height += 48f;
+            height += 46f;
             height += 80f + 8f;
             height += 34f + GetPrefabGridHeight(objectPrefabs.Count, width);
             if (stairPrefab == null)
@@ -2348,11 +3216,68 @@ namespace NtingCampusMapEditor
             leftScroll = GUI.BeginScrollView(contentRect, leftScroll, viewRect);
             float y = 0f;
 
-            GUI.Label(new Rect(0f, y, viewRect.width, 26f), "房间标记", headerStyle);
+            GUI.Label(new Rect(0f, y, viewRect.width, 26f), "房间工具", headerStyle);
             y += 34f;
             DrawModeButtonRow(ref y, viewRect.width,
-                new CampusRuntimeBrushMode[] { CampusRuntimeBrushMode.PlaceRoom, CampusRuntimeBrushMode.Erase, CampusRuntimeBrushMode.Pick },
-                new string[] { "放置", "擦除", "吸取" });
+                new CampusRuntimeBrushMode[] { CampusRuntimeBrushMode.PlaceRoom, CampusRuntimeBrushMode.CreateRoomPrefab, CampusRuntimeBrushMode.PlaceRoomPrefab },
+                new string[] { "标记", "框选预制", "放置模块" });
+            DrawModeButtonRow(ref y, viewRect.width,
+                new CampusRuntimeBrushMode[] { CampusRuntimeBrushMode.Erase, CampusRuntimeBrushMode.Pick },
+                new string[] { "擦除", "吸取" });
+
+            GUI.Label(new Rect(0f, y, viewRect.width, 26f), "房间模块", headerStyle);
+            y += 34f;
+            GUI.Label(new Rect(0f, y, 64f, 30f), "模块名", bodyStyle);
+            newRoomPrefabName = DrawTextInput(new Rect(66f, y, viewRect.width - 178f, 30f), newRoomPrefabName, "room_prefab_name");
+            if (GUI.Button(new Rect(viewRect.width - 104f, y, 104f, 30f), "框选预制", buttonStyle))
+            {
+                brushMode = CampusRuntimeBrushMode.CreateRoomPrefab;
+                activeTab = CampusRuntimeEditorTab.Rooms;
+                SetStatus("拖拽框选区域，松开后预制成房间模块。");
+            }
+
+            y += 38f;
+            float moduleButtonWidth = Mathf.Max(72f, (viewRect.width - 16f) / 3f);
+            if (GUI.Button(new Rect(0f, y, moduleButtonWidth, 30f), "打开目录", buttonStyle))
+            {
+                OpenImportLocation(GetRoomPrefabFolder());
+            }
+
+            if (GUI.Button(new Rect(moduleButtonWidth + 8f, y, moduleButtonWidth, 30f), "刷新", buttonStyle))
+            {
+                LoadImportedRoomPrefabs();
+                ScheduleProjectSync();
+                SetStatus("已刷新房间模块。");
+            }
+
+            if (roomPrefabs.Count > 0 && GUI.Button(new Rect((moduleButtonWidth + 8f) * 2f, y, moduleButtonWidth, 30f), "删除", buttonStyle))
+            {
+                DeleteSelectedRoomPrefab();
+            }
+
+            y += 42f;
+            if (roomPrefabs.Count == 0)
+            {
+                GUI.Label(new Rect(0f, y, viewRect.width, 58f), "当前没有房间模块。输入模块名后点击“框选预制”，再在地图上拖拽区域。", mutedStyle);
+                y += 66f;
+            }
+            else
+            {
+                for (int i = 0; i < roomPrefabs.Count; i++)
+                {
+                    CampusRuntimeRoomPrefab roomPrefab = roomPrefabs[i];
+                    string label = roomPrefab.RoomName + "  " + roomPrefab.Size.x + "x" + roomPrefab.Size.y;
+                    if (GUI.Button(new Rect(0f, y, viewRect.width, 34f), label, i == selectedRoomPrefabIndex ? selectedButtonStyle : buttonStyle))
+                    {
+                        selectedRoomPrefabIndex = i;
+                        brushMode = CampusRuntimeBrushMode.PlaceRoomPrefab;
+                    }
+
+                    y += 42f;
+                }
+            }
+
+            y += 12f;
 
             GUI.Label(new Rect(0f, y, viewRect.width, 26f), "新增房间类型", headerStyle);
             y += 34f;
@@ -2436,7 +3361,7 @@ namespace NtingCampusMapEditor
             stairTargetFloorIndex = Mathf.Clamp(ParseIntField(new Rect(246f, y, 58f, 30f), stairTargetFloorIndex), 1, 99);
             y += 44f;
 
-            DrawSelectedObjectFootprintControls(ref y, viewRect.width);
+            DrawSelectedObjectSettingsLauncher(ref y, viewRect.width);
 
             DrawImportFolderRow(ref y, viewRect.width, "导入物品", GetObjectImportFolder(), CampusRuntimeImportTarget.Object);
             y += 8f;
@@ -2532,6 +3457,7 @@ namespace NtingCampusMapEditor
                     }
 
                     DestroyRuntimeObject(light.gameObject);
+                    ScheduleProjectSync();
                 }
 
                 y += 38f;
@@ -2539,6 +3465,7 @@ namespace NtingCampusMapEditor
 
             if (selectedLight != null)
             {
+                bool selectedLightChanged = false;
                 y += 8f;
                 GUI.Label(new Rect(0f, y, viewRect.width, 26f), "当前光源", headerStyle);
                 y += 34f;
@@ -2558,6 +3485,7 @@ namespace NtingCampusMapEditor
                 {
                     selectedLight.intensity = adjustedIntensity;
                     lightIntensity = adjustedIntensity;
+                    selectedLightChanged = true;
                 }
 
                 GUI.Label(new Rect(viewRect.width - 36f, y, 36f, 24f), selectedLight.intensity.ToString("0.0"), smallBodyStyle);
@@ -2568,8 +3496,10 @@ namespace NtingCampusMapEditor
                 {
                     selectedLight.color = selectedColor;
                     lightColor = selectedColor;
+                    selectedLightChanged = true;
                 }
 
+                bool previousShadowsEnabled = selectedLight.shadowsEnabled;
                 bool selectedShadowsEnabled = GUI.Toggle(new Rect(0f, y, viewRect.width, 24f), selectedLight.shadowsEnabled, "启用阴影", bodyStyle);
                 y += 30f;
                 bool selectedPreviousGuiEnabled = GUI.enabled;
@@ -2581,19 +3511,41 @@ namespace NtingCampusMapEditor
                 y = DrawSlider(y, viewRect.width, "柔和", ref selectedShadowSoftness, 0f, 1f);
                 y = DrawSlider(y, viewRect.width, "衰减", ref selectedShadowSoftnessFalloff, 0f, 1f);
                 GUI.enabled = selectedPreviousGuiEnabled;
+                bool selectedShadowSettingsChanged = previousShadowsEnabled != selectedShadowsEnabled ||
+                                                     !Mathf.Approximately(selectedLight.shadowIntensity, selectedShadowIntensity) ||
+                                                     !Mathf.Approximately(selectedLight.shadowSoftness, selectedShadowSoftness) ||
+                                                     !Mathf.Approximately(selectedLight.shadowSoftnessFalloffIntensity, selectedShadowSoftnessFalloff);
                 CampusDynamicShadowUtility.ConfigureLightShadows(selectedLight, selectedLight.lightType != Light2D.LightType.Global && selectedShadowsEnabled, selectedShadowIntensity, selectedShadowSoftness, selectedShadowSoftnessFalloff);
                 SyncShadowFieldsFromSelectedLight();
+                selectedLightChanged |= selectedShadowSettingsChanged;
 
                 if (selectedLight.lightType == Light2D.LightType.Point)
                 {
-                    selectedLight.pointLightInnerRadius = GUI.HorizontalSlider(new Rect(70f, y + 7f, viewRect.width - 120f, 20f), selectedLight.pointLightInnerRadius, 0f, 12f);
+                    float selectedInnerRadius = GUI.HorizontalSlider(new Rect(70f, y + 7f, viewRect.width - 120f, 20f), selectedLight.pointLightInnerRadius, 0f, 12f);
+                    if (!Mathf.Approximately(selectedLight.pointLightInnerRadius, selectedInnerRadius))
+                    {
+                        selectedLight.pointLightInnerRadius = selectedInnerRadius;
+                        selectedLightChanged = true;
+                    }
+
                     GUI.Label(new Rect(0f, y, 66f, 24f), "内半径", bodyStyle);
                     GUI.Label(new Rect(viewRect.width - 44f, y, 44f, 24f), selectedLight.pointLightInnerRadius.ToString("0.0"), smallBodyStyle);
                     y += 30f;
-                    selectedLight.pointLightOuterRadius = GUI.HorizontalSlider(new Rect(70f, y + 7f, viewRect.width - 120f, 20f), Mathf.Max(selectedLight.pointLightInnerRadius + 0.1f, selectedLight.pointLightOuterRadius), selectedLight.pointLightInnerRadius + 0.1f, 24f);
+                    float selectedOuterRadius = GUI.HorizontalSlider(new Rect(70f, y + 7f, viewRect.width - 120f, 20f), Mathf.Max(selectedLight.pointLightInnerRadius + 0.1f, selectedLight.pointLightOuterRadius), selectedLight.pointLightInnerRadius + 0.1f, 24f);
+                    if (!Mathf.Approximately(selectedLight.pointLightOuterRadius, selectedOuterRadius))
+                    {
+                        selectedLight.pointLightOuterRadius = selectedOuterRadius;
+                        selectedLightChanged = true;
+                    }
+
                     GUI.Label(new Rect(0f, y, 66f, 24f), "外半径", bodyStyle);
                     GUI.Label(new Rect(viewRect.width - 44f, y, 44f, 24f), selectedLight.pointLightOuterRadius.ToString("0.0"), smallBodyStyle);
                     y += 30f;
+                }
+
+                if (selectedLightChanged)
+                {
+                    ScheduleProjectSync();
                 }
             }
 
@@ -2717,7 +3669,7 @@ namespace NtingCampusMapEditor
             }
 
             GUI.Box(settingsPanelRect, GUIContent.none, panelStyle);
-            settingsScroll = GUI.BeginScrollView(new Rect(settingsPanelRect.x + 12f, settingsPanelRect.y + 12f, settingsPanelRect.width - 24f, settingsPanelRect.height - 24f), settingsScroll, new Rect(0f, 0f, settingsPanelRect.width - 42f, 300f));
+            settingsScroll = GUI.BeginScrollView(new Rect(settingsPanelRect.x + 12f, settingsPanelRect.y + 12f, settingsPanelRect.width - 24f, settingsPanelRect.height - 24f), settingsScroll, new Rect(0f, 0f, settingsPanelRect.width - 42f, 460f));
             GUI.Label(new Rect(0f, 0f, settingsPanelRect.width - 42f, 26f), "运行时设置", headerStyle);
             GUI.Label(new Rect(0f, 38f, 122f, 24f), "导出目录", bodyStyle);
             GUI.Label(new Rect(0f, 66f, settingsPanelRect.width - 42f, 52f), GetExportFolder(), mutedStyle);
@@ -2728,10 +3680,30 @@ namespace NtingCampusMapEditor
                 OpenImportLocation(GetImportRootFolder());
             }
 
-            GUI.Label(new Rect(0f, 252f, 122f, 24f), "排序步长", bodyStyle);
+            autoProjectSync = GUI.Toggle(new Rect(122f, 212f, 126f, 24f), autoProjectSync, "\u81ea\u52a8\u540c\u6b65");
+            autoRestoreProjectSyncOnStart = GUI.Toggle(new Rect(252f, 212f, 150f, 24f), autoRestoreProjectSyncOnStart, "\u542f\u52a8\u81ea\u52a8\u6062\u590d");
+
+            GUI.Label(new Rect(0f, 252f, settingsPanelRect.width - 42f, 24f), "\u9879\u76ee\u540c\u6b65\u76ee\u5f55", bodyStyle);
+            GUI.Label(new Rect(0f, 280f, settingsPanelRect.width - 42f, 52f), GetProjectSyncRootFolder(), mutedStyle);
+            if (GUI.Button(new Rect(0f, 340f, 112f, 30f), "\u540c\u6b65\u5230\u9879\u76ee", buttonStyle))
+            {
+                SyncRuntimeContentToProject();
+            }
+
+            if (GUI.Button(new Rect(122f, 340f, 112f, 30f), "\u4ece\u9879\u76ee\u6062\u590d", buttonStyle))
+            {
+                RestoreRuntimeContentFromProject();
+            }
+
+            if (GUI.Button(new Rect(244f, 340f, 112f, 30f), "\u6253\u5f00\u540c\u6b65", buttonStyle))
+            {
+                OpenImportLocation(GetProjectSyncRootFolder());
+            }
+
+            GUI.Label(new Rect(0f, 382f, 122f, 24f), "\u6392\u5e8f\u6b65\u957f", bodyStyle);
             if (mapRoot != null)
             {
-                mapRoot.SortingOrderStepPerFloor = Mathf.Clamp(ParseIntField(new Rect(128f, 248f, 80f, 30f), mapRoot.SortingOrderStepPerFloor), 100, 5000);
+                mapRoot.SortingOrderStepPerFloor = Mathf.Clamp(ParseIntField(new Rect(128f, 378f, 80f, 30f), mapRoot.SortingOrderStepPerFloor), 100, 5000);
             }
 
             GUI.EndScrollView();
@@ -2839,8 +3811,14 @@ namespace NtingCampusMapEditor
             else if (brushMode == CampusRuntimeBrushMode.PlaceObject)
             {
                 Vector2Int footprint = GetSelectedObjectFootprint();
-                DrawObjectPlacementPreview(floor.Grid, hoverCell, footprint);
                 DrawCellGrid(floor.Grid, hoverCell, footprint, new Color(1f, 0.96f, 0.25f, 0.72f), 2f);
+                DrawObjectPlacementPreview(floor.Grid, hoverCell, footprint);
+            }
+            else if (brushMode == CampusRuntimeBrushMode.PlaceRoomPrefab)
+            {
+                CampusRuntimeRoomPrefab roomPrefab = GetSelectedRoomPrefab();
+                Vector2Int size = roomPrefab != null ? NormalizeRoomPrefabSize(roomPrefab.Size) : Vector2Int.one;
+                DrawCellGrid(floor.Grid, hoverCell, size, new Color(0.2f, 0.85f, 1f, 0.72f), 2f);
             }
             else if (brushMode == CampusRuntimeBrushMode.PlaceStair)
             {
@@ -2936,7 +3914,8 @@ namespace NtingCampusMapEditor
             }
 
             Vector3 worldCenter = CampusPlacedObject.GetFootprintWorldCenter(grid, anchor, footprint);
-            Rect rect = BuildWorldPreviewRect(worldCenter, sprite, renderer.transform.localScale);
+            Vector2 previewScale = placed != null ? placed.NormalizedVisualScale : new Vector2(renderer.transform.localScale.x, renderer.transform.localScale.y);
+            Rect rect = BuildWorldPreviewRect(worldCenter, sprite, new Vector3(previewScale.x, previewScale.y, renderer.transform.localScale.z));
             if (rect.width <= 0f || rect.height <= 0f)
             {
                 return;
@@ -3071,7 +4050,7 @@ namespace NtingCampusMapEditor
 
                 Rect imageRect = new Rect(cellRect.x + 8f, cellRect.y + 8f, PaletteTileSize - 16f, PaletteTileSize - 16f);
                 DrawPrefabPreview(imageRect, prefabs[i]);
-                GUI.Label(new Rect(cellRect.x + 4f, cellRect.y + PaletteTileSize - 2f, PaletteTileSize - 8f, 18f), Truncate(CampusObjectNames.GetDisplayName(prefabs[i].name), 5), smallBodyStyle);
+                GUI.Label(new Rect(cellRect.x + 4f, cellRect.y + PaletteTileSize - 2f, PaletteTileSize - 8f, 18f), Truncate(GetObjectDisplayName(prefabs[i]), 5), smallBodyStyle);
             }
 
             int rows = Mathf.CeilToInt((float)prefabs.Count / columns);
@@ -3119,7 +4098,7 @@ namespace NtingCampusMapEditor
             DrawGuiCircle(center, outer, new Color(1f, 0.88f, 0.35f, 0.88f), 2f, 40);
             DrawGuiCircle(center, Mathf.Max(4f, inner), new Color(1f, 0.96f, 0.65f, 0.8f), 1f, 32);
             GUI.Label(new Rect(rect.x + 54f, rect.y + 39f, rect.width - 140f, 24f), lightBrushType == Light2D.LightType.Global ? "全局光" : "点光源", bodyStyle);
-            GUI.Label(new Rect(rect.x + 54f, rect.y + 66f, rect.width - 140f, 24f), "亮 " + lightIntensity.ToString("0.0") + " / 外 " + lightOuterRadius.ToString("0.0") + " / 内 " + lightInnerRadius.ToString("0.0"), mutedStyle);
+            GUI.Label(new Rect(rect.x + 54f, rect.y + 66f, rect.width - 140f, 24f), "亮度 " + lightIntensity.ToString("0.0") + " / 外 " + lightOuterRadius.ToString("0.0") + " / 内 " + lightInnerRadius.ToString("0.0"), mutedStyle);
             y += 124f;
         }
 
@@ -3151,7 +4130,7 @@ namespace NtingCampusMapEditor
                 dayNightController.DaySpeedMultiplier = editedSpeed;
             }
 
-            GUI.Label(new Rect(0f, y, width, 24f), "1x = 现实1秒推进游戏1分钟；当前一天约 " + dayNightController.RealMinutesPerGameDay.ToString("0.0") + " 分钟", mutedStyle);
+            GUI.Label(new Rect(0f, y, width, 24f), "1x = 现实1秒推进游戏分钟；当前一天约 " + dayNightController.RealMinutesPerGameDay.ToString("0.0") + " 分钟", mutedStyle);
             y += 30f;
 
             float halfWidth = (width - 8f) * 0.5f;
@@ -3207,6 +4186,7 @@ namespace NtingCampusMapEditor
             if (GUI.Button(new Rect(rect.x + 12f, rowY, buttonWidth, 30f), "重建当前楼层", buttonStyle))
             {
                 RebuildWallVisuals(EnsureFloor(selectedFloorIndex));
+                ScheduleProjectSync();
             }
 
             if (GUI.Button(new Rect(rect.x + 24f + buttonWidth, rowY, buttonWidth, 30f), "重建全部墙体", buttonStyle))
@@ -3240,6 +4220,744 @@ namespace NtingCampusMapEditor
             }
         }
 
+        private void DrawSelectedObjectSettingsLauncher(ref float y, float width)
+        {
+            GameObject prefab = GetSelectedObjectPrefab();
+            CampusPlacedObject placed = prefab != null ? prefab.GetComponent<CampusPlacedObject>() : null;
+            string name = prefab != null ? GetObjectDisplayName(prefab) : "\u672a\u9009\u7269\u54c1";
+
+            bool previousEnabled = GUI.enabled;
+            GUI.enabled = prefab != null;
+            GUI.Box(new Rect(0f, y - 4f, width, 42f), GUIContent.none, objectSettingsHighlightStyle);
+            if (GUI.Button(new Rect(8f, y, 156f, 34f), "\u7269\u54c1\u8bbe\u7f6e", showObjectSettings ? selectedButtonStyle : buttonStyle))
+            {
+                showObjectSettings = !showObjectSettings;
+                if (showObjectSettings)
+                {
+                    SyncObjectSettingsSelection(prefab, placed, true);
+                }
+            }
+
+            GUI.enabled = previousEnabled;
+            GUI.Label(new Rect(174f, y + 3f, Mathf.Max(10f, width - 174f), 28f), Truncate(name, 18), mutedStyle);
+            y += 46f;
+        }
+
+        private void DrawObjectSettingsPanel()
+        {
+            if (!showObjectSettings)
+            {
+                return;
+            }
+
+            Rect panelRect = objectSettingsPanelRect;
+            GUI.Box(panelRect, GUIContent.none, panelStyle);
+            GUI.Box(new Rect(panelRect.x + 8f, panelRect.y + 8f, panelRect.width - 16f, 84f), GUIContent.none, objectSettingsHighlightStyle);
+            GUI.Label(new Rect(panelRect.x + 12f, panelRect.y + 10f, panelRect.width - 62f, 38f), "\u7269\u54c1\u8bbe\u7f6e", headerStyle);
+            if (GUI.Button(new Rect(panelRect.xMax - 46f, panelRect.y + 12f, 32f, 32f), "X", buttonStyle))
+            {
+                showObjectSettings = false;
+                return;
+            }
+
+            GameObject prefab = GetSelectedObjectPrefab();
+            if (prefab == null)
+            {
+                GUI.Label(new Rect(panelRect.x + 18f, panelRect.y + 62f, panelRect.width - 36f, 40f), "\u8bf7\u5148\u9009\u62e9\u7269\u54c1\u3002", warningStyle);
+                return;
+            }
+
+            CampusPlacedObject placed = EnsureRuntimePlacedObject(prefab);
+            if (placed == null)
+            {
+                GUI.Label(new Rect(panelRect.x + 18f, panelRect.y + 62f, panelRect.width - 36f, 70f), "\u8be5\u7269\u54c1\u7f3a\u5c11 CampusPlacedObject\uff0c\u8bf7\u5148\u5728\u9879\u76ee\u4e2d\u914d\u7f6e\u540e\u518d\u8bbe\u7f6e\u3002", warningStyle);
+                return;
+            }
+
+            SyncObjectSettingsSelection(prefab, placed, false);
+
+            float actionY = panelRect.y + 56f;
+            if (GUI.Button(new Rect(panelRect.x + 14f, actionY, 132f, 32f), "\u4fdd\u5b58\u5e76\u540c\u6b65", buttonStyle))
+            {
+                CommitObjectSettingsDraft(prefab, placed);
+                SaveSelectedObjectSettings();
+            }
+
+            if (GUI.Button(new Rect(panelRect.x + 154f, actionY, 184f, 32f), "\u4e00\u952e\u5e94\u7528\u5230\u573a\u4e0a\u540c\u7c7b", buttonStyle))
+            {
+                CommitObjectSettingsDraft(prefab, placed);
+                ApplySelectedObjectSettingsToPlacedInstances();
+            }
+
+            GUI.Label(new Rect(panelRect.x + 348f, actionY + 2f, Mathf.Max(10f, panelRect.width - 408f), 30f), "\u7edf\u4e00\u5df2\u653e\u7f6e\u7269\u54c1", mutedStyle);
+
+            Rect scrollRect = new Rect(panelRect.x + 14f, panelRect.y + 98f, panelRect.width - 28f, panelRect.height - 112f);
+            float viewWidth = scrollRect.width - 22f;
+            Rect viewRect = new Rect(0f, 0f, viewWidth, Mathf.Max(scrollRect.height + 1f, 1360f));
+            objectSettingsScroll = GUI.BeginScrollView(scrollRect, objectSettingsScroll, viewRect);
+            float y = 0f;
+
+            DrawObjectSettingsRenameControls(ref y, viewWidth, prefab, placed);
+            DrawObjectSettingsPreviewControls(ref y, viewWidth, prefab, placed);
+            DrawObjectSettingsFootprintControls(ref y, viewWidth, placed);
+            DrawObjectSettingsStorageControls(ref y, viewWidth, placed);
+            DrawObjectSettingsScaleControls(ref y, viewWidth, placed);
+            DrawObjectSettingsRotationControls(ref y, viewWidth, placed);
+            DrawObjectSettingsAnchorControls(ref y, viewWidth, placed);
+            GUI.EndScrollView();
+        }
+
+        private void SyncObjectSettingsSelection(GameObject prefab, CampusPlacedObject placed, bool force)
+        {
+            if (!force && prefab == lastObjectSettingsPrefab)
+            {
+                return;
+            }
+
+            lastObjectSettingsPrefab = prefab;
+            lastFootprintSyncedPrefab = null;
+            SyncSelectedObjectFootprintFields();
+            objectSettingsPreviewRotation90 = 0;
+            selectedObjectInteractionAnchorIndex = 0;
+            if (placed != null)
+            {
+                placed.NormalizeCustomInteractionAnchors();
+            }
+
+            objectSettingsScroll = Vector2.zero;
+            objectSettingsNameDraft = prefab != null ? GetObjectDisplayName(prefab) : string.Empty;
+        }
+
+        private static string BuildObjectSettingsInputKey(CampusPlacedObject placed, string suffix)
+        {
+            string owner = placed != null ? placed.GetInstanceID().ToString(CultureInfo.InvariantCulture) : "none";
+            return "object_settings_" + owner + "_" + suffix;
+        }
+
+        private void DrawObjectSettingsRenameControls(ref float y, float width, GameObject prefab, CampusPlacedObject placed)
+        {
+            GUI.Label(new Rect(0f, y, width, 28f), "\u91cd\u547d\u540d", headerStyle);
+            y += 36f;
+            GUI.Label(new Rect(0f, y, 72f, 30f), "\u540d\u79f0", bodyStyle);
+            objectSettingsNameDraft = DrawTextInput(new Rect(76f, y, width - 168f, 30f), objectSettingsNameDraft, BuildObjectSettingsInputKey(placed, "name"));
+            if (GUI.Button(new Rect(width - 84f, y, 84f, 30f), "\u6062\u590d", buttonStyle))
+            {
+                objectSettingsNameDraft = GetObjectFallbackDisplayName(prefab);
+                placed.DisplayNameOverride = string.Empty;
+                textInputDrafts.Remove(BuildObjectSettingsInputKey(placed, "name"));
+            }
+
+            y += 42f;
+        }
+
+        private void DrawObjectSettingsPreviewControls(ref float y, float width, GameObject prefab, CampusPlacedObject placed)
+        {
+            GUI.Label(new Rect(0f, y, width, 28f), "\u9884\u89c8", headerStyle);
+            y += 34f;
+
+            float gap = 8f;
+            float buttonWidth = (width - gap * 3f) / 4f;
+            for (int i = 0; i < 4; i++)
+            {
+                Rect buttonRect = new Rect(i * (buttonWidth + gap), y, buttonWidth, 30f);
+                if (GUI.Button(buttonRect, (i * 90).ToString() + "\u00b0", objectSettingsPreviewRotation90 == i ? selectedButtonStyle : buttonStyle))
+                {
+                    objectSettingsPreviewRotation90 = i;
+                }
+            }
+
+            y += 38f;
+            Rect previewRect = new Rect(0f, y, width, 242f);
+            DrawObjectSettingsPreview(previewRect, prefab, placed);
+            y += previewRect.height + 12f;
+        }
+
+        private void DrawObjectSettingsFootprintControls(ref float y, float width, CampusPlacedObject placed)
+        {
+            GUI.Label(new Rect(0f, y, width, 28f), "\u5360\u683c\u8bbe\u7f6e", headerStyle);
+            y += 36f;
+            GUI.Label(new Rect(0f, y, 72f, 30f), "\u5360\u683c", bodyStyle);
+            int nextX = Mathf.Clamp(ParseIntField(new Rect(76f, y, 58f, 30f), selectedObjectFootprintX, BuildObjectSettingsInputKey(placed, "footprint_x")), 1, 32);
+            GUI.Label(new Rect(142f, y, 22f, 30f), "x", bodyStyle);
+            int nextY = Mathf.Clamp(ParseIntField(new Rect(166f, y, 58f, 30f), selectedObjectFootprintY, BuildObjectSettingsInputKey(placed, "footprint_y")), 1, 32);
+            if (nextX != selectedObjectFootprintX || nextY != selectedObjectFootprintY)
+            {
+                selectedObjectFootprintX = nextX;
+                selectedObjectFootprintY = nextY;
+                placed.FootprintSize = new Vector2Int(selectedObjectFootprintX, selectedObjectFootprintY);
+                placed.OverrideFootprintSize = true;
+                placed.ApplyRotationVisualState();
+            }
+
+            GUI.Label(new Rect(236f, y + 2f, Mathf.Max(10f, width - 236f), 28f), "\u9884\u89c8\u7f51\u683c\u4f1a\u6309\u5360\u683c\u66f4\u65b0", mutedStyle);
+            y += 44f;
+        }
+
+        private void DrawObjectSettingsStorageControls(ref float y, float width, CampusPlacedObject placed)
+        {
+            GUI.Label(new Rect(0f, y, width, 28f), "\u50a8\u7269\u5bb9\u5668", headerStyle);
+            y += 34f;
+
+            placed.NormalizeStorageSettings();
+            bool nextEnabled = GUI.Toggle(new Rect(0f, y, 150f, 24f), placed.IsStorageContainer, "\u4f5c\u4e3a\u50a8\u7269\u5bb9\u5668");
+            if (nextEnabled != placed.IsStorageContainer)
+            {
+                placed.IsStorageContainer = nextEnabled;
+                if (placed.IsStorageContainer)
+                {
+                    EnsureStorageInteractionAnchor(placed);
+                }
+
+                placed.ApplyInteractionState();
+            }
+
+            GUI.Label(new Rect(160f, y, Mathf.Max(10f, width - 160f), 24f), "\u542f\u7528\u540e\u6253\u5f00\u65f6\u4f7f\u7528\u4e0b\u9762\u7684\u50a8\u7269\u7a7a\u95f4", mutedStyle);
+            y += 32f;
+
+            if (!placed.IsStorageContainer)
+            {
+                GUI.Label(new Rect(0f, y, width, 36f), "\u5bf9\u9700\u8981\u5b58\u653e\u7269\u54c1\u7684\u7bb1\u5b50\u3001\u684c\u809a\u3001\u67dc\u5b50\u7b49\u7269\u4f53\u6253\u5f00\u6b64\u9879\u3002", mutedStyle);
+                y += 46f;
+                return;
+            }
+
+            Vector2Int storageSize = placed.NormalizedStorageSize;
+            GUI.Label(new Rect(0f, y, 72f, 30f), "\u7a7a\u95f4", bodyStyle);
+            int nextColumns = Mathf.Clamp(ParseIntField(new Rect(76f, y, 58f, 30f), storageSize.x, BuildObjectSettingsInputKey(placed, "storage_columns")), 1, 12);
+            GUI.Label(new Rect(142f, y, 22f, 30f), "x", bodyStyle);
+            int nextRows = Mathf.Clamp(ParseIntField(new Rect(166f, y, 58f, 30f), storageSize.y, BuildObjectSettingsInputKey(placed, "storage_rows")), 1, 12);
+            if (nextColumns != storageSize.x || nextRows != storageSize.y)
+            {
+                placed.StorageSize = new Vector2Int(nextColumns, nextRows);
+                placed.NormalizeStorageSettings();
+            }
+
+            GUI.Label(new Rect(236f, y + 2f, Mathf.Max(10f, width - 236f), 28f), "\u6253\u5f00\u50a8\u7269\u7a97\u53e3\u65f6\u7684\u5217\u6570 x \u884c\u6570", mutedStyle);
+            y += 38f;
+
+            GUI.Label(new Rect(0f, y, 72f, 30f), "\u627f\u91cd", bodyStyle);
+            float nextMaxWeight = Mathf.Clamp(ParseFloatField(new Rect(76f, y, 68f, 30f), placed.NormalizedStorageMaxWeight, BuildObjectSettingsInputKey(placed, "storage_weight")), 0f, 999f);
+            if (!Mathf.Approximately(nextMaxWeight, placed.StorageMaxWeight))
+            {
+                placed.StorageMaxWeight = nextMaxWeight;
+            }
+
+            GUI.Label(new Rect(154f, y + 2f, Mathf.Max(10f, width - 154f), 28f), "kg\uff0c0 \u8868\u793a\u4e0d\u9650\u5236", mutedStyle);
+            y += 44f;
+        }
+
+        private void DrawObjectSettingsScaleControls(ref float y, float width, CampusPlacedObject placed)
+        {
+            GUI.Label(new Rect(0f, y, width, 28f), "\u8d34\u56fe\u7f29\u653e", headerStyle);
+            y += 34f;
+
+            bool nextLock = GUI.Toggle(new Rect(0f, y, width, 24f), placed.LockVisualScaleAspect, "\u7b49\u6bd4\u4f8b\u7f29\u653e");
+            if (nextLock != placed.LockVisualScaleAspect)
+            {
+                placed.LockVisualScaleAspect = nextLock;
+                if (placed.LockVisualScaleAspect)
+                {
+                    float uniform = Mathf.Max(placed.NormalizedVisualScale.x, placed.NormalizedVisualScale.y);
+                    placed.VisualScale = new Vector2(uniform, uniform);
+                }
+            }
+
+            y += 30f;
+            Vector2 scale = placed.NormalizedVisualScale;
+            if (placed.LockVisualScaleAspect)
+            {
+                GUI.Label(new Rect(0f, y, 72f, 30f), "\u6bd4\u4f8b", bodyStyle);
+                float uniform = Mathf.Clamp(ParseFloatField(new Rect(76f, y, 68f, 30f), scale.x, BuildObjectSettingsInputKey(placed, "scale_uniform")), ObjectSettingsMinScale, ObjectSettingsMaxScale);
+                uniform = GUI.HorizontalSlider(new Rect(154f, y + 9f, width - 210f, 18f), uniform, ObjectSettingsMinScale, ObjectSettingsMaxScale);
+                GUI.Label(new Rect(width - 48f, y, 48f, 30f), uniform.ToString("0.##"), smallBodyStyle);
+                scale = new Vector2(uniform, uniform);
+                y += 38f;
+            }
+            else
+            {
+                scale.x = DrawObjectScaleAxis(y, width, "X", scale.x, BuildObjectSettingsInputKey(placed, "scale_x"));
+                y += 34f;
+                scale.y = DrawObjectScaleAxis(y, width, "Y", scale.y, BuildObjectSettingsInputKey(placed, "scale_y"));
+                y += 38f;
+            }
+
+            Vector2 normalized = CampusPlacedObject.NormalizeVisualScale(scale);
+            if (Vector2.Distance(placed.VisualScale, normalized) > 0.0001f)
+            {
+                placed.VisualScale = normalized;
+                placed.ApplyRotationVisualState();
+            }
+        }
+
+        private float DrawObjectScaleAxis(float y, float width, string label, float value, string key)
+        {
+            GUI.Label(new Rect(0f, y, 72f, 30f), label, bodyStyle);
+            value = Mathf.Clamp(ParseFloatField(new Rect(76f, y, 68f, 30f), value, key), ObjectSettingsMinScale, ObjectSettingsMaxScale);
+            value = GUI.HorizontalSlider(new Rect(154f, y + 9f, width - 210f, 18f), value, ObjectSettingsMinScale, ObjectSettingsMaxScale);
+            GUI.Label(new Rect(width - 48f, y, 48f, 30f), value.ToString("0.##"), smallBodyStyle);
+            return value;
+        }
+
+        private void DrawObjectSettingsRotationControls(ref float y, float width, CampusPlacedObject placed)
+        {
+            GUI.Label(new Rect(0f, y, width, 28f), "\u56db\u5411\u65cb\u8f6c\u8bbe\u7f6e", headerStyle);
+            y += 34f;
+
+            bool nextAllowRotation = GUI.Toggle(new Rect(0f, y, width, 24f), placed.AllowRotation, "\u542f\u7528\u56db\u5411\u65cb\u8f6c");
+            if (nextAllowRotation != placed.AllowRotation)
+            {
+                placed.OverrideAllowRotation = true;
+                placed.AllowRotation = nextAllowRotation;
+                placed.ApplyRotationVisualState();
+            }
+
+            y += 32f;
+            DrawObjectDirectionSpriteRow(ref y, width, placed, 0);
+            DrawObjectDirectionSpriteRow(ref y, width, placed, 1);
+            DrawObjectDirectionSpriteRow(ref y, width, placed, 2);
+            DrawObjectDirectionSpriteRow(ref y, width, placed, 3);
+            y += 8f;
+        }
+
+        private void DrawObjectSettingsAnchorControls(ref float y, float width, CampusPlacedObject placed)
+        {
+            GUI.Label(new Rect(0f, y, width, 28f), "\u4ea4\u4e92\u951a\u70b9", headerStyle);
+            y += 34f;
+
+            bool nextUseAnchor = GUI.Toggle(new Rect(0f, y, width, 24f), placed.UseCustomInteractionAnchor, "\u542f\u7528\u4ea4\u4e92\u951a\u70b9");
+            if (nextUseAnchor != placed.UseCustomInteractionAnchor)
+            {
+                placed.UseCustomInteractionAnchor = nextUseAnchor;
+                if (placed.UseCustomInteractionAnchor)
+                {
+                    EnsureSelectedObjectInteractionAnchor(placed);
+                }
+
+                placed.ApplyInteractionState();
+            }
+
+            y += 30f;
+            if (!placed.UseCustomInteractionAnchor)
+            {
+                GUI.Label(new Rect(0f, y, width, 40f), "\u542f\u7528\u540e\u53ef\u6dfb\u52a0\u591a\u4e2a\u4ea4\u4e92\u951a\u70b9\u3002", mutedStyle);
+                y += 48f;
+                return;
+            }
+
+            EnsureSelectedObjectInteractionAnchor(placed);
+            DrawObjectSettingsAnchorList(ref y, width, placed);
+
+            CampusPlacedObjectInteractionAnchor anchor = GetSelectedObjectInteractionAnchor(placed);
+            if (anchor == null)
+            {
+                return;
+            }
+
+            bool previousEnabled = GUI.enabled;
+            GUI.enabled = anchor.Enabled;
+            string anchorKeyPrefix = "anchor_" + selectedObjectInteractionAnchorIndex + "_";
+            GUI.Label(new Rect(0f, y, 72f, 30f), "\u540d\u79f0", bodyStyle);
+            anchor.DisplayName = DrawTextInput(new Rect(76f, y, width - 76f, 30f), string.IsNullOrWhiteSpace(anchor.DisplayName) ? string.Empty : anchor.DisplayName, BuildObjectSettingsInputKey(placed, anchorKeyPrefix + "display_name"));
+            y += 36f;
+
+            GUI.Label(new Rect(0f, y, 72f, 30f), "\u63d0\u793a", bodyStyle);
+            anchor.PromptText = DrawTextInput(new Rect(76f, y, width - 76f, 30f), string.IsNullOrWhiteSpace(anchor.PromptText) ? string.Empty : anchor.PromptText, BuildObjectSettingsInputKey(placed, anchorKeyPrefix + "prompt"));
+            y += 36f;
+
+            GUI.Label(new Rect(0f, y, 72f, 30f), "\u529f\u80fdID", bodyStyle);
+            anchor.ActionId = DrawTextInput(new Rect(76f, y, width - 76f, 30f), string.IsNullOrWhiteSpace(anchor.ActionId) ? string.Empty : anchor.ActionId, BuildObjectSettingsInputKey(placed, anchorKeyPrefix + "action"));
+            y += 36f;
+
+            GUI.Label(new Rect(0f, y, 72f, 30f), "\u53c2\u6570", bodyStyle);
+            anchor.Payload = DrawTextInput(new Rect(76f, y, width - 76f, 30f), string.IsNullOrWhiteSpace(anchor.Payload) ? string.Empty : anchor.Payload, BuildObjectSettingsInputKey(placed, anchorKeyPrefix + "payload"));
+            y += 36f;
+
+            Vector3 position = anchor.LocalPosition;
+            GUI.Label(new Rect(0f, y, 28f, 30f), "X", bodyStyle);
+            position.x = ParseFloatField(new Rect(30f, y, 68f, 30f), position.x, BuildObjectSettingsInputKey(placed, anchorKeyPrefix + "x"));
+            GUI.Label(new Rect(106f, y, 28f, 30f), "Y", bodyStyle);
+            position.y = ParseFloatField(new Rect(136f, y, 68f, 30f), position.y, BuildObjectSettingsInputKey(placed, anchorKeyPrefix + "y"));
+            GUI.Label(new Rect(212f, y, 28f, 30f), "R", bodyStyle);
+            anchor.Radius = CampusPlacedObject.NormalizeInteractionAnchorRadius(ParseFloatField(new Rect(242f, y, 68f, 30f), anchor.Radius, BuildObjectSettingsInputKey(placed, anchorKeyPrefix + "radius")));
+            if (Vector3.Distance(anchor.LocalPosition, position) > 0.0001f)
+            {
+                anchor.LocalPosition = position;
+            }
+
+            y += 38f;
+            anchor.Enabled = GUI.Toggle(new Rect(0f, y, 98f, 24f), anchor.Enabled, "\u542f\u7528");
+            anchor.LogInteraction = GUI.Toggle(new Rect(108f, y, 138f, 24f), anchor.LogInteraction, "\u65e0\u76ee\u6807\u65f6\u8bb0\u5f55");
+            anchor.UseTargetDoorStatePrompt = GUI.Toggle(new Rect(256f, y, Mathf.Max(10f, width - 256f), 24f), anchor.UseTargetDoorStatePrompt, "\u4f7f\u7528\u95e8\u72b6\u6001\u63d0\u793a");
+            GUI.enabled = previousEnabled;
+            y += 34f;
+            placed.NormalizeCustomInteractionAnchors();
+            placed.ApplyInteractionState();
+            GUI.Label(new Rect(0f, y, width, 58f), "\u70b9\u51fb\u4e0a\u65b9\u9884\u89c8\u7f51\u683c\u53ef\u8bbe\u7f6e\u5f53\u524d\u951a\u70b9\u4f4d\u7f6e\u3002\u529f\u80fdID\uff1aopen_storage / toggle_door / interact_target / log\u3002\u7bb1\u5b50\u548c\u95e8\u4e5f\u901a\u8fc7\u8fd9\u91cc\u7684\u529f\u80fdID\u7ed1\u5b9a\u3002", mutedStyle);
+            y += 68f;
+        }
+
+        private void DrawObjectSettingsAnchorList(ref float y, float width, CampusPlacedObject placed)
+        {
+            float buttonWidth = Mathf.Max(70f, (width - 16f) / 3f);
+            if (GUI.Button(new Rect(0f, y, buttonWidth, 30f), "\u65b0\u589e\u951a\u70b9", buttonStyle))
+            {
+                AddObjectSettingsInteractionAnchor(placed);
+            }
+
+            if (GUI.Button(new Rect(buttonWidth + 8f, y, buttonWidth, 30f), "\u5220\u9664\u5f53\u524d", buttonStyle))
+            {
+                RemoveSelectedObjectInteractionAnchor(placed);
+            }
+
+            GUI.Label(new Rect((buttonWidth + 8f) * 2f, y + 2f, Mathf.Max(10f, width - (buttonWidth + 8f) * 2f), 28f), "\u591a\u951a\u70b9", mutedStyle);
+            y += 38f;
+
+            int count = placed.CustomInteractionAnchors != null ? placed.CustomInteractionAnchors.Count : 0;
+            for (int i = 0; i < count; i++)
+            {
+                CampusPlacedObjectInteractionAnchor anchor = placed.CustomInteractionAnchors[i];
+                string label = anchor != null && !string.IsNullOrWhiteSpace(anchor.DisplayName)
+                    ? anchor.DisplayName.Trim()
+                    : "\u951a\u70b9 " + (i + 1);
+                if (GUI.Button(new Rect(0f, y, width, 28f), Truncate(label, 24), i == selectedObjectInteractionAnchorIndex ? selectedButtonStyle : buttonStyle))
+                {
+                    selectedObjectInteractionAnchorIndex = i;
+                }
+
+                y += 32f;
+            }
+
+            y += 4f;
+        }
+
+        private void EnsureSelectedObjectInteractionAnchor(CampusPlacedObject placed)
+        {
+            if (placed == null)
+            {
+                return;
+            }
+
+            placed.NormalizeCustomInteractionAnchors();
+            if (placed.CustomInteractionAnchors == null)
+            {
+                placed.CustomInteractionAnchors = new List<CampusPlacedObjectInteractionAnchor>();
+            }
+
+            if (placed.UseCustomInteractionAnchor && placed.CustomInteractionAnchors.Count == 0)
+            {
+                AddObjectSettingsInteractionAnchor(placed);
+            }
+
+            selectedObjectInteractionAnchorIndex = placed.CustomInteractionAnchors.Count > 0
+                ? Mathf.Clamp(selectedObjectInteractionAnchorIndex, 0, placed.CustomInteractionAnchors.Count - 1)
+                : 0;
+        }
+
+        private void EnsureStorageInteractionAnchor(CampusPlacedObject placed)
+        {
+            if (placed == null)
+            {
+                return;
+            }
+
+            if (placed.CustomInteractionAnchors == null)
+            {
+                placed.CustomInteractionAnchors = new List<CampusPlacedObjectInteractionAnchor>();
+            }
+
+            placed.IsInteractable = true;
+            placed.UseCustomInteractionAnchor = true;
+            for (int i = 0; i < placed.CustomInteractionAnchors.Count; i++)
+            {
+                CampusPlacedObjectInteractionAnchor existing = placed.CustomInteractionAnchors[i];
+                if (existing != null && CampusInteractionActionIds.Equals(existing.ActionId, CampusInteractionActionIds.OpenStorage))
+                {
+                    selectedObjectInteractionAnchorIndex = i;
+                    return;
+                }
+            }
+
+            Vector2Int footprint = placed.NormalizedFootprintSize;
+            placed.CustomInteractionAnchors.Add(new CampusPlacedObjectInteractionAnchor
+            {
+                AnchorId = "storage",
+                DisplayName = "\u50a8\u7269\u5bb9\u5668",
+                Enabled = true,
+                LocalPosition = new Vector3(0f, Mathf.Max(0.5f, footprint.y * 0.5f), 0f),
+                Radius = CampusPlacedObject.NormalizeInteractionAnchorRadius(Mathf.Max(0.65f, Mathf.Max(footprint.x, footprint.y) * 0.35f)),
+                PromptText = "\u6253\u5f00 " + placed.DisplayName,
+                ActionId = CampusInteractionActionIds.OpenStorage,
+                Priority = 130,
+                LogInteraction = false
+            });
+            selectedObjectInteractionAnchorIndex = placed.CustomInteractionAnchors.Count - 1;
+        }
+
+        private CampusPlacedObjectInteractionAnchor GetSelectedObjectInteractionAnchor(CampusPlacedObject placed)
+        {
+            if (placed == null || placed.CustomInteractionAnchors == null || placed.CustomInteractionAnchors.Count == 0)
+            {
+                return null;
+            }
+
+            selectedObjectInteractionAnchorIndex = Mathf.Clamp(selectedObjectInteractionAnchorIndex, 0, placed.CustomInteractionAnchors.Count - 1);
+            return placed.CustomInteractionAnchors[selectedObjectInteractionAnchorIndex];
+        }
+
+        private void AddObjectSettingsInteractionAnchor(CampusPlacedObject placed)
+        {
+            if (placed == null)
+            {
+                return;
+            }
+
+            if (placed.CustomInteractionAnchors == null)
+            {
+                placed.CustomInteractionAnchors = new List<CampusPlacedObjectInteractionAnchor>();
+            }
+
+            int nextIndex = placed.CustomInteractionAnchors.Count + 1;
+            placed.CustomInteractionAnchors.Add(new CampusPlacedObjectInteractionAnchor
+            {
+                AnchorId = "custom_" + nextIndex,
+                DisplayName = "\u951a\u70b9 " + nextIndex,
+                Enabled = true,
+                LocalPosition = Vector3.zero,
+                Radius = CampusPlacedObject.NormalizeInteractionAnchorRadius(placed.CustomInteractionAnchorRadius),
+                PromptText = string.IsNullOrWhiteSpace(placed.CustomInteractionPromptText) ? "\u4ea4\u4e92" : placed.CustomInteractionPromptText,
+                Priority = 120,
+                LogInteraction = true
+            });
+
+            placed.UseCustomInteractionAnchor = true;
+            selectedObjectInteractionAnchorIndex = placed.CustomInteractionAnchors.Count - 1;
+            placed.ApplyInteractionState();
+        }
+
+        private void RemoveSelectedObjectInteractionAnchor(CampusPlacedObject placed)
+        {
+            if (placed == null || placed.CustomInteractionAnchors == null || placed.CustomInteractionAnchors.Count == 0)
+            {
+                return;
+            }
+
+            selectedObjectInteractionAnchorIndex = Mathf.Clamp(selectedObjectInteractionAnchorIndex, 0, placed.CustomInteractionAnchors.Count - 1);
+            placed.CustomInteractionAnchors.RemoveAt(selectedObjectInteractionAnchorIndex);
+            selectedObjectInteractionAnchorIndex = Mathf.Clamp(selectedObjectInteractionAnchorIndex, 0, Mathf.Max(0, placed.CustomInteractionAnchors.Count - 1));
+            placed.UseCustomInteractionAnchor = placed.CustomInteractionAnchors.Count > 0;
+            placed.ApplyInteractionState();
+        }
+
+        private void DrawObjectSettingsPreview(Rect rect, GameObject prefab, CampusPlacedObject placed)
+        {
+            GUI.Box(rect, GUIContent.none, buttonStyle);
+            GUI.BeginGroup(rect);
+            Rect localRect = new Rect(0f, 0f, rect.width, rect.height);
+            int effectiveRotation90 = placed != null ? placed.ResolveAllowedRotation90(objectSettingsPreviewRotation90) : 0;
+            Vector2Int footprint = placed != null ? placed.NormalizedFootprintSize : Vector2Int.one;
+            Vector2Int previewFootprint = CampusPlacedObject.RotateFootprintSize(footprint, effectiveRotation90);
+            Rect gridRect = BuildObjectSettingsGridRect(localRect, previewFootprint, out float cellSize);
+            DrawObjectSettingsPreviewGrid(gridRect, previewFootprint, cellSize);
+
+            Sprite sprite = null;
+            bool usesAuthoredDirectionalSprite = false;
+            if (placed != null)
+            {
+                sprite = placed.ResolveSpriteForRotation(objectSettingsPreviewRotation90, out usesAuthoredDirectionalSprite, out effectiveRotation90);
+            }
+
+            if (sprite == null)
+            {
+                sprite = GetPrefabSprite(prefab);
+            }
+
+            if (sprite != null)
+            {
+                Rect spriteRect = BuildObjectSettingsSpriteRect(gridRect, cellSize, sprite, placed != null ? placed.NormalizedVisualScale : Vector2.one);
+                Matrix4x4 oldMatrix = GUI.matrix;
+                float previewRotation = placed != null && placed.AllowRotation && !usesAuthoredDirectionalSprite ? -effectiveRotation90 * 90f : 0f;
+                if (!Mathf.Approximately(previewRotation, 0f))
+                {
+                    GUIUtility.RotateAroundPivot(previewRotation, spriteRect.center);
+                }
+
+                DrawSprite(spriteRect, sprite);
+                GUI.matrix = oldMatrix;
+            }
+
+            if (placed != null && placed.UseCustomInteractionAnchor)
+            {
+                HandleObjectSettingsAnchorPreviewClick(gridRect, cellSize, placed, effectiveRotation90);
+                DrawObjectSettingsAnchorMarkers(gridRect, cellSize, placed, effectiveRotation90);
+            }
+
+            GUI.EndGroup();
+        }
+
+        private Rect BuildObjectSettingsGridRect(Rect rect, Vector2Int footprint, out float cellSize)
+        {
+            footprint = CampusPlacedObject.NormalizeFootprintSize(footprint);
+            Rect available = new Rect(rect.x + 16f, rect.y + 16f, Mathf.Max(10f, rect.width - 32f), Mathf.Max(10f, rect.height - 32f));
+            cellSize = Mathf.Floor(Mathf.Min(available.width / footprint.x, available.height / footprint.y));
+            cellSize = Mathf.Max(12f, cellSize);
+            float gridWidth = cellSize * footprint.x;
+            float gridHeight = cellSize * footprint.y;
+            return new Rect(available.center.x - gridWidth * 0.5f, available.center.y - gridHeight * 0.5f, gridWidth, gridHeight);
+        }
+
+        private void DrawObjectSettingsPreviewGrid(Rect gridRect, Vector2Int footprint, float cellSize)
+        {
+            Color oldColor = GUI.color;
+            GUI.color = new Color(0.12f, 0.17f, 0.22f, 0.92f);
+            GUI.DrawTexture(gridRect, lineTexture);
+
+            GUI.color = new Color(1f, 1f, 1f, 0.24f);
+            for (int x = 0; x <= footprint.x; x++)
+            {
+                float lineX = gridRect.x + x * cellSize;
+                GUI.DrawTexture(new Rect(lineX - 0.5f, gridRect.y, 1f, gridRect.height), lineTexture);
+            }
+
+            for (int y = 0; y <= footprint.y; y++)
+            {
+                float lineY = gridRect.y + y * cellSize;
+                GUI.DrawTexture(new Rect(gridRect.x, lineY - 0.5f, gridRect.width, 1f), lineTexture);
+            }
+
+            GUI.color = new Color(1f, 0.86f, 0.28f, 0.75f);
+            GUI.DrawTexture(new Rect(gridRect.x, gridRect.y, gridRect.width, 2f), lineTexture);
+            GUI.DrawTexture(new Rect(gridRect.x, gridRect.yMax - 2f, gridRect.width, 2f), lineTexture);
+            GUI.DrawTexture(new Rect(gridRect.x, gridRect.y, 2f, gridRect.height), lineTexture);
+            GUI.DrawTexture(new Rect(gridRect.xMax - 2f, gridRect.y, 2f, gridRect.height), lineTexture);
+            GUI.color = oldColor;
+        }
+
+        private Rect BuildObjectSettingsSpriteRect(Rect gridRect, float cellSize, Sprite sprite, Vector2 visualScale)
+        {
+            if (sprite == null)
+            {
+                return gridRect;
+            }
+
+            visualScale = CampusPlacedObject.NormalizeVisualScale(visualScale);
+            Vector2 spriteWorldSize = sprite.bounds.size;
+            float width = Mathf.Max(1f, Mathf.Abs(spriteWorldSize.x * visualScale.x * cellSize));
+            float height = Mathf.Max(1f, Mathf.Abs(spriteWorldSize.y * visualScale.y * cellSize));
+            return new Rect(gridRect.center.x - width * 0.5f, gridRect.center.y - height * 0.5f, width, height);
+        }
+
+        private void HandleObjectSettingsAnchorPreviewClick(Rect gridRect, float cellSize, CampusPlacedObject placed, int rotation90Index)
+        {
+            Event current = Event.current;
+            if (current == null || current.type != EventType.MouseDown || current.button != 0 || !gridRect.Contains(current.mousePosition))
+            {
+                return;
+            }
+
+            EnsureSelectedObjectInteractionAnchor(placed);
+            CampusPlacedObjectInteractionAnchor anchor = GetSelectedObjectInteractionAnchor(placed);
+            if (anchor == null)
+            {
+                return;
+            }
+
+            Vector2 local = current.mousePosition;
+            Vector2 previewLocal = new Vector2((local.x - gridRect.center.x) / cellSize, (gridRect.center.y - local.y) / cellSize);
+            anchor.LocalPosition = PreviewLocalToObjectLocal(previewLocal, rotation90Index);
+            placed.UseCustomInteractionAnchor = true;
+            placed.ApplyInteractionState();
+            CommitObjectSettingsDraft(GetSelectedObjectPrefab(), placed);
+            SaveSelectedObjectSettings();
+            current.Use();
+        }
+
+        private void DrawObjectSettingsAnchorMarkers(Rect gridRect, float cellSize, CampusPlacedObject placed, int rotation90Index)
+        {
+            if (placed == null || placed.CustomInteractionAnchors == null)
+            {
+                return;
+            }
+
+            CampusPlacedObjectInteractionAnchor anchor = GetSelectedObjectInteractionAnchor(placed);
+            if (anchor == null || !anchor.Enabled)
+            {
+                return;
+            }
+
+            DrawObjectSettingsAnchorMarker(gridRect, cellSize, anchor.LocalPosition, rotation90Index, true);
+        }
+
+        private void DrawObjectSettingsAnchorMarker(Rect gridRect, float cellSize, Vector3 anchor, int rotation90Index, bool selected)
+        {
+            Vector2 previewLocal = ObjectLocalToPreviewLocal(anchor, rotation90Index);
+            Vector2 point = new Vector2(gridRect.center.x + previewLocal.x * cellSize, gridRect.center.y - previewLocal.y * cellSize);
+            Color oldColor = GUI.color;
+            GUI.color = selected ? new Color(1f, 0.9f, 0.25f, 1f) : new Color(1f, 0.4f, 0.24f, 0.88f);
+            float size = selected ? 18f : 14f;
+            GUI.DrawTexture(new Rect(point.x - size * 0.5f, point.y - 1f, size, 2f), lineTexture);
+            GUI.DrawTexture(new Rect(point.x - 1f, point.y - size * 0.5f, 2f, size), lineTexture);
+            GUI.DrawTexture(new Rect(point.x - 4f, point.y - 4f, 8f, 8f), lineTexture);
+            GUI.color = oldColor;
+        }
+
+        private static Vector2 ObjectLocalToPreviewLocal(Vector3 localPosition, int rotation90Index)
+        {
+            switch (CampusPlacedObject.NormalizeRotation90(rotation90Index))
+            {
+                case 1:
+                    return new Vector2(-localPosition.y, localPosition.x);
+                case 2:
+                    return new Vector2(-localPosition.x, -localPosition.y);
+                case 3:
+                    return new Vector2(localPosition.y, -localPosition.x);
+                default:
+                    return new Vector2(localPosition.x, localPosition.y);
+            }
+        }
+
+        private static Vector3 PreviewLocalToObjectLocal(Vector2 previewLocal, int rotation90Index)
+        {
+            switch (CampusPlacedObject.NormalizeRotation90(rotation90Index))
+            {
+                case 1:
+                    return new Vector3(previewLocal.y, -previewLocal.x, 0f);
+                case 2:
+                    return new Vector3(-previewLocal.x, -previewLocal.y, 0f);
+                case 3:
+                    return new Vector3(-previewLocal.y, previewLocal.x, 0f);
+                default:
+                    return new Vector3(previewLocal.x, previewLocal.y, 0f);
+            }
+        }
+
+        private void CommitObjectSettingsDraft(GameObject prefab, CampusPlacedObject placed)
+        {
+            if (placed == null)
+            {
+                return;
+            }
+
+            string fallbackName = GetObjectFallbackDisplayName(prefab);
+            string trimmedName = string.IsNullOrWhiteSpace(objectSettingsNameDraft) ? string.Empty : objectSettingsNameDraft.Trim();
+            placed.DisplayNameOverride = string.IsNullOrEmpty(trimmedName) || trimmedName == fallbackName ? string.Empty : trimmedName;
+            placed.FootprintSize = new Vector2Int(Mathf.Clamp(selectedObjectFootprintX, 1, 32), Mathf.Clamp(selectedObjectFootprintY, 1, 32));
+            placed.OverrideFootprintSize = true;
+            placed.VisualScale = CampusPlacedObject.NormalizeVisualScale(placed.VisualScale);
+            if (placed.LockVisualScaleAspect)
+            {
+                float uniform = Mathf.Max(placed.VisualScale.x, placed.VisualScale.y);
+                placed.VisualScale = new Vector2(uniform, uniform);
+            }
+
+            placed.NormalizeStorageSettings();
+            if (placed.IsStorageContainer)
+            {
+                EnsureStorageInteractionAnchor(placed);
+            }
+
+            placed.NormalizeCustomInteractionAnchors();
+        }
+
         private void DrawSelectedObjectFootprintControls(ref float y, float width)
         {
             SyncSelectedObjectFootprintFields();
@@ -3253,9 +4971,96 @@ namespace NtingCampusMapEditor
             }
 
             GameObject prefab = GetSelectedObjectPrefab();
-            string name = prefab != null ? CampusObjectNames.GetDisplayName(prefab.name) : "未选物体";
+            string name = prefab != null ? CampusObjectNames.GetDisplayName(prefab.name) : "未选物品";
             GUI.Label(new Rect(306f, y, Mathf.Max(10f, width - 306f), 28f), Truncate(name, 12), mutedStyle);
             y += 46f;
+        }
+
+        private void DrawSelectedObjectSettingsControls(ref float y, float width)
+        {
+            GameObject prefab = GetSelectedObjectPrefab();
+            if (prefab == null)
+            {
+                return;
+            }
+
+            CampusPlacedObject placed = EnsureRuntimePlacedObject(prefab);
+            if (placed == null)
+            {
+                return;
+            }
+
+            GUI.Label(new Rect(0f, y, width, 26f), "\u7269\u54c1\u8bbe\u7f6e", headerStyle);
+            y += 32f;
+
+            bool nextAllowRotation = GUI.Toggle(new Rect(0f, y, width, 24f), placed.AllowRotation, "\u542f\u7528\u56db\u5411\u65cb\u8f6c");
+            if (nextAllowRotation != placed.AllowRotation)
+            {
+                placed.OverrideAllowRotation = true;
+                placed.AllowRotation = nextAllowRotation;
+                placed.ApplyRotationVisualState();
+            }
+
+            y += 30f;
+            DrawObjectDirectionSpriteRow(ref y, width, placed, 0);
+            DrawObjectDirectionSpriteRow(ref y, width, placed, 1);
+            DrawObjectDirectionSpriteRow(ref y, width, placed, 2);
+            DrawObjectDirectionSpriteRow(ref y, width, placed, 3);
+
+            y += 6f;
+            bool nextUseAnchor = GUI.Toggle(new Rect(0f, y, width, 24f), placed.UseCustomInteractionAnchor, "\u542f\u7528\u4ea4\u4e92\u951a\u70b9");
+            if (nextUseAnchor != placed.UseCustomInteractionAnchor)
+            {
+                placed.UseCustomInteractionAnchor = nextUseAnchor;
+                placed.ApplyInteractionState();
+            }
+
+            y += 30f;
+            bool previousEnabled = GUI.enabled;
+            GUI.enabled = placed.UseCustomInteractionAnchor;
+            GUI.Label(new Rect(0f, y, 42f, 28f), "X", bodyStyle);
+            Vector3 anchor = placed.CustomInteractionAnchorLocalPosition;
+            anchor.x = ParseFloatField(new Rect(44f, y, 58f, 30f), anchor.x, BuildObjectSettingsInputKey(placed, "legacy_anchor_x"));
+            GUI.Label(new Rect(110f, y, 42f, 28f), "Y", bodyStyle);
+            anchor.y = ParseFloatField(new Rect(152f, y, 58f, 30f), anchor.y, BuildObjectSettingsInputKey(placed, "legacy_anchor_y"));
+            placed.CustomInteractionAnchorLocalPosition = anchor;
+            GUI.Label(new Rect(218f, y, 48f, 28f), "R", bodyStyle);
+            placed.CustomInteractionAnchorRadius = CampusPlacedObject.NormalizeInteractionAnchorRadius(ParseFloatField(new Rect(268f, y, 58f, 30f), placed.CustomInteractionAnchorRadius, BuildObjectSettingsInputKey(placed, "legacy_anchor_radius")));
+            y += 36f;
+
+            GUI.Label(new Rect(0f, y, 70f, 28f), "\u63d0\u793a", bodyStyle);
+            placed.CustomInteractionPromptText = DrawTextInput(new Rect(72f, y, width - 72f, 30f), string.IsNullOrEmpty(placed.CustomInteractionPromptText) ? string.Empty : placed.CustomInteractionPromptText, BuildObjectSettingsInputKey(placed, "legacy_prompt"));
+            GUI.enabled = previousEnabled;
+            y += 40f;
+
+            if (GUI.Button(new Rect(0f, y, Mathf.Min(150f, width), 30f), "\u4fdd\u5b58\u7269\u54c1\u8bbe\u7f6e", buttonStyle))
+            {
+                SaveSelectedObjectSettings();
+            }
+
+            GUI.Label(new Rect(160f, y, Mathf.Max(10f, width - 160f), 30f), "\u5df2\u653e\u7f6e\u7684\u540c\u540d\u7269\u54c1\u4f1a\u540c\u6b65", mutedStyle);
+            y += 42f;
+        }
+
+        private void DrawObjectDirectionSpriteRow(ref float y, float width, CampusPlacedObject placed, int rotation90Index)
+        {
+            int degrees = rotation90Index * 90;
+            GUI.Label(new Rect(0f, y, 42f, 28f), degrees.ToString(), bodyStyle);
+            Sprite sprite = GetObjectDirectionSprite(placed, rotation90Index);
+            string spriteName = sprite != null ? Truncate(sprite.name, 14) : "\u672a\u8bbe\u7f6e";
+            GUI.Label(new Rect(46f, y, Mathf.Max(10f, width - 180f), 28f), spriteName, mutedStyle);
+
+            if (GUI.Button(new Rect(width - 122f, y, 56f, 28f), "\u9009\u56fe", buttonStyle))
+            {
+                SetSelectedObjectDirectionSprite(rotation90Index);
+            }
+
+            if (GUI.Button(new Rect(width - 60f, y, 56f, 28f), "\u6e05\u7a7a", buttonStyle))
+            {
+                ClearSelectedObjectDirectionSprite(rotation90Index);
+            }
+
+            y += 32f;
         }
 
         private void DrawColorControls(ref float y, float width, string label, ref Color color)
@@ -3319,6 +5124,7 @@ namespace NtingCampusMapEditor
             if (GUI.Button(new Rect(buttonWidth + 8f, y, buttonWidth, 28f), "刷新", buttonStyle))
             {
                 ReloadUserImportsFromUi();
+                ScheduleProjectSync();
             }
 
             GUI.Label(new Rect((buttonWidth + 8f) * 2f, y, width - (buttonWidth + 8f) * 2f, 28f), activeImportTarget == target ? "当前拖拽目标" : Truncate(folder, 22), activeImportTarget == target ? warningStyle : mutedStyle);
@@ -3337,7 +5143,7 @@ namespace NtingCampusMapEditor
                 {
                     RecordUndo();
                     int count = ImportRoomDefinitionsFromText(File.ReadAllText(path));
-                    SetStatus(count > 0 ? "已导入 " + count + " 个房间类型。" : "没有找到可导入房间。");
+                    SetStatus(count > 0 ? "已导入" + count + " 个房间类型。" : "没有找到可导入房间。");
                 }
             }
 
@@ -3361,6 +5167,7 @@ namespace NtingCampusMapEditor
             if (GUI.Button(new Rect(0f, y, buttonWidth, 28f), "刷新", buttonStyle))
             {
                 LoadImportedRooms();
+                ScheduleProjectSync();
                 SetStatus("已刷新房间导入文件。");
             }
 
@@ -3385,7 +5192,8 @@ namespace NtingCampusMapEditor
             }
 
             ReloadUserImportsFromUi();
-            SetStatus(label + "已导入 " + copied + " 个资源。");
+            ScheduleProjectSync();
+            SetStatus(label + "已导入" + copied + " 个资源。");
         }
 
         private void ImportSelectedFilesIntoFolder(string targetFolder, string label)
@@ -3448,7 +5256,8 @@ namespace NtingCampusMapEditor
             }
 
             ReloadUserImportsFromUi();
-            SetStatus(label + "已导入 " + copied + " 个资源。");
+            ScheduleProjectSync();
+            SetStatus(label + "已导入" + copied + " 个资源。");
         }
 
         private void ImportDroppedRoomPaths(List<string> paths)
@@ -3472,7 +5281,7 @@ namespace NtingCampusMapEditor
                 }
             }
 
-            SetStatus(imported > 0 ? "已导入 " + imported + " 个房间类型。" : "没有找到可导入房间文本。");
+            SetStatus(imported > 0 ? "已导入" + imported + " 个房间类型。" : "没有找到可导入房间文本。");
         }
 
         private void ImportDroppedWallTexture(List<string> paths, CampusRuntimeImportTarget target)
@@ -3531,7 +5340,7 @@ namespace NtingCampusMapEditor
             string roomText = File.Exists(path) ? File.ReadAllText(path) : clipboard;
             RecordUndo();
             int count = ImportRoomDefinitionsFromText(roomText);
-            SetStatus(count > 0 ? "已导入 " + count + " 个房间类型。" : "没有找到可导入房间。格式：房间名 或 房间名,数量。");
+            SetStatus(count > 0 ? "已导入" + count + " 个房间类型。" : "没有找到可导入房间。格式：房间名 或 房间名,数量。");
         }
 
         private int ImportRoomDefinitionsFromText(string text)
@@ -3568,6 +5377,64 @@ namespace NtingCampusMapEditor
             }
 
             return imported;
+        }
+
+        private void SaveRuntimeRoomPrefab(CampusRuntimeRoomPrefab roomPrefab)
+        {
+            if (roomPrefab == null || string.IsNullOrWhiteSpace(roomPrefab.RoomName))
+            {
+                return;
+            }
+
+            NormalizeRoomPrefab(roomPrefab, roomPrefab.RoomName);
+            Directory.CreateDirectory(GetRoomPrefabFolder());
+            string fileName = SanitizeFileName(roomPrefab.RoomName) + ".json";
+            string path = Path.Combine(GetRoomPrefabFolder(), fileName);
+            File.WriteAllText(path, JsonUtility.ToJson(roomPrefab, true), Encoding.UTF8);
+            roomPrefab.SourcePath = path;
+        }
+
+        private void DeleteSelectedRoomPrefab()
+        {
+            CampusRuntimeRoomPrefab roomPrefab = GetSelectedRoomPrefab();
+            if (roomPrefab == null)
+            {
+                return;
+            }
+
+            string deletedName = roomPrefab.RoomName;
+            string path = roomPrefab.SourcePath;
+            if (string.IsNullOrEmpty(path))
+            {
+                path = Path.Combine(GetRoomPrefabFolder(), SanitizeFileName(roomPrefab.RoomName) + ".json");
+            }
+
+            if (File.Exists(path))
+            {
+                File.Delete(path);
+            }
+
+            LoadImportedRoomPrefabs();
+            ScheduleProjectSync();
+            SyncRuntimeContentToProject(false);
+            SetStatus("已删除房间模块：" + deletedName);
+        }
+
+        private void SelectRoomPrefabByName(string roomName)
+        {
+            if (string.IsNullOrWhiteSpace(roomName))
+            {
+                return;
+            }
+
+            for (int i = 0; i < roomPrefabs.Count; i++)
+            {
+                if (roomPrefabs[i] != null && string.Equals(roomPrefabs[i].RoomName, roomName, StringComparison.OrdinalIgnoreCase))
+                {
+                    selectedRoomPrefabIndex = i;
+                    return;
+                }
+            }
         }
 
         private List<string> GetClipboardImportSources()
@@ -3638,6 +5505,92 @@ namespace NtingCampusMapEditor
             string targetPath = MakeUniqueImportPath(Path.Combine(targetFolder, Path.GetFileName(sourcePath)));
             File.Copy(sourcePath, targetPath, false);
             return true;
+        }
+
+        private void BackupLocalRuntimeImportFolder()
+        {
+            string importRoot = GetImportRootFolder();
+            if (!Directory.Exists(importRoot))
+            {
+                return;
+            }
+
+            string backupRoot = Path.Combine(Application.persistentDataPath, RuntimeImportFolder + "_Backups");
+            string backupPath = Path.Combine(backupRoot, DateTime.Now.ToString("yyyyMMdd_HHmmss"));
+            Directory.CreateDirectory(backupRoot);
+            MirrorDirectory(importRoot, backupPath, false);
+        }
+
+        private void MirrorDirectory(string sourceFolder, string destinationFolder, bool clearDestination)
+        {
+            if (string.IsNullOrEmpty(sourceFolder) || !Directory.Exists(sourceFolder))
+            {
+                return;
+            }
+
+            Directory.CreateDirectory(destinationFolder);
+            if (clearDestination)
+            {
+                ClearDirectoryContents(destinationFolder);
+            }
+
+            CopyDirectoryContents(sourceFolder, destinationFolder);
+        }
+
+        private void CopyDirectoryContents(string sourceFolder, string destinationFolder)
+        {
+            Directory.CreateDirectory(destinationFolder);
+            string[] files = Directory.GetFiles(sourceFolder);
+            for (int i = 0; i < files.Length; i++)
+            {
+                string source = files[i];
+                string destination = Path.Combine(destinationFolder, Path.GetFileName(source));
+                File.Copy(source, destination, true);
+            }
+
+            string[] directories = Directory.GetDirectories(sourceFolder);
+            for (int i = 0; i < directories.Length; i++)
+            {
+                string sourceDirectory = directories[i];
+                string destinationDirectory = Path.Combine(destinationFolder, Path.GetFileName(sourceDirectory));
+                CopyDirectoryContents(sourceDirectory, destinationDirectory);
+            }
+        }
+
+        private void ClearDirectoryContents(string folder)
+        {
+            if (string.IsNullOrEmpty(folder) || !Directory.Exists(folder))
+            {
+                return;
+            }
+
+            string normalized = Path.GetFullPath(folder).TrimEnd(Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar);
+            string projectSyncImport = Path.GetFullPath(GetProjectSyncImportFolder()).TrimEnd(Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar);
+            string runtimeImport = Path.GetFullPath(GetImportRootFolder()).TrimEnd(Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar);
+            if (!string.Equals(normalized, projectSyncImport, StringComparison.OrdinalIgnoreCase) &&
+                !string.Equals(normalized, runtimeImport, StringComparison.OrdinalIgnoreCase))
+            {
+                throw new InvalidOperationException("Refusing to clear unexpected directory: " + folder);
+            }
+
+            string[] files = Directory.GetFiles(folder);
+            for (int i = 0; i < files.Length; i++)
+            {
+                File.Delete(files[i]);
+            }
+
+            string[] directories = Directory.GetDirectories(folder);
+            for (int i = 0; i < directories.Length; i++)
+            {
+                Directory.Delete(directories[i], true);
+            }
+        }
+
+        private void RefreshAssetDatabaseIfAvailable()
+        {
+#if UNITY_EDITOR
+            AssetDatabase.Refresh();
+#endif
         }
 
         private bool IsSupportedImportImage(string path)
@@ -3867,6 +5820,7 @@ namespace NtingCampusMapEditor
             fallbackWallProfile = profile;
             brushMode = CampusRuntimeBrushMode.PaintWall;
             RebuildWallVisuals(EnsureFloor(selectedFloorIndex));
+            ScheduleProjectSync();
             SetStatus("已新建墙体：" + cleanName);
         }
 
@@ -3890,6 +5844,7 @@ namespace NtingCampusMapEditor
             }
 
             RebuildWallVisuals(EnsureFloor(selectedFloorIndex));
+            ScheduleProjectSync();
             SetStatus("已应用墙体贴图。");
         }
 
@@ -3950,15 +5905,476 @@ namespace NtingCampusMapEditor
                 return;
             }
 
-            CampusPlacedObject placed = prefab.GetComponent<CampusPlacedObject>();
+            CampusPlacedObject placed = EnsureRuntimePlacedObject(prefab);
             if (placed == null)
             {
-                placed = prefab.AddComponent<CampusPlacedObject>();
+                return;
             }
 
             placed.FootprintSize = new Vector2Int(Mathf.Clamp(selectedObjectFootprintX, 1, 32), Mathf.Clamp(selectedObjectFootprintY, 1, 32));
+            placed.OverrideFootprintSize = true;
             lastFootprintSyncedPrefab = prefab;
+            SaveSelectedObjectSettings();
             SetStatus("已设置占格：" + placed.FootprintSize.x + "x" + placed.FootprintSize.y);
+        }
+
+        private void SetSelectedObjectDirectionSprite(int rotation90Index)
+        {
+            GameObject prefab = GetSelectedObjectPrefab();
+            CampusPlacedObject placed = EnsureRuntimePlacedObject(prefab);
+            if (prefab == null || placed == null)
+            {
+                SetStatus("\u8bf7\u5148\u9009\u62e9\u7269\u54c1\u3002");
+                return;
+            }
+
+            string sourcePath = SelectSingleImageFile("\u9009\u62e9 " + (rotation90Index * 90) + " \u5ea6\u8d34\u56fe");
+            if (string.IsNullOrEmpty(sourcePath))
+            {
+                return;
+            }
+
+            try
+            {
+                string storedPath = CopyObjectDirectionSprite(prefab.name, rotation90Index, sourcePath);
+                placed.OverrideAllowRotation = true;
+                placed.AllowRotation = true;
+                AssignRuntimeObjectDirectionSprite(placed, rotation90Index, true, storedPath, prefab.name);
+                placed.ApplyRotationVisualState();
+                SaveSelectedObjectSettings();
+                SetStatus("\u5df2\u8bbe\u7f6e\u65cb\u8f6c\u8d34\u56fe\uff1a" + (rotation90Index * 90));
+            }
+            catch (Exception exception)
+            {
+                Debug.LogWarning("[NtingCampusRuntimeMapEditor] Failed to set object direction sprite: " + exception.Message);
+                SetStatus("\u65cb\u8f6c\u8d34\u56fe\u8bbe\u7f6e\u5931\u8d25\u3002");
+            }
+        }
+
+        private void ClearSelectedObjectDirectionSprite(int rotation90Index)
+        {
+            GameObject prefab = GetSelectedObjectPrefab();
+            CampusPlacedObject placed = EnsureRuntimePlacedObject(prefab);
+            if (prefab == null || placed == null)
+            {
+                SetStatus("\u8bf7\u5148\u9009\u62e9\u7269\u54c1\u3002");
+                return;
+            }
+
+            AssignRuntimeObjectDirectionSprite(placed, rotation90Index, true, string.Empty, prefab.name);
+            placed.ApplyRotationVisualState();
+            SaveSelectedObjectSettings();
+            SetStatus("\u5df2\u6e05\u7a7a\u65cb\u8f6c\u8d34\u56fe\uff1a" + (rotation90Index * 90));
+        }
+
+        private void SaveSelectedObjectSettings()
+        {
+            GameObject prefab = GetSelectedObjectPrefab();
+            CampusPlacedObject placed = EnsureRuntimePlacedObject(prefab);
+            if (prefab == null || placed == null)
+            {
+                SetStatus("\u8bf7\u5148\u9009\u62e9\u7269\u54c1\u3002");
+                return;
+            }
+
+            if (placed.UseCustomInteractionAnchor)
+            {
+                placed.IsInteractable = true;
+            }
+
+            placed.ApplyRotationVisualState();
+            placed.ApplyInteractionState();
+            CampusRuntimeObjectSettings settings = CaptureRuntimeObjectSettings(prefab, placed);
+            SaveRuntimeObjectSettings(settings);
+            int appliedCount = ApplyObjectSettingsToPlacedInstances(prefab, settings, true);
+            ScheduleProjectSync();
+            SetStatus("\u5df2\u4fdd\u5b58\u7269\u54c1\u8bbe\u7f6e\uff1a" + GetObjectDisplayName(prefab) + "\uff0c\u5df2\u540c\u6b65 " + appliedCount + " \u4e2a\u573a\u4e0a\u540c\u7c7b\u7269\u54c1\u3002");
+        }
+
+        private void ApplySelectedObjectSettingsToPlacedInstances()
+        {
+            GameObject prefab = GetSelectedObjectPrefab();
+            CampusPlacedObject placed = EnsureRuntimePlacedObject(prefab);
+            if (prefab == null || placed == null)
+            {
+                SetStatus("\u8bf7\u5148\u9009\u62e9\u7269\u54c1\u3002");
+                return;
+            }
+
+            if (placed.UseCustomInteractionAnchor)
+            {
+                placed.IsInteractable = true;
+            }
+
+            placed.ApplyRotationVisualState();
+            placed.ApplyInteractionState();
+            CampusRuntimeObjectSettings settings = CaptureRuntimeObjectSettings(prefab, placed);
+            SaveRuntimeObjectSettings(settings);
+            int appliedCount = ApplyObjectSettingsToPlacedInstances(prefab, settings, true);
+            ScheduleProjectSync();
+            SetStatus("\u5df2\u5e94\u7528\u5230\u573a\u4e0a\u540c\u7c7b\u7269\u54c1\uff1a" + appliedCount + " \u4e2a " + GetObjectDisplayName(prefab));
+        }
+
+        private int ApplyObjectSettingsToPlacedInstances(GameObject prefab, CampusRuntimeObjectSettings settings, bool recordUndo)
+        {
+            if (prefab == null || settings == null || mapRoot == null)
+            {
+                return 0;
+            }
+
+            int appliedCount = 0;
+            bool undoRecorded = false;
+            mapRoot.RebuildFloorReferences();
+            for (int floorIndex = 0; floorIndex < mapRoot.Floors.Count; floorIndex++)
+            {
+                CampusFloorRoot floor = mapRoot.Floors[floorIndex];
+                if (floor == null || floor.PropsRoot == null)
+                {
+                    continue;
+                }
+
+                CampusPlacedObject[] objects = floor.PropsRoot.GetComponentsInChildren<CampusPlacedObject>(true);
+                for (int objectIndex = 0; objectIndex < objects.Length; objectIndex++)
+                {
+                    CampusPlacedObject placed = objects[objectIndex];
+                    if (!DoesPlacedObjectMatchPrefab(placed, prefab))
+                    {
+                        continue;
+                    }
+
+                    if (recordUndo && !undoRecorded)
+                    {
+                        RecordUndo();
+                        undoRecorded = true;
+                    }
+
+                    int preservedRotation = placed.Rotation90;
+                    Vector3Int preservedCell = placed.Cell;
+                    int preservedFloor = placed.FloorIndex;
+                    ApplyRuntimeObjectSettings(placed.gameObject, settings);
+                    placed.Rotation90 = preservedRotation;
+                    placed.Cell = preservedCell;
+                    placed.FloorIndex = preservedFloor;
+                    placed.ApplyRotationVisualState();
+                    placed.ApplyInteractionState();
+                    if (floor.Grid != null)
+                    {
+                        placed.ApplyCellToTransform(floor.Grid);
+                    }
+
+                    appliedCount++;
+                }
+
+                CampusRenderSortingUtility.ApplyFloorSorting(floor, floor.FloorIndex * mapRoot.SortingOrderStepPerFloor);
+            }
+
+            return appliedCount;
+        }
+
+        private void ApplySavedObjectSettingsToPalette()
+        {
+            for (int i = 0; i < objectPrefabs.Count; i++)
+            {
+                GameObject prefab = objectPrefabs[i];
+                if (prefab == null)
+                {
+                    continue;
+                }
+
+                CampusRuntimeObjectSettings settings = LoadRuntimeObjectSettings(prefab.name);
+                if (settings != null)
+                {
+                    ApplyRuntimeObjectSettings(prefab, settings);
+                }
+            }
+        }
+
+        private CampusPlacedObject ApplyRuntimeObjectSettings(GameObject target, CampusRuntimeObjectSettings settings)
+        {
+            if (target == null || settings == null)
+            {
+                return null;
+            }
+
+            CampusPlacedObject placed = EnsureRuntimePlacedObject(target);
+            if (placed == null)
+            {
+                return null;
+            }
+
+            if (string.IsNullOrWhiteSpace(placed.ObjectId))
+            {
+                placed.ObjectId = !string.IsNullOrWhiteSpace(settings.ObjectId) ? settings.ObjectId : target.name;
+            }
+
+            placed.DisplayNameOverride = string.IsNullOrWhiteSpace(settings.DisplayNameOverride)
+                ? string.Empty
+                : settings.DisplayNameOverride.Trim();
+            placed.VisualScale = CampusPlacedObject.NormalizeVisualScale(settings.VisualScale);
+            placed.LockVisualScaleAspect = settings.LockVisualScaleAspect;
+            if (placed.LockVisualScaleAspect)
+            {
+                float uniform = Mathf.Max(placed.VisualScale.x, placed.VisualScale.y);
+                placed.VisualScale = new Vector2(uniform, uniform);
+            }
+
+            if (settings.OverrideFootprintSize)
+            {
+                placed.OverrideFootprintSize = true;
+                placed.FootprintSize = CampusPlacedObject.NormalizeFootprintSize(settings.FootprintSize);
+            }
+
+            if (settings.OverrideAllowRotation)
+            {
+                placed.OverrideAllowRotation = true;
+                placed.AllowRotation = settings.AllowRotation;
+            }
+
+            AssignRuntimeObjectDirectionSprite(placed, 0, settings.OverrideRotation0Sprite, settings.Rotation0SpritePath, target.name);
+            AssignRuntimeObjectDirectionSprite(placed, 1, settings.OverrideRotation90Sprite, settings.Rotation90SpritePath, target.name);
+            AssignRuntimeObjectDirectionSprite(placed, 2, settings.OverrideRotation180Sprite, settings.Rotation180SpritePath, target.name);
+            AssignRuntimeObjectDirectionSprite(placed, 3, settings.OverrideRotation270Sprite, settings.Rotation270SpritePath, target.name);
+
+            placed.UseCustomInteractionAnchor = settings.UseCustomInteractionAnchor;
+            placed.CustomInteractionAnchorLocalPosition = settings.CustomInteractionAnchorLocalPosition;
+            placed.CustomInteractionAnchorRadius = CampusPlacedObject.NormalizeInteractionAnchorRadius(settings.CustomInteractionAnchorRadius);
+            placed.CustomInteractionPromptText = string.IsNullOrWhiteSpace(settings.CustomInteractionPromptText)
+                ? "\u4ea4\u4e92"
+                : settings.CustomInteractionPromptText;
+            placed.CustomInteractionAnchors = CampusPlacedObject.CloneInteractionAnchors(settings.CustomInteractionAnchors);
+            placed.IsStorageContainer = settings.IsStorageContainer;
+            placed.StorageSize = CampusPlacedObject.NormalizeStorageSize(settings.StorageSize);
+            placed.StorageMaxWeight = CampusPlacedObject.NormalizeStorageMaxWeight(settings.StorageMaxWeight);
+            if (placed.IsStorageContainer)
+            {
+                EnsureStorageInteractionAnchor(placed);
+            }
+
+            if (placed.UseCustomInteractionAnchor)
+            {
+                placed.IsInteractable = true;
+            }
+
+            placed.ApplyRotationVisualState();
+            placed.ApplyInteractionState();
+            return placed;
+        }
+
+        private CampusRuntimeObjectSettings CaptureRuntimeObjectSettings(GameObject prefab, CampusPlacedObject placed)
+        {
+            CampusRuntimeObjectSettings settings = new CampusRuntimeObjectSettings();
+            settings.ObjectId = prefab != null ? prefab.name : (placed != null ? placed.ObjectId : string.Empty);
+            if (placed == null)
+            {
+                return settings;
+            }
+
+            placed.NormalizeCustomInteractionAnchors();
+            placed.NormalizeStorageSettings();
+            settings.DisplayNameOverride = string.IsNullOrWhiteSpace(placed.DisplayNameOverride) ? string.Empty : placed.DisplayNameOverride.Trim();
+            settings.OverrideFootprintSize = placed.OverrideFootprintSize;
+            settings.FootprintSize = placed.NormalizedFootprintSize;
+            settings.VisualScale = placed.NormalizedVisualScale;
+            settings.LockVisualScaleAspect = placed.LockVisualScaleAspect;
+            settings.OverrideAllowRotation = placed.OverrideAllowRotation;
+            settings.AllowRotation = placed.AllowRotation;
+            settings.OverrideRotation0Sprite = placed.OverrideRotation0Sprite;
+            settings.Rotation0SpritePath = placed.Rotation0SpritePath;
+            settings.OverrideRotation90Sprite = placed.OverrideRotation90Sprite;
+            settings.Rotation90SpritePath = placed.Rotation90SpritePath;
+            settings.OverrideRotation180Sprite = placed.OverrideRotation180Sprite;
+            settings.Rotation180SpritePath = placed.Rotation180SpritePath;
+            settings.OverrideRotation270Sprite = placed.OverrideRotation270Sprite;
+            settings.Rotation270SpritePath = placed.Rotation270SpritePath;
+            settings.UseCustomInteractionAnchor = placed.UseCustomInteractionAnchor;
+            settings.CustomInteractionAnchorLocalPosition = placed.CustomInteractionAnchorLocalPosition;
+            settings.CustomInteractionAnchorRadius = CampusPlacedObject.NormalizeInteractionAnchorRadius(placed.CustomInteractionAnchorRadius);
+            settings.CustomInteractionPromptText = string.IsNullOrWhiteSpace(placed.CustomInteractionPromptText)
+                ? "\u4ea4\u4e92"
+                : placed.CustomInteractionPromptText.Trim();
+            settings.CustomInteractionAnchors = CampusPlacedObject.CloneInteractionAnchors(placed.CustomInteractionAnchors);
+            settings.IsStorageContainer = placed.IsStorageContainer;
+            settings.StorageSize = placed.NormalizedStorageSize;
+            settings.StorageMaxWeight = placed.NormalizedStorageMaxWeight;
+            return settings;
+        }
+
+        private void SaveRuntimeObjectSettings(CampusRuntimeObjectSettings settings)
+        {
+            if (settings == null || string.IsNullOrWhiteSpace(settings.ObjectId))
+            {
+                return;
+            }
+
+            string folder = GetObjectSettingsFolder(settings.ObjectId);
+            Directory.CreateDirectory(folder);
+            File.WriteAllText(GetObjectSettingsPath(settings.ObjectId), JsonUtility.ToJson(settings, true), Encoding.UTF8);
+        }
+
+        private CampusRuntimeObjectSettings LoadRuntimeObjectSettings(string objectId)
+        {
+            if (string.IsNullOrWhiteSpace(objectId))
+            {
+                return null;
+            }
+
+            string path = GetObjectSettingsPath(objectId);
+            if (!File.Exists(path))
+            {
+                return null;
+            }
+
+            try
+            {
+                return JsonUtility.FromJson<CampusRuntimeObjectSettings>(File.ReadAllText(path, Encoding.UTF8));
+            }
+            catch (Exception exception)
+            {
+                Debug.LogWarning("[NtingCampusRuntimeMapEditor] Failed to load object settings '" + path + "': " + exception.Message);
+                return null;
+            }
+        }
+
+        private void AssignRuntimeObjectDirectionSprite(CampusPlacedObject placed, int rotation90Index, bool hasOverride, string spritePath, string objectName)
+        {
+            if (placed == null || !hasOverride)
+            {
+                return;
+            }
+
+            Sprite sprite = LoadRuntimeObjectSprite(spritePath, objectName + "_" + (rotation90Index * 90), placed.NormalizedFootprintSize);
+            switch (CampusPlacedObject.NormalizeRotation90(rotation90Index))
+            {
+                case 0:
+                    placed.OverrideRotation0Sprite = true;
+                    placed.Rotation0SpritePath = spritePath;
+                    placed.Rotation0Sprite = sprite;
+                    break;
+                case 1:
+                    placed.OverrideRotation90Sprite = true;
+                    placed.Rotation90SpritePath = spritePath;
+                    placed.Rotation90Sprite = sprite;
+                    break;
+                case 2:
+                    placed.OverrideRotation180Sprite = true;
+                    placed.Rotation180SpritePath = spritePath;
+                    placed.Rotation180Sprite = sprite;
+                    break;
+                case 3:
+                    placed.OverrideRotation270Sprite = true;
+                    placed.Rotation270SpritePath = spritePath;
+                    placed.Rotation270Sprite = sprite;
+                    break;
+            }
+        }
+
+        private Sprite LoadRuntimeObjectSprite(string path, string spriteName, Vector2Int footprint)
+        {
+            string normalizedPath = NormalizeClipboardPath(path);
+            if (string.IsNullOrEmpty(normalizedPath) || !File.Exists(normalizedPath))
+            {
+                return null;
+            }
+
+            Texture2D texture = LoadImportedTexture(normalizedPath);
+            return texture != null ? CreateObjectSprite(texture, spriteName, footprint) : null;
+        }
+
+        private string CopyObjectDirectionSprite(string objectId, int rotation90Index, string sourcePath)
+        {
+            string folder = GetObjectSettingsFolder(objectId);
+            Directory.CreateDirectory(folder);
+            string prefix = "rotation_" + (rotation90Index * 90);
+            string extension = Path.GetExtension(sourcePath);
+            if (string.IsNullOrEmpty(extension))
+            {
+                extension = ".png";
+            }
+
+            string targetPath = Path.Combine(folder, prefix + extension.ToLowerInvariant());
+            string sourceFullPath = Path.GetFullPath(sourcePath);
+            string targetFullPath = Path.GetFullPath(targetPath);
+            if (string.Equals(sourceFullPath, targetFullPath, StringComparison.OrdinalIgnoreCase))
+            {
+                return targetPath;
+            }
+
+            string[] existing = Directory.GetFiles(folder, prefix + ".*");
+            for (int i = 0; i < existing.Length; i++)
+            {
+                if (!string.Equals(Path.GetFullPath(existing[i]), sourceFullPath, StringComparison.OrdinalIgnoreCase))
+                {
+                    File.Delete(existing[i]);
+                }
+            }
+
+            File.Copy(sourcePath, targetPath, true);
+            return targetPath;
+        }
+
+        private Sprite GetObjectDirectionSprite(CampusPlacedObject placed, int rotation90Index)
+        {
+            if (placed == null)
+            {
+                return null;
+            }
+
+            switch (CampusPlacedObject.NormalizeRotation90(rotation90Index))
+            {
+                case 0:
+                    return placed.Rotation0Sprite;
+                case 1:
+                    return placed.Rotation90Sprite;
+                case 2:
+                    return placed.Rotation180Sprite;
+                case 3:
+                    return placed.Rotation270Sprite;
+                default:
+                    return null;
+            }
+        }
+
+        private CampusPlacedObject EnsureRuntimePlacedObject(GameObject target)
+        {
+            if (target == null)
+            {
+                return null;
+            }
+
+            CampusPlacedObject placed = target.GetComponent<CampusPlacedObject>();
+            if (placed == null)
+            {
+                if (!target.scene.IsValid())
+                {
+                    SetStatus("\u8be5\u7269\u54c1\u9884\u5236\u4f53\u7f3a\u5c11 CampusPlacedObject\uff0c\u8bf7\u5148\u5728\u9879\u76ee\u4e2d\u914d\u7f6e\u3002");
+                    return null;
+                }
+
+                placed = target.AddComponent<CampusPlacedObject>();
+            }
+
+            if (string.IsNullOrWhiteSpace(placed.ObjectId))
+            {
+                placed.ObjectId = target.name;
+            }
+
+            return placed;
+        }
+
+        private bool DoesPlacedObjectMatchPrefab(CampusPlacedObject placed, GameObject prefab)
+        {
+            if (placed == null || prefab == null)
+            {
+                return false;
+            }
+
+            string prefabName = prefab.name;
+            string prefabDisplayName = CampusObjectNames.GetDisplayName(prefabName);
+            string objectId = string.IsNullOrWhiteSpace(placed.ObjectId) ? placed.gameObject.name : placed.ObjectId;
+            string objectDisplayName = CampusObjectNames.GetDisplayName(objectId);
+            return objectId == prefabName ||
+                   objectDisplayName == prefabDisplayName ||
+                   placed.gameObject.name.StartsWith(prefabDisplayName + "_F", StringComparison.Ordinal);
         }
 
         private void OpenImportLocation(string path)
@@ -4051,6 +6467,9 @@ namespace NtingCampusMapEditor
             buttonTexture = MakeTexture(new Color(0.24f, 0.31f, 0.38f, 0.98f));
             selectedTexture = MakeTexture(new Color(0.55f, 0.66f, 0.78f, 0.98f));
             hoverTexture = MakeTexture(new Color(0.65f, 0.77f, 0.88f, 0.95f));
+            inputTexture = MakeTexture(new Color(0.20f, 0.28f, 0.35f, 0.98f));
+            inputFocusedTexture = MakeTexture(new Color(0.28f, 0.39f, 0.50f, 0.98f));
+            objectSettingsHighlightTexture = MakeTexture(new Color(0.97f, 0.75f, 0.26f, 0.28f));
             lineTexture = MakeTexture(Color.white);
             tileFallbackTexture = MakeCheckerTexture(new Color(0.32f, 0.38f, 0.45f, 1f), new Color(0.20f, 0.24f, 0.29f, 1f));
             roomMarkerTexture = MakeRoomMarkerTexture();
@@ -4105,6 +6524,23 @@ namespace NtingCampusMapEditor
 
             iconButtonStyle = new GUIStyle(buttonStyle);
             iconButtonStyle.fontSize = 18;
+
+            inputStyle = new GUIStyle(GUI.skin.textField);
+            inputStyle.normal.background = inputTexture;
+            inputStyle.focused.background = inputFocusedTexture;
+            inputStyle.hover.background = inputFocusedTexture;
+            inputStyle.active.background = inputFocusedTexture;
+            inputStyle.normal.textColor = Color.white;
+            inputStyle.focused.textColor = Color.white;
+            inputStyle.hover.textColor = Color.white;
+            inputStyle.active.textColor = Color.white;
+            inputStyle.fontSize = 18;
+            inputStyle.alignment = TextAnchor.MiddleLeft;
+            inputStyle.padding = new RectOffset(8, 8, 4, 4);
+
+            objectSettingsHighlightStyle = new GUIStyle(GUI.skin.box);
+            objectSettingsHighlightStyle.normal.background = objectSettingsHighlightTexture;
+            objectSettingsHighlightStyle.border = new RectOffset(4, 4, 4, 4);
         }
 
         private Texture2D MakeTexture(Color color)
@@ -4546,6 +6982,147 @@ namespace NtingCampusMapEditor
             return roomNames[selectedRoomIndex];
         }
 
+        private CampusRuntimeRoomPrefab GetSelectedRoomPrefab()
+        {
+            if (roomPrefabs.Count == 0)
+            {
+                return null;
+            }
+
+            selectedRoomPrefabIndex = Mathf.Clamp(selectedRoomPrefabIndex, 0, roomPrefabs.Count - 1);
+            return roomPrefabs[selectedRoomPrefabIndex];
+        }
+
+        private string ResolveNewRoomPrefabName()
+        {
+            if (!string.IsNullOrWhiteSpace(newRoomPrefabName))
+            {
+                return newRoomPrefabName.Trim();
+            }
+
+            if (!string.IsNullOrWhiteSpace(newRoomName))
+            {
+                return newRoomName.Trim();
+            }
+
+            return GetSelectedRoomName();
+        }
+
+        private static Vector2Int NormalizeRoomPrefabSize(Vector2Int size)
+        {
+            return new Vector2Int(Mathf.Max(1, size.x), Mathf.Max(1, size.y));
+        }
+
+        private static BoundsInt BuildInclusiveCellBounds(Vector3Int start, Vector3Int end)
+        {
+            int minX = Mathf.Min(start.x, end.x);
+            int maxX = Mathf.Max(start.x, end.x);
+            int minY = Mathf.Min(start.y, end.y);
+            int maxY = Mathf.Max(start.y, end.y);
+            return new BoundsInt(minX, minY, 0, maxX - minX + 1, maxY - minY + 1, 1);
+        }
+
+        private static bool CellInBounds(BoundsInt bounds, Vector3Int cell)
+        {
+            return cell.x >= bounds.xMin &&
+                   cell.x < bounds.xMax &&
+                   cell.y >= bounds.yMin &&
+                   cell.y < bounds.yMax;
+        }
+
+        private static Vector3Int ToRelativeCell(Vector3Int cell, Vector3Int originCell)
+        {
+            return new Vector3Int(cell.x - originCell.x, cell.y - originCell.y, 0);
+        }
+
+        private static Vector3Int ToAbsoluteCell(Vector3Int anchorCell, Vector3Int relativeCell)
+        {
+            return new Vector3Int(anchorCell.x + relativeCell.x, anchorCell.y + relativeCell.y, 0);
+        }
+
+        private static bool IsPlacedObjectFullyInsideBounds(CampusPlacedObject placed, BoundsInt bounds)
+        {
+            if (placed == null)
+            {
+                return false;
+            }
+
+            Vector2Int footprint = placed.RotatedFootprintSize;
+            for (int y = 0; y < footprint.y; y++)
+            {
+                for (int x = 0; x < footprint.x; x++)
+                {
+                    Vector3Int cell = new Vector3Int(placed.Cell.x + x, placed.Cell.y + y, 0);
+                    if (!CellInBounds(bounds, cell))
+                    {
+                        return false;
+                    }
+                }
+            }
+
+            return true;
+        }
+
+        private static bool HasRoomPrefabContent(CampusRuntimeRoomPrefab roomPrefab)
+        {
+            return roomPrefab != null &&
+                   ((roomPrefab.FloorTiles != null && roomPrefab.FloorTiles.Count > 0) ||
+                    (roomPrefab.WallTiles != null && roomPrefab.WallTiles.Count > 0) ||
+                    (roomPrefab.Objects != null && roomPrefab.Objects.Count > 0) ||
+                    (roomPrefab.Lights != null && roomPrefab.Lights.Count > 0));
+        }
+
+        private static void NormalizeRoomPrefab(CampusRuntimeRoomPrefab roomPrefab, string fallbackName)
+        {
+            if (roomPrefab == null)
+            {
+                return;
+            }
+
+            if (string.IsNullOrWhiteSpace(roomPrefab.Schema))
+            {
+                roomPrefab.Schema = "NtingCampusRuntimeRoomPrefab.v1";
+            }
+
+            roomPrefab.RoomName = string.IsNullOrWhiteSpace(roomPrefab.RoomName)
+                ? (string.IsNullOrWhiteSpace(fallbackName) ? "未命名房间" : fallbackName.Trim())
+                : roomPrefab.RoomName.Trim();
+            roomPrefab.Size = NormalizeRoomPrefabSize(roomPrefab.Size);
+            roomPrefab.FloorTiles = roomPrefab.FloorTiles ?? new List<CampusRuntimeTileSnapshot>();
+            roomPrefab.WallTiles = roomPrefab.WallTiles ?? new List<CampusRuntimeTileSnapshot>();
+            roomPrefab.Objects = roomPrefab.Objects ?? new List<CampusRuntimeObjectSnapshot>();
+            roomPrefab.RoomMarkers = roomPrefab.RoomMarkers ?? new List<CampusRuntimeRoomSnapshot>();
+            roomPrefab.Lights = roomPrefab.Lights ?? new List<CampusRuntimeRoomLightSnapshot>();
+            EnsureRoomPrefabMarker(roomPrefab);
+        }
+
+        private static void EnsureRoomPrefabMarker(CampusRuntimeRoomPrefab roomPrefab)
+        {
+            if (roomPrefab == null)
+            {
+                return;
+            }
+
+            roomPrefab.RoomMarkers = roomPrefab.RoomMarkers ?? new List<CampusRuntimeRoomSnapshot>();
+            for (int i = 0; i < roomPrefab.RoomMarkers.Count; i++)
+            {
+                CampusRuntimeRoomSnapshot marker = roomPrefab.RoomMarkers[i];
+                if (marker != null && string.Equals(marker.RoomName, roomPrefab.RoomName, StringComparison.OrdinalIgnoreCase))
+                {
+                    return;
+                }
+            }
+
+            Vector2Int size = NormalizeRoomPrefabSize(roomPrefab.Size);
+            roomPrefab.RoomMarkers.Add(new CampusRuntimeRoomSnapshot
+            {
+                RoomName = roomPrefab.RoomName,
+                FloorIndex = 0,
+                Cell = new Vector3Int(Mathf.Max(0, (size.x - 1) / 2), Mathf.Max(0, (size.y - 1) / 2), 0),
+                HideMarkerVisual = true
+            });
+        }
+
         private TileBase GetSelectedFloorTile()
         {
             return floorTiles.Count == 0 ? null : floorTiles[Mathf.Clamp(selectedFloorTileIndex, 0, floorTiles.Count - 1)];
@@ -4564,6 +7141,40 @@ namespace NtingCampusMapEditor
         private GameObject GetSelectedObjectPrefab()
         {
             return objectPrefabs.Count == 0 ? null : objectPrefabs[Mathf.Clamp(selectedObjectIndex, 0, objectPrefabs.Count - 1)];
+        }
+
+        private string GetObjectDisplayName(GameObject prefab)
+        {
+            if (prefab == null)
+            {
+                return "\u672a\u9009\u7269\u54c1";
+            }
+
+            CampusPlacedObject placed = prefab.GetComponent<CampusPlacedObject>();
+            if (placed != null && !string.IsNullOrWhiteSpace(placed.DisplayNameOverride))
+            {
+                return placed.DisplayNameOverride.Trim();
+            }
+
+            return GetObjectFallbackDisplayName(prefab);
+        }
+
+        private string GetObjectDisplayName(string objectId)
+        {
+            int index = FindPrefabIndexByName(objectId);
+            return index >= 0 ? GetObjectDisplayName(objectPrefabs[index]) : CampusObjectNames.GetDisplayName(objectId);
+        }
+
+        private string GetObjectFallbackDisplayName(GameObject prefab)
+        {
+            if (prefab == null)
+            {
+                return "\u672a\u9009\u7269\u54c1";
+            }
+
+            CampusPlacedObject placed = prefab.GetComponent<CampusPlacedObject>();
+            string objectId = placed != null && !string.IsNullOrWhiteSpace(placed.ObjectId) ? placed.ObjectId : prefab.name;
+            return CampusObjectNames.GetDisplayName(objectId);
         }
 
         private Vector2Int GetSelectedObjectFootprint()
@@ -4758,6 +7369,7 @@ namespace NtingCampusMapEditor
                    checklistPanelRect.Contains(guiPosition) ||
                    bottomToolbarRect.Contains(guiPosition) ||
                    (showSettings && settingsPanelRect.Contains(guiPosition)) ||
+                   (showObjectSettings && objectSettingsPanelRect.Contains(guiPosition)) ||
                    (showHelpOverlay && helpPanelRect.Contains(guiPosition));
         }
 
@@ -4791,9 +7403,78 @@ namespace NtingCampusMapEditor
 
         private int ParseIntField(Rect rect, int value)
         {
-            string text = GUI.TextField(rect, value.ToString(), buttonStyle);
+            return ParseIntField(rect, value, null);
+        }
+
+        private int ParseIntField(Rect rect, int value, string key)
+        {
+            string text = DrawTextInput(rect, value.ToString(CultureInfo.InvariantCulture), key ?? BuildRectTextInputKey("int", rect));
             int parsed;
-            return int.TryParse(text, out parsed) ? parsed : value;
+            return int.TryParse(text, NumberStyles.Integer, CultureInfo.InvariantCulture, out parsed) ? parsed : value;
+        }
+
+        private float ParseFloatField(Rect rect, float value)
+        {
+            return ParseFloatField(rect, value, null);
+        }
+
+        private float ParseFloatField(Rect rect, float value, string key)
+        {
+            string text = DrawTextInput(rect, FormatFloat(value), key ?? BuildRectTextInputKey("float", rect));
+            float parsed;
+            return float.TryParse(text, NumberStyles.Float, CultureInfo.InvariantCulture, out parsed) ? parsed : value;
+        }
+
+        private string DrawTextInput(Rect rect, string value, string key)
+        {
+            string safeKey = string.IsNullOrEmpty(key) ? BuildRectTextInputKey("text", rect) : key;
+            string controlName = TextInputControlPrefix + safeKey;
+            bool focusedBefore = GUI.GetNameOfFocusedControl() == controlName;
+            string draft;
+            if (!focusedBefore || !textInputDrafts.TryGetValue(safeKey, out draft))
+            {
+                draft = value ?? string.Empty;
+            }
+
+            GUI.SetNextControlName(controlName);
+            string next = GUI.TextField(rect, draft, inputStyle);
+            bool focusedAfter = GUI.GetNameOfFocusedControl() == controlName;
+            if (focusedAfter)
+            {
+                textInputDrafts[safeKey] = next;
+            }
+            else
+            {
+                textInputDrafts.Remove(safeKey);
+            }
+
+            return next;
+        }
+
+        private void RefreshTextInputFocusState()
+        {
+            string focusedControl = GUI.GetNameOfFocusedControl();
+            textInputFocused = !string.IsNullOrEmpty(focusedControl) &&
+                               focusedControl.StartsWith(TextInputControlPrefix, StringComparison.Ordinal);
+        }
+
+        private bool IsEditingTextInput()
+        {
+            return textInputFocused;
+        }
+
+        private static string FormatFloat(float value)
+        {
+            return value.ToString("0.###", CultureInfo.InvariantCulture);
+        }
+
+        private static string BuildRectTextInputKey(string prefix, Rect rect)
+        {
+            return prefix + "_" +
+                   Mathf.RoundToInt(rect.x) + "_" +
+                   Mathf.RoundToInt(rect.y) + "_" +
+                   Mathf.RoundToInt(rect.width) + "_" +
+                   Mathf.RoundToInt(rect.height);
         }
 
         private Sprite GetTileSprite(TileBase tile)
@@ -4807,6 +7488,16 @@ namespace NtingCampusMapEditor
             if (prefab == null)
             {
                 return null;
+            }
+
+            CampusPlacedObject placed = prefab.GetComponent<CampusPlacedObject>();
+            if (placed != null)
+            {
+                Sprite configuredSprite = placed.ResolveSpriteForRotation(0, out _, out _);
+                if (configuredSprite != null)
+                {
+                    return configuredSprite;
+                }
             }
 
             SpriteRenderer renderer = prefab.GetComponentInChildren<SpriteRenderer>(true);
@@ -4858,6 +7549,24 @@ namespace NtingCampusMapEditor
             {
                 list.Add(item);
             }
+        }
+
+        private static string SanitizeFileName(string value)
+        {
+            if (string.IsNullOrWhiteSpace(value))
+            {
+                return "_";
+            }
+
+            char[] invalid = Path.GetInvalidFileNameChars();
+            string sanitized = value.Trim();
+            for (int i = 0; i < invalid.Length; i++)
+            {
+                sanitized = sanitized.Replace(invalid[i], '_');
+            }
+
+            sanitized = sanitized.Replace('/', '_').Replace('\\', '_');
+            return string.IsNullOrWhiteSpace(sanitized) ? "_" : sanitized;
         }
 
         private static bool WasKeyPressed(KeyCode key)
@@ -5177,6 +7886,31 @@ namespace NtingCampusMapEditor
     }
 
     [Serializable]
+    public sealed class CampusRuntimeRoomPrefab
+    {
+        public string Schema;
+        public string RoomName;
+        public string CreatedAtLocal;
+        public Vector2Int Size = Vector2Int.one;
+        public List<CampusRuntimeTileSnapshot> FloorTiles = new List<CampusRuntimeTileSnapshot>();
+        public List<CampusRuntimeTileSnapshot> WallTiles = new List<CampusRuntimeTileSnapshot>();
+        public List<CampusRuntimeObjectSnapshot> Objects = new List<CampusRuntimeObjectSnapshot>();
+        public List<CampusRuntimeRoomSnapshot> RoomMarkers = new List<CampusRuntimeRoomSnapshot>();
+        public List<CampusRuntimeRoomLightSnapshot> Lights = new List<CampusRuntimeRoomLightSnapshot>();
+
+        [NonSerialized] public string SourcePath;
+    }
+
+    [Serializable]
+    public sealed class CampusRuntimeRoomLightSnapshot
+    {
+        public CampusRuntimeLightSnapshot Light = new CampusRuntimeLightSnapshot();
+        public Vector3Int RelativeCell;
+        public Vector3 RelativePosition;
+        public bool HasRelativePosition;
+    }
+
+    [Serializable]
     public sealed class CampusRuntimeTileSnapshot
     {
         public Vector3Int Cell;
@@ -5189,15 +7923,75 @@ namespace NtingCampusMapEditor
     public sealed class CampusRuntimeObjectSnapshot
     {
         public string ObjectId;
+        public string DisplayNameOverride;
         public int PaletteIndex = -1;
         public Vector3 Position;
         public Vector3Int Cell;
         public Vector2Int FootprintSize = Vector2Int.one;
         public int FloorIndex = 1;
+        public bool OverrideFootprintSize;
+        public Vector2 VisualScale = Vector2.one;
+        public bool LockVisualScaleAspect = true;
+        public bool OverrideAllowRotation;
+        public bool AllowRotation;
+        public bool OverrideRotation0Sprite;
+        public string Rotation0SpritePath;
+        public bool OverrideRotation90Sprite;
+        public string Rotation90SpritePath;
+        public bool OverrideRotation180Sprite;
+        public string Rotation180SpritePath;
+        public bool OverrideRotation270Sprite;
+        public string Rotation270SpritePath;
         public int Rotation90;
         public bool BlocksMovement;
         public bool BlocksSight;
         public bool IsInteractable;
+        public bool IsStorageContainer;
+        public Vector2Int StorageSize = new Vector2Int(4, 4);
+        public float StorageMaxWeight = CampusPlacedObject.DefaultStorageMaxWeight;
+        public bool UseCustomInteractionAnchor;
+        public Vector3 CustomInteractionAnchorLocalPosition;
+        public float CustomInteractionAnchorRadius = CampusPlacedObject.DefaultInteractionAnchorRadius;
+        public string CustomInteractionPromptText;
+        public List<CampusPlacedObjectInteractionAnchor> CustomInteractionAnchors = new List<CampusPlacedObjectInteractionAnchor>();
+    }
+
+    [Serializable]
+    public sealed class CampusRuntimeObjectSettings
+    {
+        public string ObjectId;
+        public string DisplayNameOverride;
+        public bool OverrideFootprintSize;
+        public Vector2Int FootprintSize = Vector2Int.one;
+        public Vector2 VisualScale = Vector2.one;
+        public bool LockVisualScaleAspect = true;
+        public bool OverrideAllowRotation;
+        public bool AllowRotation;
+        public bool OverrideRotation0Sprite;
+        public string Rotation0SpritePath;
+        public bool OverrideRotation90Sprite;
+        public string Rotation90SpritePath;
+        public bool OverrideRotation180Sprite;
+        public string Rotation180SpritePath;
+        public bool OverrideRotation270Sprite;
+        public string Rotation270SpritePath;
+        public bool IsStorageContainer;
+        public Vector2Int StorageSize = new Vector2Int(4, 4);
+        public float StorageMaxWeight = CampusPlacedObject.DefaultStorageMaxWeight;
+        public bool UseCustomInteractionAnchor;
+        public Vector3 CustomInteractionAnchorLocalPosition;
+        public float CustomInteractionAnchorRadius = CampusPlacedObject.DefaultInteractionAnchorRadius;
+        public string CustomInteractionPromptText;
+        public List<CampusPlacedObjectInteractionAnchor> CustomInteractionAnchors = new List<CampusPlacedObjectInteractionAnchor>();
+    }
+
+    [Serializable]
+    public sealed class CampusRuntimeProjectSyncManifest
+    {
+        public string ExportedAtLocal;
+        public string UnityPersistentDataPath;
+        public string ImportRootFolderName;
+        public string MapFileName;
     }
 
     [Serializable]
@@ -5219,6 +8013,7 @@ namespace NtingCampusMapEditor
         public string RoomName;
         public int FloorIndex = 1;
         public Vector3Int Cell;
+        public bool HideMarkerVisual;
     }
 
     [Serializable]

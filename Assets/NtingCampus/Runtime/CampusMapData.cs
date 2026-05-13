@@ -43,14 +43,28 @@ namespace NtingCampusMapEditor
     {
         public string ObjectId;
         public string ObjectGuid;
+        public string DisplayNameOverride;
         public Vector3 Position;
         public Vector3Int Cell;
         public Vector2Int FootprintSize = Vector2Int.one;
+        public bool OverrideFootprintSize;
+        public Vector2 VisualScale = Vector2.one;
+        public bool LockVisualScaleAspect = true;
         public int FloorIndex;
+        public bool OverrideAllowRotation;
+        public bool AllowRotation;
         public int Rotation90;
         public bool BlocksMovement;
         public bool BlocksSight;
         public bool IsInteractable;
+        public bool IsStorageContainer;
+        public Vector2Int StorageSize = new Vector2Int(4, 4);
+        public float StorageMaxWeight = CampusPlacedObject.DefaultStorageMaxWeight;
+        public bool UseCustomInteractionAnchor;
+        public Vector3 CustomInteractionAnchorLocalPosition;
+        public float CustomInteractionAnchorRadius = CampusPlacedObject.DefaultInteractionAnchorRadius;
+        public string CustomInteractionPromptText;
+        public List<CampusPlacedObjectInteractionAnchor> CustomInteractionAnchors = new List<CampusPlacedObjectInteractionAnchor>();
     }
 
     [Serializable]

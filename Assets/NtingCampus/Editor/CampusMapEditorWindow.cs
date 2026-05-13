@@ -61,7 +61,6 @@ namespace NtingCampusMapEditor
         [SerializeField] private CampusBrushMode brushMode = CampusBrushMode.PaintFloorTile;
         [SerializeField] private int currentFloorIndex = 1;
         [SerializeField] private int brushSize = 1;
-        [SerializeField] private CampusFloorTileSize floorTileSize = CampusFloorTileSize.Small;
         [SerializeField] private bool snapToGrid = true;
         [SerializeField] private int rotation90;
         [SerializeField] private bool flipX;
@@ -286,7 +285,6 @@ namespace NtingCampusMapEditor
 
         public void SetFloorTileSizeCells(int size)
         {
-            floorTileSize = CampusFloorTileSize.Small;
             Repaint();
         }
 
@@ -1058,7 +1056,6 @@ namespace NtingCampusMapEditor
         {
             EditorGUILayout.LabelField(Text("Brush Settings", "工具设置"), CampusMapEditorStyles.Header);
             EditorGUILayout.BeginVertical(CampusMapEditorStyles.HelpBox);
-            floorTileSize = CampusFloorTileSize.Small;
             EditorGUILayout.LabelField(Text("Floor / Wall Unit", "地板/墙体单位"), FloorTileSizeLabel());
             brushSize = Mathf.Max(1, EditorGUILayout.IntField(Text("Wall / Erase Brush Size", "墙体/擦除笔刷尺寸"), brushSize));
             snapToGrid = EditorGUILayout.Toggle(Text("Snap To Grid", "吸附网格"), snapToGrid);

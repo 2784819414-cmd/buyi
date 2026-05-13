@@ -1,0 +1,53 @@
+﻿{
+    "ObjectId": "门",
+    "DisplayNameOverride": "",
+    "OverrideFootprintSize": true,
+    "FootprintSize": {
+        "x": 1,
+        "y": 1
+    },
+    "VisualScale": {
+        "x": 1.0,
+        "y": 1.0
+    },
+    "LockVisualScaleAspect": true,
+    "OverrideAllowRotation": false,
+    "AllowRotation": false,
+    "OverrideRotation0Sprite": false,
+    "Rotation0SpritePath": "",
+    "OverrideRotation90Sprite": false,
+    "Rotation90SpritePath": "",
+    "OverrideRotation180Sprite": false,
+    "Rotation180SpritePath": "",
+    "OverrideRotation270Sprite": false,
+    "Rotation270SpritePath": "",
+    "UseCustomInteractionAnchor": true,
+    "CustomInteractionAnchorLocalPosition": {
+        "x": 0.0,
+        "y": 0.0,
+        "z": 0.0
+    },
+    "CustomInteractionAnchorRadius": 0.699999988079071,
+    "CustomInteractionPromptText": "开门",
+    "CustomInteractionAnchors": [
+        {
+            "AnchorId": "door_toggle",
+            "DisplayName": "门",
+            "Enabled": true,
+            "LocalPosition": {
+                "x": 0.0,
+                "y": 0.0,
+                "z": 0.0
+            },
+            "Radius": 0.699999988079071,
+            "PromptText": "开门",
+            "ActionId": "toggle_door",
+            "Payload": "",
+            "TargetComponentType": "CampusDoor3D",
+            "Priority": 130,
+            "UseTargetDoorStatePrompt": true,
+            "LogInteraction": false,
+            "InteractionLogMessage": ""
+        }
+    ]
+}

@@ -801,6 +801,7 @@ namespace NtingCampusMapEditor
             placed.FootprintSize = authoredFootprintSize;
             placed.ApplyPlacementRotation(effectiveRotation90);
             placed.ApplyCellToTransform(floor.Grid);
+            placed.ApplyInteractionState();
             CampusDynamicShadowUtility.EnsureObjectShadowCasters(placed, floor.Grid);
 
             CampusRenderSortingUtility.ApplyFloorSorting(floor, floor.FloorIndex * window.MapRoot.SortingOrderStepPerFloor);
@@ -1357,7 +1358,8 @@ namespace NtingCampusMapEditor
                 return;
             }
 
-            Rect rect = BuildSceneGuiPreviewRect(previewCenter, sprite, renderer.transform.localScale);
+            Vector2 previewScale = placed != null ? placed.NormalizedVisualScale : new Vector2(renderer.transform.localScale.x, renderer.transform.localScale.y);
+            Rect rect = BuildSceneGuiPreviewRect(previewCenter, sprite, new Vector3(previewScale.x, previewScale.y, renderer.transform.localScale.z));
             if (rect.width <= 0f || rect.height <= 0f)
             {
                 return;

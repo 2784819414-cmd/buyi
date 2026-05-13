@@ -151,6 +151,7 @@ namespace NtingCampusMapEditor
                 return;
             }
 
+            NtingCustomShadowSystem.EnsureSceneSystem().MarkSceneDirty();
             if (useProjectedObjectShadowMesh)
             {
                 ClearObjectShadowCasters(floor);
@@ -187,6 +188,7 @@ namespace NtingCampusMapEditor
                 return;
             }
 
+            NtingCustomShadowSystem.EnsureSceneSystem().MarkSceneDirty();
             if (useProjectedObjectShadowMesh)
             {
                 ClearObjectShadowCasters(placed.gameObject);

@@ -1,6 +1,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Rendering;
+using UnityEngine.Rendering.Universal;
 using UnityEngine.Tilemaps;
 
 #if UNITY_EDITOR
@@ -14,25 +15,28 @@ namespace NtingCampusMapEditor
     public sealed class CampusProjectedWallShadowRenderer : MonoBehaviour
     {
         private const string RendererName = "Projected Wall Shadows";
-        private const string LegacyObjectFallbackCasterName = "Dynamic Object ShadowCaster 2D";
         private const string ShadowShaderName = "Nting Campus/2D/Projected Shadow Unlit";
         private const string ShadowShaderResourcePath = "Shaders/CampusProjectedShadowUnlit";
         private const string ShadowMaterialAssetPath = "Assets/NtingCampus/Materials/CampusProjectedShadow.mat";
         private const float EdgeProjectionDotThreshold = 0.05f;
-        private const float DefaultMinShadowLength = 0.24f;
-        private const float DefaultMaxShadowLength = 0.95f;
+        private const float DefaultMinShadowLength = 0.3f;
+        private const float DefaultMaxShadowLength = 1.15f;
+        private const float PreviousDefaultMinShadowLength = 0.24f;
+        private const float PreviousDefaultMaxShadowLength = 0.95f;
         private const float PreviousMinShadowLength = 0.06f;
         private const float PreviousMaxShadowLength = 1.10f;
         private const float LegacyMinShadowLength = 0.20f;
         private const float LegacyMaxShadowLength = 3.20f;
-        private const float DefaultAlphaMultiplier = 2.25f;
+        private const float DefaultAlphaMultiplier = 3.4f;
+        private const float CurrentDefaultAlphaMultiplierBeforeLengthen = 3.0f;
+        private const float PreviousDefaultAlphaMultiplier = 2.25f;
         private const float PreviousAlphaMultiplier = 1.35f;
         private const float LegacyAlphaMultiplier = 1.0f;
-        private const float WallTopHalfWidth = 0.205f;
-        private const float DefaultShadowSourceWidth = WallTopHalfWidth * 2f;
+        private const float WallBottomHalfWidth = 0.330f;
+        private const float PreviousDefaultShadowSourceWidth = 0.410f;
+        private const float DefaultShadowSourceWidth = WallBottomHalfWidth * 2f;
         private const float LegacyShadowSourceWidth = 0.33f;
         private const float WallCellHalf = 0.5f;
-        private const float ObjectSourceInsetFromCellEdge = WallCellHalf - WallTopHalfWidth;
         private const float EdgeMergeTolerance = 0.0005f;
 
         [SerializeField] private CampusFloorRoot floor;
@@ -47,12 +51,27 @@ namespace NtingCampusMapEditor
         [SerializeField] private float alphaMultiplier = DefaultAlphaMultiplier;
         [SerializeField] private float rebuildDirectionThreshold = 0.01f;
         [SerializeField] private bool autoFindDayNight = true;
+        [SerializeField] private bool pointLightsCanBrightenProjectedShadows = true;
+        [SerializeField, Range(0f, 1f)] private float pointLightFillStrength = 0.65f;
+        [SerializeField, Range(0.01f, 2f)] private float pointLightFillIntensityScale = 0.75f;
+        [SerializeField, Min(1)] private int maxFillPointLights = 12;
+
+        private bool runtimeSunShadowSettingsActive;
+        private bool runtimeSunShadowEnabled = true;
+        private float runtimeSunShadowMaxLength = DefaultMaxShadowLength;
+        private float runtimeSunShadowAlpha = 1f;
+        private bool runtimeScaleLengthByDayNight = true;
+        private Color runtimeSunShadowColor = Color.black;
+        private float runtimePointLightFillStrength = 0.65f;
+        private float runtimePointLightFillIntensityScale = 0.75f;
+        private int runtimeMaxFillPointLights = 12;
 
         private static Material runtimeFallbackMaterial;
 
         private readonly List<ShadowEdge> cachedEdges = new List<ShadowEdge>();
         private readonly List<ShadowSourceRect> sourceRects = new List<ShadowSourceRect>();
         private readonly List<Vector2> coveredIntervals = new List<Vector2>();
+        private readonly List<NtingCustomShadowSystem.ShadowLightInfo> fillPointLights = new List<NtingCustomShadowSystem.ShadowLightInfo>(16);
         private readonly List<Vector3> vertices = new List<Vector3>(256);
         private readonly List<int> triangles = new List<int>(384);
         private readonly List<Color> colors = new List<Color>(256);
@@ -104,6 +123,57 @@ namespace NtingCampusMapEditor
             }
         }
 
+        public bool ApplyRuntimeSunShadowSettings(
+            bool enabled,
+            float maxLengthWorld,
+            float alpha,
+            bool scaleLengthByDayNight,
+            Color color,
+            float fillStrength,
+            float fillIntensityScale,
+            int maxFillLights)
+        {
+            float clampedLength = Mathf.Max(0f, maxLengthWorld);
+            float clampedAlpha = Mathf.Clamp01(alpha);
+            float clampedFillStrength = Mathf.Clamp01(fillStrength);
+            float clampedFillIntensity = Mathf.Max(0.01f, fillIntensityScale);
+            int clampedMaxFillLights = Mathf.Max(1, maxFillLights);
+            color.a = 1f;
+
+            bool changed = !runtimeSunShadowSettingsActive ||
+                runtimeSunShadowEnabled != enabled ||
+                !Mathf.Approximately(runtimeSunShadowMaxLength, clampedLength) ||
+                !Mathf.Approximately(runtimeSunShadowAlpha, clampedAlpha) ||
+                runtimeScaleLengthByDayNight != scaleLengthByDayNight ||
+                runtimeSunShadowColor != color ||
+                !Mathf.Approximately(runtimePointLightFillStrength, clampedFillStrength) ||
+                !Mathf.Approximately(runtimePointLightFillIntensityScale, clampedFillIntensity) ||
+                runtimeMaxFillPointLights != clampedMaxFillLights;
+
+            runtimeSunShadowSettingsActive = true;
+            runtimeSunShadowEnabled = enabled;
+            runtimeSunShadowMaxLength = clampedLength;
+            runtimeSunShadowAlpha = clampedAlpha;
+            runtimeScaleLengthByDayNight = scaleLengthByDayNight;
+            runtimeSunShadowColor = color;
+            runtimePointLightFillStrength = clampedFillStrength;
+            runtimePointLightFillIntensityScale = clampedFillIntensity;
+            runtimeMaxFillPointLights = clampedMaxFillLights;
+
+            if (changed)
+            {
+                forceMeshUpdate = true;
+            }
+
+            return changed;
+        }
+
+        public void RefreshRuntimeSunShadowNow()
+        {
+            ResolveReferences();
+            UpdateShadowMesh(true);
+        }
+
         public void RebuildFromWallLogic()
         {
             ResolveReferences();
@@ -120,8 +190,8 @@ namespace NtingCampusMapEditor
             wallLogic.CompressBounds();
             BoundsInt bounds = wallLogic.cellBounds;
             Vector3 cellSize = floor != null && floor.Grid != null ? floor.Grid.cellSize : Vector3.one;
-            float sourceHalfX = Mathf.Min(WallTopHalfWidth, Mathf.Max(0.01f, Mathf.Abs(shadowWidth) * 0.5f));
-            float sourceHalfY = Mathf.Min(WallTopHalfWidth, Mathf.Max(0.01f, Mathf.Abs(shadowWidth) * 0.5f));
+            float sourceHalfX = Mathf.Min(WallBottomHalfWidth, Mathf.Max(0.01f, Mathf.Abs(shadowWidth) * 0.5f));
+            float sourceHalfY = Mathf.Min(WallBottomHalfWidth, Mathf.Max(0.01f, Mathf.Abs(shadowWidth) * 0.5f));
 
             foreach (Vector3Int cell in bounds.allPositionsWithin)
             {
@@ -132,10 +202,8 @@ namespace NtingCampusMapEditor
 
                 Vector3 center = wallLogic.GetCellCenterWorld(cell);
                 int connectionMask = CampusWallTileUtility.GetConnectionMask(wallLogic, cell);
-                AddWallTopSourceRects(center, cellSize, connectionMask, sourceHalfX, sourceHalfY);
+                AddWallBaseSourceRects(center, cellSize, connectionMask, sourceHalfX, sourceHalfY);
             }
-
-            AddPlacedObjectSourceRects(cellSize);
 
             for (int i = 0; i < sourceRects.Count; i++)
             {
@@ -174,75 +242,7 @@ namespace NtingCampusMapEditor
             UpdateShadowMesh(false);
         }
 
-        private void AddPlacedObjectSourceRects(Vector3 cellSize)
-        {
-            if (floor == null || floor.PropsRoot == null)
-            {
-                return;
-            }
-
-            CampusPlacedObject[] placedObjects = floor.PropsRoot.GetComponentsInChildren<CampusPlacedObject>(true);
-            float scaleX = Mathf.Abs(cellSize.x);
-            float scaleY = Mathf.Abs(cellSize.y);
-            for (int i = 0; i < placedObjects.Length; i++)
-            {
-                CampusPlacedObject placed = placedObjects[i];
-                if (placed == null)
-                {
-                    continue;
-                }
-
-                RemoveLegacyObjectShadowCaster(placed.transform);
-                if (!placed.gameObject.activeInHierarchy)
-                {
-                    continue;
-                }
-
-                Vector2Int footprint = placed.RotatedFootprintSize;
-                float halfWidth = Mathf.Max(WallTopHalfWidth * scaleX, footprint.x * scaleX * 0.5f - ObjectSourceInsetFromCellEdge * scaleX);
-                float halfHeight = Mathf.Max(WallTopHalfWidth * scaleY, footprint.y * scaleY * 0.5f - ObjectSourceInsetFromCellEdge * scaleY);
-                Vector3 center = placed.transform.position;
-                sourceRects.Add(new ShadowSourceRect(
-                    center.x - halfWidth,
-                    center.y - halfHeight,
-                    center.x + halfWidth,
-                    center.y + halfHeight));
-                RemoveDuplicateSourceRectAtEnd();
-            }
-        }
-
-        private static void RemoveLegacyObjectShadowCaster(Transform root)
-        {
-            if (root == null)
-            {
-                return;
-            }
-
-            Transform fallback = root.Find(LegacyObjectFallbackCasterName);
-            if (fallback != null)
-            {
-                DestroyShadowObject(fallback.gameObject);
-            }
-        }
-
-        private static void DestroyShadowObject(GameObject target)
-        {
-            if (target == null)
-            {
-                return;
-            }
-
-            if (Application.isPlaying)
-            {
-                Destroy(target);
-            }
-            else
-            {
-                DestroyImmediate(target);
-            }
-        }
-
-        private void AddWallTopSourceRects(Vector3 center, Vector3 cellSize, int connectionMask, float sourceHalfX, float sourceHalfY)
+        private void AddWallBaseSourceRects(Vector3 center, Vector3 cellSize, int connectionMask, float sourceHalfX, float sourceHalfY)
         {
             bool northConnected = (connectionMask & CampusWallTileUtility.NorthMask) != 0;
             bool eastConnected = (connectionMask & CampusWallTileUtility.EastMask) != 0;
@@ -471,6 +471,12 @@ namespace NtingCampusMapEditor
             return Mathf.Abs(a - b) <= EdgeMergeTolerance;
         }
 
+        private static int CompareFillLights(NtingCustomShadowSystem.ShadowLightInfo left, NtingCustomShadowSystem.ShadowLightInfo right)
+        {
+            int intensity = right.SortWeight.CompareTo(left.SortWeight);
+            return intensity != 0 ? intensity : left.InstanceId.CompareTo(right.InstanceId);
+        }
+
         private void ResolveReferences()
         {
             if (floor == null)
@@ -565,7 +571,10 @@ namespace NtingCampusMapEditor
             bool usesPreviousLengths =
                 Mathf.Approximately(minShadowLength, PreviousMinShadowLength) &&
                 Mathf.Approximately(maxShadowLength, PreviousMaxShadowLength);
-            if (usesLegacyLengths || usesPreviousLengths)
+            bool usesPreviousDefaultLengths =
+                Mathf.Approximately(minShadowLength, PreviousDefaultMinShadowLength) &&
+                Mathf.Approximately(maxShadowLength, PreviousDefaultMaxShadowLength);
+            if (usesLegacyLengths || usesPreviousLengths || usesPreviousDefaultLengths)
             {
                 minShadowLength = DefaultMinShadowLength;
                 maxShadowLength = DefaultMaxShadowLength;
@@ -574,13 +583,16 @@ namespace NtingCampusMapEditor
             minShadowLength = Mathf.Clamp(minShadowLength, 0.01f, 8f);
             maxShadowLength = Mathf.Clamp(maxShadowLength, minShadowLength + 0.01f, 8f);
 
-            if (Mathf.Approximately(shadowWidth, LegacyShadowSourceWidth))
+            if (Mathf.Approximately(shadowWidth, LegacyShadowSourceWidth) ||
+                Mathf.Approximately(shadowWidth, PreviousDefaultShadowSourceWidth))
             {
                 shadowWidth = DefaultShadowSourceWidth;
             }
 
             shadowWidth = Mathf.Clamp(shadowWidth, 0.02f, DefaultShadowSourceWidth);
-            if (Mathf.Approximately(alphaMultiplier, LegacyAlphaMultiplier) ||
+            if (Mathf.Approximately(alphaMultiplier, CurrentDefaultAlphaMultiplierBeforeLengthen) ||
+                Mathf.Approximately(alphaMultiplier, PreviousDefaultAlphaMultiplier) ||
+                Mathf.Approximately(alphaMultiplier, LegacyAlphaMultiplier) ||
                 Mathf.Approximately(alphaMultiplier, PreviousAlphaMultiplier))
             {
                 alphaMultiplier = DefaultAlphaMultiplier;
@@ -657,9 +669,10 @@ namespace NtingCampusMapEditor
 
             float lengthFactor = dayNight != null ? dayNight.ShadowLengthFactor : 0.45f;
             float opacityFactor = dayNight != null ? dayNight.ShadowOpacityFactor : 0.08f;
+            bool fillEnabled = pointLightsCanBrightenProjectedShadows && ResolveFillStrength() > 0f;
             bool directionChanged = Vector2.SqrMagnitude(direction - lastShadowDirection) > rebuildDirectionThreshold * rebuildDirectionThreshold;
             bool valuesChanged = !Mathf.Approximately(lengthFactor, lastShadowLengthFactor) || !Mathf.Approximately(opacityFactor, lastShadowOpacityFactor);
-            if (!force && !forceMeshUpdate && !directionChanged && !valuesChanged)
+            if (!force && !forceMeshUpdate && !directionChanged && !valuesChanged && !fillEnabled)
             {
                 return;
             }
@@ -669,16 +682,36 @@ namespace NtingCampusMapEditor
             lastShadowOpacityFactor = opacityFactor;
             forceMeshUpdate = false;
 
-            float shadowLength = Mathf.Lerp(minShadowLength, maxShadowLength, Mathf.Clamp01(lengthFactor));
-            float opacity = Mathf.Clamp01(opacityFactor * alphaMultiplier);
+            if (runtimeSunShadowSettingsActive && (!runtimeSunShadowEnabled || runtimeSunShadowMaxLength <= 0.001f || runtimeSunShadowAlpha <= 0.001f))
+            {
+                shadowMesh.Clear(false);
+                if (meshRenderer != null)
+                {
+                    meshRenderer.enabled = false;
+                }
+
+                return;
+            }
+
+            float shadowLength = ResolveShadowLength(lengthFactor);
+            float opacity = ResolveShadowOpacity(opacityFactor);
+            Color shadowColor = ResolveShadowColor(opacity);
             Vector3 offset = new Vector3(direction.x, direction.y, 0f) * shadowLength;
+            Vector3 localOffset = transform.InverseTransformVector(offset);
+            if (fillEnabled && opacity > 0.001f)
+            {
+                CollectProjectedFillLights();
+            }
+            else
+            {
+                fillPointLights.Clear();
+            }
 
             vertices.Clear();
             triangles.Clear();
             colors.Clear();
 
-            Color near = new Color(0f, 0f, 0f, opacity);
-            Color far = new Color(0f, 0f, 0f, 0f);
+            Color far = new Color(shadowColor.r, shadowColor.g, shadowColor.b, 0f);
             for (int i = 0; i < cachedEdges.Count; i++)
             {
                 ShadowEdge edge = cachedEdges[i];
@@ -688,13 +721,19 @@ namespace NtingCampusMapEditor
                 }
 
                 int index = vertices.Count;
-                vertices.Add(edge.A);
-                vertices.Add(edge.B);
-                vertices.Add(edge.B + offset);
-                vertices.Add(edge.A + offset);
+                Vector3 edgeA = edge.A;
+                Vector3 edgeB = edge.B;
+                Vector3 farB = edgeB + localOffset;
+                Vector3 farA = edgeA + localOffset;
+                vertices.Add(edgeA);
+                vertices.Add(edgeB);
+                vertices.Add(farB);
+                vertices.Add(farA);
 
-                colors.Add(near);
-                colors.Add(near);
+                Color nearA = new Color(shadowColor.r, shadowColor.g, shadowColor.b, shadowColor.a * ResolveProjectedFillMultiplier(edgeA));
+                Color nearB = new Color(shadowColor.r, shadowColor.g, shadowColor.b, shadowColor.a * ResolveProjectedFillMultiplier(edgeB));
+                colors.Add(nearA);
+                colors.Add(nearB);
                 colors.Add(far);
                 colors.Add(far);
 
@@ -716,6 +755,92 @@ namespace NtingCampusMapEditor
             shadowMesh.SetColors(colors);
             shadowMesh.SetTriangles(triangles, 0, true);
             shadowMesh.RecalculateBounds();
+            if (meshRenderer != null)
+            {
+                meshRenderer.enabled = true;
+            }
+        }
+
+        private float ResolveShadowLength(float dayNightLengthFactor)
+        {
+            if (!runtimeSunShadowSettingsActive)
+            {
+                return Mathf.Lerp(minShadowLength, maxShadowLength, Mathf.Clamp01(dayNightLengthFactor));
+            }
+
+            float lengthFactor = runtimeScaleLengthByDayNight ? Mathf.Clamp01(dayNightLengthFactor) : 1f;
+            return Mathf.Max(0f, runtimeSunShadowMaxLength * lengthFactor);
+        }
+
+        private float ResolveShadowOpacity(float dayNightOpacityFactor)
+        {
+            if (!runtimeSunShadowSettingsActive)
+            {
+                return Mathf.Clamp01(dayNightOpacityFactor * alphaMultiplier);
+            }
+
+            return Mathf.Clamp01(runtimeSunShadowAlpha);
+        }
+
+        private Color ResolveShadowColor(float opacity)
+        {
+            Color color = runtimeSunShadowSettingsActive ? runtimeSunShadowColor : Color.black;
+            color.a = opacity;
+            return color;
+        }
+
+        private float ResolveFillStrength()
+        {
+            return runtimeSunShadowSettingsActive ? runtimePointLightFillStrength : pointLightFillStrength;
+        }
+
+        private float ResolveFillIntensityScale()
+        {
+            return runtimeSunShadowSettingsActive ? runtimePointLightFillIntensityScale : pointLightFillIntensityScale;
+        }
+
+        private int ResolveMaxFillPointLights()
+        {
+            return runtimeSunShadowSettingsActive ? runtimeMaxFillPointLights : maxFillPointLights;
+        }
+
+        private void CollectProjectedFillLights()
+        {
+            fillPointLights.Clear();
+            Light2D[] lights = Object.FindObjectsByType<Light2D>(FindObjectsInactive.Include, FindObjectsSortMode.None);
+            for (int i = 0; i < lights.Length; i++)
+            {
+                Light2D light = lights[i];
+                if (!NtingCustomShadowSystem.IsPointLightUsableForCustomShadow(light, true))
+                {
+                    continue;
+                }
+
+                fillPointLights.Add(NtingCustomShadowSystem.CreateShadowLightInfo(light));
+            }
+
+            fillPointLights.Sort(CompareFillLights);
+            int maxLights = ResolveMaxFillPointLights();
+            if (fillPointLights.Count > maxLights)
+            {
+                fillPointLights.RemoveRange(maxLights, fillPointLights.Count - maxLights);
+            }
+        }
+
+        private float ResolveProjectedFillMultiplier(Vector3 localPosition)
+        {
+            if (fillPointLights.Count == 0)
+            {
+                return 1f;
+            }
+
+            return NtingCustomShadowSystem.ResolvePointLightFillMultiplier(
+                fillPointLights,
+                fillPointLights.Count,
+                0,
+                transform.TransformPoint(localPosition),
+                ResolveFillStrength(),
+                ResolveFillIntensityScale());
         }
 
         private void ClearMesh()

@@ -66,6 +66,7 @@ namespace NtingCampusMapEditor
                     CampusDynamicShadowUtility.RebuildWallGroundShadowCasters(floor);
                 }
 
+                NtingCustomShadowSystem.EnsureSceneSystem().MarkSceneDirty();
                 floor.RefreshUsedBounds();
             }
         }
@@ -82,6 +83,7 @@ namespace NtingCampusMapEditor
             CampusDynamicShadowUtility.ClearWallShadowCasters(floor);
             CampusDynamicShadowUtility.ClearWallGroundShadowCasters(floor);
             CampusProjectedWallShadowRenderer.ClearForFloor(floor);
+            NtingWallPointShadowRenderer.ClearForFloor(floor);
         }
 
         public static void ApplyDebugView(CampusFloorRoot floor, CampusWallDebugView view)
