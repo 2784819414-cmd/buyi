@@ -2407,6 +2407,9 @@ namespace NtingCampusMapEditor
 
         private void CaptureTiles(Tilemap tilemap, List<TileBase> palette, List<CampusRuntimeTileSnapshot> output)
         {
+            long perf = CampusMapEditorPerformance.Begin();
+            try
+            {
             output.Clear();
             if (tilemap == null)
             {
@@ -2430,10 +2433,18 @@ namespace NtingCampusMapEditor
                 tileSnapshot.Transform = tilemap.GetTransformMatrix(cell);
                 output.Add(tileSnapshot);
             }
+            }
+            finally
+            {
+                CampusMapEditorPerformance.End(perf, "Runtime CaptureTiles");
+            }
         }
 
         private void ApplyTiles(Tilemap tilemap, List<CampusRuntimeTileSnapshot> tiles, List<TileBase> palette)
         {
+            long perf = CampusMapEditorPerformance.Begin();
+            try
+            {
             if (tilemap == null || tiles == null)
             {
                 return;
@@ -2455,6 +2466,11 @@ namespace NtingCampusMapEditor
             }
 
             tilemap.RefreshAllTiles();
+            }
+            finally
+            {
+                CampusMapEditorPerformance.End(perf, "Runtime ApplyTiles");
+            }
         }
 
         private void CaptureObjects(CampusFloorRoot floor, List<CampusRuntimeObjectSnapshot> output)
@@ -5588,9 +5604,17 @@ namespace NtingCampusMapEditor
 
         private void RefreshAssetDatabaseIfAvailable()
         {
+            long perf = CampusMapEditorPerformance.Begin();
+            try
+            {
 #if UNITY_EDITOR
             AssetDatabase.Refresh();
 #endif
+            }
+            finally
+            {
+                CampusMapEditorPerformance.End(perf, "Runtime AssetDatabase.Refresh");
+            }
         }
 
         private bool IsSupportedImportImage(string path)
@@ -6201,6 +6225,9 @@ namespace NtingCampusMapEditor
 
         private void SaveRuntimeObjectSettings(CampusRuntimeObjectSettings settings)
         {
+            long perf = CampusMapEditorPerformance.Begin();
+            try
+            {
             if (settings == null || string.IsNullOrWhiteSpace(settings.ObjectId))
             {
                 return;
@@ -6209,6 +6236,11 @@ namespace NtingCampusMapEditor
             string folder = GetObjectSettingsFolder(settings.ObjectId);
             Directory.CreateDirectory(folder);
             File.WriteAllText(GetObjectSettingsPath(settings.ObjectId), JsonUtility.ToJson(settings, true), Encoding.UTF8);
+            }
+            finally
+            {
+                CampusMapEditorPerformance.End(perf, "Runtime SaveObjectSettings");
+            }
         }
 
         private CampusRuntimeObjectSettings LoadRuntimeObjectSettings(string objectId)
@@ -6806,6 +6838,9 @@ namespace NtingCampusMapEditor
 
         private void RebuildWallVisuals(CampusFloorRoot floor)
         {
+            long perf = CampusMapEditorPerformance.Begin();
+            try
+            {
             if (floor == null)
             {
                 return;
@@ -6820,6 +6855,11 @@ namespace NtingCampusMapEditor
             CampusWallAutoRenderer.RebuildFloor(floor, wallVisualCatalog, fallbackWallProfile);
             CampusWallAutoRenderer.ApplyDebugView(floor, CampusWallDebugView.ShowFinalWallVisuals);
             CampusWallTileUtility.SetTilemapVisible(floor.CollisionDebugTilemap, false);
+            }
+            finally
+            {
+                CampusMapEditorPerformance.End(perf, "Runtime RebuildWallVisuals");
+            }
         }
 
         private void DeleteSelectedFloor()

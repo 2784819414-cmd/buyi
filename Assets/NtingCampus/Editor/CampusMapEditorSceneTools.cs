@@ -542,6 +542,9 @@ namespace NtingCampusMapEditor
 
         private static void RefreshTilemap(Tilemap tilemap)
         {
+            long perf = CampusMapEditorPerformance.Begin();
+            try
+            {
             if (tilemap == null)
             {
                 return;
@@ -549,6 +552,11 @@ namespace NtingCampusMapEditor
 
             tilemap.RefreshAllTiles();
             EditorUtility.SetDirty(tilemap);
+            }
+            finally
+            {
+                CampusMapEditorPerformance.End(perf, "Editor RefreshTilemap");
+            }
         }
 
         private static IEnumerable<Vector3Int> RectangleCells(Vector3Int startCell, Vector3Int endCell)
@@ -704,6 +712,9 @@ namespace NtingCampusMapEditor
 
         private static void PaintFloorTile(Tilemap tilemap, Vector3Int cell, int tileSize, TileBase tile, CampusMapEditorWindow window, string undoName)
         {
+            long perf = CampusMapEditorPerformance.Begin();
+            try
+            {
             if (tilemap == null)
             {
                 return;
@@ -726,10 +737,18 @@ namespace NtingCampusMapEditor
             tilemap.SetTransformMatrix(anchorCell, BuildTileTransform(window, size));
             tilemap.RefreshAllTiles();
             EditorUtility.SetDirty(tilemap);
+            }
+            finally
+            {
+                CampusMapEditorPerformance.End(perf, "Editor PaintFloorTile");
+            }
         }
 
         private static void PaintWallTiles(Tilemap tilemap, Vector3Int baseAnchorCell, int brushSize, TileBase tile, string undoName)
         {
+            long perf = CampusMapEditorPerformance.Begin();
+            try
+            {
             if (tilemap == null)
             {
                 return;
@@ -748,6 +767,11 @@ namespace NtingCampusMapEditor
 
             tilemap.RefreshAllTiles();
             EditorUtility.SetDirty(tilemap);
+            }
+            finally
+            {
+                CampusMapEditorPerformance.End(perf, "Editor PaintWallTiles");
+            }
         }
 
         private static void PlacePrefab(CampusMapEditorWindow window, CampusFloorRoot floor, Vector3Int cell)
@@ -986,6 +1010,9 @@ namespace NtingCampusMapEditor
 
         private static void FlushPendingWallVisualRebuilds()
         {
+            long perf = CampusMapEditorPerformance.Begin();
+            try
+            {
             wallVisualRebuildScheduled = false;
             if (PendingWallVisualRebuilds.Count == 0)
             {
@@ -1009,6 +1036,11 @@ namespace NtingCampusMapEditor
             }
 
             SceneView.RepaintAll();
+            }
+            finally
+            {
+                CampusMapEditorPerformance.End(perf, "Editor FlushPendingWallVisualRebuilds");
+            }
         }
 
         private static void EraseFloorTile(Tilemap tilemap, Vector3Int cell, string undoName)

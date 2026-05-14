@@ -14,12 +14,9 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::NtingCampusMapEditor.CampusTilePalette
   FloorTiles:
   - {fileID: 11400000, guid: d59455202bce0a14ea279a18b86aca05, type: 2}
+  - {fileID: 11400000, guid: d2441a65afe447ea881858162b5334fb, type: 2}
   - {fileID: 11400000, guid: 6bc973a3368179e4b93c05d2992ab6ab, type: 2}
   - {fileID: 11400000, guid: 58b5994d84ed18a45a7a1af46d742aa6, type: 2}
-  - {fileID: 11400000, guid: ec768df5f9551384abd8b6ed31faa71e, type: 2}
+  - {fileID: 11400000, guid: b0e4118684e748e9a817c8b65f012f90, type: 2}
   - {fileID: 11400000, guid: e0c270091e8de45438a940c8403980d0, type: 2}
-  - {fileID: 11400000, guid: b3a31f7b3b8b6504bb379943bb3ffe04, type: 2}
-  - {fileID: 11400000, guid: 8ae0ef92f3afcb54caea3f7e76d2cab6, type: 2}
-  - {fileID: 11400000, guid: 652703e05ccc2374b9e227ab99475c56, type: 2}
-  - {fileID: 11400000, guid: e6140b37acf5ccc4b88f1da5e46ec9cf, type: 2}
-  - {fileID: 11400000, guid: 8caa4db49d2d17747bc051a06aecc372, type: 2}
+  - {fileID: 11400000, guid: d791e74c43434e3daf49063ceba52411, type: 2}

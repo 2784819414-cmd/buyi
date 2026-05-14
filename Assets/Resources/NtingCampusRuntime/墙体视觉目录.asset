@@ -12,32 +12,18 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: b337fdefd73a93e4bbab249f2d3d4eab, type: 3}
   m_Name: "\u5899\u4F53\u89C6\u89C9\u76EE\u5F55"
   m_EditorClassIdentifier: Assembly-CSharp::NtingCampusMapEditor.CampusWallVisualCatalog
-  DefaultProfile: {fileID: 11400000, guid: 435ce585bbcb61c4b874e6788230112d, type: 2}
+  DefaultProfile: {fileID: 11400000, guid: f2cabe0b5a6c5f848b2234f78f900744, type: 2}
   Profiles:
-  - {fileID: 11400000, guid: 435ce585bbcb61c4b874e6788230112d, type: 2}
-  - {fileID: 11400000, guid: c3a5cc33006a13f48a925dfe0ce47b80, type: 2}
-  - {fileID: 11400000, guid: e63274fba70834443973770ce0992a11, type: 2}
   - {fileID: 11400000, guid: f2cabe0b5a6c5f848b2234f78f900744, type: 2}
   - {fileID: 11400000, guid: 03ef9ee3db440514cbd166468c633fa1, type: 2}
-  - {fileID: 11400000, guid: c1c5417d5d59df440ac3b5de751d9c62, type: 2}
-  - {fileID: 11400000, guid: 33a01be01d15d254b8ada7630f7b7cdf, type: 2}
-  - {fileID: 11400000, guid: 13cd4096a32d80349bd90882f8ffe261, type: 2}
+  - {fileID: 11400000, guid: 8cf879df17384a9d844b1ca548bbe1a7, type: 2}
+  - {fileID: 11400000, guid: ecf92c89836f4d0dbc6c09ef64de4c51, type: 2}
   ProfileBindings:
-  - LogicTile: {fileID: 11400000, guid: d2c81133c678bf240b8b15dd6899db54, type: 2}
-    Profile: {fileID: 11400000, guid: 435ce585bbcb61c4b874e6788230112d, type: 2}
-  - LogicTile: {fileID: 11400000, guid: 47acd98cb03f56b4fb6028b936295574, type: 2}
-    Profile: {fileID: 11400000, guid: c3a5cc33006a13f48a925dfe0ce47b80, type: 2}
-  - LogicTile: {fileID: 11400000, guid: a168719de1dbe054bb7c4a823919be66, type: 2}
-    Profile: {fileID: 11400000, guid: e63274fba70834443973770ce0992a11, type: 2}
   - LogicTile: {fileID: 11400000, guid: 9612aff7c93d638439d3700ef2318842, type: 2}
     Profile: {fileID: 11400000, guid: f2cabe0b5a6c5f848b2234f78f900744, type: 2}
   - LogicTile: {fileID: 11400000, guid: 41c1bf3cb1edbbc40a26347e854fe871, type: 2}
     Profile: {fileID: 11400000, guid: 03ef9ee3db440514cbd166468c633fa1, type: 2}
-  - LogicTile: {fileID: 11400000, guid: d92cdfd41dbdfb0409206aaa6b3299a8, type: 2}
-    Profile: {fileID: 11400000, guid: c1c5417d5d59df440ac3b5de751d9c62, type: 2}
-  - LogicTile: {fileID: 11400000, guid: 1d2c8ea3c3eeab546be9306a08ba8108, type: 2}
-    Profile: {fileID: 11400000, guid: 33a01be01d15d254b8ada7630f7b7cdf, type: 2}
-  - LogicTile: {fileID: 11400000, guid: 19123aae4e2d08041899c33b03e73d66, type: 2}
-    Profile: {fileID: 11400000, guid: 13cd4096a32d80349bd90882f8ffe261, type: 2}
-  - LogicTile: {fileID: 11400000, guid: bc42c6cdd93ba5f4281ea9e7becca663, type: 2}
-    Profile: {fileID: 11400000, guid: 435ce585bbcb61c4b874e6788230112d, type: 2}
+  - LogicTile: {fileID: 11400000, guid: 213b63a3242a43df8b54de355e298ead, type: 2}
+    Profile: {fileID: 11400000, guid: 8cf879df17384a9d844b1ca548bbe1a7, type: 2}
+  - LogicTile: {fileID: 11400000, guid: dac56124b7c244a8940dfc440bb0a944, type: 2}
+    Profile: {fileID: 11400000, guid: ecf92c89836f4d0dbc6c09ef64de4c51, type: 2}
