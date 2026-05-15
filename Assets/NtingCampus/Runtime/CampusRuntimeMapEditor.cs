@@ -882,7 +882,8 @@ namespace NtingCampusMapEditor
         {
             try
             {
-                byte[] bytes = File.ReadAllBytes(path);
+                string resolvedPath = ResolveImportContentPath(path);
+                byte[] bytes = File.ReadAllBytes(resolvedPath);
                 Texture2D texture = new Texture2D(2, 2, TextureFormat.RGBA32, false);
                 texture.hideFlags = HideFlags.DontSave;
                 if (!texture.LoadImage(bytes))
@@ -891,7 +892,7 @@ namespace NtingCampusMapEditor
                     return null;
                 }
 
-                texture.name = Path.GetFileNameWithoutExtension(path);
+                texture.name = Path.GetFileNameWithoutExtension(resolvedPath);
                 texture.filterMode = FilterMode.Point;
                 texture.wrapMode = TextureWrapMode.Clamp;
                 importedTextures.Add(texture);
@@ -996,6 +997,58 @@ namespace NtingCampusMapEditor
 #else
             return GetPersistentImportRootFolder();
 #endif
+        }
+
+        private string NormalizeSerializedImportPath(string path)
+        {
+            if (string.IsNullOrWhiteSpace(path))
+            {
+                return string.Empty;
+            }
+
+            string normalized = NormalizeClipboardPath(path).Replace('\\', '/');
+            if (!Path.IsPathRooted(normalized))
+            {
+                const string importFolderPrefix = RuntimeImportFolder + "/";
+                if (normalized.StartsWith(importFolderPrefix, StringComparison.OrdinalIgnoreCase))
+                {
+                    normalized = normalized.Substring(importFolderPrefix.Length);
+                }
+
+                return normalized.TrimStart('/');
+            }
+
+            string importRoot = Path.GetFullPath(GetImportRootFolder()).Replace('\\', '/').TrimEnd('/');
+            if (normalized.StartsWith(importRoot + "/", StringComparison.OrdinalIgnoreCase))
+            {
+                return normalized.Substring(importRoot.Length + 1);
+            }
+
+            return Path.GetFileName(normalized);
+        }
+
+        private string ResolveImportContentPath(string path)
+        {
+            if (string.IsNullOrWhiteSpace(path))
+            {
+                return string.Empty;
+            }
+
+            string normalized = NormalizeClipboardPath(path);
+            if (Path.IsPathRooted(normalized))
+            {
+                return normalized;
+            }
+
+            normalized = normalized.Replace('\\', '/');
+            const string importFolderPrefix = RuntimeImportFolder + "/";
+            if (normalized.StartsWith(importFolderPrefix, StringComparison.OrdinalIgnoreCase))
+            {
+                normalized = normalized.Substring(importFolderPrefix.Length);
+            }
+
+            string relativePath = normalized.Replace('/', Path.DirectorySeparatorChar);
+            return Path.Combine(GetImportRootFolder(), relativePath);
         }
 
         private string GetPersistentImportRootFolder()
@@ -2775,7 +2828,7 @@ namespace NtingCampusMapEditor
                 CampusRuntimePlayerMapSaveManifest manifest = new CampusRuntimePlayerMapSaveManifest
                 {
                     SavedAtLocal = DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss"),
-                    UnityPersistentDataPath = Application.persistentDataPath,
+                    UnityPersistentDataPath = string.Empty,
                     ImportRootFolderName = RuntimeImportFolder,
                     MapFileName = PlayerSaveMapFile
                 };
@@ -2884,7 +2937,7 @@ namespace NtingCampusMapEditor
                 CampusRuntimeAuthoringPackageManifest manifest = new CampusRuntimeAuthoringPackageManifest
                 {
                     ExportedAtLocal = DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss"),
-                    UnityPersistentDataPath = Application.persistentDataPath,
+                    UnityPersistentDataPath = string.Empty,
                     ImportRootFolderName = RuntimeImportFolder,
                     MapFileName = AuthoringPackageMapFile
                 };
@@ -3372,13 +3425,13 @@ namespace NtingCampusMapEditor
             objectSnapshot.OverrideAllowRotation = placed.OverrideAllowRotation;
             objectSnapshot.AllowRotation = placed.AllowRotation;
             objectSnapshot.OverrideRotation0Sprite = placed.OverrideRotation0Sprite;
-            objectSnapshot.Rotation0SpritePath = placed.Rotation0SpritePath;
+            objectSnapshot.Rotation0SpritePath = NormalizeSerializedImportPath(placed.Rotation0SpritePath);
             objectSnapshot.OverrideRotation90Sprite = placed.OverrideRotation90Sprite;
-            objectSnapshot.Rotation90SpritePath = placed.Rotation90SpritePath;
+            objectSnapshot.Rotation90SpritePath = NormalizeSerializedImportPath(placed.Rotation90SpritePath);
             objectSnapshot.OverrideRotation180Sprite = placed.OverrideRotation180Sprite;
-            objectSnapshot.Rotation180SpritePath = placed.Rotation180SpritePath;
+            objectSnapshot.Rotation180SpritePath = NormalizeSerializedImportPath(placed.Rotation180SpritePath);
             objectSnapshot.OverrideRotation270Sprite = placed.OverrideRotation270Sprite;
-            objectSnapshot.Rotation270SpritePath = placed.Rotation270SpritePath;
+            objectSnapshot.Rotation270SpritePath = NormalizeSerializedImportPath(placed.Rotation270SpritePath);
             objectSnapshot.Rotation90 = placed.Rotation90;
             objectSnapshot.BlocksMovement = placed.BlocksMovement;
             objectSnapshot.BlocksSight = placed.BlocksSight;
@@ -5842,13 +5895,13 @@ namespace NtingCampusMapEditor
             settings.OverrideAllowRotation = placed.OverrideAllowRotation;
             settings.AllowRotation = placed.AllowRotation;
             settings.OverrideRotation0Sprite = placed.OverrideRotation0Sprite;
-            settings.Rotation0SpritePath = placed.Rotation0SpritePath;
+            settings.Rotation0SpritePath = NormalizeSerializedImportPath(placed.Rotation0SpritePath);
             settings.OverrideRotation90Sprite = placed.OverrideRotation90Sprite;
-            settings.Rotation90SpritePath = placed.Rotation90SpritePath;
+            settings.Rotation90SpritePath = NormalizeSerializedImportPath(placed.Rotation90SpritePath);
             settings.OverrideRotation180Sprite = placed.OverrideRotation180Sprite;
-            settings.Rotation180SpritePath = placed.Rotation180SpritePath;
+            settings.Rotation180SpritePath = NormalizeSerializedImportPath(placed.Rotation180SpritePath);
             settings.OverrideRotation270Sprite = placed.OverrideRotation270Sprite;
-            settings.Rotation270SpritePath = placed.Rotation270SpritePath;
+            settings.Rotation270SpritePath = NormalizeSerializedImportPath(placed.Rotation270SpritePath);
             settings.UseCustomInteractionAnchor = placed.UseCustomInteractionAnchor;
             settings.CustomInteractionAnchorLocalPosition = placed.CustomInteractionAnchorLocalPosition;
             settings.CustomInteractionAnchorRadius = CampusPlacedObject.NormalizeInteractionAnchorRadius(placed.CustomInteractionAnchorRadius);
@@ -5906,27 +5959,28 @@ namespace NtingCampusMapEditor
                 return;
             }
 
-            Sprite sprite = LoadRuntimeObjectSprite(spritePath, objectName + "_" + (rotation90Index * 90), placed.NormalizedFootprintSize);
+            string normalizedSpritePath = NormalizeSerializedImportPath(spritePath);
+            Sprite sprite = LoadRuntimeObjectSprite(normalizedSpritePath, objectName + "_" + (rotation90Index * 90), placed.NormalizedFootprintSize);
             switch (CampusPlacedObject.NormalizeRotation90(rotation90Index))
             {
                 case 0:
                     placed.OverrideRotation0Sprite = true;
-                    placed.Rotation0SpritePath = spritePath;
+                    placed.Rotation0SpritePath = normalizedSpritePath;
                     placed.Rotation0Sprite = sprite;
                     break;
                 case 1:
                     placed.OverrideRotation90Sprite = true;
-                    placed.Rotation90SpritePath = spritePath;
+                    placed.Rotation90SpritePath = normalizedSpritePath;
                     placed.Rotation90Sprite = sprite;
                     break;
                 case 2:
                     placed.OverrideRotation180Sprite = true;
-                    placed.Rotation180SpritePath = spritePath;
+                    placed.Rotation180SpritePath = normalizedSpritePath;
                     placed.Rotation180Sprite = sprite;
                     break;
                 case 3:
                     placed.OverrideRotation270Sprite = true;
-                    placed.Rotation270SpritePath = spritePath;
+                    placed.Rotation270SpritePath = normalizedSpritePath;
                     placed.Rotation270Sprite = sprite;
                     break;
             }
@@ -5934,13 +5988,14 @@ namespace NtingCampusMapEditor
 
         private Sprite LoadRuntimeObjectSprite(string path, string spriteName, Vector2Int footprint)
         {
-            string normalizedPath = NormalizeClipboardPath(path);
-            if (string.IsNullOrEmpty(normalizedPath) || !File.Exists(normalizedPath))
+            string normalizedPath = NormalizeSerializedImportPath(path);
+            string resolvedPath = ResolveImportContentPath(normalizedPath);
+            if (string.IsNullOrEmpty(resolvedPath) || !File.Exists(resolvedPath))
             {
                 return null;
             }
 
-            Texture2D texture = LoadImportedTexture(normalizedPath);
+            Texture2D texture = LoadImportedTexture(resolvedPath);
             return texture != null ? CreateObjectSprite(texture, spriteName, footprint) : null;
         }
 
@@ -5960,7 +6015,7 @@ namespace NtingCampusMapEditor
             string targetFullPath = Path.GetFullPath(targetPath);
             if (string.Equals(sourceFullPath, targetFullPath, StringComparison.OrdinalIgnoreCase))
             {
-                return targetPath;
+                return NormalizeSerializedImportPath(targetPath);
             }
 
             string[] existing = Directory.GetFiles(folder, prefix + ".*");
@@ -5974,7 +6029,7 @@ namespace NtingCampusMapEditor
 
             File.Copy(sourcePath, targetPath, true);
             RefreshImportAssetDatabaseIfProjectBacked();
-            return targetPath;
+            return NormalizeSerializedImportPath(targetPath);
         }
 
         private Sprite GetObjectDirectionSprite(CampusPlacedObject placed, int rotation90Index)

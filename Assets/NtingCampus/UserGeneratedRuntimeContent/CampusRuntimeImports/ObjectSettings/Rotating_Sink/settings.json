@@ -14,7 +14,7 @@
     "OverrideAllowRotation": true,
     "AllowRotation": true,
     "OverrideRotation0Sprite": true,
-    "Rotation0SpritePath": "C:/Users/14012/AppData/LocalLow/DefaultCompany/Unrighteous Campus\\CampusRuntimeImports\\ObjectSettings\\Rotating_Sink\\rotation_0.png",
+    "Rotation0SpritePath": "ObjectSettings/Rotating_Sink/rotation_0.png",
     "OverrideRotation90Sprite": false,
     "Rotation90SpritePath": "",
     "OverrideRotation180Sprite": false,

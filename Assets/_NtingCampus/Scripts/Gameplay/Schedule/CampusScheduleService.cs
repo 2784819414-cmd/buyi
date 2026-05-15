@@ -77,10 +77,8 @@ namespace NtingCampus.Gameplay.Schedule
 
         private void HandleDailySettlementStarted(CampusGameDate _)
         {
-            if (bootstrap != null && bootstrap.GameState != null)
-            {
-                bootstrap.GameState.AdvanceToNextDay();
-            }
+            // Day advancement is owned by CampusTimeController.
+            // Schedule service must not advance day.
 
             if (rosterService == null)
             {

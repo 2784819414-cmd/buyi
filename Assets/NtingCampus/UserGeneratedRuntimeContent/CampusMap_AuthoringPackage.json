@@ -1,7 +1,7 @@
 ﻿{
     "Schema":  "NtingCampusRuntimeMapEditor.v1",
     "MapName":  "校园地图根节点",
-    "ExportedAtLocal":  "2026-05-15 12:13:44",
+    "ExportedAtLocal":  "2026-05-15 21:38:40",
     "SortingOrderStepPerFloor":  1000,
     "SelectedFloorIndex":  1,
     "HasRoomDefinitions":  true,
@@ -50,7 +50,7 @@
                                            "OverrideAllowRotation":  true,
                                            "AllowRotation":  true,
                                            "OverrideRotation0Sprite":  true,
-                                           "Rotation0SpritePath":  "C:/Users/14012/AppData/LocalLow/DefaultCompany/Unrighteous Campus\\CampusRuntimeImports\\ObjectSettings\\Rotating_Sink\\rotation_0.png",
+                                           "Rotation0SpritePath":  "ObjectSettings/Rotating_Sink/rotation_0.png",
                                            "OverrideRotation90Sprite":  false,
                                            "Rotation90SpritePath":  "",
                                            "OverrideRotation180Sprite":  false,
@@ -125,7 +125,7 @@
                                            "OverrideAllowRotation":  true,
                                            "AllowRotation":  true,
                                            "OverrideRotation0Sprite":  true,
-                                           "Rotation0SpritePath":  "C:/Users/14012/AppData/LocalLow/DefaultCompany/Unrighteous Campus\\CampusRuntimeImports\\ObjectSettings\\Rotating_Sink\\rotation_0.png",
+                                           "Rotation0SpritePath":  "ObjectSettings/Rotating_Sink/rotation_0.png",
                                            "OverrideRotation90Sprite":  false,
                                            "Rotation90SpritePath":  "",
                                            "OverrideRotation180Sprite":  false,
@@ -166,6 +166,381 @@
                                                                                 "Payload":  "",
                                                                                 "TargetComponentType":  "",
                                                                                 "Priority":  130,
+                                                                                "UseTargetDoorStatePrompt":  false,
+                                                                                "LogInteraction":  false,
+                                                                                "InteractionLogMessage":  ""
+                                                                            }
+                                                                        ]
+                                       },
+                                       {
+                                           "ObjectId":  "CampusPrankSpot_PassNote",
+                                           "DisplayNameOverride":  "传纸条",
+                                           "PaletteIndex":  -1,
+                                           "Position":  {
+                                                            "x":  -2.5,
+                                                            "y":  1.5,
+                                                            "z":  0.5
+                                                        },
+                                           "Cell":  {
+                                                        "x":  -3,
+                                                        "y":  1,
+                                                        "z":  0
+                                                    },
+                                           "FootprintSize":  {
+                                                                 "x":  1,
+                                                                 "y":  1
+                                                             },
+                                           "FloorIndex":  1,
+                                           "OverrideFootprintSize":  true,
+                                           "VisualScale":  {
+                                                               "x":  1,
+                                                               "y":  1
+                                                           },
+                                           "LockVisualScaleAspect":  true,
+                                           "OverrideAllowRotation":  true,
+                                           "AllowRotation":  false,
+                                           "OverrideRotation0Sprite":  false,
+                                           "Rotation0SpritePath":  "",
+                                           "OverrideRotation90Sprite":  false,
+                                           "Rotation90SpritePath":  "",
+                                           "OverrideRotation180Sprite":  false,
+                                           "Rotation180SpritePath":  "",
+                                           "OverrideRotation270Sprite":  false,
+                                           "Rotation270SpritePath":  "",
+                                           "Rotation90":  0,
+                                           "BlocksMovement":  false,
+                                           "BlocksSight":  false,
+                                           "IsInteractable":  true,
+                                           "IsStorageContainer":  false,
+                                           "StorageSize":  {
+                                                               "x":  4,
+                                                               "y":  4
+                                                           },
+                                           "StorageMaxWeight":  12,
+                                           "UseCustomInteractionAnchor":  true,
+                                           "CustomInteractionAnchorLocalPosition":  {
+                                                                                        "x":  0,
+                                                                                        "y":  0,
+                                                                                        "z":  0
+                                                                                    },
+                                           "CustomInteractionAnchorRadius":  0.95,
+                                           "CustomInteractionPromptText":  "传纸条",
+                                           "CustomInteractionAnchors":  [
+                                                                            {
+                                                                                "AnchorId":  "prank",
+                                                                                "DisplayName":  "传纸条",
+                                                                                "Enabled":  true,
+                                                                                "LocalPosition":  {
+                                                                                                      "x":  0,
+                                                                                                      "y":  0,
+                                                                                                      "z":  0
+                                                                                                  },
+                                                                                "Radius":  0.95,
+                                                                                "PromptText":  "传纸条",
+                                                                                "ActionId":  "campus.prank.execute",
+                                                                                "Payload":  "campus.prank.pass_note",
+                                                                                "TargetComponentType":  "CampusPrankPlacedObject",
+                                                                                "Priority":  125,
+                                                                                "UseTargetDoorStatePrompt":  false,
+                                                                                "LogInteraction":  false,
+                                                                                "InteractionLogMessage":  ""
+                                                                            }
+                                                                        ]
+                                       },
+                                       {
+                                           "ObjectId":  "CampusPrankSpot_ConfuseBooks",
+                                           "DisplayNameOverride":  "乱整理书",
+                                           "PaletteIndex":  -1,
+                                           "Position":  {
+                                                            "x":  2.5,
+                                                            "y":  -1.5,
+                                                            "z":  0.5
+                                                        },
+                                           "Cell":  {
+                                                        "x":  2,
+                                                        "y":  -2,
+                                                        "z":  0
+                                                    },
+                                           "FootprintSize":  {
+                                                                 "x":  1,
+                                                                 "y":  1
+                                                             },
+                                           "FloorIndex":  1,
+                                           "OverrideFootprintSize":  true,
+                                           "VisualScale":  {
+                                                               "x":  1,
+                                                               "y":  1
+                                                           },
+                                           "LockVisualScaleAspect":  true,
+                                           "OverrideAllowRotation":  true,
+                                           "AllowRotation":  false,
+                                           "OverrideRotation0Sprite":  false,
+                                           "Rotation0SpritePath":  "",
+                                           "OverrideRotation90Sprite":  false,
+                                           "Rotation90SpritePath":  "",
+                                           "OverrideRotation180Sprite":  false,
+                                           "Rotation180SpritePath":  "",
+                                           "OverrideRotation270Sprite":  false,
+                                           "Rotation270SpritePath":  "",
+                                           "Rotation90":  0,
+                                           "BlocksMovement":  false,
+                                           "BlocksSight":  false,
+                                           "IsInteractable":  true,
+                                           "IsStorageContainer":  false,
+                                           "StorageSize":  {
+                                                               "x":  4,
+                                                               "y":  4
+                                                           },
+                                           "StorageMaxWeight":  12,
+                                           "UseCustomInteractionAnchor":  true,
+                                           "CustomInteractionAnchorLocalPosition":  {
+                                                                                        "x":  0,
+                                                                                        "y":  0,
+                                                                                        "z":  0
+                                                                                    },
+                                           "CustomInteractionAnchorRadius":  0.95,
+                                           "CustomInteractionPromptText":  "乱整理书",
+                                           "CustomInteractionAnchors":  [
+                                                                            {
+                                                                                "AnchorId":  "prank",
+                                                                                "DisplayName":  "乱整理书",
+                                                                                "Enabled":  true,
+                                                                                "LocalPosition":  {
+                                                                                                      "x":  0,
+                                                                                                      "y":  0,
+                                                                                                      "z":  0
+                                                                                                  },
+                                                                                "Radius":  0.95,
+                                                                                "PromptText":  "乱整理书",
+                                                                                "ActionId":  "campus.prank.execute",
+                                                                                "Payload":  "campus.prank.confuse_books",
+                                                                                "TargetComponentType":  "CampusPrankPlacedObject",
+                                                                                "Priority":  125,
+                                                                                "UseTargetDoorStatePrompt":  false,
+                                                                                "LogInteraction":  false,
+                                                                                "InteractionLogMessage":  ""
+                                                                            }
+                                                                        ]
+                                       },
+                                       {
+                                           "ObjectId":  "CampusPrankSpot_StealDelivery",
+                                           "DisplayNameOverride":  "偷外卖",
+                                           "PaletteIndex":  -1,
+                                           "Position":  {
+                                                            "x":  -0.5,
+                                                            "y":  -3.5,
+                                                            "z":  0.5
+                                                        },
+                                           "Cell":  {
+                                                        "x":  -1,
+                                                        "y":  -4,
+                                                        "z":  0
+                                                    },
+                                           "FootprintSize":  {
+                                                                 "x":  1,
+                                                                 "y":  1
+                                                             },
+                                           "FloorIndex":  1,
+                                           "OverrideFootprintSize":  true,
+                                           "VisualScale":  {
+                                                               "x":  1,
+                                                               "y":  1
+                                                           },
+                                           "LockVisualScaleAspect":  true,
+                                           "OverrideAllowRotation":  true,
+                                           "AllowRotation":  false,
+                                           "OverrideRotation0Sprite":  false,
+                                           "Rotation0SpritePath":  "",
+                                           "OverrideRotation90Sprite":  false,
+                                           "Rotation90SpritePath":  "",
+                                           "OverrideRotation180Sprite":  false,
+                                           "Rotation180SpritePath":  "",
+                                           "OverrideRotation270Sprite":  false,
+                                           "Rotation270SpritePath":  "",
+                                           "Rotation90":  0,
+                                           "BlocksMovement":  false,
+                                           "BlocksSight":  false,
+                                           "IsInteractable":  true,
+                                           "IsStorageContainer":  false,
+                                           "StorageSize":  {
+                                                               "x":  4,
+                                                               "y":  4
+                                                           },
+                                           "StorageMaxWeight":  12,
+                                           "UseCustomInteractionAnchor":  true,
+                                           "CustomInteractionAnchorLocalPosition":  {
+                                                                                        "x":  0,
+                                                                                        "y":  0,
+                                                                                        "z":  0
+                                                                                    },
+                                           "CustomInteractionAnchorRadius":  0.95,
+                                           "CustomInteractionPromptText":  "偷外卖",
+                                           "CustomInteractionAnchors":  [
+                                                                            {
+                                                                                "AnchorId":  "prank",
+                                                                                "DisplayName":  "偷外卖",
+                                                                                "Enabled":  true,
+                                                                                "LocalPosition":  {
+                                                                                                      "x":  0,
+                                                                                                      "y":  0,
+                                                                                                      "z":  0
+                                                                                                  },
+                                                                                "Radius":  0.95,
+                                                                                "PromptText":  "偷外卖",
+                                                                                "ActionId":  "campus.prank.execute",
+                                                                                "Payload":  "campus.prank.steal_delivery",
+                                                                                "TargetComponentType":  "CampusPrankPlacedObject",
+                                                                                "Priority":  125,
+                                                                                "UseTargetDoorStatePrompt":  false,
+                                                                                "LogInteraction":  false,
+                                                                                "InteractionLogMessage":  ""
+                                                                            }
+                                                                        ]
+                                       },
+                                       {
+                                           "ObjectId":  "CampusPrankSpot_StealFriedChicken",
+                                           "DisplayNameOverride":  "偷炸鸡",
+                                           "PaletteIndex":  -1,
+                                           "Position":  {
+                                                            "x":  -2.5,
+                                                            "y":  -1.5,
+                                                            "z":  0.5
+                                                        },
+                                           "Cell":  {
+                                                        "x":  -3,
+                                                        "y":  -2,
+                                                        "z":  0
+                                                    },
+                                           "FootprintSize":  {
+                                                                 "x":  1,
+                                                                 "y":  1
+                                                             },
+                                           "FloorIndex":  1,
+                                           "OverrideFootprintSize":  true,
+                                           "VisualScale":  {
+                                                               "x":  1,
+                                                               "y":  1
+                                                           },
+                                           "LockVisualScaleAspect":  true,
+                                           "OverrideAllowRotation":  true,
+                                           "AllowRotation":  false,
+                                           "OverrideRotation0Sprite":  false,
+                                           "Rotation0SpritePath":  "",
+                                           "OverrideRotation90Sprite":  false,
+                                           "Rotation90SpritePath":  "",
+                                           "OverrideRotation180Sprite":  false,
+                                           "Rotation180SpritePath":  "",
+                                           "OverrideRotation270Sprite":  false,
+                                           "Rotation270SpritePath":  "",
+                                           "Rotation90":  0,
+                                           "BlocksMovement":  false,
+                                           "BlocksSight":  false,
+                                           "IsInteractable":  true,
+                                           "IsStorageContainer":  false,
+                                           "StorageSize":  {
+                                                               "x":  4,
+                                                               "y":  4
+                                                           },
+                                           "StorageMaxWeight":  12,
+                                           "UseCustomInteractionAnchor":  true,
+                                           "CustomInteractionAnchorLocalPosition":  {
+                                                                                        "x":  0,
+                                                                                        "y":  0,
+                                                                                        "z":  0
+                                                                                    },
+                                           "CustomInteractionAnchorRadius":  0.95,
+                                           "CustomInteractionPromptText":  "偷炸鸡",
+                                           "CustomInteractionAnchors":  [
+                                                                            {
+                                                                                "AnchorId":  "prank",
+                                                                                "DisplayName":  "偷炸鸡",
+                                                                                "Enabled":  true,
+                                                                                "LocalPosition":  {
+                                                                                                      "x":  0,
+                                                                                                      "y":  0,
+                                                                                                      "z":  0
+                                                                                                  },
+                                                                                "Radius":  0.95,
+                                                                                "PromptText":  "偷炸鸡",
+                                                                                "ActionId":  "campus.prank.execute",
+                                                                                "Payload":  "campus.prank.steal_fried_chicken",
+                                                                                "TargetComponentType":  "CampusPrankPlacedObject",
+                                                                                "Priority":  125,
+                                                                                "UseTargetDoorStatePrompt":  false,
+                                                                                "LogInteraction":  false,
+                                                                                "InteractionLogMessage":  ""
+                                                                            }
+                                                                        ]
+                                       },
+                                       {
+                                           "ObjectId":  "CampusPrankSpot_TwistBottleCaps",
+                                           "DisplayNameOverride":  "拧瓶盖",
+                                           "PaletteIndex":  -1,
+                                           "Position":  {
+                                                            "x":  2.5,
+                                                            "y":  1.5,
+                                                            "z":  0.5
+                                                        },
+                                           "Cell":  {
+                                                        "x":  2,
+                                                        "y":  1,
+                                                        "z":  0
+                                                    },
+                                           "FootprintSize":  {
+                                                                 "x":  1,
+                                                                 "y":  1
+                                                             },
+                                           "FloorIndex":  1,
+                                           "OverrideFootprintSize":  true,
+                                           "VisualScale":  {
+                                                               "x":  1,
+                                                               "y":  1
+                                                           },
+                                           "LockVisualScaleAspect":  true,
+                                           "OverrideAllowRotation":  true,
+                                           "AllowRotation":  false,
+                                           "OverrideRotation0Sprite":  false,
+                                           "Rotation0SpritePath":  "",
+                                           "OverrideRotation90Sprite":  false,
+                                           "Rotation90SpritePath":  "",
+                                           "OverrideRotation180Sprite":  false,
+                                           "Rotation180SpritePath":  "",
+                                           "OverrideRotation270Sprite":  false,
+                                           "Rotation270SpritePath":  "",
+                                           "Rotation90":  0,
+                                           "BlocksMovement":  false,
+                                           "BlocksSight":  false,
+                                           "IsInteractable":  true,
+                                           "IsStorageContainer":  false,
+                                           "StorageSize":  {
+                                                               "x":  4,
+                                                               "y":  4
+                                                           },
+                                           "StorageMaxWeight":  12,
+                                           "UseCustomInteractionAnchor":  true,
+                                           "CustomInteractionAnchorLocalPosition":  {
+                                                                                        "x":  0,
+                                                                                        "y":  0,
+                                                                                        "z":  0
+                                                                                    },
+                                           "CustomInteractionAnchorRadius":  0.95,
+                                           "CustomInteractionPromptText":  "拧瓶盖",
+                                           "CustomInteractionAnchors":  [
+                                                                            {
+                                                                                "AnchorId":  "prank",
+                                                                                "DisplayName":  "拧瓶盖",
+                                                                                "Enabled":  true,
+                                                                                "LocalPosition":  {
+                                                                                                      "x":  0,
+                                                                                                      "y":  0,
+                                                                                                      "z":  0
+                                                                                                  },
+                                                                                "Radius":  0.95,
+                                                                                "PromptText":  "拧瓶盖",
+                                                                                "ActionId":  "campus.prank.execute",
+                                                                                "Payload":  "campus.prank.twist_bottle_caps",
+                                                                                "TargetComponentType":  "CampusPrankPlacedObject",
+                                                                                "Priority":  125,
                                                                                 "UseTargetDoorStatePrompt":  false,
                                                                                 "LogInteraction":  false,
                                                                                 "InteractionLogMessage":  ""

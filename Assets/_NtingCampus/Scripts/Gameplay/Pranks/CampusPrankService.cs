@@ -18,6 +18,7 @@ namespace NtingCampus.Gameplay.Pranks
     public sealed class CampusPrankService : MonoBehaviour, ICampusInteractionActionHandler
     {
         public const string PassNotePayload = CampusPrankPayloadIds.PassNote;
+        private const float WorldSyncIntervalSeconds = 0.75f;
 
         [SerializeField] private CampusGameBootstrap bootstrap;
         [SerializeField] private CampusWorldService worldService;
@@ -30,6 +31,8 @@ namespace NtingCampus.Gameplay.Pranks
         [SerializeField] private string currentPrompt = "Move into a classroom during class and press E to pass a note.";
         [SerializeField] private int dailyPassNoteCount;
         [SerializeField] private float lastPrankTime = -999f;
+
+        private float nextWorldSyncTime = -999f;
 
         public string CurrentPrompt => currentPrompt;
         public int DailyPassNoteCount => dailyPassNoteCount;
@@ -48,6 +51,7 @@ namespace NtingCampus.Gameplay.Pranks
                 bootstrap.TimeController.DailySettlementStarted += HandleDailySettlementStarted;
             }
 
+            SyncPlacedPrankObjects(forceImmediate: true);
             RefreshPrompt();
         }
 
@@ -61,6 +65,7 @@ namespace NtingCampus.Gameplay.Pranks
 
         private void Update()
         {
+            SyncPlacedPrankObjects(forceImmediate: false);
             RefreshPrompt();
         }
 
@@ -71,11 +76,25 @@ namespace NtingCampus.Gameplay.Pranks
 
         public bool SupportsPayload(string payload)
         {
-            return string.Equals(payload, CampusPrankPayloadIds.PassNote, System.StringComparison.OrdinalIgnoreCase) ||
-                   string.Equals(payload, CampusPrankPayloadIds.ConfuseBooks, System.StringComparison.OrdinalIgnoreCase) ||
-                   string.Equals(payload, CampusPrankPayloadIds.StealDelivery, System.StringComparison.OrdinalIgnoreCase) ||
-                   string.Equals(payload, CampusPrankPayloadIds.StealFriedChicken, System.StringComparison.OrdinalIgnoreCase) ||
-                   string.Equals(payload, CampusPrankPayloadIds.TwistBottleCaps, System.StringComparison.OrdinalIgnoreCase);
+            return CampusPrankCatalog.TryGetByPayload(payload, out _);
+        }
+
+        public bool CanExecutePayload(string payload, GameObject actor, out string unavailableReason)
+        {
+            if (!CampusPrankCatalog.TryGetByPayload(payload, out CampusPrankDefinition definition))
+            {
+                unavailableReason = "Unknown formal prank payload.";
+                return false;
+            }
+
+            if (!string.Equals(payload, PassNotePayload, System.StringComparison.OrdinalIgnoreCase))
+            {
+                unavailableReason = definition.UnsupportedReason;
+                return false;
+            }
+
+            unavailableReason = ResolvePassNoteUnavailableReason(actor);
+            return string.IsNullOrEmpty(unavailableReason);
         }
 
         public bool TryHandleInteractionAction(CampusInteractionAnchor anchor, string actionId, string payload, GameObject actor)
@@ -86,8 +105,20 @@ namespace NtingCampus.Gameplay.Pranks
                 return false;
             }
 
+            return TryExecutePayload(payload, actor);
+        }
+
+        public bool TryExecutePayload(string payload, GameObject actor)
+        {
+            if (!CampusPrankCatalog.TryGetByPayload(payload, out CampusPrankDefinition definition))
+            {
+                WriteLog("[Prank] Unknown prank payload: " + payload + ".");
+                return false;
+            }
+
             if (!string.Equals(payload, PassNotePayload, System.StringComparison.OrdinalIgnoreCase))
             {
+                WriteLog("[Prank] " + definition.DisplayName + " is not wired into the formal gameplay loop yet.");
                 return false;
             }
 
@@ -96,6 +127,13 @@ namespace NtingCampus.Gameplay.Pranks
 
         private bool TryExecutePassNote(GameObject actor)
         {
+            string unavailableReason = ResolvePassNoteUnavailableReason(actor);
+            if (!string.IsNullOrEmpty(unavailableReason))
+            {
+                WriteLog("[Prank] " + unavailableReason);
+                return false;
+            }
+
             if (Time.time - lastPrankTime < prankCooldownSeconds)
             {
                 WriteLog("[Prank] Pass note is still cooling down.");
@@ -103,24 +141,7 @@ namespace NtingCampus.Gameplay.Pranks
             }
 
             CampusCharacterRuntime playerRuntime = ResolveActorRuntime(actor);
-            if (playerRuntime == null || playerRuntime.Data == null)
-            {
-                WriteLog("[Prank] No formal player runtime is available.");
-                return false;
-            }
-
-            if (scheduleService == null || !scheduleService.IsClassSessionNow())
-            {
-                WriteLog("[Prank] Passing notes only counts during class sessions.");
-                return false;
-            }
-
-            CampusGameplayRoom classroom = worldService != null ? worldService.FindRoomForRuntime(playerRuntime) : null;
-            if (classroom == null || classroom.RoomType != CampusRoomType.Classroom)
-            {
-                WriteLog("[Prank] You need to be inside a formal classroom.");
-                return false;
-            }
+            CampusGameplayRoom classroom = worldService != null && playerRuntime != null ? worldService.FindRoomForRuntime(playerRuntime) : null;
 
             CampusCharacterRuntime targetStudent = FindTargetStudent(playerRuntime, classroom.RoomId);
             if (targetStudent == null || targetStudent.Data == null)
@@ -253,6 +274,121 @@ namespace NtingCampus.Gameplay.Pranks
             }
 
             currentPrompt = "Pass Note available: press E at the classroom prank spot.";
+        }
+
+        private string ResolvePassNoteUnavailableReason(GameObject actor)
+        {
+            CampusCharacterRuntime playerRuntime = ResolveActorRuntime(actor);
+            if (playerRuntime == null || playerRuntime.Data == null)
+            {
+                return "No formal player runtime is available.";
+            }
+
+            if (scheduleService == null || !scheduleService.IsClassSessionNow())
+            {
+                return "Passing notes only counts during class sessions.";
+            }
+
+            CampusGameplayRoom classroom = worldService != null ? worldService.FindRoomForRuntime(playerRuntime) : null;
+            if (classroom == null || classroom.RoomType != CampusRoomType.Classroom)
+            {
+                return "You need to be inside a formal classroom.";
+            }
+
+            return string.Empty;
+        }
+
+        private void SyncPlacedPrankObjects(bool forceImmediate)
+        {
+            if (!forceImmediate && Time.time < nextWorldSyncTime)
+            {
+                return;
+            }
+
+            nextWorldSyncTime = Time.time + WorldSyncIntervalSeconds;
+            BindPlacedPrankObjects();
+            CleanupStandaloneScenePrankSpots();
+        }
+
+        private void BindPlacedPrankObjects()
+        {
+            CampusPlacedObject[] placedObjects = FindObjectsByType<CampusPlacedObject>(
+                FindObjectsInactive.Include,
+                FindObjectsSortMode.None);
+            for (int index = 0; index < placedObjects.Length; index++)
+            {
+                CampusPlacedObject placedObject = placedObjects[index];
+                if (placedObject == null ||
+                    !CampusPrankCatalog.TryGetByObjectId(placedObject.ObjectId, out CampusPrankDefinition definition))
+                {
+                    continue;
+                }
+
+                CampusPrankPlacedObject prankObject = placedObject.GetComponent<CampusPrankPlacedObject>();
+                if (prankObject == null)
+                {
+                    prankObject = placedObject.gameObject.AddComponent<CampusPrankPlacedObject>();
+                }
+
+                prankObject.Configure(definition);
+                if (string.IsNullOrWhiteSpace(placedObject.DisplayNameOverride))
+                {
+                    placedObject.DisplayNameOverride = definition.DisplayName;
+                }
+
+                placedObject.ApplyInteractionState();
+                RebindAnchorTargets(placedObject, prankObject, definition);
+            }
+        }
+
+        private static void RebindAnchorTargets(
+            CampusPlacedObject placedObject,
+            CampusPrankPlacedObject prankObject,
+            CampusPrankDefinition definition)
+        {
+            CampusInteractionAnchor[] anchors = placedObject.GetComponentsInChildren<CampusInteractionAnchor>(true);
+            for (int index = 0; index < anchors.Length; index++)
+            {
+                CampusInteractionAnchor anchor = anchors[index];
+                if (anchor == null || !CampusInteractionActionIds.Equals(anchor.ActionId, CampusInteractionActionIds.PrankExecute))
+                {
+                    continue;
+                }
+
+                if (!string.IsNullOrWhiteSpace(anchor.Payload) &&
+                    !string.Equals(anchor.Payload, definition.Payload, System.StringComparison.OrdinalIgnoreCase))
+                {
+                    continue;
+                }
+
+                anchor.InteractionTarget = prankObject;
+                anchor.ActionId = CampusInteractionActionIds.PrankExecute;
+                anchor.Payload = definition.Payload;
+                if (string.IsNullOrWhiteSpace(anchor.PromptText) || anchor.PromptText == "交互")
+                {
+                    anchor.PromptText = definition.DisplayName;
+                }
+            }
+        }
+
+        private static void CleanupStandaloneScenePrankSpots()
+        {
+            if (!Application.isPlaying)
+            {
+                return;
+            }
+
+            CampusPrankInteractionSpot[] spots = FindObjectsByType<CampusPrankInteractionSpot>(
+                FindObjectsInactive.Include,
+                FindObjectsSortMode.None);
+            for (int index = 0; index < spots.Length; index++)
+            {
+                CampusPrankInteractionSpot spot = spots[index];
+                if (spot != null && spot.GetComponentInParent<CampusPlacedObject>() == null)
+                {
+                    Destroy(spot.gameObject);
+                }
+            }
         }
 
         private CampusCharacterRuntime ResolveActorRuntime(GameObject actor)
