@@ -19,6 +19,7 @@ namespace NtingCampusMapEditor
         public const string ToggleDoor = "campus.door.toggle";
         public const string InteractTarget = "campus.interact.target";
         public const string PrankExecute = "campus.prank.execute";
+        public const string NpcTalk = "campus.npc.talk";
 
         public static bool Equals(string actionId, string expected)
         {

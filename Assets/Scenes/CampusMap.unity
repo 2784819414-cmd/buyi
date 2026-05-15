@@ -1181,7 +1181,7 @@ MonoBehaviour:
   bootstrap: {fileID: 621872938}
   prankService: {fileID: 0}
   sanctionService: {fileID: 0}
-  displayLanguage: 2
+  displayLanguage: 0
   selectedCharacterId: 
   scrollPosition: {x: 0, y: 0}
 --- !u!4 &621872941
@@ -1440,7 +1440,7 @@ MonoBehaviour:
   activeTab: 0
   brushMode: 1
   lightBrushType: 3
-  displayLanguage: 2
+  displayLanguage: 0
 --- !u!4 &1180764645
 Transform:
   m_ObjectHideFlags: 0

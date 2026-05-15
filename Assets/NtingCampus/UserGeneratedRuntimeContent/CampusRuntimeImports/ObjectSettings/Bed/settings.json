@@ -7,27 +7,33 @@
         "y": 1
     },
     "VisualScale": {
-        "x": 0.3149999976158142,
-        "y": 0.3149999976158142
+        "x": 1.0,
+        "y": 1.0
     },
     "LockVisualScaleAspect": true,
     "OverrideAllowRotation": false,
     "AllowRotation": true,
-    "OverrideRotation0Sprite": false,
-    "Rotation0SpritePath": "",
-    "OverrideRotation90Sprite": false,
-    "Rotation90SpritePath": "",
-    "OverrideRotation180Sprite": false,
-    "Rotation180SpritePath": "",
-    "OverrideRotation270Sprite": false,
-    "Rotation270SpritePath": "",
+    "OverrideRotation0Sprite": true,
+    "Rotation0SpritePath": "ObjectSettings/Bed/rotation_0.png",
+    "OverrideRotation90Sprite": true,
+    "Rotation90SpritePath": "ObjectSettings/Bed/rotation_90.png",
+    "OverrideRotation180Sprite": true,
+    "Rotation180SpritePath": "ObjectSettings/Bed/rotation_180.png",
+    "OverrideRotation270Sprite": true,
+    "Rotation270SpritePath": "ObjectSettings/Bed/rotation_270.png",
+    "IsStorageContainer": false,
+    "StorageSize": {
+        "x": 4,
+        "y": 4
+    },
+    "StorageMaxWeight": 12.0,
     "UseCustomInteractionAnchor": true,
     "CustomInteractionAnchorLocalPosition": {
-        "x": 0.01904820092022419,
-        "y": 0.3964284360408783,
+        "x": 0.01899999938905239,
+        "y": 0.3959999978542328,
         "z": 0.0
     },
-    "CustomInteractionAnchorRadius": 0.05000000074505806,
+    "CustomInteractionAnchorRadius": 0.30000001192092898,
     "CustomInteractionPromptText": "睡觉",
     "CustomInteractionAnchors": [
         {
@@ -35,11 +41,11 @@
             "DisplayName": "锚点 2",
             "Enabled": true,
             "LocalPosition": {
-                "x": 0.01904820092022419,
-                "y": 0.3964284360408783,
+                "x": 0.01899999938905239,
+                "y": 0.3959999978542328,
                 "z": 0.0
             },
-            "Radius": 0.05000000074505806,
+            "Radius": 0.30000001192092898,
             "PromptText": "睡觉",
             "ActionId": "",
             "Payload": "",

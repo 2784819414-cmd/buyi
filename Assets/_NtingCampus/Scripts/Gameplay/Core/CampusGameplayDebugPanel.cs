@@ -17,7 +17,7 @@ namespace NtingCampus.Gameplay.Core
         [SerializeField] private CampusGameBootstrap bootstrap;
         [SerializeField] private CampusPrankService prankService;
         [SerializeField] private CampusSanctionService sanctionService;
-        [SerializeField] private CampusDisplayLanguage displayLanguage = CampusDisplayLanguage.Bilingual;
+        [SerializeField] private CampusDisplayLanguage displayLanguage = CampusDisplayLanguage.Chinese;
         [SerializeField] private string selectedCharacterId = string.Empty;
         [SerializeField] private Vector2 scrollPosition;
 

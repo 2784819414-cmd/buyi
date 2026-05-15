@@ -42,6 +42,16 @@ namespace NtingCampus.Gameplay.Rooms
             return null;
         }
 
+        public CampusGameplayRoom FindRoomById(string roomId)
+        {
+            if (roomRegistry == null || string.IsNullOrWhiteSpace(roomId))
+            {
+                return null;
+            }
+
+            return roomRegistry.TryGetRoom(roomId, out CampusGameplayRoom room) ? room : null;
+        }
+
         public CampusGameplayRoom FindRoomForPosition(int floorIndex, Vector3 worldPosition)
         {
             if (roomRegistry == null)

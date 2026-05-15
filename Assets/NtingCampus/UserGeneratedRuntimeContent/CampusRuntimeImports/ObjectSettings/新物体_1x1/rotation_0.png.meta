@@ -1,10 +1,10 @@
 fileFormatVersion: 2
-guid: ce4916ded6ebc214185ee29d2fe9e8cc
+guid: 5adef4e5588808d4cae27d670b5b6d4b
 TextureImporter:
   internalIDToNameTable:
   - first:
-      213: -3031079272161345742
-    second: storage_box_back_60deg_ortho_0
+      213: 7234531758751457455
+    second: rotation_0_0
   externalObjects: {}
   serializedVersion: 13
   mipmaps:
@@ -126,13 +126,13 @@ TextureImporter:
     serializedVersion: 2
     sprites:
     - serializedVersion: 2
-      name: storage_box_back_60deg_ortho_0
+      name: rotation_0_0
       rect:
         serializedVersion: 2
-        x: 90
-        y: 43
-        width: 1420
-        height: 1479
+        x: 83
+        y: 262
+        width: 1882
+        height: 1498
       alignment: 0
       pivot: {x: 0, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
@@ -141,8 +141,8 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: -1
       bones: []
-      spriteID: 23ff5c816717fe5d0800000000000000
-      internalID: -3031079272161345742
+      spriteID: fa0a9aced48366460800000000000000
+      internalID: 7234531758751457455
       vertices: []
       indices: 
       edges: []
@@ -161,7 +161,7 @@ TextureImporter:
     spriteCustomMetadata:
       entries: []
     nameFileIdTable:
-      storage_box_back_60deg_ortho_0: -3031079272161345742
+      rotation_0_0: 7234531758751457455
   mipmapLimitGroupName: 
   pSDRemoveMatte: 0
   userData: 

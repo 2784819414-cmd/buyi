@@ -241,6 +241,24 @@ namespace NtingCampusMapEditor
                 });
             }
 
+            if (UseCustomInteractionAnchor)
+            {
+                CampusPlacedObjectInteractionAnchor editablePrimary = GetFirstEnabledCustomInteractionAnchor();
+                if (editablePrimary == null && CustomInteractionAnchors.Count > 0)
+                {
+                    editablePrimary = CustomInteractionAnchors[0];
+                }
+
+                if (editablePrimary != null)
+                {
+                    editablePrimary.LocalPosition = CustomInteractionAnchorLocalPosition;
+                    editablePrimary.Radius = NormalizeInteractionAnchorRadius(CustomInteractionAnchorRadius);
+                    editablePrimary.PromptText = string.IsNullOrWhiteSpace(CustomInteractionPromptText)
+                        ? CustomInteractionPromptFallback
+                        : CustomInteractionPromptText;
+                }
+            }
+
             for (int i = 0; i < CustomInteractionAnchors.Count; i++)
             {
                 CampusPlacedObjectInteractionAnchor data = CustomInteractionAnchors[i];

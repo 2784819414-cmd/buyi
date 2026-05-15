@@ -1,6 +1,6 @@
 ﻿{
-    "ObjectId": "Rotating_Sink",
-    "DisplayNameOverride": "Box",
+    "ObjectId": "新物体_1x1",
+    "DisplayNameOverride": "新物体",
     "OverrideFootprintSize": true,
     "FootprintSize": {
         "x": 1,
@@ -14,7 +14,7 @@
     "OverrideAllowRotation": true,
     "AllowRotation": true,
     "OverrideRotation0Sprite": true,
-    "Rotation0SpritePath": "ObjectSettings/Rotating_Sink/rotation_0.png",
+    "Rotation0SpritePath": "ObjectSettings/新物体_1x1/rotation_0.png",
     "OverrideRotation90Sprite": false,
     "Rotation90SpritePath": "",
     "OverrideRotation180Sprite": false,
@@ -27,32 +27,32 @@
         "y": 4
     },
     "StorageMaxWeight": 12.0,
-    "UseCustomInteractionAnchor": true,
+    "UseCustomInteractionAnchor": false,
     "CustomInteractionAnchorLocalPosition": {
         "x": 0.0,
-        "y": 0.5,
+        "y": 0.0,
         "z": 0.0
     },
     "CustomInteractionAnchorRadius": 0.6499999761581421,
-    "CustomInteractionPromptText": "打开 Box",
+    "CustomInteractionPromptText": "Storage",
     "CustomInteractionAnchors": [
         {
             "AnchorId": "storage",
-            "DisplayName": "储物容器",
+            "DisplayName": "Storage",
             "Enabled": true,
             "LocalPosition": {
                 "x": 0.0,
-                "y": 0.5,
+                "y": 0.0,
                 "z": 0.0
             },
             "Radius": 0.6499999761581421,
-            "PromptText": "打开 Box",
-            "ActionId": "campus.storage.open",
+            "PromptText": "Storage",
+            "ActionId": "",
             "Payload": "",
             "TargetComponentType": "",
-            "Priority": 130,
+            "Priority": 120,
             "UseTargetDoorStatePrompt": false,
-            "LogInteraction": false,
+            "LogInteraction": true,
             "InteractionLogMessage": ""
         }
     ]

@@ -176,7 +176,11 @@ namespace NtingCampus.Gameplay.Characters
             {
                 CreateSeed("student_player", "LiXiaonao", CampusCharacterRole.Student, CampusTeacherDuty.None, true, 58, 78, CampusRoomType.Classroom, new Vector3(-0.5f, -0.4f, 0f), CampusCharacterTrait.Troublemaker),
                 CreateSeed("student_good_01", "XuAnjing", CampusCharacterRole.Student, CampusTeacherDuty.None, false, 34, 12, CampusRoomType.Classroom, new Vector3(0.8f, -0.2f, 0f), CampusCharacterTrait.GoodStudent),
-                CreateSeed("teacher_world_homeroom", "LinYuwen", CampusCharacterRole.Teacher, CampusTeacherDuty.WorldLanguageTeacher | CampusTeacherDuty.HomeroomTeacher, false, 42, 0, CampusRoomType.Classroom, new Vector3(0f, 0.7f, 0f), CampusCharacterTrait.Ordinary)
+                CreateSeed("student_sleepy_01", "QiaoMianmian", CampusCharacterRole.Student, CampusTeacherDuty.None, false, 82, 10, CampusRoomType.Classroom, new Vector3(1.25f, -0.55f, 0f), CampusCharacterTrait.Sleepyhead),
+                CreateSeed("student_tattletale_01", "SunXiaobao", CampusCharacterRole.Student, CampusTeacherDuty.None, false, 28, 18, CampusRoomType.Classroom, new Vector3(0.15f, -0.75f, 0f), CampusCharacterTrait.Tattletale),
+                CreateSeed("student_ordinary_01", "ChenJiale", CampusCharacterRole.Student, CampusTeacherDuty.None, false, 46, 20, CampusRoomType.CommonActivityZone, new Vector3(-0.7f, 0.15f, 0f), CampusCharacterTrait.Ordinary),
+                CreateSeed("teacher_world_homeroom", "LinYuwen", CampusCharacterRole.Teacher, CampusTeacherDuty.WorldLanguageTeacher | CampusTeacherDuty.HomeroomTeacher, false, 42, 0, CampusRoomType.Classroom, new Vector3(0f, 0.7f, 0f), CampusCharacterTrait.Ordinary),
+                CreateSeed("teacher_math_patrol", "ZhaoShude", CampusCharacterRole.Teacher, CampusTeacherDuty.MathTeacher | CampusTeacherDuty.PatrolDirector, false, 35, 0, CampusRoomType.Office, new Vector3(0.25f, 0.3f, 0f), CampusCharacterTrait.Ordinary)
             };
         }
 
@@ -218,6 +222,8 @@ namespace NtingCampus.Gameplay.Characters
                 return;
             }
 
+            Dictionary<string, int> roomSpawnCounts = new Dictionary<string, int>(StringComparer.OrdinalIgnoreCase);
+
             for (int i = 0; i < initialSeeds.Count; i++)
             {
                 CampusCharacterSeed seed = initialSeeds[i];
@@ -229,16 +235,25 @@ namespace NtingCampus.Gameplay.Characters
                 CampusGameplayRoom anchorRoom = worldService != null
                     ? worldService.FindFirstUsableRoom(seed.AnchorRoomType)
                     : null;
-                Vector3 spawnPosition = anchorRoom != null
-                    ? anchorRoom.WorldCenter + seed.LocalOffset
-                    : seed.LocalOffset;
+                string spawnGroupKey = anchorRoom != null ? anchorRoom.RoomId : seed.AnchorRoomType.ToString();
+                roomSpawnCounts.TryGetValue(spawnGroupKey, out int spawnIndex);
+                roomSpawnCounts[spawnGroupKey] = spawnIndex + 1;
+
+                Vector3 spawnPosition = ResolveSpawnPosition(anchorRoom, seed.LocalOffset, spawnIndex);
 
                 GameObject runtimeObject = new GameObject(seed.DisplayName);
                 runtimeObject.transform.SetParent(runtimeRoot, false);
                 runtimeObject.transform.position = spawnPosition;
 
                 CampusCharacterRuntime runtime = runtimeObject.AddComponent<CampusCharacterRuntime>();
-                runtime.Bind(seed.BuildData(), true);
+                CampusCharacterData data = seed.BuildData();
+                if (anchorRoom != null)
+                {
+                    data.SetCurrentRoom(anchorRoom.RoomId);
+                }
+
+                runtime.Bind(data, true);
+                EnsureNpcAgent(runtime);
             }
         }
 
@@ -279,6 +294,11 @@ namespace NtingCampus.Gameplay.Characters
 
                 runtimes.Add(runtime);
                 characters.Add(runtime.Data);
+
+                if (!runtime.Data.IsPlayerControlled)
+                {
+                    EnsureNpcAgent(runtime);
+                }
 
                 if (!runtime.Data.IsPlayerControlled)
                 {
@@ -384,6 +404,41 @@ namespace NtingCampus.Gameplay.Characters
                 78,
                 new[] { CampusCharacterTrait.Troublemaker });
             return data;
+        }
+
+        private void EnsureNpcAgent(CampusCharacterRuntime runtime)
+        {
+            if (runtime == null || runtime.Data == null || runtime.Data.IsPlayerControlled)
+            {
+                return;
+            }
+
+            CampusNpcAgent agent = runtime.GetComponent<CampusNpcAgent>();
+            if (agent == null)
+            {
+                agent = runtime.gameObject.AddComponent<CampusNpcAgent>();
+            }
+
+            agent.Initialize(runtime, bootstrap, worldService);
+        }
+
+        private static Vector3 ResolveSpawnPosition(CampusGameplayRoom anchorRoom, Vector3 localOffset, int spawnIndex)
+        {
+            if (anchorRoom == null)
+            {
+                return localOffset + ResolveSpreadOffset(spawnIndex);
+            }
+
+            return anchorRoom.WorldCenter + localOffset + ResolveSpreadOffset(spawnIndex);
+        }
+
+        private static Vector3 ResolveSpreadOffset(int spawnIndex)
+        {
+            int column = spawnIndex % 3;
+            int row = spawnIndex / 3;
+            float x = (column - 1) * 0.95f;
+            float y = row == 0 ? 0f : -row * 0.72f;
+            return new Vector3(x, y, 0f);
         }
     }
 }

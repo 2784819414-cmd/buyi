@@ -21,6 +21,7 @@ namespace NtingCampus.Gameplay.Characters
         [SerializeField, Min(0)] private int studyTodayMath;
         [SerializeField, Min(0)] private int masteryWorldLanguage;
         [SerializeField, Min(0)] private int masteryMath;
+        [SerializeField, Min(0)] private int warningCountToday;
         [SerializeField] private List<CampusCharacterTrait> traits = new List<CampusCharacterTrait>();
         [SerializeField] private List<string> memories = new List<string>();
 
@@ -38,6 +39,7 @@ namespace NtingCampus.Gameplay.Characters
         public int StudyTodayMath => studyTodayMath;
         public int MasteryWorldLanguage => masteryWorldLanguage;
         public int MasteryMath => masteryMath;
+        public int WarningCountToday => warningCountToday;
         public IReadOnlyList<CampusCharacterTrait> Traits => traits;
         public IReadOnlyList<string> Memories => memories;
 
@@ -66,6 +68,7 @@ namespace NtingCampus.Gameplay.Characters
             studyTodayMath = 0;
             masteryWorldLanguage = 0;
             masteryMath = 0;
+            warningCountToday = 0;
             currentRoomId = string.Empty;
             traits = characterTraits != null ? new List<CampusCharacterTrait>(characterTraits) : new List<CampusCharacterTrait>();
             memories = new List<string>(5);
@@ -79,6 +82,66 @@ namespace NtingCampus.Gameplay.Characters
         public void SetState(CampusCharacterState nextState)
         {
             state = nextState;
+        }
+
+        public void SetSleepiness(int value)
+        {
+            sleepiness = Mathf.Clamp(value, 0, 100);
+        }
+
+        public void SetMischief(int value)
+        {
+            mischief = Mathf.Clamp(value, 0, 100);
+        }
+
+        public void AddStudyProgress(CampusSubjectType subjectType, int amount)
+        {
+            int clampedAmount = Mathf.Max(0, amount);
+            switch (subjectType)
+            {
+                case CampusSubjectType.Math:
+                    studyTodayMath += clampedAmount;
+                    masteryMath = Mathf.Clamp(masteryMath + clampedAmount, 0, 999);
+                    break;
+                default:
+                    studyTodayWorldLanguage += clampedAmount;
+                    masteryWorldLanguage = Mathf.Clamp(masteryWorldLanguage + clampedAmount, 0, 999);
+                    break;
+            }
+        }
+
+        public void ClearDailyStudyProgress()
+        {
+            studyTodayWorldLanguage = 0;
+            studyTodayMath = 0;
+        }
+
+        public void SetWarningCountToday(int value)
+        {
+            warningCountToday = Mathf.Max(0, value);
+        }
+
+        public void AddWarningCountToday(int delta)
+        {
+            warningCountToday = Mathf.Max(0, warningCountToday + delta);
+        }
+
+        public bool HasTrait(CampusCharacterTrait trait)
+        {
+            if (traits == null)
+            {
+                return false;
+            }
+
+            for (int i = 0; i < traits.Count; i++)
+            {
+                if (traits[i] == trait)
+                {
+                    return true;
+                }
+            }
+
+            return false;
         }
 
         public void AddMemory(string memory)

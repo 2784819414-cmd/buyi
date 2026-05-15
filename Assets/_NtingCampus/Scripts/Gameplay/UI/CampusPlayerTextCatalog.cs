@@ -216,7 +216,22 @@ namespace NtingCampus.Gameplay.UI
         NoRoomTypesFoundInClipboard = 105,
         SelectRoomDefinitionText = 106,
         GameTime = 107,
-        RealMinutesPerGameDay = 108
+        RealMinutesPerGameDay = 108,
+        PreviewGrid = 109,
+        UniformScale = 110,
+        RotationPreview = 111,
+        DirectionalSprite = 112,
+        DefaultSprite = 113,
+        MultiInteractionAnchors = 114,
+        AddAnchor = 115,
+        RemoveAnchor = 116,
+        AnchorId = 117,
+        ActionId = 118,
+        Payload = 119,
+        Enabled = 120,
+        ClickPreviewToPlaceAnchor = 121,
+        AnchorList = 122,
+        SelectedAnchor = 123
     }
 
     public static class CampusGameplayDebugTextCatalog
@@ -581,7 +596,22 @@ namespace NtingCampus.Gameplay.UI
             { CampusRuntimeEditorTextId.NoRoomTypesFoundInClipboard, new TextEntry("\u526a\u8d34\u677f\u4e2d\u6ca1\u6709\u623f\u95f4\u7c7b\u578b\u3002", "No room types found in clipboard.") },
             { CampusRuntimeEditorTextId.SelectRoomDefinitionText, new TextEntry("\u9009\u62e9\u623f\u95f4\u5b9a\u4e49\u6587\u672c", "Select room definition text") },
             { CampusRuntimeEditorTextId.GameTime, new TextEntry("\u6e38\u620f\u65f6\u95f4", "Game Time") },
-            { CampusRuntimeEditorTextId.RealMinutesPerGameDay, new TextEntry("1x \u7ea6\u7b49\u4e8e\u6bcf\u4e2a\u6e38\u620f\u65e5 {0} \u5206\u949f\u73b0\u5b9e\u65f6\u95f4", "1x = about {0} real minutes per game day") }
+            { CampusRuntimeEditorTextId.RealMinutesPerGameDay, new TextEntry("1x \u7ea6\u7b49\u4e8e\u6bcf\u4e2a\u6e38\u620f\u65e5 {0} \u5206\u949f\u73b0\u5b9e\u65f6\u95f4", "1x = about {0} real minutes per game day") },
+            { CampusRuntimeEditorTextId.PreviewGrid, new TextEntry("\u9884\u89c8\u7f51\u683c", "Preview Grid") },
+            { CampusRuntimeEditorTextId.UniformScale, new TextEntry("\u7b49\u6bd4\u7f29\u653e", "Uniform Scale") },
+            { CampusRuntimeEditorTextId.RotationPreview, new TextEntry("\u56db\u5411\u9884\u89c8", "Rotation Preview") },
+            { CampusRuntimeEditorTextId.DirectionalSprite, new TextEntry("\u56db\u5411\u8d34\u56fe", "Directional Sprite") },
+            { CampusRuntimeEditorTextId.DefaultSprite, new TextEntry("\u9ed8\u8ba4\u8d34\u56fe", "Default Sprite") },
+            { CampusRuntimeEditorTextId.MultiInteractionAnchors, new TextEntry("\u591a\u4ea4\u4e92\u951a\u70b9", "Multi Interaction Anchors") },
+            { CampusRuntimeEditorTextId.AddAnchor, new TextEntry("\u65b0\u589e\u951a\u70b9", "Add Anchor") },
+            { CampusRuntimeEditorTextId.RemoveAnchor, new TextEntry("\u5220\u9664\u951a\u70b9", "Remove Anchor") },
+            { CampusRuntimeEditorTextId.AnchorId, new TextEntry("\u951a\u70b9ID", "Anchor ID") },
+            { CampusRuntimeEditorTextId.ActionId, new TextEntry("\u4ea4\u4e92ID", "Action ID") },
+            { CampusRuntimeEditorTextId.Payload, new TextEntry("\u8f7d\u8377", "Payload") },
+            { CampusRuntimeEditorTextId.Enabled, new TextEntry("\u542f\u7528", "Enabled") },
+            { CampusRuntimeEditorTextId.ClickPreviewToPlaceAnchor, new TextEntry("\u5728\u9884\u89c8\u56fe\u4e0a\u70b9\u51fb\u53ef\u76f4\u63a5\u8bbe\u7f6e\u9009\u4e2d\u951a\u70b9\u5750\u6807", "Click the preview to place the selected anchor") },
+            { CampusRuntimeEditorTextId.AnchorList, new TextEntry("\u951a\u70b9\u5217\u8868", "Anchor List") },
+            { CampusRuntimeEditorTextId.SelectedAnchor, new TextEntry("\u5f53\u524d\u951a\u70b9", "Selected Anchor") }
         };
 
         public static string Get(CampusDisplayLanguage language, CampusRuntimeEditorTextId id)
