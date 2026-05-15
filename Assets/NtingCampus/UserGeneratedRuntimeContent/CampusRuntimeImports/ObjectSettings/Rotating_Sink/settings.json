@@ -47,7 +47,7 @@
             },
             "Radius": 0.6499999761581421,
             "PromptText": "打开 Box",
-            "ActionId": "open_storage",
+            "ActionId": "campus.storage.open",
             "Payload": "",
             "TargetComponentType": "",
             "Priority": 130,

@@ -1,7 +1,6 @@
 using System;
 using NtingCampusMapEditor;
 using UnityEngine;
-using UnityEngine.SceneManagement;
 
 namespace NtingCampus.Gameplay.Rooms
 {
@@ -71,23 +70,6 @@ namespace NtingCampus.Gameplay.Rooms
             new FacilitySeed("公告栏", CampusFacilityType.BulletinBoard, 1, new Vector3Int(-1, -2, 0), true),
             new FacilitySeed("招募台", CampusFacilityType.Recruitment, 1, new Vector3Int(0, 1, 0), true)
         };
-
-        [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.AfterSceneLoad)]
-        private static void EnsureRoomsAfterSceneLoad()
-        {
-            if (!Application.isPlaying)
-            {
-                return;
-            }
-
-            Scene activeScene = SceneManager.GetActiveScene();
-            if (!string.Equals(activeScene.name, "CampusMap", StringComparison.Ordinal))
-            {
-                return;
-            }
-
-            EnsureRoomsForScene();
-        }
 
         public static void EnsureRoomsForScene()
         {

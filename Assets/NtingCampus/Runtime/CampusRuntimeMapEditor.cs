@@ -7981,7 +7981,6 @@ namespace NtingCampusMapEditor
 
             NtingCampus.Gameplay.Core.CampusGameBootstrap bootstrap =
                 NtingCampus.Gameplay.Core.CampusGameBootstrap.EnsureSceneBootstrap();
-            NtingCampus.Gameplay.Skeleton.CampusMischiefAnchorBootstrap.RebuildSkeleton(bootstrap);
 
             GameObject[] roots = scene.GetRootGameObjects();
             for (int i = 0; i < roots.Length; i++)

@@ -41,7 +41,7 @@
             },
             "Radius": 0.699999988079071,
             "PromptText": "开门",
-            "ActionId": "toggle_door",
+            "ActionId": "campus.door.toggle",
             "Payload": "",
             "TargetComponentType": "CampusDoor3D",
             "Priority": 130,

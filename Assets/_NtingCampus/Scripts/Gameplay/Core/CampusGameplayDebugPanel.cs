@@ -1,7 +1,8 @@
 using System.Collections.Generic;
 using NtingCampus.Gameplay.Characters;
 using NtingCampus.Gameplay.Modes;
-using NtingCampus.Gameplay.Skeleton;
+using NtingCampus.Gameplay.Pranks;
+using NtingCampus.Gameplay.Sanctions;
 using NtingCampus.Gameplay.UI;
 using NtingCampusMapEditor;
 using UnityEngine;
@@ -14,8 +15,8 @@ namespace NtingCampus.Gameplay.Core
         private static readonly Rect PanelRect = new Rect(10f, 10f, 620f, 920f);
 
         [SerializeField] private CampusGameBootstrap bootstrap;
-        [SerializeField] private CampusMischiefActionController mischiefController;
-        [SerializeField] private CampusMischiefConsequenceController consequenceController;
+        [SerializeField] private CampusPrankService prankService;
+        [SerializeField] private CampusSanctionService sanctionService;
         [SerializeField] private CampusDisplayLanguage displayLanguage = CampusDisplayLanguage.Bilingual;
         [SerializeField] private string selectedCharacterId = string.Empty;
         [SerializeField] private Vector2 scrollPosition;
@@ -28,8 +29,8 @@ namespace NtingCampus.Gameplay.Core
         private void Awake()
         {
             ResolveBootstrap();
-            ResolveMischiefController();
-            ResolveConsequenceController();
+            ResolvePrankService();
+            ResolveSanctionService();
         }
 
         private void OnGUI()
@@ -57,8 +58,8 @@ namespace NtingCampus.Gameplay.Core
             CampusGameState gameState = targetBootstrap.GameState;
             CampusModeController targetModeController = targetBootstrap.ModeController;
             CampusRosterService rosterService = targetBootstrap.RosterService;
-            CampusMischiefActionController targetMischiefController = ResolveMischiefController();
-            CampusMischiefConsequenceController targetConsequenceController = ResolveConsequenceController();
+            CampusPrankService targetPrankService = ResolvePrankService();
+            CampusSanctionService targetSanctionService = ResolveSanctionService();
 
             GUILayout.BeginArea(PanelRect, GUI.skin.box);
             scrollPosition = GUILayout.BeginScrollView(scrollPosition, false, true);
@@ -77,11 +78,7 @@ namespace NtingCampus.Gameplay.Core
             GUILayout.Space(4f);
             DrawRosterState(rosterService, displayLanguage);
             GUILayout.Space(4f);
-            DrawMischiefState(targetMischiefController, displayLanguage);
-            GUILayout.Space(4f);
-            DrawAreaRiskState(targetMischiefController, targetConsequenceController, displayLanguage);
-            GUILayout.Space(4f);
-            DrawRecentConsequenceLogs(targetConsequenceController, displayLanguage);
+            DrawFormalMainlineState(targetPrankService, targetSanctionService);
             GUILayout.Space(4f);
             GUILayout.Label(CampusGameplayDebugTextCatalog.Get(displayLanguage, CampusGameplayDebugTextId.RecentEventLogs));
             DrawRecentLogs(eventLog, 10, displayLanguage);
@@ -106,26 +103,26 @@ namespace NtingCampus.Gameplay.Core
             return bootstrap;
         }
 
-        private CampusMischiefActionController ResolveMischiefController()
+        private CampusPrankService ResolvePrankService()
         {
-            if (mischiefController != null)
+            if (prankService != null)
             {
-                return mischiefController;
+                return prankService;
             }
 
-            mischiefController = FindFirstObjectByType<CampusMischiefActionController>(FindObjectsInactive.Include);
-            return mischiefController;
+            prankService = FindFirstObjectByType<CampusPrankService>(FindObjectsInactive.Include);
+            return prankService;
         }
 
-        private CampusMischiefConsequenceController ResolveConsequenceController()
+        private CampusSanctionService ResolveSanctionService()
         {
-            if (consequenceController != null)
+            if (sanctionService != null)
             {
-                return consequenceController;
+                return sanctionService;
             }
 
-            consequenceController = FindFirstObjectByType<CampusMischiefConsequenceController>(FindObjectsInactive.Include);
-            return consequenceController;
+            sanctionService = FindFirstObjectByType<CampusSanctionService>(FindObjectsInactive.Include);
+            return sanctionService;
         }
 
         private static void DrawM1Controls(CampusModeController modeController, CampusTimeController timeController, CampusDisplayLanguage displayLanguage)
@@ -331,88 +328,26 @@ namespace NtingCampus.Gameplay.Core
             GUILayout.Label(CampusGameplayDebugTextCatalog.FormatLine(displayLanguage, CampusGameplayDebugTextId.Memories, JoinMemories(selected.Memories, displayLanguage)));
         }
 
-        private static void DrawMischiefState(CampusMischiefActionController controller, CampusDisplayLanguage displayLanguage)
+        private static void DrawFormalMainlineState(CampusPrankService prankService, CampusSanctionService sanctionService)
         {
-            if (controller == null)
+            GUILayout.Label("Formal Mainline");
+            if (prankService == null)
             {
-                GUILayout.Label(CampusGameplayDebugTextCatalog.FormatLine(displayLanguage, CampusGameplayDebugTextId.MischiefSkeleton, "-"));
-                return;
+                GUILayout.Label("- PrankService: none");
+            }
+            else
+            {
+                GUILayout.Label("- Prompt: " + prankService.CurrentPrompt);
+                GUILayout.Label("- Daily Pass Note Count: " + prankService.DailyPassNoteCount);
             }
 
-            GUILayout.Label(CampusGameplayDebugTextCatalog.FormatLine(displayLanguage, CampusGameplayDebugTextId.MischiefHeat, controller.MischiefHeat));
-            GUILayout.Label(CampusGameplayDebugTextCatalog.FormatLine(displayLanguage, CampusGameplayDebugTextId.CurrentAction, controller.CurrentAvailableActionName));
-            GUILayout.Label(CampusGameplayDebugTextCatalog.Get(displayLanguage, CampusGameplayDebugTextId.InteractHint));
-            GUILayout.Label(CampusGameplayDebugTextCatalog.Get(displayLanguage, CampusGameplayDebugTextId.TodayCounts));
-            IReadOnlyList<CampusMischiefActionDefinition> actions = CampusMischiefActionController.ActionDefinitions;
-            for (int i = 0; i < actions.Count; i++)
+            if (sanctionService == null)
             {
-                CampusMischiefActionDefinition action = actions[i];
-                GUILayout.Label("- " + action.DisplayName + ": " + controller.GetDailyActionCount(action.FunctionId));
+                GUILayout.Label("- SanctionService: none");
             }
-
-            GUILayout.Space(4f);
-            GUILayout.Label(CampusGameplayDebugTextCatalog.Get(displayLanguage, CampusGameplayDebugTextId.DebugActions));
-            for (int i = 0; i < actions.Count; i++)
+            else
             {
-                CampusMischiefActionDefinition action = actions[i];
-                if (GUILayout.Button(action.DisplayName))
-                {
-                    controller.TryTriggerByFunctionId(action.FunctionId);
-                }
-            }
-        }
-
-        private static void DrawAreaRiskState(
-            CampusMischiefActionController controller,
-            CampusMischiefConsequenceController consequences,
-            CampusDisplayLanguage displayLanguage)
-        {
-            if (consequences == null)
-            {
-                GUILayout.Label(CampusGameplayDebugTextCatalog.FormatLine(displayLanguage, CampusGameplayDebugTextId.AreaRisk, "-"));
-                return;
-            }
-
-            string currentAreaHot = "-";
-            if (controller != null &&
-                controller.TryGetActionDefinition(controller.CurrentAvailableFunctionId, out CampusMischiefActionDefinition currentAction))
-            {
-                currentAreaHot = CampusGameplayDebugTextCatalog.FormatBool(displayLanguage, consequences.IsAreaSensitive(currentAction.AreaName));
-            }
-
-            GUILayout.Label(CampusGameplayDebugTextCatalog.FormatLine(displayLanguage, CampusGameplayDebugTextId.CurrentAreaSensitive, currentAreaHot));
-            GUILayout.Label(CampusGameplayDebugTextCatalog.Get(displayLanguage, CampusGameplayDebugTextId.AreaSuspicionAndAlertLevel));
-            IReadOnlyList<CampusMischiefAreaState> areas = consequences.AreaStates;
-            for (int i = 0; i < areas.Count; i++)
-            {
-                CampusMischiefAreaState area = areas[i];
-                if (area == null)
-                {
-                    continue;
-                }
-
-                GUILayout.Label("- " + area.AreaName +
-                                ": " + CampusGameplayDebugTextCatalog.Get(displayLanguage, CampusGameplayDebugTextId.Suspicion) + "=" + area.Suspicion +
-                                " " + CampusGameplayDebugTextCatalog.Get(displayLanguage, CampusGameplayDebugTextId.AlertLevel) + "=" + area.AlertLevel +
-                                " " + CampusGameplayDebugTextCatalog.Get(displayLanguage, CampusGameplayDebugTextId.Hot) + "=" + CampusGameplayDebugTextCatalog.FormatBool(displayLanguage, area.IsTemporarilyHot));
-            }
-        }
-
-        private static void DrawRecentConsequenceLogs(CampusMischiefConsequenceController consequences, CampusDisplayLanguage displayLanguage)
-        {
-            GUILayout.Label(CampusGameplayDebugTextCatalog.Get(displayLanguage, CampusGameplayDebugTextId.RecentConsequences));
-            IReadOnlyList<string> logs = consequences != null ? consequences.RecentConsequenceLogs : null;
-            int logCount = logs != null ? logs.Count : 0;
-            if (logCount == 0)
-            {
-                GUILayout.Label("- " + CampusGameplayDebugTextCatalog.Get(displayLanguage, CampusGameplayDebugTextId.None));
-                return;
-            }
-
-            int startIndex = Mathf.Max(0, logCount - 5);
-            for (int i = startIndex; i < logCount; i++)
-            {
-                GUILayout.Label("- " + logs[i]);
+                GUILayout.Label("- Last Sanction: " + sanctionService.LastIssuedLevel);
             }
         }
 

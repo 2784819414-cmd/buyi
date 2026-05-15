@@ -1,5 +1,4 @@
 using NtingCampus.Gameplay.Core;
-using NtingCampus.Gameplay.Skeleton;
 using UnityEngine;
 
 namespace NtingCampusMapEditor
@@ -15,7 +14,6 @@ namespace NtingCampusMapEditor
         [SerializeField] private bool keepLighting = true;
         [SerializeField] private bool keepCustomShadowSystem = true;
         [SerializeField] private bool keepGameplayBootstrap = true;
-        [SerializeField] private bool keepMischiefSkeleton = true;
         [SerializeField] private bool keepTestPlayerInScene = true;
         [SerializeField] private bool generateDebugAssetsInEditor = true;
         [SerializeField] private bool fixValidationIssuesInEditor = true;
@@ -82,11 +80,6 @@ namespace NtingCampusMapEditor
                     bootstrap = CampusGameBootstrap.EnsureSceneBootstrap();
                 }
 
-                if (keepMischiefSkeleton)
-                {
-                    EnsureMischiefSkeleton(bootstrap);
-                }
-
                 RefreshSceneReferences();
             }
             finally
@@ -132,39 +125,5 @@ namespace NtingCampusMapEditor
             return runtimeMapEditor;
         }
 
-        private static void EnsureMischiefSkeleton(CampusGameBootstrap bootstrap)
-        {
-            if (bootstrap == null || HasSceneMischiefSkeleton())
-            {
-                return;
-            }
-
-            CampusMischiefAnchorBootstrap.RebuildSkeleton(bootstrap);
-        }
-
-        private static bool HasSceneMischiefSkeleton()
-        {
-            if (FindFirstObjectByType<CampusMischiefAnchorBootstrap>(FindObjectsInactive.Include) != null)
-            {
-                return true;
-            }
-
-            GameObject[] sceneObjects = Resources.FindObjectsOfTypeAll<GameObject>();
-            for (int i = 0; i < sceneObjects.Length; i++)
-            {
-                GameObject sceneObject = sceneObjects[i];
-                if (sceneObject == null || !sceneObject.scene.IsValid() || !sceneObject.scene.isLoaded)
-                {
-                    continue;
-                }
-
-                if (sceneObject.name == CampusMischiefAnchorBootstrap.RootName)
-                {
-                    return true;
-                }
-            }
-
-            return false;
-        }
     }
 }

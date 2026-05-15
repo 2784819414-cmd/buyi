@@ -9,7 +9,6 @@ namespace NtingCampus.Gameplay.Rooms
     public sealed class CampusRoomRegistry : MonoBehaviour
     {
         [SerializeField] private CampusMapRoot mapRoot;
-        [SerializeField] private bool rebuildOnAwake = true;
         [SerializeField] private bool logValidationIssues = true;
         [SerializeField] private List<CampusGameplayRoom> rooms = new List<CampusGameplayRoom>();
 
@@ -85,14 +84,6 @@ namespace NtingCampus.Gameplay.Rooms
             }
 
             return bestRoom;
-        }
-
-        private void Awake()
-        {
-            if (rebuildOnAwake)
-            {
-                RebuildRegistry();
-            }
         }
 
         private CampusMapRoot ResolveMapRoot()

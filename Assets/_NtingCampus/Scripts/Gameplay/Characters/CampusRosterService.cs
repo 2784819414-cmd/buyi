@@ -1,6 +1,7 @@
+using System;
 using System.Collections.Generic;
 using NtingCampus.Gameplay.Core;
-using NtingCampusMapEditor;
+using NtingCampus.Gameplay.Rooms;
 using UnityEngine;
 
 namespace NtingCampus.Gameplay.Characters
@@ -9,17 +10,81 @@ namespace NtingCampus.Gameplay.Characters
     public sealed class CampusRosterService : MonoBehaviour
     {
         private const string RuntimeRootName = "NtingCampus_CharacterRuntimeRoot";
-        private const string DefaultClassId = "class_1";
+
+        [Serializable]
+        private sealed class CampusCharacterSeed
+        {
+            [SerializeField] private string id = string.Empty;
+            [SerializeField] private string displayName = string.Empty;
+            [SerializeField] private CampusCharacterRole role = CampusCharacterRole.Student;
+            [SerializeField] private CampusTeacherDuty teacherDuty = CampusTeacherDuty.None;
+            [SerializeField] private string classId = "class_1";
+            [SerializeField] private bool isPlayerControlled;
+            [SerializeField, Range(0, 100)] private int sleepiness = 40;
+            [SerializeField, Range(0, 100)] private int mischief = 20;
+            [SerializeField] private CampusCharacterTrait[] traits = Array.Empty<CampusCharacterTrait>();
+            [SerializeField] private CampusRoomType anchorRoomType = CampusRoomType.Classroom;
+            [SerializeField] private Vector3 localOffset = Vector3.zero;
+
+            public bool IsPlayerControlled => isPlayerControlled;
+            public CampusRoomType AnchorRoomType => anchorRoomType;
+            public Vector3 LocalOffset => localOffset;
+            public string DisplayName => displayName;
+
+            public void Initialize(
+                string targetId,
+                string targetDisplayName,
+                CampusCharacterRole targetRole,
+                CampusTeacherDuty targetTeacherDuty,
+                bool playerControlled,
+                int initialSleepiness,
+                int initialMischief,
+                CampusRoomType targetAnchorRoomType,
+                Vector3 targetLocalOffset,
+                CampusCharacterTrait[] targetTraits)
+            {
+                id = targetId ?? string.Empty;
+                displayName = targetDisplayName ?? string.Empty;
+                role = targetRole;
+                teacherDuty = targetTeacherDuty;
+                classId = "class_1";
+                isPlayerControlled = playerControlled;
+                sleepiness = initialSleepiness;
+                mischief = initialMischief;
+                anchorRoomType = targetAnchorRoomType;
+                localOffset = targetLocalOffset;
+                traits = targetTraits ?? Array.Empty<CampusCharacterTrait>();
+            }
+
+            public CampusCharacterData BuildData()
+            {
+                CampusCharacterData data = new CampusCharacterData();
+                data.Configure(
+                    id,
+                    displayName,
+                    role,
+                    teacherDuty,
+                    classId,
+                    CampusCharacterState.Normal,
+                    isPlayerControlled,
+                    sleepiness,
+                    mischief,
+                    traits);
+                return data;
+            }
+        }
 
         [SerializeField] private CampusGameBootstrap bootstrap;
+        [SerializeField] private CampusWorldService worldService;
         [SerializeField] private Transform runtimeRoot;
         [SerializeField] private CampusCharacterRuntime playerRuntime;
         [SerializeField] private CampusPlayerCharacter playerCharacter;
         [SerializeField] private List<CampusCharacterRuntime> runtimes = new List<CampusCharacterRuntime>();
         [SerializeField] private List<CampusCharacterData> characters = new List<CampusCharacterData>();
+        [SerializeField] private List<CampusCharacterSeed> initialSeeds = new List<CampusCharacterSeed>();
 
         private readonly Dictionary<string, CampusCharacterRuntime> runtimesById =
-            new Dictionary<string, CampusCharacterRuntime>(System.StringComparer.OrdinalIgnoreCase);
+            new Dictionary<string, CampusCharacterRuntime>(StringComparer.OrdinalIgnoreCase);
 
         public IReadOnlyList<CampusCharacterData> Characters => characters;
         public IReadOnlyList<CampusCharacterRuntime> Runtimes => runtimes;
@@ -30,8 +95,16 @@ namespace NtingCampus.Gameplay.Characters
         public void Initialize(CampusGameBootstrap targetBootstrap)
         {
             bootstrap = targetBootstrap != null ? targetBootstrap : CampusGameBootstrap.Instance;
+            worldService = bootstrap != null ? bootstrap.WorldService : null;
             EnsureRuntimeRoot();
-            RebuildRoster();
+            EnsureDefaultSeeds();
+            BuildFormalRoster();
+        }
+
+        public void RebuildRosterFromScene()
+        {
+            CollectSceneRuntimes();
+            WriteInitializationLog();
         }
 
         public CampusCharacterRuntime FindRuntime(string characterId)
@@ -48,22 +121,29 @@ namespace NtingCampus.Gameplay.Characters
 
         public CampusCharacterData FindCharacterData(string characterId)
         {
-            if (string.IsNullOrWhiteSpace(characterId))
-            {
-                return null;
-            }
+            CampusCharacterRuntime runtime = FindRuntime(characterId);
+            return runtime != null ? runtime.Data : null;
+        }
 
-            string normalizedId = characterId.Trim();
-            for (int i = 0; i < characters.Count; i++)
+        public IEnumerable<CampusCharacterRuntime> EnumerateByRole(CampusCharacterRole role)
+        {
+            for (int i = 0; i < runtimes.Count; i++)
             {
-                CampusCharacterData candidate = characters[i];
-                if (candidate != null && string.Equals(candidate.Id, normalizedId, System.StringComparison.OrdinalIgnoreCase))
+                CampusCharacterRuntime runtime = runtimes[i];
+                if (runtime != null && runtime.Data != null && runtime.Data.Role == role)
                 {
-                    return candidate;
+                    yield return runtime;
                 }
             }
+        }
 
-            return null;
+        private void BuildFormalRoster()
+        {
+            ClearGeneratedNpcObjects();
+            EnsurePlayerRuntimeFromScene();
+            SpawnNonPlayerSeeds();
+            CollectSceneRuntimes();
+            WriteInitializationLog();
         }
 
         private void EnsureRuntimeRoot()
@@ -85,77 +165,85 @@ namespace NtingCampus.Gameplay.Characters
             runtimeRoot = root.transform;
         }
 
-        private void RebuildRoster()
+        private void EnsureDefaultSeeds()
         {
-            ClearGeneratedRoster();
+            if (initialSeeds != null && initialSeeds.Count > 0)
+            {
+                return;
+            }
 
-            CampusTestPlayerController playerController = FindFirstObjectByType<CampusTestPlayerController>(FindObjectsInactive.Include);
+            initialSeeds = new List<CampusCharacterSeed>
+            {
+                CreateSeed("student_player", "LiXiaonao", CampusCharacterRole.Student, CampusTeacherDuty.None, true, 58, 78, CampusRoomType.Classroom, new Vector3(-0.5f, -0.4f, 0f), CampusCharacterTrait.Troublemaker),
+                CreateSeed("student_good_01", "XuAnjing", CampusCharacterRole.Student, CampusTeacherDuty.None, false, 34, 12, CampusRoomType.Classroom, new Vector3(0.8f, -0.2f, 0f), CampusCharacterTrait.GoodStudent),
+                CreateSeed("teacher_world_homeroom", "LinYuwen", CampusCharacterRole.Teacher, CampusTeacherDuty.WorldLanguageTeacher | CampusTeacherDuty.HomeroomTeacher, false, 42, 0, CampusRoomType.Classroom, new Vector3(0f, 0.7f, 0f), CampusCharacterTrait.Ordinary)
+            };
+        }
+
+        private void EnsurePlayerRuntimeFromScene()
+        {
+            CampusCharacterSeed playerSeed = initialSeeds.Find(seed => seed != null && seed.IsPlayerControlled);
+            NtingCampusMapEditor.CampusTestPlayerController playerController =
+                FindFirstObjectByType<NtingCampusMapEditor.CampusTestPlayerController>(FindObjectsInactive.Include);
+
             if (playerController == null)
             {
                 Debug.LogWarning("CampusRosterService could not find CampusTestPlayerController.");
                 return;
             }
 
-            List<CampusCharacterData> seeds = BuildInitialRoster();
-            Vector3 origin = playerController.transform.position;
-            Vector3[] npcOffsets =
+            GameObject playerObject = playerController.gameObject;
+            playerRuntime = playerObject.GetComponent<CampusCharacterRuntime>();
+            if (playerRuntime == null)
             {
-                new Vector3(-1.5f, 1.25f, 0f),
-                new Vector3(1.5f, 1.25f, 0f),
-                new Vector3(-2.25f, -0.25f, 0f),
-                new Vector3(2.25f, -0.25f, 0f),
-                new Vector3(-1.2f, -1.65f, 0f),
-                new Vector3(1.2f, -1.65f, 0f),
-                new Vector3(0f, 2.1f, 0f)
-            };
+                playerRuntime = playerObject.AddComponent<CampusCharacterRuntime>();
+            }
 
-            for (int i = 0; i < seeds.Count; i++)
+            CampusCharacterData data = playerSeed != null ? playerSeed.BuildData() : BuildFallbackPlayerData();
+            playerRuntime.Bind(data, false);
+
+            playerCharacter = playerObject.GetComponent<CampusPlayerCharacter>();
+            if (playerCharacter == null)
             {
-                CampusCharacterData data = seeds[i];
-                characters.Add(data);
+                playerCharacter = playerObject.AddComponent<CampusPlayerCharacter>();
+            }
 
-                if (data.IsPlayerControlled)
+            playerCharacter.Bind(playerRuntime);
+        }
+
+        private void SpawnNonPlayerSeeds()
+        {
+            if (initialSeeds == null || initialSeeds.Count == 0)
+            {
+                return;
+            }
+
+            for (int i = 0; i < initialSeeds.Count; i++)
+            {
+                CampusCharacterSeed seed = initialSeeds[i];
+                if (seed == null || seed.IsPlayerControlled)
                 {
-                    playerRuntime = playerController.GetComponent<CampusCharacterRuntime>();
-                    if (playerRuntime == null)
-                    {
-                        playerRuntime = playerController.gameObject.AddComponent<CampusCharacterRuntime>();
-                    }
-
-                    playerRuntime.Bind(data, false);
-
-                    playerCharacter = playerController.GetComponent<CampusPlayerCharacter>();
-                    if (playerCharacter == null)
-                    {
-                        playerCharacter = playerController.gameObject.AddComponent<CampusPlayerCharacter>();
-                    }
-
-                    playerCharacter.Bind(playerRuntime);
-                    runtimes.Add(playerRuntime);
                     continue;
                 }
 
-                GameObject runtimeObject = new GameObject(data.DisplayName);
+                CampusGameplayRoom anchorRoom = worldService != null
+                    ? worldService.FindFirstUsableRoom(seed.AnchorRoomType)
+                    : null;
+                Vector3 spawnPosition = anchorRoom != null
+                    ? anchorRoom.WorldCenter + seed.LocalOffset
+                    : seed.LocalOffset;
+
+                GameObject runtimeObject = new GameObject(seed.DisplayName);
                 runtimeObject.transform.SetParent(runtimeRoot, false);
-                runtimeObject.transform.position = origin + npcOffsets[Mathf.Min(i - 1, npcOffsets.Length - 1)];
+                runtimeObject.transform.position = spawnPosition;
 
                 CampusCharacterRuntime runtime = runtimeObject.AddComponent<CampusCharacterRuntime>();
-                runtime.Bind(data, true);
-                runtimes.Add(runtime);
+                runtime.Bind(seed.BuildData(), true);
             }
-
-            RebuildRuntimeLookup();
-            WriteInitializationLog();
         }
 
-        private void ClearGeneratedRoster()
+        private void ClearGeneratedNpcObjects()
         {
-            characters.Clear();
-            runtimes.Clear();
-            runtimesById.Clear();
-            playerRuntime = null;
-            playerCharacter = null;
-
             EnsureRuntimeRoot();
             for (int i = runtimeRoot.childCount - 1; i >= 0; i--)
             {
@@ -171,63 +259,43 @@ namespace NtingCampus.Gameplay.Characters
             }
         }
 
-        private List<CampusCharacterData> BuildInitialRoster()
+        private void CollectSceneRuntimes()
         {
-            return new List<CampusCharacterData>
+            characters.Clear();
+            runtimes.Clear();
+            runtimesById.Clear();
+            playerRuntime = null;
+            playerCharacter = null;
+
+            CampusCharacterRuntime[] discoveredRuntimes =
+                FindObjectsByType<CampusCharacterRuntime>(FindObjectsInactive.Include, FindObjectsSortMode.None);
+            for (int i = 0; i < discoveredRuntimes.Length; i++)
             {
-                CreateStudent("student_player", "李小闹", true, 58, 78, CampusCharacterTrait.Troublemaker),
-                CreateStudent("student_ordinary_01", "周晓白", false, 38, 24, CampusCharacterTrait.Ordinary),
-                CreateStudent("student_ordinary_02", "陈一鸣", false, 42, 27, CampusCharacterTrait.Ordinary),
-                CreateStudent("student_sleepy_01", "孙困困", false, 82, 18, CampusCharacterTrait.Sleepyhead),
-                CreateStudent("student_good_01", "许安静", false, 34, 12, CampusCharacterTrait.GoodStudent),
-                CreateStudent("student_tattle_01", "赵小喇叭", false, 47, 31, CampusCharacterTrait.Tattletale),
-                CreateTeacher("teacher_world_homeroom", "林语文", CampusTeacherDuty.WorldLanguageTeacher | CampusTeacherDuty.HomeroomTeacher, 48),
-                CreateTeacher("teacher_math_patrol", "高巡导", CampusTeacherDuty.MathTeacher | CampusTeacherDuty.PatrolDirector, 36)
-            };
-        }
+                CampusCharacterRuntime runtime = discoveredRuntimes[i];
+                if (runtime == null || runtime.Data == null)
+                {
+                    continue;
+                }
 
-        private static CampusCharacterData CreateStudent(
-            string id,
-            string displayName,
-            bool isPlayerControlled,
-            int sleepiness,
-            int mischief,
-            CampusCharacterTrait primaryTrait)
-        {
-            CampusCharacterData data = new CampusCharacterData();
-            data.Configure(
-                id,
-                displayName,
-                CampusCharacterRole.Student,
-                CampusTeacherDuty.None,
-                DefaultClassId,
-                CampusCharacterState.Normal,
-                isPlayerControlled,
-                sleepiness,
-                mischief,
-                new[] { primaryTrait });
-            return data;
-        }
+                runtimes.Add(runtime);
+                characters.Add(runtime.Data);
 
-        private static CampusCharacterData CreateTeacher(
-            string id,
-            string displayName,
-            CampusTeacherDuty duties,
-            int sleepiness)
-        {
-            CampusCharacterData data = new CampusCharacterData();
-            data.Configure(
-                id,
-                displayName,
-                CampusCharacterRole.Teacher,
-                duties,
-                DefaultClassId,
-                CampusCharacterState.Normal,
-                false,
-                sleepiness,
-                0,
-                new[] { CampusCharacterTrait.Ordinary });
-            return data;
+                if (!runtime.Data.IsPlayerControlled)
+                {
+                    continue;
+                }
+
+                playerRuntime = runtime;
+                playerCharacter = runtime.GetComponent<CampusPlayerCharacter>();
+                if (playerCharacter == null)
+                {
+                    playerCharacter = runtime.gameObject.AddComponent<CampusPlayerCharacter>();
+                }
+
+                playerCharacter.Bind(runtime);
+            }
+
+            RebuildRuntimeLookup();
         }
 
         private void RebuildRuntimeLookup()
@@ -267,11 +335,55 @@ namespace NtingCampus.Gameplay.Characters
                 return;
             }
 
-            bootstrap.EventLog.AddLog("[System] Roster ready. Students=" + StudentCount + ", Teachers=" + TeacherCount + ".");
+            bootstrap.EventLog.AddLog("[System] Formal roster ready. Students=" + StudentCount + ", Teachers=" + TeacherCount + ".");
             if (playerRuntime != null && playerRuntime.Data != null)
             {
                 bootstrap.EventLog.AddLog("[System] Player student bound to " + playerRuntime.Data.DisplayName + ".");
             }
+        }
+
+        private static CampusCharacterSeed CreateSeed(
+            string id,
+            string displayName,
+            CampusCharacterRole role,
+            CampusTeacherDuty duty,
+            bool isPlayerControlled,
+            int sleepiness,
+            int mischief,
+            CampusRoomType anchorRoomType,
+            Vector3 localOffset,
+            params CampusCharacterTrait[] traits)
+        {
+            CampusCharacterSeed seed = new CampusCharacterSeed();
+            seed.Initialize(
+                id,
+                displayName,
+                role,
+                duty,
+                isPlayerControlled,
+                sleepiness,
+                mischief,
+                anchorRoomType,
+                localOffset,
+                traits);
+            return seed;
+        }
+
+        private static CampusCharacterData BuildFallbackPlayerData()
+        {
+            CampusCharacterData data = new CampusCharacterData();
+            data.Configure(
+                "student_player",
+                "LiXiaonao",
+                CampusCharacterRole.Student,
+                CampusTeacherDuty.None,
+                "class_1",
+                CampusCharacterState.Normal,
+                true,
+                58,
+                78,
+                new[] { CampusCharacterTrait.Troublemaker });
+            return data;
         }
     }
 }

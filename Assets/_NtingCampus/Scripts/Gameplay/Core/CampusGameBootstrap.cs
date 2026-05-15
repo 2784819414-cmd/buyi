@@ -1,8 +1,11 @@
-using System;
 using NtingCampus.Gameplay.Characters;
+using NtingCampus.Gameplay.Events;
 using NtingCampus.Gameplay.Modes;
+using NtingCampus.Gameplay.Pranks;
+using NtingCampus.Gameplay.Rooms;
+using NtingCampus.Gameplay.Sanctions;
+using NtingCampus.Gameplay.Schedule;
 using UnityEngine;
-using UnityEngine.SceneManagement;
 
 namespace NtingCampus.Gameplay.Core
 {
@@ -17,10 +20,17 @@ namespace NtingCampus.Gameplay.Core
         [SerializeField] private bool showDebugPanel = true;
         [SerializeField] private CampusTimeController timeController;
         [SerializeField] private CampusModeController modeController;
+        [SerializeField] private CampusWorldService worldService;
         [SerializeField] private CampusRosterService rosterService;
+        [SerializeField] private CampusScheduleService scheduleService;
+        [SerializeField] private CampusGameplayEventHub gameplayEventHub;
+        [SerializeField] private CampusPrankService prankService;
+        [SerializeField] private CampusSanctionService sanctionService;
         [SerializeField] private CampusGameState gameState = new CampusGameState();
         [SerializeField] private CampusResourceState resourceState = new CampusResourceState();
         [SerializeField] private CampusEventLog eventLog = new CampusEventLog();
+
+        private bool isInitialized;
 
         public static CampusGameBootstrap Instance { get; private set; }
 
@@ -29,7 +39,12 @@ namespace NtingCampus.Gameplay.Core
         public CampusEventLog EventLog => eventLog;
         public CampusTimeController TimeController => timeController;
         public CampusModeController ModeController => modeController;
+        public CampusWorldService WorldService => worldService;
         public CampusRosterService RosterService => rosterService;
+        public CampusScheduleService ScheduleService => scheduleService;
+        public CampusGameplayEventHub GameplayEventHub => gameplayEventHub;
+        public CampusPrankService PrankService => prankService;
+        public CampusSanctionService SanctionService => sanctionService;
 
         public static CampusGameBootstrap EnsureSceneBootstrap()
         {
@@ -43,12 +58,23 @@ namespace NtingCampus.Gameplay.Core
             CampusGameBootstrap bootstrap = bootstrapObject.AddComponent<CampusGameBootstrap>();
             bootstrap.EnsureTimeController();
             bootstrap.EnsureModeController();
+            bootstrap.EnsureWorldService();
+            bootstrap.EnsureRosterService();
+            bootstrap.EnsureScheduleService();
+            bootstrap.EnsureGameplayEventHub();
+            bootstrap.EnsureSanctionService();
+            bootstrap.EnsurePrankService();
             bootstrap.EnsureDebugPanel();
             return bootstrap;
         }
 
         public void InitializeGameplay()
         {
+            if (isInitialized)
+            {
+                return;
+            }
+
             gameState = new CampusGameState();
             CampusGameStateInitialization gameStateInitialization = initialGameState;
             gameStateInitialization.InitialDay = initialDay;
@@ -65,11 +91,27 @@ namespace NtingCampus.Gameplay.Core
             modeController = EnsureModeController();
             modeController.InitializeModes(this, false);
 
+            worldService = EnsureWorldService();
+            worldService.Initialize(this);
+
             rosterService = EnsureRosterService();
             rosterService.Initialize(this);
 
+            scheduleService = EnsureScheduleService();
+            scheduleService.Initialize(this);
+
+            gameplayEventHub = EnsureGameplayEventHub();
+            gameplayEventHub.Initialize(this);
+
+            sanctionService = EnsureSanctionService();
+            sanctionService.Initialize(this);
+
+            prankService = EnsurePrankService();
+            prankService.Initialize(this);
+
+            isInitialized = true;
             eventLog.AddLog("[System] " + timeController.CurrentDateText +
-                            " gameplay bootstrap ready. Money=" + resourceState.Money +
+                            " gameplay bootstrap initialized. Money=" + resourceState.Money +
                             ", DivinePower=" + resourceState.DivinePower +
                             ", Day=" + gameState.Day +
                             ", Order=" + gameState.CampusOrder +
@@ -108,22 +150,6 @@ namespace NtingCampus.Gameplay.Core
             initialGameState.InitialTeacherAlertness = Mathf.Clamp(initialGameState.InitialTeacherAlertness, CampusGameState.StatMin, CampusGameState.StatMax);
             initialGameState.InitialDivineInterest = Mathf.Clamp(initialGameState.InitialDivineInterest, CampusGameState.StatMin, CampusGameState.StatMax);
             initialGameState.InitialDailyWarningCount = Mathf.Max(0, initialGameState.InitialDailyWarningCount);
-        }
-
-        [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.AfterSceneLoad)]
-        private static void EnsureGameplayBootstrapAfterSceneLoad()
-        {
-            Scene activeScene = SceneManager.GetActiveScene();
-            if (!string.Equals(activeScene.name, "CampusMap", System.StringComparison.Ordinal))
-            {
-                return;
-            }
-
-            CampusGameBootstrap existing = EnsureSceneBootstrap();
-            existing.EnsureTimeController();
-            existing.EnsureModeController();
-            existing.EnsureRosterService();
-            existing.EnsureDebugPanel();
         }
 
         private void EnsureDebugPanel()
@@ -174,6 +200,22 @@ namespace NtingCampus.Gameplay.Core
             return modeController;
         }
 
+        private CampusWorldService EnsureWorldService()
+        {
+            if (worldService != null)
+            {
+                return worldService;
+            }
+
+            worldService = GetComponent<CampusWorldService>();
+            if (worldService == null)
+            {
+                worldService = gameObject.AddComponent<CampusWorldService>();
+            }
+
+            return worldService;
+        }
+
         private CampusRosterService EnsureRosterService()
         {
             if (rosterService != null)
@@ -188,6 +230,70 @@ namespace NtingCampus.Gameplay.Core
             }
 
             return rosterService;
+        }
+
+        private CampusScheduleService EnsureScheduleService()
+        {
+            if (scheduleService != null)
+            {
+                return scheduleService;
+            }
+
+            scheduleService = GetComponent<CampusScheduleService>();
+            if (scheduleService == null)
+            {
+                scheduleService = gameObject.AddComponent<CampusScheduleService>();
+            }
+
+            return scheduleService;
+        }
+
+        private CampusGameplayEventHub EnsureGameplayEventHub()
+        {
+            if (gameplayEventHub != null)
+            {
+                return gameplayEventHub;
+            }
+
+            gameplayEventHub = GetComponent<CampusGameplayEventHub>();
+            if (gameplayEventHub == null)
+            {
+                gameplayEventHub = gameObject.AddComponent<CampusGameplayEventHub>();
+            }
+
+            return gameplayEventHub;
+        }
+
+        private CampusPrankService EnsurePrankService()
+        {
+            if (prankService != null)
+            {
+                return prankService;
+            }
+
+            prankService = GetComponent<CampusPrankService>();
+            if (prankService == null)
+            {
+                prankService = gameObject.AddComponent<CampusPrankService>();
+            }
+
+            return prankService;
+        }
+
+        private CampusSanctionService EnsureSanctionService()
+        {
+            if (sanctionService != null)
+            {
+                return sanctionService;
+            }
+
+            sanctionService = GetComponent<CampusSanctionService>();
+            if (sanctionService == null)
+            {
+                sanctionService = gameObject.AddComponent<CampusSanctionService>();
+            }
+
+            return sanctionService;
         }
     }
 }

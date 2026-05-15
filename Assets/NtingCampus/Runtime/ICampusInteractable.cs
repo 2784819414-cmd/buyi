@@ -14,10 +14,11 @@ namespace NtingCampusMapEditor
 
     public static class CampusInteractionActionIds
     {
-        public const string Log = "log";
-        public const string OpenStorage = "open_storage";
-        public const string ToggleDoor = "toggle_door";
-        public const string InteractTarget = "interact_target";
+        public const string Log = "campus.debug.log";
+        public const string OpenStorage = "campus.storage.open";
+        public const string ToggleDoor = "campus.door.toggle";
+        public const string InteractTarget = "campus.interact.target";
+        public const string PrankExecute = "campus.prank.execute";
 
         public static bool Equals(string actionId, string expected)
         {
@@ -26,7 +27,12 @@ namespace NtingCampusMapEditor
 
         public static string Normalize(string actionId)
         {
-            return string.IsNullOrWhiteSpace(actionId) ? string.Empty : actionId.Trim();
+            if (string.IsNullOrWhiteSpace(actionId))
+            {
+                return string.Empty;
+            }
+
+            return actionId.Trim();
         }
     }
 }
