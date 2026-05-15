@@ -1,0 +1,25 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a84df7657b166a448a5069cec08fa3a2, type: 3}
+  m_Name: "\u5730\u9762\u74E6\u7247\u9762\u677F"
+  m_EditorClassIdentifier: Assembly-CSharp::NtingCampusMapEditor.CampusTilePalette
+  FloorTiles:
+  - {fileID: 11400000, guid: d59455202bce0a14ea279a18b86aca05, type: 2}
+  - {fileID: 11400000, guid: 6bc973a3368179e4b93c05d2992ab6ab, type: 2}
+  - {fileID: 11400000, guid: 58b5994d84ed18a45a7a1af46d742aa6, type: 2}
+  - {fileID: 11400000, guid: ec768df5f9551384abd8b6ed31faa71e, type: 2}
+  - {fileID: 11400000, guid: e0c270091e8de45438a940c8403980d0, type: 2}
+  - {fileID: 11400000, guid: b3a31f7b3b8b6504bb379943bb3ffe04, type: 2}
+  - {fileID: 11400000, guid: 8ae0ef92f3afcb54caea3f7e76d2cab6, type: 2}
+  - {fileID: 11400000, guid: 652703e05ccc2374b9e227ab99475c56, type: 2}
+  - {fileID: 11400000, guid: e6140b37acf5ccc4b88f1da5e46ec9cf, type: 2}
+  - {fileID: 11400000, guid: 8caa4db49d2d17747bc051a06aecc372, type: 2}

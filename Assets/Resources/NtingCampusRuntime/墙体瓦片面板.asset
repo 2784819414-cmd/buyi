@@ -1,0 +1,26 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 6894b21cb233e414fbf9949c0f0b418f, type: 3}
+  m_Name: "\u5899\u4F53\u74E6\u7247\u9762\u677F"
+  m_EditorClassIdentifier: Assembly-CSharp::NtingCampusMapEditor.CampusWallPalette
+  HorizontalWall: {fileID: 11400000, guid: bc42c6cdd93ba5f4281ea9e7becca663, type: 2}
+  VerticalWall: {fileID: 11400000, guid: bc42c6cdd93ba5f4281ea9e7becca663, type: 2}
+  CornerWall: {fileID: 11400000, guid: bc42c6cdd93ba5f4281ea9e7becca663, type: 2}
+  HighWall: {fileID: 11400000, guid: bc42c6cdd93ba5f4281ea9e7becca663, type: 2}
+  WallTiles:
+  - {fileID: 11400000, guid: bc42c6cdd93ba5f4281ea9e7becca663, type: 2}
+  - {fileID: 11400000, guid: a168719de1dbe054bb7c4a823919be66, type: 2}
+  - {fileID: 11400000, guid: 9612aff7c93d638439d3700ef2318842, type: 2}
+  - {fileID: 11400000, guid: 19123aae4e2d08041899c33b03e73d66, type: 2}
+  - {fileID: 11400000, guid: 41c1bf3cb1edbbc40a26347e854fe871, type: 2}
+  - {fileID: 11400000, guid: d92cdfd41dbdfb0409206aaa6b3299a8, type: 2}
+  - {fileID: 11400000, guid: 05c22096686fdcb4d88cb158bc2fa575, type: 2}

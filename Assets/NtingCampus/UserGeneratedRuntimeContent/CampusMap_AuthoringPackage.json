@@ -1,0 +1,187 @@
+﻿{
+    "Schema":  "NtingCampusRuntimeMapEditor.v1",
+    "MapName":  "校园地图根节点",
+    "ExportedAtLocal":  "2026-05-15 12:13:44",
+    "SortingOrderStepPerFloor":  1000,
+    "SelectedFloorIndex":  1,
+    "HasRoomDefinitions":  true,
+    "RoomNames":  [
+
+                  ],
+    "RoomRequiredCounts":  [
+
+                           ],
+    "Floors":  [
+                   {
+                       "FloorIndex":  1,
+                       "IsUnlocked":  true,
+                       "FloorTiles":  [
+
+                                      ],
+                       "WallTiles":  [
+
+                                     ],
+                       "Objects":  [
+                                       {
+                                           "ObjectId":  "Rotating_Sink",
+                                           "DisplayNameOverride":  "Box",
+                                           "PaletteIndex":  13,
+                                           "Position":  {
+                                                            "x":  4.5,
+                                                            "y":  -0.5,
+                                                            "z":  0.5
+                                                        },
+                                           "Cell":  {
+                                                        "x":  4,
+                                                        "y":  -1,
+                                                        "z":  0
+                                                    },
+                                           "FootprintSize":  {
+                                                                 "x":  1,
+                                                                 "y":  1
+                                                             },
+                                           "FloorIndex":  1,
+                                           "OverrideFootprintSize":  true,
+                                           "VisualScale":  {
+                                                               "x":  1.0,
+                                                               "y":  1.0
+                                                           },
+                                           "LockVisualScaleAspect":  true,
+                                           "OverrideAllowRotation":  true,
+                                           "AllowRotation":  true,
+                                           "OverrideRotation0Sprite":  true,
+                                           "Rotation0SpritePath":  "C:/Users/14012/AppData/LocalLow/DefaultCompany/Unrighteous Campus\\CampusRuntimeImports\\ObjectSettings\\Rotating_Sink\\rotation_0.png",
+                                           "OverrideRotation90Sprite":  false,
+                                           "Rotation90SpritePath":  "",
+                                           "OverrideRotation180Sprite":  false,
+                                           "Rotation180SpritePath":  "",
+                                           "OverrideRotation270Sprite":  false,
+                                           "Rotation270SpritePath":  "",
+                                           "Rotation90":  0,
+                                           "BlocksMovement":  true,
+                                           "BlocksSight":  false,
+                                           "IsInteractable":  true,
+                                           "IsStorageContainer":  true,
+                                           "StorageSize":  {
+                                                               "x":  4,
+                                                               "y":  4
+                                                           },
+                                           "StorageMaxWeight":  12.0,
+                                           "UseCustomInteractionAnchor":  true,
+                                           "CustomInteractionAnchorLocalPosition":  {
+                                                                                        "x":  0.0,
+                                                                                        "y":  0.5,
+                                                                                        "z":  0.0
+                                                                                    },
+                                           "CustomInteractionAnchorRadius":  0.6499999761581421,
+                                           "CustomInteractionPromptText":  "打开 Box",
+                                           "CustomInteractionAnchors":  [
+                                                                            {
+                                                                                "AnchorId":  "storage",
+                                                                                "DisplayName":  "储物容器",
+                                                                                "Enabled":  true,
+                                                                                "LocalPosition":  {
+                                                                                                      "x":  0.0,
+                                                                                                      "y":  0.5,
+                                                                                                      "z":  0.0
+                                                                                                  },
+                                                                                "Radius":  0.6499999761581421,
+                                                                                "PromptText":  "打开 Box",
+                                                                                "ActionId":  "open_storage",
+                                                                                "Payload":  "",
+                                                                                "TargetComponentType":  "",
+                                                                                "Priority":  130,
+                                                                                "UseTargetDoorStatePrompt":  false,
+                                                                                "LogInteraction":  false,
+                                                                                "InteractionLogMessage":  ""
+                                                                            }
+                                                                        ]
+                                       },
+                                       {
+                                           "ObjectId":  "Rotating_Sink",
+                                           "DisplayNameOverride":  "Box",
+                                           "PaletteIndex":  13,
+                                           "Position":  {
+                                                            "x":  6.5,
+                                                            "y":  2.5,
+                                                            "z":  0.5
+                                                        },
+                                           "Cell":  {
+                                                        "x":  6,
+                                                        "y":  2,
+                                                        "z":  0
+                                                    },
+                                           "FootprintSize":  {
+                                                                 "x":  1,
+                                                                 "y":  1
+                                                             },
+                                           "FloorIndex":  1,
+                                           "OverrideFootprintSize":  true,
+                                           "VisualScale":  {
+                                                               "x":  1.0,
+                                                               "y":  1.0
+                                                           },
+                                           "LockVisualScaleAspect":  true,
+                                           "OverrideAllowRotation":  true,
+                                           "AllowRotation":  true,
+                                           "OverrideRotation0Sprite":  true,
+                                           "Rotation0SpritePath":  "C:/Users/14012/AppData/LocalLow/DefaultCompany/Unrighteous Campus\\CampusRuntimeImports\\ObjectSettings\\Rotating_Sink\\rotation_0.png",
+                                           "OverrideRotation90Sprite":  false,
+                                           "Rotation90SpritePath":  "",
+                                           "OverrideRotation180Sprite":  false,
+                                           "Rotation180SpritePath":  "",
+                                           "OverrideRotation270Sprite":  false,
+                                           "Rotation270SpritePath":  "",
+                                           "Rotation90":  0,
+                                           "BlocksMovement":  true,
+                                           "BlocksSight":  false,
+                                           "IsInteractable":  true,
+                                           "IsStorageContainer":  true,
+                                           "StorageSize":  {
+                                                               "x":  4,
+                                                               "y":  4
+                                                           },
+                                           "StorageMaxWeight":  12.0,
+                                           "UseCustomInteractionAnchor":  true,
+                                           "CustomInteractionAnchorLocalPosition":  {
+                                                                                        "x":  0.0,
+                                                                                        "y":  0.5,
+                                                                                        "z":  0.0
+                                                                                    },
+                                           "CustomInteractionAnchorRadius":  0.6499999761581421,
+                                           "CustomInteractionPromptText":  "打开 Box",
+                                           "CustomInteractionAnchors":  [
+                                                                            {
+                                                                                "AnchorId":  "storage",
+                                                                                "DisplayName":  "储物容器",
+                                                                                "Enabled":  true,
+                                                                                "LocalPosition":  {
+                                                                                                      "x":  0.0,
+                                                                                                      "y":  0.5,
+                                                                                                      "z":  0.0
+                                                                                                  },
+                                                                                "Radius":  0.6499999761581421,
+                                                                                "PromptText":  "打开 Box",
+                                                                                "ActionId":  "open_storage",
+                                                                                "Payload":  "",
+                                                                                "TargetComponentType":  "",
+                                                                                "Priority":  130,
+                                                                                "UseTargetDoorStatePrompt":  false,
+                                                                                "LogInteraction":  false,
+                                                                                "InteractionLogMessage":  ""
+                                                                            }
+                                                                        ]
+                                       }
+                                   ],
+                       "Stairs":  [
+
+                                  ],
+                       "Rooms":  [
+
+                                 ]
+                   }
+               ],
+    "Lights":  [
+
+               ]
+}

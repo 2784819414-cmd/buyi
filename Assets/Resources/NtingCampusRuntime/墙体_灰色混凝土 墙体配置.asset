@@ -1,0 +1,60 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f59c4e2399796f94c8c65c86f03fe4e0, type: 3}
+  m_Name: 墙体_灰色混凝土 墙体配置
+  m_EditorClassIdentifier: Assembly-CSharp::NtingCampusMapEditor.CampusWallRenderProfile
+  ProfileId: "WallVisual_WallTile_\u7070\u8272\u6DF7\u51DD\u571F"
+  FaceSourceTexture: {fileID: 2800000, guid: e1d84080a33b15145ba20b813ac2319f, type: 3}
+  CapSourceTexture: {fileID: 2800000, guid: a8a2102fa4394714390bb1f93a9c575b, type: 3}
+  LogicTile: {fileID: 11400000, guid: 19123aae4e2d08041899c33b03e73d66, type: 2}
+  DefaultCapTile: {fileID: 11400000, guid: 6397f28fb84c8eb4384a5633c8738f88, type: 2}
+  CapTilesByExposedMask:
+  - {fileID: 11400000, guid: 6397f28fb84c8eb4384a5633c8738f88, type: 2}
+  - {fileID: 11400000, guid: 0870f85485ffb164693d4e502c9370c3, type: 2}
+  - {fileID: 11400000, guid: 0d4a6b227f721c149856490ec21f6029, type: 2}
+  - {fileID: 11400000, guid: b159e45f02ae9b34daf0ddbb5f435155, type: 2}
+  - {fileID: 11400000, guid: 3375d4651efdbd9419dd5166e4cb5b40, type: 2}
+  - {fileID: 11400000, guid: 5a5ebd6344a9f884f9c7a770e3e9cd03, type: 2}
+  - {fileID: 11400000, guid: 50559ccae17e6434b9105fb5aec25df8, type: 2}
+  - {fileID: 11400000, guid: 81c636da8296c8d4894da626a05f3887, type: 2}
+  - {fileID: 11400000, guid: 6240541c4d78fce478875e6b2d31d66e, type: 2}
+  - {fileID: 11400000, guid: 26ad71f56ed80dd4991a4b676008b61a, type: 2}
+  - {fileID: 11400000, guid: 9c665cc8be479ad4998649f47a3505d2, type: 2}
+  - {fileID: 11400000, guid: fb69b6774f360114d8b4266aed6150ef, type: 2}
+  - {fileID: 11400000, guid: ce3acc37c22c4f84c93064349d42066b, type: 2}
+  - {fileID: 11400000, guid: 60b492e7198f0714684d857bdecb4739, type: 2}
+  - {fileID: 11400000, guid: b9dfa8d8016bf1f46b404d29103a990f, type: 2}
+  - {fileID: 11400000, guid: 016eb700e28299442b5032324e4ecb0c, type: 2}
+  SouthFaceTile: {fileID: 11400000, guid: 9e98a5071b9362e4b8b553cde0251179, type: 2}
+  WestSideTile: {fileID: 11400000, guid: 76ef6773e38dce84ba40abbda62c5529, type: 2}
+  EastSideTile: {fileID: 11400000, guid: b8d8f3ff2ba2e6947a2a0a0f87732893, type: 2}
+  BothSideTile: {fileID: 11400000, guid: 5fe2fab85cab186478aea736652c411a, type: 2}
+  SouthShadowTile: {fileID: 11400000, guid: cec6e602ae0d9d04eae3d865081b7de3, type: 2}
+  InnerCornerShadowTile: {fileID: 0}
+  EndNorth: {fileID: 11400000, guid: 21d6d367279d7494089af66834f32b17, type: 2}
+  EndEast: {fileID: 11400000, guid: 88807eff06181da47adb614d5b4094a1, type: 2}
+  EndSouth: {fileID: 11400000, guid: 6048545a274a25541852d725571a02ff, type: 2}
+  EndWest: {fileID: 11400000, guid: 2981ee239691a45489056b361c98fa49, type: 2}
+  OuterCornerNE: {fileID: 11400000, guid: c5517036fab578645993879d85ab778e, type: 2}
+  OuterCornerNW: {fileID: 11400000, guid: 0bc5cf3412447564ebebb86268abeb39, type: 2}
+  OuterCornerSE: {fileID: 11400000, guid: 99730c19162d04f488a8ef0113f342c0, type: 2}
+  OuterCornerSW: {fileID: 11400000, guid: 8888f37e97aea8b40b68012edfda0a78, type: 2}
+  InnerCornerNE: {fileID: 11400000, guid: d2649a7cb368b69429c59b0567f7680b, type: 2}
+  InnerCornerNW: {fileID: 11400000, guid: d8e6e3a71dcb086429088aaaf6fbef4d, type: 2}
+  InnerCornerSE: {fileID: 11400000, guid: 92f134dd8ad1d5f49a3137e9d3b82bd5, type: 2}
+  InnerCornerSW: {fileID: 11400000, guid: 6caa868b556ee11489be843fcd41c1c2, type: 2}
+  TJunctionNorth: {fileID: 11400000, guid: 209dbd6b30a543a47aa423b65caf182d, type: 2}
+  TJunctionEast: {fileID: 11400000, guid: 8d2a048eac4f17642aa67ae020abac18, type: 2}
+  TJunctionSouth: {fileID: 11400000, guid: 1789047c62557fe4a8396150bce22b10, type: 2}
+  TJunctionWest: {fileID: 11400000, guid: 4e049a26a589d8743bb9e0842914abfe, type: 2}
+  Cross: {fileID: 11400000, guid: bceec2faa12fa1e45b1b5f7f8976c3e0, type: 2}
+

@@ -1,0 +1,557 @@
+[
+  {
+    "index": 1,
+    "name": "ingredient_r1_c1",
+    "source_box": [
+      49,
+      266,
+      115,
+      327
+    ],
+    "file": "E:\\UnityProject\\Unrighteous Campus\\Assets\\ExtractedDishes\\individual\\01_ingredient_r1_c1.png",
+    "size": [
+      84,
+      75
+    ]
+  },
+  {
+    "index": 2,
+    "name": "ingredient_r1_c2",
+    "source_box": [
+      115,
+      266,
+      178,
+      327
+    ],
+    "file": "E:\\UnityProject\\Unrighteous Campus\\Assets\\ExtractedDishes\\individual\\02_ingredient_r1_c2.png",
+    "size": [
+      83,
+      75
+    ]
+  },
+  {
+    "index": 3,
+    "name": "ingredient_r1_c3",
+    "source_box": [
+      178,
+      266,
+      240,
+      327
+    ],
+    "file": "E:\\UnityProject\\Unrighteous Campus\\Assets\\ExtractedDishes\\individual\\03_ingredient_r1_c3.png",
+    "size": [
+      82,
+      75
+    ]
+  },
+  {
+    "index": 4,
+    "name": "ingredient_r1_c4",
+    "source_box": [
+      240,
+      266,
+      303,
+      327
+    ],
+    "file": "E:\\UnityProject\\Unrighteous Campus\\Assets\\ExtractedDishes\\individual\\04_ingredient_r1_c4.png",
+    "size": [
+      83,
+      75
+    ]
+  },
+  {
+    "index": 5,
+    "name": "ingredient_r2_c1",
+    "source_box": [
+      49,
+      326,
+      115,
+      389
+    ],
+    "file": "E:\\UnityProject\\Unrighteous Campus\\Assets\\ExtractedDishes\\individual\\05_ingredient_r2_c1.png",
+    "size": [
+      84,
+      83
+    ]
+  },
+  {
+    "index": 6,
+    "name": "ingredient_r2_c2",
+    "source_box": [
+      115,
+      326,
+      178,
+      389
+    ],
+    "file": "E:\\UnityProject\\Unrighteous Campus\\Assets\\ExtractedDishes\\individual\\06_ingredient_r2_c2.png",
+    "size": [
+      83,
+      83
+    ]
+  },
+  {
+    "index": 7,
+    "name": "ingredient_r2_c3",
+    "source_box": [
+      178,
+      326,
+      240,
+      389
+    ],
+    "file": "E:\\UnityProject\\Unrighteous Campus\\Assets\\ExtractedDishes\\individual\\07_ingredient_r2_c3.png",
+    "size": [
+      82,
+      83
+    ]
+  },
+  {
+    "index": 8,
+    "name": "ingredient_r2_c4",
+    "source_box": [
+      240,
+      326,
+      303,
+      389
+    ],
+    "file": "E:\\UnityProject\\Unrighteous Campus\\Assets\\ExtractedDishes\\individual\\08_ingredient_r2_c4.png",
+    "size": [
+      83,
+      83
+    ]
+  },
+  {
+    "index": 9,
+    "name": "ingredient_r3_c1",
+    "source_box": [
+      49,
+      388,
+      115,
+      451
+    ],
+    "file": "E:\\UnityProject\\Unrighteous Campus\\Assets\\ExtractedDishes\\individual\\09_ingredient_r3_c1.png",
+    "size": [
+      84,
+      81
+    ]
+  },
+  {
+    "index": 10,
+    "name": "ingredient_r3_c2",
+    "source_box": [
+      115,
+      388,
+      178,
+      451
+    ],
+    "file": "E:\\UnityProject\\Unrighteous Campus\\Assets\\ExtractedDishes\\individual\\10_ingredient_r3_c2.png",
+    "size": [
+      83,
+      81
+    ]
+  },
+  {
+    "index": 11,
+    "name": "ingredient_r3_c3",
+    "source_box": [
+      178,
+      388,
+      240,
+      451
+    ],
+    "file": "E:\\UnityProject\\Unrighteous Campus\\Assets\\ExtractedDishes\\individual\\11_ingredient_r3_c3.png",
+    "size": [
+      82,
+      81
+    ]
+  },
+  {
+    "index": 12,
+    "name": "ingredient_r3_c4",
+    "source_box": [
+      240,
+      388,
+      303,
+      451
+    ],
+    "file": "E:\\UnityProject\\Unrighteous Campus\\Assets\\ExtractedDishes\\individual\\12_ingredient_r3_c4.png",
+    "size": [
+      83,
+      81
+    ]
+  },
+  {
+    "index": 13,
+    "name": "hot_tray_a_r1_c1",
+    "source_box": [
+      595,
+      280,
+      654,
+      339
+    ],
+    "file": "E:\\UnityProject\\Unrighteous Campus\\Assets\\ExtractedDishes\\individual\\13_hot_tray_a_r1_c1.png",
+    "size": [
+      73,
+      73
+    ]
+  },
+  {
+    "index": 14,
+    "name": "hot_tray_a_r1_c2",
+    "source_box": [
+      654,
+      280,
+      713,
+      339
+    ],
+    "file": "E:\\UnityProject\\Unrighteous Campus\\Assets\\ExtractedDishes\\individual\\14_hot_tray_a_r1_c2.png",
+    "size": [
+      79,
+      73
+    ]
+  },
+  {
+    "index": 15,
+    "name": "hot_tray_a_r1_c3",
+    "source_box": [
+      713,
+      280,
+      771,
+      339
+    ],
+    "file": "E:\\UnityProject\\Unrighteous Campus\\Assets\\ExtractedDishes\\individual\\15_hot_tray_a_r1_c3.png",
+    "size": [
+      70,
+      73
+    ]
+  },
+  {
+    "index": 16,
+    "name": "hot_tray_a_r2_c1",
+    "source_box": [
+      595,
+      339,
+      654,
+      398
+    ],
+    "file": "E:\\UnityProject\\Unrighteous Campus\\Assets\\ExtractedDishes\\individual\\16_hot_tray_a_r2_c1.png",
+    "size": [
+      73,
+      79
+    ]
+  },
+  {
+    "index": 17,
+    "name": "hot_tray_a_r2_c2",
+    "source_box": [
+      654,
+      339,
+      713,
+      398
+    ],
+    "file": "E:\\UnityProject\\Unrighteous Campus\\Assets\\ExtractedDishes\\individual\\17_hot_tray_a_r2_c2.png",
+    "size": [
+      79,
+      79
+    ]
+  },
+  {
+    "index": 18,
+    "name": "hot_tray_a_r2_c3",
+    "source_box": [
+      713,
+      339,
+      771,
+      398
+    ],
+    "file": "E:\\UnityProject\\Unrighteous Campus\\Assets\\ExtractedDishes\\individual\\18_hot_tray_a_r2_c3.png",
+    "size": [
+      70,
+      79
+    ]
+  },
+  {
+    "index": 19,
+    "name": "hot_tray_b_r1_c1",
+    "source_box": [
+      785,
+      280,
+      858,
+      340
+    ],
+    "file": "E:\\UnityProject\\Unrighteous Campus\\Assets\\ExtractedDishes\\individual\\19_hot_tray_b_r1_c1.png",
+    "size": [
+      88,
+      74
+    ]
+  },
+  {
+    "index": 20,
+    "name": "hot_tray_b_r1_c2",
+    "source_box": [
+      857,
+      280,
+      930,
+      340
+    ],
+    "file": "E:\\UnityProject\\Unrighteous Campus\\Assets\\ExtractedDishes\\individual\\20_hot_tray_b_r1_c2.png",
+    "size": [
+      86,
+      74
+    ]
+  },
+  {
+    "index": 21,
+    "name": "hot_tray_b_r2_c1",
+    "source_box": [
+      785,
+      339,
+      858,
+      399
+    ],
+    "file": "E:\\UnityProject\\Unrighteous Campus\\Assets\\ExtractedDishes\\individual\\21_hot_tray_b_r2_c1.png",
+    "size": [
+      88,
+      80
+    ]
+  },
+  {
+    "index": 22,
+    "name": "hot_tray_b_r2_c2",
+    "source_box": [
+      857,
+      339,
+      930,
+      399
+    ],
+    "file": "E:\\UnityProject\\Unrighteous Campus\\Assets\\ExtractedDishes\\individual\\22_hot_tray_b_r2_c2.png",
+    "size": [
+      86,
+      80
+    ]
+  },
+  {
+    "index": 23,
+    "name": "plate_dish_r1_c1",
+    "source_box": [
+      946,
+      284,
+      992,
+      340
+    ],
+    "file": "E:\\UnityProject\\Unrighteous Campus\\Assets\\ExtractedDishes\\individual\\23_plate_dish_r1_c1.png",
+    "size": [
+      60,
+      69
+    ]
+  },
+  {
+    "index": 24,
+    "name": "plate_dish_r1_c2",
+    "source_box": [
+      992,
+      284,
+      1032,
+      340
+    ],
+    "file": "E:\\UnityProject\\Unrighteous Campus\\Assets\\ExtractedDishes\\individual\\24_plate_dish_r1_c2.png",
+    "size": [
+      60,
+      69
+    ]
+  },
+  {
+    "index": 25,
+    "name": "plate_dish_r1_c3",
+    "source_box": [
+      1032,
+      284,
+      1071,
+      340
+    ],
+    "file": "E:\\UnityProject\\Unrighteous Campus\\Assets\\ExtractedDishes\\individual\\25_plate_dish_r1_c3.png",
+    "size": [
+      51,
+      69
+    ]
+  },
+  {
+    "index": 26,
+    "name": "plate_dish_r2_c1",
+    "source_box": [
+      946,
+      343,
+      992,
+      402
+    ],
+    "file": "E:\\UnityProject\\Unrighteous Campus\\Assets\\ExtractedDishes\\individual\\26_plate_dish_r2_c1.png",
+    "size": [
+      60,
+      72
+    ]
+  },
+  {
+    "index": 27,
+    "name": "plate_dish_r2_c2",
+    "source_box": [
+      992,
+      343,
+      1032,
+      402
+    ],
+    "file": "E:\\UnityProject\\Unrighteous Campus\\Assets\\ExtractedDishes\\individual\\27_plate_dish_r2_c2.png",
+    "size": [
+      60,
+      72
+    ]
+  },
+  {
+    "index": 28,
+    "name": "plate_dish_r2_c3",
+    "source_box": [
+      1032,
+      343,
+      1071,
+      402
+    ],
+    "file": "E:\\UnityProject\\Unrighteous Campus\\Assets\\ExtractedDishes\\individual\\28_plate_dish_r2_c3.png",
+    "size": [
+      51,
+      72
+    ]
+  },
+  {
+    "index": 29,
+    "name": "square_dish_r1_c1",
+    "source_box": [
+      1088,
+      285,
+      1148,
+      351
+    ],
+    "file": "E:\\UnityProject\\Unrighteous Campus\\Assets\\ExtractedDishes\\individual\\29_square_dish_r1_c1.png",
+    "size": [
+      74,
+      80
+    ]
+  },
+  {
+    "index": 30,
+    "name": "square_dish_r1_c2",
+    "source_box": [
+      1147,
+      285,
+      1206,
+      351
+    ],
+    "file": "E:\\UnityProject\\Unrighteous Campus\\Assets\\ExtractedDishes\\individual\\30_square_dish_r1_c2.png",
+    "size": [
+      71,
+      80
+    ]
+  },
+  {
+    "index": 31,
+    "name": "square_dish_r2_c1",
+    "source_box": [
+      1088,
+      350,
+      1148,
+      416
+    ],
+    "file": "E:\\UnityProject\\Unrighteous Campus\\Assets\\ExtractedDishes\\individual\\31_square_dish_r2_c1.png",
+    "size": [
+      74,
+      78
+    ]
+  },
+  {
+    "index": 32,
+    "name": "square_dish_r2_c2",
+    "source_box": [
+      1147,
+      350,
+      1206,
+      416
+    ],
+    "file": "E:\\UnityProject\\Unrighteous Campus\\Assets\\ExtractedDishes\\individual\\32_square_dish_r2_c2.png",
+    "size": [
+      72,
+      78
+    ]
+  },
+  {
+    "index": 33,
+    "name": "wok_rice",
+    "source_box": [
+      1245,
+      292,
+      1364,
+      401
+    ],
+    "file": "E:\\UnityProject\\Unrighteous Campus\\Assets\\ExtractedDishes\\individual\\33_wok_rice.png",
+    "size": [
+      139,
+      129
+    ]
+  },
+  {
+    "index": 34,
+    "name": "skewer_display_food",
+    "source_box": [
+      1400,
+      265,
+      1545,
+      444
+    ],
+    "file": "E:\\UnityProject\\Unrighteous Campus\\Assets\\ExtractedDishes\\individual\\34_skewer_display_food.png",
+    "size": [
+      159,
+      184
+    ]
+  },
+  {
+    "index": 35,
+    "name": "bakery_shelf_top",
+    "source_box": [
+      1558,
+      267,
+      1746,
+      315
+    ],
+    "file": "E:\\UnityProject\\Unrighteous Campus\\Assets\\ExtractedDishes\\individual\\35_bakery_shelf_top.png",
+    "size": [
+      202,
+      68
+    ]
+  },
+  {
+    "index": 36,
+    "name": "bakery_shelf_middle",
+    "source_box": [
+      1558,
+      313,
+      1746,
+      365
+    ],
+    "file": "E:\\UnityProject\\Unrighteous Campus\\Assets\\ExtractedDishes\\individual\\36_bakery_shelf_middle.png",
+    "size": [
+      203,
+      72
+    ]
+  },
+  {
+    "index": 37,
+    "name": "bakery_shelf_bottom",
+    "source_box": [
+      1552,
+      362,
+      1750,
+      440
+    ],
+    "file": "E:\\UnityProject\\Unrighteous Campus\\Assets\\ExtractedDishes\\individual\\37_bakery_shelf_bottom.png",
+    "size": [
+      218,
+      98
+    ]
+  }
+]

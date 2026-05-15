@@ -1,0 +1,232 @@
+using System;
+using UnityEngine;
+
+namespace NtingCampusMapEditor
+{
+    public static class CampusInteractionAnchorDefaults
+    {
+        private const string AnchorRootName = "\u4ea4\u4e92\u951a\u70b9";
+        private const string GenericAnchorName = "\u9ed8\u8ba4\u4ea4\u4e92";
+        private const string SeatPromptText = "\u5750\u4e0b";
+        private const string InteractPromptText = "\u4ea4\u4e92";
+
+        public static void EnsureDefaultAnchors(CampusPlacedObject placedObject)
+        {
+            if (placedObject == null)
+            {
+                return;
+            }
+
+            if (placedObject.UseCustomInteractionAnchor)
+            {
+                return;
+            }
+
+            string displayName = ResolveDisplayName(placedObject);
+            if (MatchesObject(placedObject, displayName, CampusObjectNames.DiningTable, CampusObjectNames.LegacyDiningTable))
+            {
+                placedObject.IsInteractable = true;
+                EnsureDiningTableAnchors(placedObject);
+                return;
+            }
+
+            if (!placedObject.IsInteractable)
+            {
+                return;
+            }
+
+            MonoBehaviour target = FindInteractionTarget(placedObject, null);
+            string actionId = target != null ? CampusInteractionActionIds.InteractTarget : CampusInteractionActionIds.Log;
+            Vector3 fallbackPosition = ResolveColliderTopLocal(placedObject.transform, FindPrimaryCollider(placedObject), Vector3.zero);
+            EnsureAnchor(
+                placedObject,
+                GenericAnchorName,
+                fallbackPosition,
+                0.65f,
+                InteractPromptText + " " + displayName,
+                target,
+                actionId,
+                string.Empty,
+                110,
+                false,
+                null);
+        }
+
+        private static void EnsureDiningTableAnchors(CampusPlacedObject placedObject)
+        {
+            EnsureAnchor(placedObject, "\u5ea7\u4f4d_\u5de6_1", new Vector3(-1.35f, -1.2f, 0f), 0.42f, SeatPromptText, null, CampusInteractionActionIds.Log, string.Empty, 130, false, "\u5750\u4e0b " + CampusObjectNames.DiningTable);
+            EnsureAnchor(placedObject, "\u5ea7\u4f4d_\u5de6_2", new Vector3(-1.35f, 0f, 0f), 0.42f, SeatPromptText, null, CampusInteractionActionIds.Log, string.Empty, 130, false, "\u5750\u4e0b " + CampusObjectNames.DiningTable);
+            EnsureAnchor(placedObject, "\u5ea7\u4f4d_\u5de6_3", new Vector3(-1.35f, 1.2f, 0f), 0.42f, SeatPromptText, null, CampusInteractionActionIds.Log, string.Empty, 130, false, "\u5750\u4e0b " + CampusObjectNames.DiningTable);
+            EnsureAnchor(placedObject, "\u5ea7\u4f4d_\u53f3_1", new Vector3(1.35f, -1.2f, 0f), 0.42f, SeatPromptText, null, CampusInteractionActionIds.Log, string.Empty, 130, false, "\u5750\u4e0b " + CampusObjectNames.DiningTable);
+            EnsureAnchor(placedObject, "\u5ea7\u4f4d_\u53f3_2", new Vector3(1.35f, 0f, 0f), 0.42f, SeatPromptText, null, CampusInteractionActionIds.Log, string.Empty, 130, false, "\u5750\u4e0b " + CampusObjectNames.DiningTable);
+            EnsureAnchor(placedObject, "\u5ea7\u4f4d_\u53f3_3", new Vector3(1.35f, 1.2f, 0f), 0.42f, SeatPromptText, null, CampusInteractionActionIds.Log, string.Empty, 130, false, "\u5750\u4e0b " + CampusObjectNames.DiningTable);
+        }
+
+        private static CampusInteractionAnchor EnsureAnchor(
+            CampusPlacedObject placedObject,
+            string anchorName,
+            Vector3 localPosition,
+            float radius,
+            string promptText,
+            MonoBehaviour target,
+            string actionId,
+            string payload,
+            int priority,
+            bool useDoorStatePrompt,
+            string logMessage)
+        {
+            Transform root = EnsureAnchorRoot(placedObject);
+            Transform anchorTransform = root.Find(anchorName);
+            if (anchorTransform == null)
+            {
+                GameObject anchorObject = new GameObject(anchorName);
+                anchorObject.layer = placedObject.gameObject.layer;
+                anchorObject.transform.SetParent(root, false);
+                anchorTransform = anchorObject.transform;
+            }
+
+            anchorTransform.gameObject.layer = placedObject.gameObject.layer;
+            anchorTransform.localPosition = localPosition;
+            anchorTransform.localRotation = Quaternion.identity;
+            anchorTransform.localScale = Vector3.one;
+
+            CircleCollider2D collider = anchorTransform.GetComponent<CircleCollider2D>();
+            if (collider == null)
+            {
+                collider = anchorTransform.gameObject.AddComponent<CircleCollider2D>();
+            }
+
+            collider.isTrigger = true;
+            collider.offset = Vector2.zero;
+            collider.radius = CampusPlacedObject.NormalizeInteractionAnchorRadius(radius);
+
+            CampusInteractionAnchor anchor = anchorTransform.GetComponent<CampusInteractionAnchor>();
+            if (anchor == null)
+            {
+                anchor = anchorTransform.gameObject.AddComponent<CampusInteractionAnchor>();
+            }
+
+            anchor.InteractionTarget = target;
+            anchor.ActionId = CampusInteractionActionIds.Normalize(actionId);
+            anchor.Payload = payload;
+            anchor.PromptAnchor = anchorTransform;
+            anchor.PromptText = promptText;
+            anchor.KeyOverride = string.Empty;
+            anchor.Icon = null;
+            anchor.AccentColor = new Color(0.95f, 0.82f, 0.38f, 1f);
+            anchor.Priority = priority;
+            anchor.IsAvailable = true;
+            anchor.UnavailableText = string.Empty;
+            anchor.HideWhenUnavailable = false;
+            anchor.UseTargetDoorStatePrompt = useDoorStatePrompt;
+            anchor.LogInteraction = CampusInteractionActionIds.Equals(actionId, CampusInteractionActionIds.Log);
+            anchor.InteractionLogMessage = logMessage;
+            return anchor;
+        }
+
+        private static Transform EnsureAnchorRoot(CampusPlacedObject placedObject)
+        {
+            Transform root = placedObject.transform.Find(AnchorRootName);
+            if (root != null)
+            {
+                return root;
+            }
+
+            GameObject rootObject = new GameObject(AnchorRootName);
+            rootObject.layer = placedObject.gameObject.layer;
+            rootObject.transform.SetParent(placedObject.transform, false);
+            rootObject.transform.localPosition = Vector3.zero;
+            rootObject.transform.localRotation = Quaternion.identity;
+            rootObject.transform.localScale = Vector3.one;
+            return rootObject.transform;
+        }
+
+        private static string ResolveDisplayName(CampusPlacedObject placedObject)
+        {
+            if (!string.IsNullOrWhiteSpace(placedObject.DisplayNameOverride))
+            {
+                return placedObject.DisplayNameOverride.Trim();
+            }
+
+            if (!string.IsNullOrWhiteSpace(placedObject.ObjectId))
+            {
+                return CampusObjectNames.GetDisplayName(placedObject.ObjectId);
+            }
+
+            return CampusObjectNames.GetDisplayName(placedObject.gameObject.name);
+        }
+
+        private static bool MatchesObject(CampusPlacedObject placedObject, string displayName, params string[] names)
+        {
+            return CampusObjectNames.MatchesAny(displayName, names) ||
+                   CampusObjectNames.MatchesAny(placedObject.ObjectId, names) ||
+                   CampusObjectNames.MatchesAny(placedObject.gameObject.name, names);
+        }
+
+        private static MonoBehaviour FindInteractionTarget(CampusPlacedObject placedObject, Type preferredType)
+        {
+            MonoBehaviour fallback = null;
+            MonoBehaviour[] behaviours = placedObject.GetComponentsInChildren<MonoBehaviour>(true);
+            for (int i = 0; i < behaviours.Length; i++)
+            {
+                MonoBehaviour behaviour = behaviours[i];
+                if (behaviour == null ||
+                    behaviour is CampusInteractionAnchor ||
+                    behaviour is CampusSimpleInteractable ||
+                    !(behaviour is ICampusInteractable))
+                {
+                    continue;
+                }
+
+                if (preferredType == null || preferredType.IsInstanceOfType(behaviour))
+                {
+                    return behaviour;
+                }
+
+                if (fallback == null)
+                {
+                    fallback = behaviour;
+                }
+            }
+
+            return fallback;
+        }
+
+        private static Collider2D FindPrimaryCollider(CampusPlacedObject placedObject)
+        {
+            Collider2D fallback = null;
+            Collider2D[] colliders = placedObject.GetComponentsInChildren<Collider2D>(true);
+            for (int i = 0; i < colliders.Length; i++)
+            {
+                Collider2D collider = colliders[i];
+                if (collider == null || collider.GetComponent<CampusInteractionAnchor>() != null)
+                {
+                    continue;
+                }
+
+                if (!collider.isTrigger)
+                {
+                    return collider;
+                }
+
+                if (fallback == null)
+                {
+                    fallback = collider;
+                }
+            }
+
+            return fallback;
+        }
+
+        private static Vector3 ResolveColliderTopLocal(Transform owner, Collider2D collider, Vector3 fallback)
+        {
+            if (owner == null || collider == null)
+            {
+                return fallback;
+            }
+
+            Bounds bounds = collider.bounds;
+            return owner.InverseTransformPoint(new Vector3(bounds.center.x, bounds.max.y, bounds.center.z));
+        }
+    }
+}

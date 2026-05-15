@@ -1,0 +1,32 @@
+﻿{
+    "ObjectId": "Chair_1x2",
+    "DisplayNameOverride": "",
+    "OverrideFootprintSize": true,
+    "FootprintSize": {
+        "x": 2,
+        "y": 1
+    },
+    "VisualScale": {
+        "x": 0.6119999885559082,
+        "y": 0.6119999885559082
+    },
+    "LockVisualScaleAspect": true,
+    "OverrideAllowRotation": false,
+    "AllowRotation": false,
+    "OverrideRotation0Sprite": false,
+    "Rotation0SpritePath": "",
+    "OverrideRotation90Sprite": false,
+    "Rotation90SpritePath": "",
+    "OverrideRotation180Sprite": false,
+    "Rotation180SpritePath": "",
+    "OverrideRotation270Sprite": false,
+    "Rotation270SpritePath": "",
+    "UseCustomInteractionAnchor": true,
+    "CustomInteractionAnchorLocalPosition": {
+        "x": -0.7666666507720947,
+        "y": -0.2083333283662796,
+        "z": 0.0
+    },
+    "CustomInteractionAnchorRadius": 0.6499999761581421,
+    "CustomInteractionPromptText": "交互"
+}

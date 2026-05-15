@@ -1,0 +1,23 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 55c32157af07cf549a2265e998b33df2, type: 3}
+  m_Name: Locker_Default
+  m_EditorClassIdentifier: 
+  containerId: locker_default
+  displayName: "\u50A8\u7269\u67DC"
+  width: 6
+  height: 6
+  containerType: 3
+  isPortable: 0
+  searchExposure: 0.6
+  accessSpeed: 0.5
+  maxWeight: 40
