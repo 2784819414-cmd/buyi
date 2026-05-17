@@ -13,6 +13,7 @@ namespace NtingCampus.Gameplay.Characters
         [SerializeField] private CampusLocalizedText localizedDisplayName = default;
         [SerializeField] private CampusCharacterRole role = CampusCharacterRole.Student;
         [SerializeField] private CampusTeacherDuty teacherDuty = CampusTeacherDuty.None;
+        [SerializeField] private CampusStaffDuty staffDuty = CampusStaffDuty.None;
         [SerializeField] private string classId = "class_1";
         [SerializeField] private CampusCharacterState initialState = CampusCharacterState.Normal;
         [SerializeField] private bool isPlayerControlled = false;
@@ -37,7 +38,8 @@ namespace NtingCampus.Gameplay.Characters
                 isPlayerControlled,
                 sleepiness,
                 mischief,
-                traits);
+                traits,
+                staffDuty);
             return data;
         }
 

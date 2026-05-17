@@ -1,262 +1,434 @@
-{
-  "Schema": "NtingCampusGameplayOverlay.v1",
-  "MapName": "CampusMap_1",
-  "Actors": [
-    {
-      "Id": "player_lixiaonao",
-      "DisplayName": "LiXiaonao",
-      "LocalizedDisplayName": { "chinese": "\u674e\u5c0f\u95f9", "english": "LiXiaonao" },
-      "Role": 0,
-      "TeacherDuty": 0,
-      "ClassId": "class_1",
-      "InitialState": 0,
-      "IsPlayerControlled": true,
-      "FloorIndex": 1,
-      "Cell": { "x": -2, "y": -18, "z": 0 },
-      "Sleepiness": 25,
-      "Mischief": 35,
-      "Traits": [ 2 ]
-    },
-    {
-      "Id": "student_sunxiaotao",
-      "DisplayName": "SunXiaotao",
-      "LocalizedDisplayName": { "chinese": "\u5b59\u5c0f\u6843", "english": "SunXiaotao" },
-      "Role": 0,
-      "TeacherDuty": 0,
-      "ClassId": "class_1",
-      "InitialState": 0,
-      "IsPlayerControlled": false,
-      "FloorIndex": 1,
-      "Cell": { "x": -1, "y": -18, "z": 0 },
-      "Sleepiness": 20,
-      "Mischief": 30,
-      "Traits": [ 3 ]
-    },
-    {
-      "Id": "student_qiaomianmian",
-      "DisplayName": "QiaoMianmian",
-      "LocalizedDisplayName": { "chinese": "\u4e54\u7ef5\u7ef5", "english": "QiaoMianmian" },
-      "Role": 0,
-      "TeacherDuty": 0,
-      "ClassId": "class_1",
-      "InitialState": 0,
-      "IsPlayerControlled": false,
-      "FloorIndex": 1,
-      "Cell": { "x": 0, "y": -18, "z": 0 },
-      "Sleepiness": 45,
-      "Mischief": 18,
-      "Traits": [ 4 ]
-    },
-    {
-      "Id": "student_xuaiying",
-      "DisplayName": "XuAiying",
-      "LocalizedDisplayName": { "chinese": "\u5f90\u7231\u82f1", "english": "XuAiying" },
-      "Role": 0,
-      "TeacherDuty": 0,
-      "ClassId": "class_1",
-      "InitialState": 0,
-      "IsPlayerControlled": false,
-      "FloorIndex": 1,
-      "Cell": { "x": 1, "y": -18, "z": 0 },
-      "Sleepiness": 62,
-      "Mischief": 14,
-      "Traits": [ 1 ]
-    },
-    {
-      "Id": "student_luowan",
-      "DisplayName": "LuoWan",
-      "LocalizedDisplayName": { "chinese": "\u7f57\u665a", "english": "LuoWan" },
-      "Role": 0,
-      "TeacherDuty": 0,
-      "ClassId": "class_2",
-      "InitialState": 0,
-      "IsPlayerControlled": false,
-      "FloorIndex": 1,
-      "Cell": { "x": 2, "y": -18, "z": 0 },
-      "Sleepiness": 28,
-      "Mischief": 68,
-      "Traits": [ 2 ]
-    },
-    {
-      "Id": "student_shenmeng",
-      "DisplayName": "ShenMeng",
-      "LocalizedDisplayName": { "chinese": "\u6c88\u68a6", "english": "ShenMeng" },
-      "Role": 0,
-      "TeacherDuty": 0,
-      "ClassId": "class_2",
-      "InitialState": 0,
-      "IsPlayerControlled": false,
-      "FloorIndex": 1,
-      "Cell": { "x": -2, "y": -17, "z": 0 },
-      "Sleepiness": 35,
-      "Mischief": 22,
-      "Traits": [ 0 ]
-    },
-    {
-      "Id": "student_heyulu",
-      "DisplayName": "HeYulu",
-      "LocalizedDisplayName": { "chinese": "\u4f55\u96e8\u9732", "english": "HeYulu" },
-      "Role": 0,
-      "TeacherDuty": 0,
-      "ClassId": "class_2",
-      "InitialState": 0,
-      "IsPlayerControlled": false,
-      "FloorIndex": 1,
-      "Cell": { "x": -1, "y": -17, "z": 0 },
-      "Sleepiness": 50,
-      "Mischief": 25,
-      "Traits": [ 1 ]
-    },
-    {
-      "Id": "student_zhouxin",
-      "DisplayName": "ZhouXin",
-      "LocalizedDisplayName": { "chinese": "\u5468\u6b23", "english": "ZhouXin" },
-      "Role": 0,
-      "TeacherDuty": 0,
-      "ClassId": "class_2",
-      "InitialState": 0,
-      "IsPlayerControlled": false,
-      "FloorIndex": 1,
-      "Cell": { "x": 0, "y": -17, "z": 0 },
-      "Sleepiness": 24,
-      "Mischief": 44,
-      "Traits": [ 2 ]
-    },
-    {
-      "Id": "student_pengzihao",
-      "DisplayName": "PengZihao",
-      "LocalizedDisplayName": { "chinese": "\u5f6d\u5b50\u8c6a", "english": "PengZihao" },
-      "Role": 0,
-      "TeacherDuty": 0,
-      "ClassId": "class_2",
-      "InitialState": 0,
-      "IsPlayerControlled": false,
-      "FloorIndex": 1,
-      "Cell": { "x": 1, "y": -17, "z": 0 },
-      "Sleepiness": 22,
-      "Mischief": 12,
-      "Traits": [ 3 ]
-    },
-    {
-      "Id": "student_linshuang",
-      "DisplayName": "LinShuang",
-      "LocalizedDisplayName": { "chinese": "\u6797\u971c", "english": "LinShuang" },
-      "Role": 0,
-      "TeacherDuty": 0,
-      "ClassId": "class_3",
-      "InitialState": 0,
-      "IsPlayerControlled": false,
-      "FloorIndex": 1,
-      "Cell": { "x": 2, "y": -17, "z": 0 },
-      "Sleepiness": 40,
-      "Mischief": 20,
-      "Traits": [ 4 ]
-    },
-    {
-      "Id": "student_tangyue",
-      "DisplayName": "TangYue",
-      "LocalizedDisplayName": { "chinese": "\u5510\u6708", "english": "TangYue" },
-      "Role": 0,
-      "TeacherDuty": 0,
-      "ClassId": "class_3",
-      "InitialState": 0,
-      "IsPlayerControlled": false,
-      "FloorIndex": 1,
-      "Cell": { "x": -2, "y": -16, "z": 0 },
-      "Sleepiness": 31,
-      "Mischief": 26,
-      "Traits": [ 0 ]
-    },
-    {
-      "Id": "student_wuyan",
-      "DisplayName": "WuYan",
-      "LocalizedDisplayName": { "chinese": "\u5434\u598d", "english": "WuYan" },
-      "Role": 0,
-      "TeacherDuty": 0,
-      "ClassId": "class_3",
-      "InitialState": 0,
-      "IsPlayerControlled": false,
-      "FloorIndex": 1,
-      "Cell": { "x": -1, "y": -16, "z": 0 },
-      "Sleepiness": 66,
-      "Mischief": 16,
-      "Traits": [ 1 ]
-    },
-    {
-      "Id": "student_gaojin",
-      "DisplayName": "GaoJin",
-      "LocalizedDisplayName": { "chinese": "\u9ad8\u664b", "english": "GaoJin" },
-      "Role": 0,
-      "TeacherDuty": 0,
-      "ClassId": "class_3",
-      "InitialState": 0,
-      "IsPlayerControlled": false,
-      "FloorIndex": 1,
-      "Cell": { "x": 0, "y": -16, "z": 0 },
-      "Sleepiness": 19,
-      "Mischief": 58,
-      "Traits": [ 2 ]
-    },
-    {
-      "Id": "student_cenya",
-      "DisplayName": "CenYa",
-      "LocalizedDisplayName": { "chinese": "\u5c91\u96c5", "english": "CenYa" },
-      "Role": 0,
-      "TeacherDuty": 0,
-      "ClassId": "class_3",
-      "InitialState": 0,
-      "IsPlayerControlled": false,
-      "FloorIndex": 1,
-      "Cell": { "x": 1, "y": -16, "z": 0 },
-      "Sleepiness": 18,
-      "Mischief": 14,
-      "Traits": [ 3 ]
-    },
-    {
-      "Id": "teacher_linyuwen",
-      "DisplayName": "LinYuwen",
-      "LocalizedDisplayName": { "chinese": "\u6797\u8bed\u6587", "english": "LinYuwen" },
-      "Role": 1,
-      "TeacherDuty": 1,
-      "ClassId": "class_1",
-      "InitialState": 0,
-      "IsPlayerControlled": false,
-      "FloorIndex": 1,
-      "Cell": { "x": 2, "y": -16, "z": 0 },
-      "Sleepiness": 8,
-      "Mischief": 0,
-      "Traits": [ 0 ]
-    },
-    {
-      "Id": "teacher_zhouxin",
-      "DisplayName": "ZhouXinTeacher",
-      "LocalizedDisplayName": { "chinese": "\u5468\u6b23\u8001\u5e08", "english": "ZhouXinTeacher" },
-      "Role": 1,
-      "TeacherDuty": 10,
-      "ClassId": "class_2",
-      "InitialState": 0,
-      "IsPlayerControlled": false,
-      "FloorIndex": 1,
-      "Cell": { "x": -2, "y": -15, "z": 0 },
-      "Sleepiness": 10,
-      "Mischief": 0,
-      "Traits": [ 0 ]
-    },
-    {
-      "Id": "teacher_suqin",
-      "DisplayName": "SuQin",
-      "LocalizedDisplayName": { "chinese": "\u82cf\u7434", "english": "SuQin" },
-      "Role": 1,
-      "TeacherDuty": 5,
-      "ClassId": "class_3",
-      "InitialState": 0,
-      "IsPlayerControlled": false,
-      "FloorIndex": 1,
-      "Cell": { "x": 0, "y": -15, "z": 0 },
-      "Sleepiness": 12,
-      "Mischief": 0,
-      "Traits": [ 0 ]
-    }
-  ],
-  "Facilities": []
+﻿{
+    "Schema": "NtingCampusGameplayOverlay.v1",
+    "MapName": "校园地图根节点",
+    "Actors": [
+        {
+            "Id": "player_lixiaonao",
+            "DisplayName": "LiXiaonao",
+            "LocalizedDisplayName": {
+                "chinese": "李小闹",
+                "english": "LiXiaonao"
+            },
+            "Role": 0,
+            "TeacherDuty": 0,
+            "StaffDuty": 0,
+            "ClassId": "class_1",
+            "InitialState": 0,
+            "IsPlayerControlled": true,
+            "FloorIndex": 1,
+            "Cell": {
+                "x": -2,
+                "y": -18,
+                "z": 0
+            },
+            "Sleepiness": 25,
+            "Mischief": 35,
+            "Traits": [
+                2
+            ]
+        },
+        {
+            "Id": "student_sunxiaotao",
+            "DisplayName": "SunXiaotao",
+            "LocalizedDisplayName": {
+                "chinese": "孙小桃",
+                "english": "SunXiaotao"
+            },
+            "Role": 0,
+            "TeacherDuty": 0,
+            "StaffDuty": 0,
+            "ClassId": "class_1",
+            "InitialState": 0,
+            "IsPlayerControlled": false,
+            "FloorIndex": 1,
+            "Cell": {
+                "x": -1,
+                "y": -18,
+                "z": 0
+            },
+            "Sleepiness": 20,
+            "Mischief": 30,
+            "Traits": [
+                3
+            ]
+        },
+        {
+            "Id": "student_qiaomianmian",
+            "DisplayName": "QiaoMianmian",
+            "LocalizedDisplayName": {
+                "chinese": "乔绵绵",
+                "english": "QiaoMianmian"
+            },
+            "Role": 0,
+            "TeacherDuty": 0,
+            "StaffDuty": 0,
+            "ClassId": "class_1",
+            "InitialState": 0,
+            "IsPlayerControlled": false,
+            "FloorIndex": 1,
+            "Cell": {
+                "x": 0,
+                "y": -18,
+                "z": 0
+            },
+            "Sleepiness": 45,
+            "Mischief": 18,
+            "Traits": [
+                4
+            ]
+        },
+        {
+            "Id": "student_xuaiying",
+            "DisplayName": "XuAiying",
+            "LocalizedDisplayName": {
+                "chinese": "徐爱英",
+                "english": "XuAiying"
+            },
+            "Role": 0,
+            "TeacherDuty": 0,
+            "StaffDuty": 0,
+            "ClassId": "class_1",
+            "InitialState": 0,
+            "IsPlayerControlled": false,
+            "FloorIndex": 1,
+            "Cell": {
+                "x": 1,
+                "y": -18,
+                "z": 0
+            },
+            "Sleepiness": 62,
+            "Mischief": 14,
+            "Traits": [
+                1
+            ]
+        },
+        {
+            "Id": "student_luowan",
+            "DisplayName": "LuoWan",
+            "LocalizedDisplayName": {
+                "chinese": "罗晚",
+                "english": "LuoWan"
+            },
+            "Role": 0,
+            "TeacherDuty": 0,
+            "StaffDuty": 0,
+            "ClassId": "class_2",
+            "InitialState": 0,
+            "IsPlayerControlled": false,
+            "FloorIndex": 1,
+            "Cell": {
+                "x": 2,
+                "y": -18,
+                "z": 0
+            },
+            "Sleepiness": 28,
+            "Mischief": 68,
+            "Traits": [
+                2
+            ]
+        },
+        {
+            "Id": "student_shenmeng",
+            "DisplayName": "ShenMeng",
+            "LocalizedDisplayName": {
+                "chinese": "沈梦",
+                "english": "ShenMeng"
+            },
+            "Role": 0,
+            "TeacherDuty": 0,
+            "StaffDuty": 0,
+            "ClassId": "class_2",
+            "InitialState": 0,
+            "IsPlayerControlled": false,
+            "FloorIndex": 1,
+            "Cell": {
+                "x": -2,
+                "y": -17,
+                "z": 0
+            },
+            "Sleepiness": 35,
+            "Mischief": 22,
+            "Traits": [
+                0
+            ]
+        },
+        {
+            "Id": "student_heyulu",
+            "DisplayName": "HeYulu",
+            "LocalizedDisplayName": {
+                "chinese": "何雨露",
+                "english": "HeYulu"
+            },
+            "Role": 0,
+            "TeacherDuty": 0,
+            "StaffDuty": 0,
+            "ClassId": "class_2",
+            "InitialState": 0,
+            "IsPlayerControlled": false,
+            "FloorIndex": 1,
+            "Cell": {
+                "x": -1,
+                "y": -17,
+                "z": 0
+            },
+            "Sleepiness": 50,
+            "Mischief": 25,
+            "Traits": [
+                1
+            ]
+        },
+        {
+            "Id": "student_zhouxin",
+            "DisplayName": "ZhouXin",
+            "LocalizedDisplayName": {
+                "chinese": "周欣",
+                "english": "ZhouXin"
+            },
+            "Role": 0,
+            "TeacherDuty": 0,
+            "StaffDuty": 0,
+            "ClassId": "class_2",
+            "InitialState": 0,
+            "IsPlayerControlled": false,
+            "FloorIndex": 1,
+            "Cell": {
+                "x": 0,
+                "y": -17,
+                "z": 0
+            },
+            "Sleepiness": 24,
+            "Mischief": 44,
+            "Traits": [
+                2
+            ]
+        },
+        {
+            "Id": "student_pengzihao",
+            "DisplayName": "PengZihao",
+            "LocalizedDisplayName": {
+                "chinese": "彭子豪",
+                "english": "PengZihao"
+            },
+            "Role": 0,
+            "TeacherDuty": 0,
+            "StaffDuty": 0,
+            "ClassId": "class_2",
+            "InitialState": 0,
+            "IsPlayerControlled": false,
+            "FloorIndex": 1,
+            "Cell": {
+                "x": 1,
+                "y": -17,
+                "z": 0
+            },
+            "Sleepiness": 22,
+            "Mischief": 12,
+            "Traits": [
+                3
+            ]
+        },
+        {
+            "Id": "student_linshuang",
+            "DisplayName": "LinShuang",
+            "LocalizedDisplayName": {
+                "chinese": "林霜",
+                "english": "LinShuang"
+            },
+            "Role": 0,
+            "TeacherDuty": 0,
+            "StaffDuty": 0,
+            "ClassId": "class_3",
+            "InitialState": 0,
+            "IsPlayerControlled": false,
+            "FloorIndex": 1,
+            "Cell": {
+                "x": 2,
+                "y": -17,
+                "z": 0
+            },
+            "Sleepiness": 40,
+            "Mischief": 20,
+            "Traits": [
+                4
+            ]
+        },
+        {
+            "Id": "student_tangyue",
+            "DisplayName": "TangYue",
+            "LocalizedDisplayName": {
+                "chinese": "唐月",
+                "english": "TangYue"
+            },
+            "Role": 0,
+            "TeacherDuty": 0,
+            "StaffDuty": 0,
+            "ClassId": "class_3",
+            "InitialState": 0,
+            "IsPlayerControlled": false,
+            "FloorIndex": 1,
+            "Cell": {
+                "x": -2,
+                "y": -16,
+                "z": 0
+            },
+            "Sleepiness": 31,
+            "Mischief": 26,
+            "Traits": [
+                0
+            ]
+        },
+        {
+            "Id": "student_wuyan",
+            "DisplayName": "WuYan",
+            "LocalizedDisplayName": {
+                "chinese": "吴妍",
+                "english": "WuYan"
+            },
+            "Role": 0,
+            "TeacherDuty": 0,
+            "StaffDuty": 0,
+            "ClassId": "class_3",
+            "InitialState": 0,
+            "IsPlayerControlled": false,
+            "FloorIndex": 1,
+            "Cell": {
+                "x": -1,
+                "y": -16,
+                "z": 0
+            },
+            "Sleepiness": 66,
+            "Mischief": 16,
+            "Traits": [
+                1
+            ]
+        },
+        {
+            "Id": "student_gaojin",
+            "DisplayName": "GaoJin",
+            "LocalizedDisplayName": {
+                "chinese": "高晋",
+                "english": "GaoJin"
+            },
+            "Role": 0,
+            "TeacherDuty": 0,
+            "StaffDuty": 0,
+            "ClassId": "class_3",
+            "InitialState": 0,
+            "IsPlayerControlled": false,
+            "FloorIndex": 1,
+            "Cell": {
+                "x": 0,
+                "y": -16,
+                "z": 0
+            },
+            "Sleepiness": 19,
+            "Mischief": 58,
+            "Traits": [
+                2
+            ]
+        },
+        {
+            "Id": "student_cenya",
+            "DisplayName": "CenYa",
+            "LocalizedDisplayName": {
+                "chinese": "岑雅",
+                "english": "CenYa"
+            },
+            "Role": 0,
+            "TeacherDuty": 0,
+            "StaffDuty": 0,
+            "ClassId": "class_3",
+            "InitialState": 0,
+            "IsPlayerControlled": false,
+            "FloorIndex": 1,
+            "Cell": {
+                "x": 1,
+                "y": -16,
+                "z": 0
+            },
+            "Sleepiness": 18,
+            "Mischief": 14,
+            "Traits": [
+                3
+            ]
+        },
+        {
+            "Id": "teacher_linyuwen",
+            "DisplayName": "LinYuwen",
+            "LocalizedDisplayName": {
+                "chinese": "林语文",
+                "english": "LinYuwen"
+            },
+            "Role": 1,
+            "TeacherDuty": 1,
+            "StaffDuty": 0,
+            "ClassId": "class_1",
+            "InitialState": 0,
+            "IsPlayerControlled": false,
+            "FloorIndex": 1,
+            "Cell": {
+                "x": 2,
+                "y": -16,
+                "z": 0
+            },
+            "Sleepiness": 8,
+            "Mischief": 0,
+            "Traits": [
+                0
+            ]
+        },
+        {
+            "Id": "teacher_zhouxin",
+            "DisplayName": "ZhouXinTeacher",
+            "LocalizedDisplayName": {
+                "chinese": "周欣老师",
+                "english": "ZhouXinTeacher"
+            },
+            "Role": 1,
+            "TeacherDuty": 10,
+            "StaffDuty": 0,
+            "ClassId": "class_2",
+            "InitialState": 0,
+            "IsPlayerControlled": false,
+            "FloorIndex": 1,
+            "Cell": {
+                "x": -2,
+                "y": -15,
+                "z": 0
+            },
+            "Sleepiness": 10,
+            "Mischief": 0,
+            "Traits": [
+                0
+            ]
+        },
+        {
+            "Id": "teacher_suqin",
+            "DisplayName": "SuQin",
+            "LocalizedDisplayName": {
+                "chinese": "苏琴",
+                "english": "SuQin"
+            },
+            "Role": 1,
+            "TeacherDuty": 5,
+            "StaffDuty": 0,
+            "ClassId": "class_3",
+            "InitialState": 0,
+            "IsPlayerControlled": false,
+            "FloorIndex": 1,
+            "Cell": {
+                "x": 0,
+                "y": -15,
+                "z": 0
+            },
+            "Sleepiness": 12,
+            "Mischief": 0,
+            "Traits": [
+                0
+            ]
+        }
+    ],
+    "Rooms": [],
+    "Facilities": [],
+    "PrankSpots": []
 }

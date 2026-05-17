@@ -118,7 +118,7 @@ namespace Nting.Storage
                 return;
             }
 
-            window.SelectItem(item);
+            window.SelectItem(item, ownerGrid);
             if (eventData.clickCount >= 2)
             {
                 window.TryQuickTransfer(this);

@@ -39,6 +39,35 @@ namespace NtingCampus.Gameplay.Pranks
         private CampusGameBootstrap bootstrap;
         private CampusPrankService prankService;
 
+        public string DisplayName => displayName;
+        public string PrankPayload => prankPayload;
+        public CampusRoomType RequiredRoomType => requiredRoomType;
+        public CampusPrankSpotVisualKind VisualKind => visualKind;
+        public float InteractionRadius => Mathf.Max(0.1f, interactionRadius);
+        public Color AccentColor => accentColor;
+        public string UnsupportedReason => unsupportedReason;
+
+        public void Configure(
+            string targetDisplayName,
+            string payload,
+            CampusRoomType roomType,
+            CampusPrankSpotVisualKind targetVisualKind,
+            float radius,
+            Color targetAccentColor,
+            string unavailableText)
+        {
+            displayName = string.IsNullOrWhiteSpace(targetDisplayName) ? "Prank Spot" : targetDisplayName.Trim();
+            prankPayload = string.IsNullOrWhiteSpace(payload) ? CampusPrankPayloadIds.PassNote : payload.Trim();
+            requiredRoomType = roomType;
+            visualKind = targetVisualKind;
+            interactionRadius = Mathf.Max(0.1f, radius);
+            accentColor = targetAccentColor;
+            unsupportedReason = string.IsNullOrWhiteSpace(unavailableText)
+                ? "This formal prank is not implemented yet."
+                : unavailableText.Trim();
+            EnsureSetup();
+        }
+
         private void Awake()
         {
             EnsureSetup();

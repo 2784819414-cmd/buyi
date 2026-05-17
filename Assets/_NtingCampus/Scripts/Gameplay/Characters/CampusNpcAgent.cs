@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using NtingCampus.Gameplay.Core;
 using NtingCampus.Gameplay.Events;
+using NtingCampus.Gameplay.Pranks;
 using NtingCampus.Gameplay.Rooms;
 using NtingCampus.Gameplay.Schedule;
 using NtingCampus.Gameplay.UI;
@@ -35,8 +36,8 @@ namespace NtingCampus.Gameplay.Characters
         [SerializeField] private Transform speechAnchor;
         [SerializeField] private CampusCharacterBodyController bodyController;
         [SerializeField] private bool speechBubbleBound;
-        [SerializeField, Min(0.2f)] private float walkSpeed = 0.95f;
-        [SerializeField, Min(0.1f)] private float retargetIntervalSeconds = 0.22f;
+        [SerializeField, Min(0.2f)] private float walkSpeed = 1.35f;
+        [SerializeField, Min(0.1f)] private float retargetIntervalSeconds = 0.16f;
         [SerializeField, Min(1f)] private float minAmbientSpeechSeconds = 4f;
         [SerializeField, Min(2f)] private float maxAmbientSpeechSeconds = 8f;
         [SerializeField, Min(0.2f)] private float patrolStride = 0.65f;
@@ -44,7 +45,7 @@ namespace NtingCampus.Gameplay.Characters
         [SerializeField, Min(0f)] private float separationRadius = 0.86f;
         [SerializeField, Min(0f)] private float separationStrength = 1.15f;
         [SerializeField, Range(0f, 0.35f)] private float personalSpeedVariance = 0.16f;
-        [SerializeField, Min(0.15f)] private float pathReplanIntervalSeconds = 0.85f;
+        [SerializeField, Min(0.15f)] private float pathReplanIntervalSeconds = 0.55f;
         [SerializeField, Min(0f)] private float waypointArrivalDistance = 0.16f;
         [SerializeField, Min(0.2f)] private float npcCollisionRefreshSeconds = 0.9f;
         [SerializeField, Min(0.5f)] private float npcDoorCloseDelaySeconds = 2.4f;
@@ -519,8 +520,20 @@ namespace NtingCampus.Gameplay.Characters
                 return directive ?? new CampusCharacterTaskDirective();
             }
 
+            CampusPrankService prankService = bootstrap != null ? bootstrap.PrankService : null;
+            if (prankService != null &&
+                prankService.TryBuildDeliveryOwnerDirective(runtime, out CampusCharacterTaskDirective deliveryDirective))
+            {
+                return deliveryDirective;
+            }
+
             if (HasRecentDisturbance())
             {
+                if (data.Role == CampusCharacterRole.Staff)
+                {
+                    return directive;
+                }
+
                 if (data.Role == CampusCharacterRole.Teacher)
                 {
                     directive.TaskType = CampusCharacterTaskType.InvestigateDisturbance;
@@ -1249,16 +1262,16 @@ namespace NtingCampus.Gameplay.Characters
                 return;
             }
 
-            nextBehaviorDecisionTime = Time.time + ResolvePersonalDelay(0.55f, 1.65f, Mathf.FloorToInt(Time.time * 11f));
-            float chance = IsStrictScheduleTask(currentTaskType) ? 0.012f : 0.075f;
+            nextBehaviorDecisionTime = Time.time + ResolvePersonalDelay(0.45f, 1.1f, Mathf.FloorToInt(Time.time * 11f));
+            float chance = IsStrictScheduleTask(currentTaskType) ? 0.008f : 0.045f;
             if (PseudoRandom01(personalSeed + Mathf.FloorToInt(Time.time * 19f), 97) > chance)
             {
                 return;
             }
 
             float pauseDuration = IsStrictScheduleTask(currentTaskType)
-                ? ResolvePersonalDelay(0.08f, 0.22f, 101)
-                : ResolvePersonalDelay(0.18f, 0.65f, 103);
+                ? ResolvePersonalDelay(0.05f, 0.14f, 101)
+                : ResolvePersonalDelay(0.1f, 0.32f, 103);
             pauseUntilTime = Mathf.Max(pauseUntilTime, Time.time + pauseDuration);
         }
 
@@ -1290,7 +1303,7 @@ namespace NtingCampus.Gameplay.Characters
 
         private Vector3 ResolveTaskAnchor(CampusGameplayRoom room, CampusCharacterTaskDirective directive)
         {
-            Vector3 fallback = room != null ? room.WorldCenter : transform.position;
+            Vector3 fallback = ResolveRoomFallbackAnchor(room, directive);
             if (directive == null)
             {
                 return fallback;
@@ -1309,13 +1322,21 @@ namespace NtingCampus.Gameplay.Characters
                     return ResolveFacilityPosition(room, CampusFacilityType.Bed, fallback);
                 case CampusCharacterTaskType.CheckBulletinBoard:
                     return ResolveFacilityPosition(room, CampusFacilityType.BulletinBoard, fallback);
+                case CampusCharacterTaskType.WorkCanteenCounter:
+                    return ResolveFacilityPosition(room, CampusFacilityType.CanteenCounter, fallback);
+                case CampusCharacterTaskType.WatchDeliveryPoint:
+                case CampusCharacterTaskType.PickupDelivery:
+                case CampusCharacterTaskType.SearchMissingDelivery:
+                    return ResolveFacilityPosition(room, CampusFacilityType.DeliveryDropPoint, fallback);
+                case CampusCharacterTaskType.ReportMissingDelivery:
+                    return ResolveFacilityPosition(room, CampusFacilityType.OfficeDesk, fallback);
                 case CampusCharacterTaskType.PatrolHallway:
                 case CampusCharacterTaskType.InvestigateDisturbance:
                 case CampusCharacterTaskType.AvoidDisturbance:
                     return ResolveFacilityPosition(room, CampusFacilityType.Door, fallback);
                 case CampusCharacterTaskType.Socialize:
                 case CampusCharacterTaskType.WanderCommonArea:
-                    return room != null ? room.WorldCenter : fallback;
+                    return fallback;
                 default:
                     return fallback;
             }
@@ -1343,6 +1364,9 @@ namespace NtingCampus.Gameplay.Characters
                 case CampusCharacterTaskType.UseOfficeDesk:
                 case CampusCharacterTaskType.RestInDorm:
                 case CampusCharacterTaskType.CheckBulletinBoard:
+                case CampusCharacterTaskType.PickupDelivery:
+                case CampusCharacterTaskType.SearchMissingDelivery:
+                case CampusCharacterTaskType.ReportMissingDelivery:
                     return ClampToRoom(room, anchor);
                 case CampusCharacterTaskType.PatrolHallway:
                     if (TryResolvePersonalRoamTarget(room, seed + 31, Mathf.FloorToInt(Time.time / freeRoamTargetRefreshSeconds), out Vector3 patrolTarget))
@@ -1393,6 +1417,56 @@ namespace NtingCampus.Gameplay.Characters
         {
             float angle = (seed % 360) * Mathf.Deg2Rad;
             return new Vector3(Mathf.Cos(angle) * radius, Mathf.Sin(angle) * radius * 0.65f, 0f);
+        }
+
+        private Vector3 ResolveRoomFallbackAnchor(CampusGameplayRoom room, CampusCharacterTaskDirective directive)
+        {
+            if (room == null)
+            {
+                return transform.position;
+            }
+
+            int seed = !string.IsNullOrWhiteSpace(runtime != null ? runtime.CharacterId : string.Empty)
+                ? Mathf.Abs(runtime.CharacterId.GetHashCode())
+                : GetInstanceID();
+            CampusCharacterTaskType taskType = directive != null ? directive.TaskType : CampusCharacterTaskType.Idle;
+
+            switch (taskType)
+            {
+                case CampusCharacterTaskType.PatrolHallway:
+                case CampusCharacterTaskType.InvestigateDisturbance:
+                case CampusCharacterTaskType.AvoidDisturbance:
+                    if (TryFindNearestStandableBoundaryCell(room, transform.position, out Vector3Int boundaryCell))
+                    {
+                        return CellCenterToWorld(boundaryCell);
+                    }
+
+                    break;
+                case CampusCharacterTaskType.Socialize:
+                case CampusCharacterTaskType.WanderCommonArea:
+                    if (TryResolvePersonalRoamTarget(
+                        room,
+                        seed + 53,
+                        Mathf.FloorToInt(Time.time / Mathf.Max(1f, freeRoamTargetRefreshSeconds)),
+                        out Vector3 roamTarget))
+                    {
+                        return roamTarget;
+                    }
+
+                    break;
+            }
+
+            if (TryResolvePersonalRoamTarget(room, seed + 7, 0, out Vector3 personalTarget))
+            {
+                return personalTarget;
+            }
+
+            if (TryFindNearestStandableRoomCell(room, WorldToCell(transform.position), out Vector3Int nearestCell))
+            {
+                return CellCenterToWorld(nearestCell);
+            }
+
+            return ClampToRoom(room, room.WorldCenter);
         }
 
         private bool TryResolvePersonalRoamTarget(
@@ -1567,6 +1641,7 @@ namespace NtingCampus.Gameplay.Characters
                 case CampusFacilityType.Blackboard:
                 case CampusFacilityType.OfficeDesk:
                 case CampusFacilityType.Bed:
+                case CampusFacilityType.CanteenCounter:
                     return true;
                 default:
                     return false;
@@ -1582,6 +1657,7 @@ namespace NtingCampus.Gameplay.Characters
                 case CampusCharacterTaskType.TeachClass:
                 case CampusCharacterTaskType.UseOfficeDesk:
                 case CampusCharacterTaskType.RestInDorm:
+                case CampusCharacterTaskType.WorkCanteenCounter:
                     return true;
                 default:
                     return false;
@@ -1969,6 +2045,9 @@ namespace NtingCampus.Gameplay.Characters
                 case CampusCharacterTaskType.UseOfficeDesk:
                 case CampusCharacterTaskType.RestInDorm:
                 case CampusCharacterTaskType.CheckBulletinBoard:
+                case CampusCharacterTaskType.PickupDelivery:
+                case CampusCharacterTaskType.SearchMissingDelivery:
+                case CampusCharacterTaskType.ReportMissingDelivery:
                     return true;
                 default:
                     return false;
@@ -2424,6 +2503,21 @@ namespace NtingCampus.Gameplay.Characters
                 }
             }
 
+            if (data.Role == CampusCharacterRole.Staff)
+            {
+                if ((data.StaffDuty & CampusStaffDuty.CanteenClerk) != 0)
+                {
+                    return "The counter is open, but I am watching the trays.";
+                }
+
+                if ((data.StaffDuty & CampusStaffDuty.DeliveryWatcher) != 0)
+                {
+                    return "Packages outside the gate are not school property. Keep moving.";
+                }
+
+                return "I am on duty.";
+            }
+
             switch (currentTaskType)
             {
                 case CampusCharacterTaskType.AttendClass:
@@ -2485,6 +2579,16 @@ namespace NtingCampus.Gameplay.Characters
                     return CampusCharacterTextCatalog.GetDialogue(CampusLanguageState.CurrentLanguage, CampusCharacterDialogueId.TeacherInvestigateAmbient);
                 case CampusCharacterTaskType.AvoidDisturbance:
                     return CampusCharacterTextCatalog.GetDialogue(CampusLanguageState.CurrentLanguage, CampusCharacterDialogueId.StudentAvoidDisturbanceAmbient);
+                case CampusCharacterTaskType.WorkCanteenCounter:
+                    return "Malatang, noodles, fried chicken. One pair of hands.";
+                case CampusCharacterTaskType.WatchDeliveryPoint:
+                    return "No deliveries at the camera gate.";
+                case CampusCharacterTaskType.PickupDelivery:
+                    return "I ordered it. It should be here.";
+                case CampusCharacterTaskType.SearchMissingDelivery:
+                    return "Where did my delivery go?";
+                case CampusCharacterTaskType.ReportMissingDelivery:
+                    return "Teacher, my delivery disappeared.";
                 default:
                     return CampusCharacterTextCatalog.GetDialogue(
                         CampusLanguageState.CurrentLanguage,
@@ -2530,6 +2634,13 @@ namespace NtingCampus.Gameplay.Characters
                 return (data.TeacherDuty & CampusTeacherDuty.MathTeacher) != 0
                     ? new Color(0.74f, 0.49f, 0.22f, 1f)
                     : new Color(0.28f, 0.51f, 0.73f, 1f);
+            }
+
+            if (data.Role == CampusCharacterRole.Staff)
+            {
+                return (data.StaffDuty & CampusStaffDuty.CanteenClerk) != 0
+                    ? new Color(0.72f, 0.58f, 0.34f, 1f)
+                    : new Color(0.42f, 0.56f, 0.52f, 1f);
             }
 
             if (data.HasTrait(CampusCharacterTrait.Sleepyhead))

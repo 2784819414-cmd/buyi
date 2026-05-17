@@ -6,6 +6,7 @@ namespace NtingCampus.Gameplay.Characters
         Sleepyhead = 1,
         Troublemaker = 2,
         GoodStudent = 3,
-        Tattletale = 4
+        Tattletale = 4,
+        SecretDeliveryBuyer = 5
     }
 }

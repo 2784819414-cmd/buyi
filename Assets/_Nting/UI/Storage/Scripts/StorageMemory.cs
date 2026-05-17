@@ -203,7 +203,11 @@ namespace Nting.Storage
                         X = item.X,
                         Y = item.Y,
                         Rotated = item.Rotated,
-                        ThemeColor = item.ThemeColor
+                        ThemeColor = item.ThemeColor,
+                        IsUsable = item.IsUsable,
+                        UseActionId = item.UseActionId,
+                        ConsumeOnUse = item.ConsumeOnUse,
+                        UseText = item.UseText
                     });
                 }
 
@@ -321,6 +325,10 @@ namespace Nting.Storage
             item.Description = itemData.Description;
             item.Rotated = itemData.Rotated;
             item.ThemeColor = itemData.ThemeColor;
+            item.IsUsable = itemData.IsUsable;
+            item.UseActionId = itemData.UseActionId;
+            item.ConsumeOnUse = itemData.ConsumeOnUse;
+            item.UseText = itemData.UseText;
             return item;
         }
     }

@@ -4,6 +4,7 @@ using System.IO;
 using System.Text;
 using NtingCampus.Gameplay.Characters;
 using NtingCampus.Gameplay.Core;
+using NtingCampus.Gameplay.Pranks;
 using NtingCampus.Gameplay.Rooms;
 using NtingCampusMapEditor;
 using UnityEngine;
@@ -77,7 +78,9 @@ namespace NtingCampus.Gameplay.UI
 
             HideRuntimeRoomMarkerVisuals();
             Transform host = EnsureGeneratedOverlayRoot();
+            SpawnRooms(snapshot, host);
             SpawnFacilities(snapshot, host);
+            SpawnPrankSpots(snapshot, host);
             SpawnActors(snapshot, host);
             int actorCount = snapshot.Actors != null ? snapshot.Actors.Count : 0;
             int facilityCount = snapshot.Facilities != null ? snapshot.Facilities.Count : 0;
@@ -115,6 +118,45 @@ namespace NtingCampus.Gameplay.UI
         {
             entity = component != null ? component.GetComponent<CampusRuntimeGameplayOverlayEntity>() : null;
             return entity != null;
+        }
+
+        private void SpawnRooms(CampusRuntimeGameplayOverlaySnapshot snapshot, Transform host)
+        {
+            if (snapshot == null || snapshot.Rooms == null)
+            {
+                return;
+            }
+
+            for (int i = 0; i < snapshot.Rooms.Count; i++)
+            {
+                CampusRuntimeGameplayRoomSnapshot room = snapshot.Rooms[i];
+                if (room == null)
+                {
+                    continue;
+                }
+
+                CampusFloorRoot floor = mapRoot != null ? mapRoot.GetFloor(Mathf.Max(1, room.FloorIndex)) : null;
+                Vector3 worldPosition = ResolveWorldPosition(floor, room.AnchorCell);
+                GameObject roomObject = new GameObject(string.IsNullOrWhiteSpace(room.DisplayName)
+                    ? "RuntimeGameplayRoom"
+                    : room.DisplayName);
+                roomObject.transform.SetParent(host, false);
+                roomObject.transform.position = worldPosition;
+
+                CampusRuntimeGameplayOverlayEntity entity =
+                    roomObject.AddComponent<CampusRuntimeGameplayOverlayEntity>();
+                entity.Configure(false, room.FloorIndex, room.AnchorCell);
+
+                CampusGameplayRoomMarker marker = roomObject.AddComponent<CampusGameplayRoomMarker>();
+                marker.Configure(
+                    room.Id,
+                    room.DisplayName,
+                    room.RoomType,
+                    room.FloorIndex,
+                    room.AnchorCell,
+                    room.Size,
+                    room.UsableForGameplay);
+            }
         }
 
         private void SpawnFacilities(CampusRuntimeGameplayOverlaySnapshot snapshot, Transform host)
@@ -193,6 +235,45 @@ namespace NtingCampus.Gameplay.UI
 
                 BindActor(actorObject, actor, isPlayerActor);
                 PositionActor(actorObject, actor);
+            }
+        }
+
+        private void SpawnPrankSpots(CampusRuntimeGameplayOverlaySnapshot snapshot, Transform host)
+        {
+            if (snapshot == null || snapshot.PrankSpots == null)
+            {
+                return;
+            }
+
+            for (int i = 0; i < snapshot.PrankSpots.Count; i++)
+            {
+                CampusRuntimeGameplayPrankSpotSnapshot spot = snapshot.PrankSpots[i];
+                if (spot == null)
+                {
+                    continue;
+                }
+
+                CampusFloorRoot floor = mapRoot != null ? mapRoot.GetFloor(Mathf.Max(1, spot.FloorIndex)) : null;
+                Vector3 worldPosition = ResolveWorldPosition(floor, spot.Cell);
+                GameObject spotObject = new GameObject(string.IsNullOrWhiteSpace(spot.DisplayName)
+                    ? "RuntimePrankSpot"
+                    : spot.DisplayName);
+                spotObject.transform.SetParent(host, false);
+                spotObject.transform.position = worldPosition;
+
+                CampusRuntimeGameplayOverlayEntity entity =
+                    spotObject.AddComponent<CampusRuntimeGameplayOverlayEntity>();
+                entity.Configure(false, spot.FloorIndex, spot.Cell);
+
+                CampusPrankInteractionSpot interactionSpot = spotObject.AddComponent<CampusPrankInteractionSpot>();
+                interactionSpot.Configure(
+                    spot.DisplayName,
+                    spot.Payload,
+                    spot.RequiredRoomType,
+                    spot.VisualKind,
+                    spot.InteractionRadius,
+                    spot.AccentColor,
+                    spot.UnsupportedReason);
             }
         }
 
@@ -279,7 +360,8 @@ namespace NtingCampus.Gameplay.UI
                 isPlayerActor,
                 actor.Sleepiness,
                 actor.Mischief,
-                actor.Traits);
+                actor.Traits,
+                actor.StaffDuty);
 
             CampusCharacterRuntime runtime = actorObject.GetComponent<CampusCharacterRuntime>();
             if (runtime == null)
@@ -512,7 +594,21 @@ namespace NtingCampus.Gameplay.UI
         public string Schema = "NtingCampusGameplayOverlay.v1";
         public string MapName = string.Empty;
         public List<CampusRuntimeGameplayActorSnapshot> Actors = new List<CampusRuntimeGameplayActorSnapshot>();
+        public List<CampusRuntimeGameplayRoomSnapshot> Rooms = new List<CampusRuntimeGameplayRoomSnapshot>();
         public List<CampusRuntimeGameplayFacilitySnapshot> Facilities = new List<CampusRuntimeGameplayFacilitySnapshot>();
+        public List<CampusRuntimeGameplayPrankSpotSnapshot> PrankSpots = new List<CampusRuntimeGameplayPrankSpotSnapshot>();
+    }
+
+    [Serializable]
+    public sealed class CampusRuntimeGameplayRoomSnapshot
+    {
+        public string Id = string.Empty;
+        public string DisplayName = string.Empty;
+        public CampusRoomType RoomType = CampusRoomType.Unknown;
+        public int FloorIndex = 1;
+        public Vector3Int AnchorCell;
+        public Vector2Int Size = Vector2Int.one;
+        public bool UsableForGameplay = true;
     }
 
     [Serializable]
@@ -523,6 +619,7 @@ namespace NtingCampus.Gameplay.UI
         public CampusLocalizedText LocalizedDisplayName;
         public CampusCharacterRole Role = CampusCharacterRole.Student;
         public CampusTeacherDuty TeacherDuty = CampusTeacherDuty.None;
+        public CampusStaffDuty StaffDuty = CampusStaffDuty.None;
         public string ClassId = "class_1";
         public CampusCharacterState InitialState = CampusCharacterState.Normal;
         public bool IsPlayerControlled;
@@ -541,5 +638,19 @@ namespace NtingCampus.Gameplay.UI
         public int FloorIndex = 1;
         public Vector3Int Cell;
         public bool CountsAsCoreFacility = true;
+    }
+
+    [Serializable]
+    public sealed class CampusRuntimeGameplayPrankSpotSnapshot
+    {
+        public string DisplayName = string.Empty;
+        public string Payload = CampusPrankPayloadIds.PassNote;
+        public CampusRoomType RequiredRoomType = CampusRoomType.Unknown;
+        public CampusPrankSpotVisualKind VisualKind = CampusPrankSpotVisualKind.Envelope;
+        public int FloorIndex = 1;
+        public Vector3Int Cell;
+        public float InteractionRadius = 0.95f;
+        public Color AccentColor = new Color(0.96f, 0.79f, 0.22f, 1f);
+        public string UnsupportedReason = "This formal prank is not implemented yet.";
     }
 }

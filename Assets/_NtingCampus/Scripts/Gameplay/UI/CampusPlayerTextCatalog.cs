@@ -103,7 +103,11 @@ namespace NtingCampus.Gameplay.UI
         Sleepyhead = 87,
         Troublemaker = 88,
         GoodStudent = 89,
-        Tattletale = 90
+        Tattletale = 90,
+        Staff = 91,
+        CanteenClerk = 92,
+        DeliveryWatcher = 93,
+        SecretDeliveryBuyer = 94
     }
 
     public enum CampusRuntimeEditorTextId
@@ -340,7 +344,11 @@ namespace NtingCampus.Gameplay.UI
             { CampusGameplayDebugTextId.Sleepyhead, new TextEntry("\u778c\u7761\u866b", "Sleepyhead") },
             { CampusGameplayDebugTextId.Troublemaker, new TextEntry("\u60f9\u4e8b\u751f\u975e", "Troublemaker") },
             { CampusGameplayDebugTextId.GoodStudent, new TextEntry("\u597d\u5b66\u751f", "Good Student") },
-            { CampusGameplayDebugTextId.Tattletale, new TextEntry("\u7231\u6253\u5c0f\u62a5\u544a", "Tattletale") }
+            { CampusGameplayDebugTextId.Tattletale, new TextEntry("\u7231\u6253\u5c0f\u62a5\u544a", "Tattletale") },
+            { CampusGameplayDebugTextId.Staff, new TextEntry("\u804c\u5458", "Staff") },
+            { CampusGameplayDebugTextId.CanteenClerk, new TextEntry("\u98df\u5802\u5e97\u5458", "Canteen Clerk") },
+            { CampusGameplayDebugTextId.DeliveryWatcher, new TextEntry("\u5916\u5356\u70b9\u770b\u7ba1", "Delivery Watcher") },
+            { CampusGameplayDebugTextId.SecretDeliveryBuyer, new TextEntry("\u5077\u70b9\u5916\u5356", "Secret Delivery Buyer") }
         };
 
         public static string Get(CampusDisplayLanguage language, CampusGameplayDebugTextId id)
@@ -391,8 +399,22 @@ namespace NtingCampus.Gameplay.UI
             {
                 CampusCharacterRole.Student => Get(language, CampusGameplayDebugTextId.Student),
                 CampusCharacterRole.Teacher => Get(language, CampusGameplayDebugTextId.Teacher),
+                CampusCharacterRole.Staff => Get(language, CampusGameplayDebugTextId.Staff),
                 _ => role.ToString()
             };
+        }
+
+        public static string FormatStaffDuty(CampusDisplayLanguage language, CampusStaffDuty duty)
+        {
+            if (duty == CampusStaffDuty.None)
+            {
+                return Get(language, CampusGameplayDebugTextId.None);
+            }
+
+            List<string> names = new();
+            AppendStaffFlagName(names, language, duty, CampusStaffDuty.CanteenClerk, CampusGameplayDebugTextId.CanteenClerk);
+            AppendStaffFlagName(names, language, duty, CampusStaffDuty.DeliveryWatcher, CampusGameplayDebugTextId.DeliveryWatcher);
+            return names.Count > 0 ? string.Join(", ", names) : duty.ToString();
         }
 
         public static string FormatTeacherDuty(CampusDisplayLanguage language, CampusTeacherDuty duty)
@@ -435,6 +457,7 @@ namespace NtingCampus.Gameplay.UI
                 CampusCharacterTrait.Troublemaker => Get(language, CampusGameplayDebugTextId.Troublemaker),
                 CampusCharacterTrait.GoodStudent => Get(language, CampusGameplayDebugTextId.GoodStudent),
                 CampusCharacterTrait.Tattletale => Get(language, CampusGameplayDebugTextId.Tattletale),
+                CampusCharacterTrait.SecretDeliveryBuyer => Get(language, CampusGameplayDebugTextId.SecretDeliveryBuyer),
                 _ => trait.ToString()
             };
         }
@@ -459,6 +482,21 @@ namespace NtingCampus.Gameplay.UI
             CampusDisplayLanguage language,
             CampusTeacherDuty actual,
             CampusTeacherDuty flag,
+            CampusGameplayDebugTextId textId)
+        {
+            if ((actual & flag) != flag)
+            {
+                return;
+            }
+
+            names.Add(Get(language, textId));
+        }
+
+        private static void AppendStaffFlagName(
+            List<string> names,
+            CampusDisplayLanguage language,
+            CampusStaffDuty actual,
+            CampusStaffDuty flag,
             CampusGameplayDebugTextId textId)
         {
             if ((actual & flag) != flag)
@@ -504,7 +542,7 @@ namespace NtingCampus.Gameplay.UI
             { CampusRuntimeEditorTextId.FloorImports, new TextEntry("\u5730\u677f\u5bfc\u5165", "Floor Imports") },
             { CampusRuntimeEditorTextId.WallImports, new TextEntry("\u5899\u9762\u5bfc\u5165", "Wall Imports") },
             { CampusRuntimeEditorTextId.ObjectImports, new TextEntry("\u7269\u4ef6\u5bfc\u5165", "Object Imports") },
-            { CampusRuntimeEditorTextId.RoomList, new TextEntry("\u623f\u95f4\u5217\u8868", "Room List") },
+            { CampusRuntimeEditorTextId.RoomList, new TextEntry("\u533a\u57df\u5217\u8868", "Area List") },
             { CampusRuntimeEditorTextId.FloorPalette, new TextEntry("\u5730\u677f\u8c03\u8272\u76d8", "Floor Palette") },
             { CampusRuntimeEditorTextId.WallPalette, new TextEntry("\u5899\u9762\u8c03\u8272\u76d8", "Wall Palette") },
             { CampusRuntimeEditorTextId.WallProfiles, new TextEntry("\u5899\u4f53\u914d\u7f6e", "Wall Profiles") },
@@ -513,8 +551,8 @@ namespace NtingCampus.Gameplay.UI
             { CampusRuntimeEditorTextId.Delete, new TextEntry("\u5220\u9664", "Delete") },
             { CampusRuntimeEditorTextId.Floor, new TextEntry("\u697c\u5c42", "Floor") },
             { CampusRuntimeEditorTextId.Locked, new TextEntry("\u5df2\u9501\u5b9a", "Locked") },
-            { CampusRuntimeEditorTextId.RoomChecklist, new TextEntry("\u623f\u95f4\u68c0\u67e5\u6e05\u5355", "Room Checklist") },
-            { CampusRuntimeEditorTextId.NoRoomRequirementsExist, new TextEntry("\u5f53\u524d\u6ca1\u6709\u623f\u95f4\u9700\u6c42\u3002", "No room requirements exist.") },
+            { CampusRuntimeEditorTextId.RoomChecklist, new TextEntry("\u533a\u57df\u68c0\u67e5\u6e05\u5355", "Area Checklist") },
+            { CampusRuntimeEditorTextId.NoRoomRequirementsExist, new TextEntry("\u5f53\u524d\u6ca1\u6709\u533a\u57df\u9700\u6c42\u3002", "No area requirements exist.") },
             { CampusRuntimeEditorTextId.Close, new TextEntry("\u5173\u95ed", "Close") },
             { CampusRuntimeEditorTextId.Help, new TextEntry("\u5e2e\u52a9", "Help") },
             { CampusRuntimeEditorTextId.Import, new TextEntry("\u5bfc\u5165", "Import") },
@@ -590,11 +628,11 @@ namespace NtingCampus.Gameplay.UI
             { CampusRuntimeEditorTextId.Y, new TextEntry("Y", "Y") },
             { CampusRuntimeEditorTextId.R, new TextEntry("R", "R") },
             { CampusRuntimeEditorTextId.Prompt, new TextEntry("\u63d0\u793a", "Prompt") },
-            { CampusRuntimeEditorTextId.ImportRoomTypesStatus, new TextEntry("\u5df2\u5bfc\u5165 {0} \u4e2a\u623f\u95f4\u7c7b\u578b\u3002", "Imported {0} room types.") },
-            { CampusRuntimeEditorTextId.ImportRoomTypesClipboardStatus, new TextEntry("\u5df2\u4ece\u526a\u8d34\u677f\u5bfc\u5165 {0} \u4e2a\u623f\u95f4\u7c7b\u578b\u3002", "Imported {0} room types from clipboard.") },
-            { CampusRuntimeEditorTextId.NoRoomTypesFoundToImport, new TextEntry("\u6ca1\u6709\u627e\u5230\u53ef\u5bfc\u5165\u7684\u623f\u95f4\u7c7b\u578b\u3002", "No room types found to import.") },
-            { CampusRuntimeEditorTextId.NoRoomTypesFoundInClipboard, new TextEntry("\u526a\u8d34\u677f\u4e2d\u6ca1\u6709\u623f\u95f4\u7c7b\u578b\u3002", "No room types found in clipboard.") },
-            { CampusRuntimeEditorTextId.SelectRoomDefinitionText, new TextEntry("\u9009\u62e9\u623f\u95f4\u5b9a\u4e49\u6587\u672c", "Select room definition text") },
+            { CampusRuntimeEditorTextId.ImportRoomTypesStatus, new TextEntry("\u5df2\u5bfc\u5165 {0} \u4e2a\u533a\u57df\u7c7b\u578b\u3002", "Imported {0} area types.") },
+            { CampusRuntimeEditorTextId.ImportRoomTypesClipboardStatus, new TextEntry("\u5df2\u4ece\u526a\u8d34\u677f\u5bfc\u5165 {0} \u4e2a\u533a\u57df\u7c7b\u578b\u3002", "Imported {0} area types from clipboard.") },
+            { CampusRuntimeEditorTextId.NoRoomTypesFoundToImport, new TextEntry("\u6ca1\u6709\u627e\u5230\u53ef\u5bfc\u5165\u7684\u533a\u57df\u7c7b\u578b\u3002", "No area types found to import.") },
+            { CampusRuntimeEditorTextId.NoRoomTypesFoundInClipboard, new TextEntry("\u526a\u8d34\u677f\u4e2d\u6ca1\u6709\u533a\u57df\u7c7b\u578b\u3002", "No area types found in clipboard.") },
+            { CampusRuntimeEditorTextId.SelectRoomDefinitionText, new TextEntry("\u9009\u62e9\u533a\u57df\u5b9a\u4e49\u6587\u672c", "Select area definition text") },
             { CampusRuntimeEditorTextId.GameTime, new TextEntry("\u6e38\u620f\u65f6\u95f4", "Game Time") },
             { CampusRuntimeEditorTextId.RealMinutesPerGameDay, new TextEntry("1x \u7ea6\u7b49\u4e8e\u6bcf\u4e2a\u6e38\u620f\u65e5 {0} \u5206\u949f\u73b0\u5b9e\u65f6\u95f4", "1x = about {0} real minutes per game day") },
             { CampusRuntimeEditorTextId.PreviewGrid, new TextEntry("\u9884\u89c8\u7f51\u683c", "Preview Grid") },
@@ -620,18 +658,33 @@ namespace NtingCampus.Gameplay.UI
                 ? resolved
                 : new TextEntry(id.ToString(), id.ToString());
 
+            return Resolve(language, entry.Chinese, entry.English);
+        }
+
+        public static string Get(CampusDisplayLanguage language, string chinese, string english)
+        {
+            return Resolve(language, chinese, english);
+        }
+
+        private static string Resolve(CampusDisplayLanguage language, string chinese, string english)
+        {
             return language switch
             {
-                CampusDisplayLanguage.Chinese => entry.Chinese,
-                CampusDisplayLanguage.English => entry.English,
-                CampusDisplayLanguage.Bilingual => entry.Chinese + " / " + entry.English,
-                _ => entry.Chinese
+                CampusDisplayLanguage.Chinese => chinese,
+                CampusDisplayLanguage.English => english,
+                CampusDisplayLanguage.Bilingual => chinese + " / " + english,
+                _ => chinese
             };
         }
 
         public static string Format(CampusDisplayLanguage language, CampusRuntimeEditorTextId id, params object[] args)
         {
             return string.Format(Get(language, id), args);
+        }
+
+        public static string Format(CampusDisplayLanguage language, string chinese, string english, params object[] args)
+        {
+            return string.Format(Get(language, chinese, english), args);
         }
 
         public static string FormatFloorButton(CampusDisplayLanguage language, int floorIndex, bool isUnlocked)

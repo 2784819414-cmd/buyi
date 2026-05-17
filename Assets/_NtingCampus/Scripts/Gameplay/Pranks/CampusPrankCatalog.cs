@@ -31,6 +31,8 @@ namespace NtingCampus.Gameplay.Pranks
         public const string ConfuseBooksObjectId = "CampusPrankSpot_ConfuseBooks";
         public const string StealDeliveryObjectId = "CampusPrankSpot_StealDelivery";
         public const string StealFriedChickenObjectId = "CampusPrankSpot_StealFriedChicken";
+        public const string StealBurgerObjectId = "CampusPrankSpot_StealBurger";
+        public const string StealOdenObjectId = "CampusPrankSpot_StealOden";
         public const string TwistBottleCapsObjectId = "CampusPrankSpot_TwistBottleCaps";
 
         private static readonly CampusPrankDefinition[] Definitions =
@@ -58,7 +60,19 @@ namespace NtingCampus.Gameplay.Pranks
                 "偷炸鸡",
                 CampusPrankPayloadIds.StealFriedChicken,
                 CampusRoomType.Canteen,
-                "偷炸鸡还没接入正式玩法。"),
+                "偷炸鸡需要食堂、食堂店员和可偷食物点。"),
+            new CampusPrankDefinition(
+                StealBurgerObjectId,
+                "偷汉堡",
+                CampusPrankPayloadIds.StealBurger,
+                CampusRoomType.Canteen,
+                "偷汉堡需要食堂、食堂店员和可偷食物点。"),
+            new CampusPrankDefinition(
+                StealOdenObjectId,
+                "偷关东煮",
+                CampusPrankPayloadIds.StealOden,
+                CampusRoomType.Canteen,
+                "偷关东煮需要食堂、食堂店员和可偷食物点。"),
             new CampusPrankDefinition(
                 TwistBottleCapsObjectId,
                 "拧瓶盖",

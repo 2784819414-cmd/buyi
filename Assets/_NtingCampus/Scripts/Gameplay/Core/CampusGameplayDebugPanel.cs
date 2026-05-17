@@ -222,6 +222,8 @@ namespace NtingCampus.Gameplay.Core
                 GUILayout.Label(CampusGameplayDebugTextCatalog.FormatLine(displayLanguage, CampusGameplayDebugTextId.CampusChaos, "-"));
                 GUILayout.Label(CampusGameplayDebugTextCatalog.FormatLine(displayLanguage, CampusGameplayDebugTextId.TeacherAlertness, "-"));
                 GUILayout.Label(CampusGameplayDebugTextCatalog.FormatLine(displayLanguage, CampusGameplayDebugTextId.DivineInterest, "-"));
+                GUILayout.Label(CampusGameplayDebugTextCatalog.FormatLine(displayLanguage, CampusGameplayDebugTextId.Suspicion, "-"));
+                GUILayout.Label(CampusGameplayDebugTextCatalog.FormatLine(displayLanguage, CampusGameplayDebugTextId.AlertLevel, "-"));
                 GUILayout.Label(CampusGameplayDebugTextCatalog.FormatLine(displayLanguage, CampusGameplayDebugTextId.DailyWarnings, "-"));
                 GUILayout.Label(CampusGameplayDebugTextCatalog.FormatLine(displayLanguage, CampusGameplayDebugTextId.ShrineRoom, "-"));
                 GUILayout.Label(CampusGameplayDebugTextCatalog.FormatLine(displayLanguage, CampusGameplayDebugTextId.LandExpansion, "-"));
@@ -233,6 +235,8 @@ namespace NtingCampus.Gameplay.Core
             GUILayout.Label(CampusGameplayDebugTextCatalog.FormatLine(displayLanguage, CampusGameplayDebugTextId.CampusChaos, gameState.CampusChaos));
             GUILayout.Label(CampusGameplayDebugTextCatalog.FormatLine(displayLanguage, CampusGameplayDebugTextId.TeacherAlertness, gameState.TeacherAlertness));
             GUILayout.Label(CampusGameplayDebugTextCatalog.FormatLine(displayLanguage, CampusGameplayDebugTextId.DivineInterest, gameState.DivineInterest));
+            GUILayout.Label(CampusGameplayDebugTextCatalog.FormatLine(displayLanguage, CampusGameplayDebugTextId.Suspicion, gameState.PlayerSuspicion));
+            GUILayout.Label(CampusGameplayDebugTextCatalog.FormatLine(displayLanguage, CampusGameplayDebugTextId.AlertLevel, "Canteen=" + gameState.CanteenAlertLevel + ", Delivery=" + gameState.DeliveryAlertLevel));
             GUILayout.Label(CampusGameplayDebugTextCatalog.FormatLine(displayLanguage, CampusGameplayDebugTextId.DailyWarnings, gameState.DailyWarningCount));
             GUILayout.Label(CampusGameplayDebugTextCatalog.FormatLine(displayLanguage, CampusGameplayDebugTextId.ShrineRoom, CampusGameplayDebugTextCatalog.FormatLockState(displayLanguage, gameState.ShrineRoomUnlocked)));
             GUILayout.Label(CampusGameplayDebugTextCatalog.FormatLine(displayLanguage, CampusGameplayDebugTextId.LandExpansion, CampusGameplayDebugTextCatalog.FormatLockState(displayLanguage, gameState.LandExpansionUnlocked)));
@@ -351,7 +355,7 @@ namespace NtingCampus.Gameplay.Core
             GUILayout.Label(CampusGameplayDebugTextCatalog.Get(displayLanguage, CampusGameplayDebugTextId.SelectedCharacter));
             GUILayout.Label(CampusGameplayDebugTextCatalog.FormatLine(displayLanguage, CampusGameplayDebugTextId.Name, selected.GetDisplayName(displayLanguage)));
             GUILayout.Label(CampusGameplayDebugTextCatalog.FormatLine(displayLanguage, CampusGameplayDebugTextId.Role, CampusGameplayDebugTextCatalog.FormatCharacterRole(displayLanguage, selected.Role)));
-            GUILayout.Label(CampusGameplayDebugTextCatalog.FormatLine(displayLanguage, CampusGameplayDebugTextId.Duty, CampusGameplayDebugTextCatalog.FormatTeacherDuty(displayLanguage, selected.TeacherDuty)));
+            GUILayout.Label(CampusGameplayDebugTextCatalog.FormatLine(displayLanguage, CampusGameplayDebugTextId.Duty, FormatDuty(selected, displayLanguage)));
             GUILayout.Label(CampusGameplayDebugTextCatalog.FormatLine(displayLanguage, CampusGameplayDebugTextId.Class, string.IsNullOrWhiteSpace(selected.ClassId) ? "-" : selected.ClassId));
             GUILayout.Label(CampusGameplayDebugTextCatalog.FormatLine(displayLanguage, CampusGameplayDebugTextId.State, CampusGameplayDebugTextCatalog.FormatCharacterState(displayLanguage, selected.State)));
             GUILayout.Label(CampusGameplayDebugTextCatalog.FormatLine(displayLanguage, CampusGameplayDebugTextId.Sleepiness, selected.Sleepiness));
@@ -364,6 +368,21 @@ namespace NtingCampus.Gameplay.Core
                 ", " + CampusGameplayDebugTextCatalog.Get(displayLanguage, CampusGameplayDebugTextId.Math) + "=" + selected.MasteryMath));
             GUILayout.Label(CampusGameplayDebugTextCatalog.FormatLine(displayLanguage, CampusGameplayDebugTextId.Traits, JoinTraits(selected.Traits, displayLanguage)));
             GUILayout.Label(CampusGameplayDebugTextCatalog.FormatLine(displayLanguage, CampusGameplayDebugTextId.Memories, JoinMemories(selected.Memories, displayLanguage)));
+        }
+
+        private static string FormatDuty(CampusCharacterData data, CampusDisplayLanguage displayLanguage)
+        {
+            if (data == null)
+            {
+                return "-";
+            }
+
+            if (data.Role == CampusCharacterRole.Staff)
+            {
+                return CampusGameplayDebugTextCatalog.FormatStaffDuty(displayLanguage, data.StaffDuty);
+            }
+
+            return CampusGameplayDebugTextCatalog.FormatTeacherDuty(displayLanguage, data.TeacherDuty);
         }
 
         private static void DrawFormalMainlineState(
@@ -399,6 +418,8 @@ namespace NtingCampus.Gameplay.Core
             {
                 GUILayout.Label("- Prompt: " + prankService.CurrentPrompt);
                 GUILayout.Label("- Daily Pass Note Count: " + prankService.DailyPassNoteCount);
+                GUILayout.Label("- Canteen Theft Count: " + prankService.DailyCanteenTheftCount + " / Clerk=" + prankService.CurrentCanteenClerkState);
+                GUILayout.Label("- Delivery Theft Count: " + prankService.DailyDeliveryTheftCount + " / Order=" + prankService.ActiveDeliveryOrderState + " " + prankService.ActiveDeliveryItemName);
             }
 
             if (sanctionService == null)

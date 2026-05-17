@@ -20,6 +20,10 @@ namespace Nting.Storage
         public bool Rotated;
         public Color ThemeColor = new Color(0.38f, 0.49f, 0.56f, 1f);
         public Sprite Icon;
+        public bool IsUsable;
+        public string UseActionId;
+        public bool ConsumeOnUse = true;
+        public string UseText;
 
         [NonSerialized]
         public StorageContainerModel CurrentContainer;

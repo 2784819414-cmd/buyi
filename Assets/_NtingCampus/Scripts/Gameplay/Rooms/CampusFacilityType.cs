@@ -19,6 +19,9 @@ namespace NtingCampus.Gameplay.Rooms
         Bed = 14,
         OfficeDesk = 15,
         BulletinBoard = 16,
-        Recruitment = 17
+        Recruitment = 17,
+        CanteenCounter = 18,
+        CanteenFoodTray = 19,
+        DeliveryDropPoint = 20
     }
 }

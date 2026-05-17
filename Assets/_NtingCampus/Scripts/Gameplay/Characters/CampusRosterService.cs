@@ -236,6 +236,14 @@ namespace NtingCampus.Gameplay.Characters
             }
 
             EnsureBodyController(runtime);
+            CampusHeldItemVisual heldItemVisual = runtime.GetComponent<CampusHeldItemVisual>();
+            if (heldItemVisual == null)
+            {
+                heldItemVisual = runtime.gameObject.AddComponent<CampusHeldItemVisual>();
+            }
+
+            heldItemVisual.RefreshImmediate();
+
             CampusTestPlayerController controller = runtime.GetComponent<CampusTestPlayerController>();
             if (controller == null)
             {

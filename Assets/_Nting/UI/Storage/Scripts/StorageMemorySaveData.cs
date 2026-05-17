@@ -35,5 +35,9 @@ namespace Nting.Storage
         public int Y;
         public bool Rotated;
         public Color ThemeColor;
+        public bool IsUsable;
+        public string UseActionId;
+        public bool ConsumeOnUse;
+        public string UseText;
     }
 }

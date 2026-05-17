@@ -14,6 +14,10 @@ namespace Nting.Storage
         public string Description;
         public Color ThemeColor = new Color(0.38f, 0.49f, 0.56f, 1f);
         public Sprite Icon;
+        public bool IsUsable;
+        public string UseActionId;
+        public bool ConsumeOnUse = true;
+        public string UseText;
 
         public StorageItemModel CreateItem(string instanceId = null)
         {
@@ -33,7 +37,11 @@ namespace Nting.Storage
                 Weight = Weight,
                 Description = Description,
                 ThemeColor = ThemeColor,
-                Icon = Icon
+                Icon = Icon,
+                IsUsable = IsUsable,
+                UseActionId = UseActionId,
+                ConsumeOnUse = ConsumeOnUse,
+                UseText = UseText
             };
         }
     }

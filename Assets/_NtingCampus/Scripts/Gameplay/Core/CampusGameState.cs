@@ -15,6 +15,9 @@ namespace NtingCampus.Gameplay.Core
         [SerializeField, Range(StatMin, StatMax)] private int campusChaos = 20;
         [SerializeField, Range(StatMin, StatMax)] private int teacherAlertness = 15;
         [SerializeField, Range(StatMin, StatMax)] private int divineInterest = 25;
+        [SerializeField, Range(StatMin, StatMax)] private int playerSuspicion;
+        [SerializeField, Range(StatMin, StatMax)] private int canteenAlertLevel;
+        [SerializeField, Range(StatMin, StatMax)] private int deliveryAlertLevel;
         [SerializeField, Min(0)] private int dailyWarningCount;
         [SerializeField] private bool shrineRoomUnlocked;
         [SerializeField] private bool landExpansionUnlocked;
@@ -25,6 +28,9 @@ namespace NtingCampus.Gameplay.Core
         public int CampusChaos => campusChaos;
         public int TeacherAlertness => teacherAlertness;
         public int DivineInterest => divineInterest;
+        public int PlayerSuspicion => playerSuspicion;
+        public int CanteenAlertLevel => canteenAlertLevel;
+        public int DeliveryAlertLevel => deliveryAlertLevel;
         public int DailyWarningCount => dailyWarningCount;
         public bool ShrineRoomUnlocked => shrineRoomUnlocked;
         public bool LandExpansionUnlocked => landExpansionUnlocked;
@@ -37,6 +43,9 @@ namespace NtingCampus.Gameplay.Core
             campusChaos = ClampStat(initialization.InitialCampusChaos);
             teacherAlertness = ClampStat(initialization.InitialTeacherAlertness);
             divineInterest = ClampStat(initialization.InitialDivineInterest);
+            playerSuspicion = ClampStat(initialization.InitialPlayerSuspicion);
+            canteenAlertLevel = ClampStat(initialization.InitialCanteenAlertLevel);
+            deliveryAlertLevel = ClampStat(initialization.InitialDeliveryAlertLevel);
             dailyWarningCount = Mathf.Max(0, initialization.InitialDailyWarningCount);
             shrineRoomUnlocked = initialization.InitialShrineRoomUnlocked;
             landExpansionUnlocked = initialization.InitialLandExpansionUnlocked;
@@ -98,6 +107,36 @@ namespace NtingCampus.Gameplay.Core
             SetDivineInterest(divineInterest + delta);
         }
 
+        public void SetPlayerSuspicion(int value)
+        {
+            playerSuspicion = ClampStat(value);
+        }
+
+        public void AddPlayerSuspicion(int delta)
+        {
+            SetPlayerSuspicion(playerSuspicion + delta);
+        }
+
+        public void SetCanteenAlertLevel(int value)
+        {
+            canteenAlertLevel = ClampStat(value);
+        }
+
+        public void AddCanteenAlertLevel(int delta)
+        {
+            SetCanteenAlertLevel(canteenAlertLevel + delta);
+        }
+
+        public void SetDeliveryAlertLevel(int value)
+        {
+            deliveryAlertLevel = ClampStat(value);
+        }
+
+        public void AddDeliveryAlertLevel(int delta)
+        {
+            SetDeliveryAlertLevel(deliveryAlertLevel + delta);
+        }
+
         public void SetDailyWarningCount(int value)
         {
             dailyWarningCount = Mathf.Max(0, value);
@@ -142,6 +181,9 @@ namespace NtingCampus.Gameplay.Core
         [Range(CampusGameState.StatMin, CampusGameState.StatMax)] public int InitialCampusChaos;
         [Range(CampusGameState.StatMin, CampusGameState.StatMax)] public int InitialTeacherAlertness;
         [Range(CampusGameState.StatMin, CampusGameState.StatMax)] public int InitialDivineInterest;
+        [Range(CampusGameState.StatMin, CampusGameState.StatMax)] public int InitialPlayerSuspicion;
+        [Range(CampusGameState.StatMin, CampusGameState.StatMax)] public int InitialCanteenAlertLevel;
+        [Range(CampusGameState.StatMin, CampusGameState.StatMax)] public int InitialDeliveryAlertLevel;
         [Min(0)] public int InitialDailyWarningCount;
         public bool InitialShrineRoomUnlocked;
         public bool InitialLandExpansionUnlocked;
@@ -155,6 +197,9 @@ namespace NtingCampus.Gameplay.Core
                 InitialCampusChaos = 20,
                 InitialTeacherAlertness = 15,
                 InitialDivineInterest = 25,
+                InitialPlayerSuspicion = 0,
+                InitialCanteenAlertLevel = 0,
+                InitialDeliveryAlertLevel = 0,
                 InitialDailyWarningCount = 0,
                 InitialShrineRoomUnlocked = false,
                 InitialLandExpansionUnlocked = false

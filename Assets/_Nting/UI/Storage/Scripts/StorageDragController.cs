@@ -38,7 +38,7 @@ namespace Nting.Storage
             currentTargetGrid = null;
             currentPlacementValid = false;
 
-            Window.SelectItem(view.Item);
+            Window.SelectItem(view.Item, sourceGrid);
             sourceGrid.SetItemsRaycast(false);
 
             RectTransform itemRect = view.RectTransform;

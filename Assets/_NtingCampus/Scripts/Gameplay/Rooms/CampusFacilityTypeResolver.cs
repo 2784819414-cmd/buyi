@@ -160,6 +160,24 @@ namespace NtingCampus.Gameplay.Rooms
                 DisplayNames = new[] { "storage", "\u50a8\u7269" },
                 Contains = new[] { "storage", "box", "\u50a8\u7269", "\u7bb1" }
             });
+            rules.Add(new FacilityRule
+            {
+                FacilityType = nameof(CampusFacilityType.CanteenCounter),
+                DisplayNames = new[] { "canteen counter", "food counter", "\u98df\u5802\u67dc\u53f0", "\u7a97\u53e3" },
+                Contains = new[] { "canteen_counter", "foodcounter", "malatang", "noodle", "\u98df\u5802\u67dc\u53f0", "\u7a97\u53e3", "\u9ebb\u8fa3\u70eb", "\u9762\u6761" }
+            });
+            rules.Add(new FacilityRule
+            {
+                FacilityType = nameof(CampusFacilityType.CanteenFoodTray),
+                DisplayNames = new[] { "canteen food tray", "fried chicken tray", "\u98df\u5802\u83dc\u76d8", "\u70b8\u9e21\u76d8" },
+                Contains = new[] { "canteen_food", "foodtray", "friedchicken", "burger", "oden", "\u70b8\u9e21", "\u6c49\u5821", "\u5173\u4e1c\u716e" }
+            });
+            rules.Add(new FacilityRule
+            {
+                FacilityType = nameof(CampusFacilityType.DeliveryDropPoint),
+                DisplayNames = new[] { "delivery drop point", "delivery point", "\u5916\u5356\u70b9", "\u5916\u5356\u653e\u7f6e\u70b9" },
+                Contains = new[] { "delivery", "takeout", "waimai", "\u5916\u5356" }
+            });
         }
 
         private static string Normalize(string value)

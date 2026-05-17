@@ -40,17 +40,13 @@ namespace NtingCampus.Gameplay.Rooms
             }
 
             mapRoot.RebuildFloorReferences();
-            BuildRoomsFromGameplayMarkers();
-
-            if (rooms.Count == 0)
+            Dictionary<int, List<CampusRuntimeRoomMarker>> markersByFloor = CollectMarkersByFloor(mapRoot);
+            foreach (KeyValuePair<int, List<CampusRuntimeRoomMarker>> pair in markersByFloor)
             {
-                Dictionary<int, List<CampusRuntimeRoomMarker>> markersByFloor = CollectMarkersByFloor(mapRoot);
-                foreach (KeyValuePair<int, List<CampusRuntimeRoomMarker>> pair in markersByFloor)
-                {
-                    BuildRoomsForFloor(pair.Key, pair.Value);
-                }
+                BuildRoomsForFloor(pair.Key, pair.Value);
             }
 
+            BuildRoomsFromGameplayMarkers();
             AssignFacilities(mapRoot);
             validationIssues.AddRange(CampusRoomValidator.Validate(rooms));
             ApplyValidationState();
@@ -148,6 +144,11 @@ namespace NtingCampus.Gameplay.Rooms
                 }
 
                 BoundsInt bounds = gameplayMarker.BuildBounds();
+                if (HasExistingRoomOverlap(gameplayMarker.FloorIndex, bounds))
+                {
+                    continue;
+                }
+
                 CampusGameplayRoom room = new CampusGameplayRoom();
                 string roomId = string.IsNullOrWhiteSpace(gameplayMarker.RoomIdOverride)
                     ? BuildRoomId(gameplayMarker.RoomDisplayName, gameplayMarker.FloorIndex, i + 1)
@@ -167,6 +168,33 @@ namespace NtingCampus.Gameplay.Rooms
                 rooms.Add(room);
                 roomsById[room.RoomId] = room;
             }
+        }
+
+        private bool HasExistingRoomOverlap(int floorIndex, BoundsInt bounds)
+        {
+            for (int i = 0; i < rooms.Count; i++)
+            {
+                CampusGameplayRoom room = rooms[i];
+                if (room == null || room.FloorIndex != floorIndex)
+                {
+                    continue;
+                }
+
+                if (BoundsOverlap2D(room.MarkerBounds, bounds))
+                {
+                    return true;
+                }
+            }
+
+            return false;
+        }
+
+        private static bool BoundsOverlap2D(BoundsInt a, BoundsInt b)
+        {
+            return a.xMin < b.xMax &&
+                   a.xMax > b.xMin &&
+                   a.yMin < b.yMax &&
+                   a.yMax > b.yMin;
         }
 
         private void BuildRoomsForFloor(int floorIndex, List<CampusRuntimeRoomMarker> floorMarkers)

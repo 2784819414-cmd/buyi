@@ -7,8 +7,6 @@ namespace NtingCampusMapEditor
     [DisallowMultipleComponent]
     public sealed class CampusSimpleInteractable : CampusInteractionPromptSource, ICampusInteractable, ICampusInteractionActionHandler
     {
-        private const string StarterItemsSeedFlag = "storage_player_starter_items_seeded";
-
         public bool LogInteraction = true;
         public string InteractionLogMessage;
 
@@ -74,23 +72,11 @@ namespace NtingCampusMapEditor
         private bool TryOpenStorageWindow(string payload)
         {
             StorageMemory memory = StorageMemory.GetOrCreate();
-            StorageItemRegistry registry = Resources.Load<StorageItemRegistry>("StorageItemRegistry");
-            if (registry == null)
-            {
-                registry = StorageItemRegistry.CreateDemoRegistry();
-            }
-
-            memory.SetRegistry(registry);
-
-            StorageContainerModel[] pockets =
-            {
-                memory.GetOrCreateContainer("pocket_left_chest", "\u5de6\u80f8\u888b", 2, 3, 1.5f),
-                memory.GetOrCreateContainer("pocket_right_chest", "\u53f3\u80f8\u888b", 2, 3, 1.5f),
-                memory.GetOrCreateContainer("pocket_left_pants", "\u5de6\u88e4\u888b", 2, 3, 2f),
-                memory.GetOrCreateContainer("pocket_right_pants", "\u53f3\u88e4\u888b", 2, 3, 2f)
-            };
-            StorageContainerModel backpack = memory.GetOrCreateContainer("school_backpack", "\u5b66\u751f\u4e66\u5305", 5, 6, 20f);
-            EnsureStarterItems(memory);
+            StoragePlayerInventoryUtility.EnsureRegistry(memory);
+            StorageContainerModel[] hands = StoragePlayerInventoryUtility.GetOrCreateHandContainers(memory);
+            StorageContainerModel[] pockets = StoragePlayerInventoryUtility.GetOrCreatePocketContainers(memory);
+            StorageContainerModel backpack = StoragePlayerInventoryUtility.GetOrCreateBackpack(memory);
+            StoragePlayerInventoryUtility.EnsureStarterItems(memory);
             string containerId = ResolveStorageContainerId(payload);
             Vector2Int storageSize = ResolveObjectStorageSize();
             StorageContainerModel container = memory.GetOrCreateContainer(
@@ -108,38 +94,8 @@ namespace NtingCampusMapEditor
             }
 
             window.SetGroundDropContext(gameObject);
-            window.Open(pockets, backpack, true, container);
+            window.OpenPlayerStorage(hands, pockets, backpack, true, container, false);
             return true;
-        }
-
-        private static void EnsureStarterItems(StorageMemory memory)
-        {
-            if (memory == null || memory.IsSessionFlagSet(StarterItemsSeedFlag))
-            {
-                return;
-            }
-
-            TrySeedItem(memory, "pocket_left_chest", "phone", "phone_player_001", 0, 0);
-            TrySeedItem(memory, "pocket_left_chest", "note", "note_player_001", 1, 0);
-            TrySeedItem(memory, "pocket_right_chest", "key", "key_player_001", 0, 0);
-            TrySeedItem(memory, "pocket_left_pants", "snack", "snack_player_001", 0, 1);
-
-            TrySeedItem(memory, "school_backpack", "textbook", "textbook_player_001", 0, 0);
-            TrySeedItem(memory, "school_backpack", "workbook", "workbook_player_001", 2, 0);
-            TrySeedItem(memory, "school_backpack", "pencil_case", "pencil_case_player_001", 2, 2);
-            TrySeedItem(memory, "school_backpack", "lunch_box", "lunch_box_player_001", 0, 3);
-
-            memory.SetSessionFlag(StarterItemsSeedFlag);
-        }
-
-        private static void TrySeedItem(StorageMemory memory, string containerId, string definitionId, string instanceId, int x, int y)
-        {
-            if (memory == null || memory.ItemRegistry == null || string.IsNullOrWhiteSpace(containerId))
-            {
-                return;
-            }
-
-            memory.TryPlaceNewItem(containerId, definitionId, instanceId, x, y);
         }
 
         private Vector2Int ResolveObjectStorageSize()

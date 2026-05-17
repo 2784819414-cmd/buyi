@@ -87,6 +87,13 @@ namespace NtingCampus.Gameplay.Characters
                 CampusCharacterMemoryId.NoticedClassroomDozing => Get(language, "注意到学生睡着", "Noticed a student dozing"),
                 CampusCharacterMemoryId.SneakedOutDuringClass => Get(language, "上课时溜出教室", "Sneaked out during class"),
                 CampusCharacterMemoryId.CaughtSkippingClass => Get(language, "逃课被发现", "Caught skipping class"),
+                CampusCharacterMemoryId.StoleCanteenFood => Get(language, "拿走了食堂食物", "Took canteen food"),
+                CampusCharacterMemoryId.CanteenTheftSuspected => Get(language, "被食堂店员怀疑", "Suspected by canteen clerk"),
+                CampusCharacterMemoryId.OrderedSecretDelivery => Get(language, "偷偷点了外卖", "Ordered delivery secretly"),
+                CampusCharacterMemoryId.DeliveryStolen => Get(language, "拿走了外卖", "Took a delivery"),
+                CampusCharacterMemoryId.LostDelivery => Get(language, "外卖丢了", "Lost a delivery"),
+                CampusCharacterMemoryId.PickedUpDelivery => Get(language, "\u53d6\u5230\u4e86\u5916\u5356", "Picked up a delivery"),
+                CampusCharacterMemoryId.ReportedLostDelivery => Get(language, "\u62a5\u544a\u5916\u5356\u4e22\u5931", "Reported a lost delivery"),
                 _ => CampusGameplayDebugTextCatalog.Get(language, CampusGameplayDebugTextId.None)
             };
         }

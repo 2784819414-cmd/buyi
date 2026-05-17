@@ -19,6 +19,7 @@ namespace Nting.Storage
         public RectTransform DragLayer;
         public StorageDragController DragController;
 
+        public StorageGridUI[] HandGrids = new StorageGridUI[2];
         public StorageGridUI[] PocketGrids = new StorageGridUI[4];
         public StorageGridUI BackpackGrid;
         public StorageGridUI ExternalGrid;
@@ -34,15 +35,19 @@ namespace Nting.Storage
         public Text PocketTabLabel;
         public Button PocketTabButton;
         public Button BackpackTabButton;
+        public Button UseItemButton;
 
         private const float DefaultGridCellSize = 52f;
         private const float MinimumGridCellSize = 28f;
 
         private readonly List<MonoBehaviour> suppressedMapEditors = new List<MonoBehaviour>();
         private readonly List<bool> suppressedMapEditorStates = new List<bool>();
+        private StorageContainerModel[] hands = new StorageContainerModel[2];
         private StorageContainerModel[] pockets = new StorageContainerModel[4];
         private StorageContainerModel backpack;
         private StorageContainerModel externalContainer;
+        private StorageItemModel selectedItem;
+        private StorageGridUI selectedItemGrid;
         private bool backpackEquipped;
         private bool showingBackpack;
         private GameObject pocketPage;
@@ -90,6 +95,31 @@ namespace Nting.Storage
             RefreshPages();
             SelectItem(null);
             ShowStatus("拖拽物品 / 右键旋转 / 双击转移 / 拖出容器可放到地上 / Esc关闭", false);
+        }
+
+        public void OpenPlayerStorage(
+            StorageContainerModel[] handContainers,
+            StorageContainerModel[] pocketContainers,
+            StorageContainerModel backpackContainer,
+            bool hasBackpack,
+            StorageContainerModel rightContainer,
+            bool startOnBackpack)
+        {
+            EnsureBuilt();
+            hands = handContainers != null && handContainers.Length >= 2 ? handContainers : new StorageContainerModel[2];
+            pockets = pocketContainers != null && pocketContainers.Length >= 4 ? pocketContainers : new StorageContainerModel[4];
+            backpack = backpackContainer;
+            backpackEquipped = hasBackpack && backpack != null;
+            externalContainer = rightContainer;
+            showingBackpack = startOnBackpack && backpackEquipped;
+
+            visibleRoot.SetActive(true);
+            DragLayer.gameObject.SetActive(true);
+            CanvasGroup.alpha = 1f;
+            SuppressMapEditorOverlay();
+            RefreshPages();
+            SelectItem(null);
+            ShowStatus("Drag items / right click rotate / double click transfer / use from hand slots / Esc closes", false);
         }
 
         public void SetGroundDropContext(GameObject groundDropContext)
@@ -164,6 +194,14 @@ namespace Nting.Storage
 
         public void RefreshAllGrids()
         {
+            for (int i = 0; i < HandGrids.Length; i++)
+            {
+                if (HandGrids[i] != null && i < hands.Length)
+                {
+                    HandGrids[i].Bind(hands[i], this);
+                }
+            }
+
             if (pocketPage != null && pocketPage.activeSelf)
             {
                 for (int i = 0; i < PocketGrids.Length; i++)
@@ -179,7 +217,7 @@ namespace Nting.Storage
             {
                 ConfigureGridCellSize(BackpackGrid, backpack, 420f, 388f, DefaultGridCellSize);
                 BackpackGrid.Bind(backpack, this);
-                CenterGridInArea(BackpackGrid, backpackGridPad, 54f, 112f, 554f, 390f, 34f);
+                CenterGridInArea(BackpackGrid, backpackGridPad, 54f, 226f, 554f, 300f, 34f);
             }
 
             if (ExternalGrid != null)
@@ -190,10 +228,20 @@ namespace Nting.Storage
             }
 
             RefreshHeaders();
+            RefreshUseButton();
         }
 
         public void SelectItem(StorageItemModel item)
         {
+            SelectItem(item, null);
+        }
+
+        public void SelectItem(StorageItemModel item, StorageGridUI sourceGrid)
+        {
+            selectedItem = item;
+            selectedItemGrid = sourceGrid;
+            RefreshUseButton();
+
             if (SelectedItemNameText == null || SelectedItemMetaText == null)
             {
                 return;
@@ -201,14 +249,15 @@ namespace Nting.Storage
 
             if (item == null)
             {
-                SelectedItemNameText.text = "未选中物品";
-                SelectedItemMetaText.text = "点击物品查看详情";
+                SelectedItemNameText.text = "No item selected";
+                SelectedItemMetaText.text = "Click an item to inspect it.";
                 return;
             }
 
             SelectedItemNameText.text = item.DisplayName;
             SelectedItemMetaText.text = item.CurrentWidth + "x" + item.CurrentHeight + "  " +
-                                        item.Weight.ToString("0.#") + "kg  " + item.Description;
+                                        item.Weight.ToString("0.#") + "kg  " + item.Description +
+                                        (item.IsUsable ? "  [usable from hand]" : string.Empty);
         }
 
         public void ShowStatus(string message, bool warning)
@@ -220,6 +269,20 @@ namespace Nting.Storage
 
             StatusText.text = message;
             StatusText.color = warning ? StoragePalette.InvalidBorder : StoragePalette.TextSecondary;
+        }
+
+        public bool TryUseSelectedItem()
+        {
+            if (!StorageItemUseUtility.TryUse(selectedItem, selectedItemGrid, out string statusMessage))
+            {
+                ShowStatus(statusMessage, true);
+                return false;
+            }
+
+            RefreshAllGrids();
+            SelectItem(null);
+            ShowStatus(statusMessage, false);
+            return true;
         }
 
         public bool TryRotateItem(StorageItemView view)
@@ -234,7 +297,7 @@ namespace Nting.Storage
             if (view.OwnerGrid.CanPlace(item, item.X, item.Y))
             {
                 RefreshAllGrids();
-                SelectItem(item);
+                SelectItem(item, view.OwnerGrid);
                 ShowStatus("已旋转：" + item.DisplayName, false);
                 return true;
             }
@@ -242,7 +305,7 @@ namespace Nting.Storage
             item.Rotate();
             ShowStatus("旋转后空间不足", true);
             RefreshAllGrids();
-            SelectItem(item);
+            SelectItem(item, view.OwnerGrid);
             return false;
         }
 
@@ -255,6 +318,16 @@ namespace Nting.Storage
 
             StorageItemModel item = view.Item;
             StorageGridUI sourceGrid = view.OwnerGrid;
+
+            if (externalContainer == null)
+            {
+                if (StoragePlayerInventoryUtility.IsHandGrid(sourceGrid))
+                {
+                    return TryMoveToFirstFit(sourceGrid, showingBackpack ? new[] { BackpackGrid } : PocketGrids, item);
+                }
+
+                return TryMoveToFirstFit(sourceGrid, HandGrids, item);
+            }
 
             if (sourceGrid == ExternalGrid)
             {
@@ -398,7 +471,7 @@ namespace Nting.Storage
         {
             if (LeftTitleText != null)
             {
-                LeftTitleText.text = showingBackpack ? "学生书包" : "衣服口袋";
+                LeftTitleText.text = showingBackpack ? "\u624b\u6301 / \u5b66\u751f\u4e66\u5305" : "\u624b\u6301 / \u8863\u670d\u53e3\u888b";
             }
 
             if (LeftMetaText != null)
@@ -411,7 +484,7 @@ namespace Nting.Storage
                 }
                 else
                 {
-                    LeftMetaText.text = "4 × 2x3";
+                    LeftMetaText.text = "2 hands + 4 pockets";
                 }
             }
 
@@ -590,16 +663,19 @@ namespace Nting.Storage
             backpackTabRect.sizeDelta = new Vector2(132f, 34f);
             BackpackTabLabel = BackpackTabButton.GetComponentInChildren<Text>();
 
+            CreateHandGrid(panel, 0, "\u5de6\u624b", new Vector2(22f, -98f));
+            CreateHandGrid(panel, 1, "\u53f3\u624b", new Vector2(338f, -98f));
+
             pocketPage = StorageUIUtility.CreateRectObject("PocketPage", panel).gameObject;
             RectTransform pocketRect = pocketPage.GetComponent<RectTransform>();
             StorageUIUtility.SetAnchor(pocketRect, new Vector2(0f, 1f), new Vector2(0f, 1f), new Vector2(0f, 1f));
             pocketRect.anchoredPosition = Vector2.zero;
             pocketRect.sizeDelta = panel.sizeDelta;
 
-            CreatePocketGrid(pocketRect, 0, "左胸袋", new Vector2(22f, -108f));
-            CreatePocketGrid(pocketRect, 1, "右胸袋", new Vector2(338f, -108f));
-            CreatePocketGrid(pocketRect, 2, "左裤袋", new Vector2(22f, -336f));
-            CreatePocketGrid(pocketRect, 3, "右裤袋", new Vector2(338f, -336f));
+            CreatePocketGrid(pocketRect, 0, "\u5de6\u80f8\u888b", new Vector2(22f, -230f));
+            CreatePocketGrid(pocketRect, 1, "\u53f3\u80f8\u888b", new Vector2(338f, -230f));
+            CreatePocketGrid(pocketRect, 2, "\u5de6\u88e4\u888b", new Vector2(22f, -388f));
+            CreatePocketGrid(pocketRect, 3, "\u53f3\u88e4\u888b", new Vector2(338f, -388f));
 
             backpackPage = StorageUIUtility.CreateRectObject("BackpackPage", panel).gameObject;
             RectTransform backpackPageRect = backpackPage.GetComponent<RectTransform>();
@@ -607,10 +683,10 @@ namespace Nting.Storage
             backpackPageRect.anchoredPosition = Vector2.zero;
             backpackPageRect.sizeDelta = panel.sizeDelta;
 
-            backpackGridPad = CreateBox(backpackPageRect, "BackpackGridSoftPad", new Vector2(150f, -126f), new Vector2(360f, 330f),
+            backpackGridPad = CreateBox(backpackPageRect, "BackpackGridSoftPad", new Vector2(150f, -238f), new Vector2(360f, 300f),
                 new Color(0.095f, 0.115f, 0.112f, 0.24f), Color.clear, 16f, 0f, false);
-            BackpackGrid = CreateGrid(backpackPageRect, "BackpackGrid", new Vector2(193f, -138f), 52f, 4f);
-            RectTransform hintPanel = CreateBox(backpackPageRect, "NoBackpackHint", new Vector2(180f, -210f), new Vector2(300f, 100f),
+            BackpackGrid = CreateGrid(backpackPageRect, "BackpackGrid", new Vector2(193f, -250f), 52f, 4f);
+            RectTransform hintPanel = CreateBox(backpackPageRect, "NoBackpackHint", new Vector2(180f, -280f), new Vector2(300f, 100f),
                 StoragePalette.PanelRaised, StoragePalette.PanelBorder, 1f, 3f, false);
             noBackpackHint = hintPanel.gameObject;
             Text hint = StorageUIUtility.CreateText("HintText", hintPanel, "未装备背包", 22, TextAnchor.MiddleCenter, StoragePalette.TextMuted);
@@ -648,11 +724,17 @@ namespace Nting.Storage
             SelectedItemMetaText = StorageUIUtility.CreateText("SelectedItemMeta", footer, "点击物品查看详情", 14, TextAnchor.MiddleLeft, StoragePalette.TextSecondary);
             StorageUIUtility.SetTopLeft(SelectedItemMetaText.rectTransform, 22f, 55f, 900f, 24f);
 
+            UseItemButton = StorageUIUtility.CreateButton("UseItemButton", footer, "\u4f7f\u7528", () => TryUseSelectedItem(),
+                StoragePalette.TabNormal, Color.clear);
+            RectTransform useRect = UseItemButton.GetComponent<RectTransform>();
+            StorageUIUtility.SetTopLeft(useRect, 930f, 31f, 100f, 36f);
+            RefreshUseButton();
+
             Text statusLabel = StorageUIUtility.CreateText("StatusLabel", footer, "操作提示", 12, TextAnchor.MiddleRight, StoragePalette.PaperDim);
-            StorageUIUtility.SetTopLeft(statusLabel.rectTransform, 1020f, 12f, 400f, 18f);
+            StorageUIUtility.SetTopLeft(statusLabel.rectTransform, 1040f, 12f, 380f, 18f);
 
             StatusText = StorageUIUtility.CreateText("StatusHint", footer, string.Empty, 15, TextAnchor.MiddleRight, StoragePalette.TextSecondary);
-            StorageUIUtility.SetTopLeft(StatusText.rectTransform, 860f, 35f, 560f, 44f);
+            StorageUIUtility.SetTopLeft(StatusText.rectTransform, 1040f, 35f, 380f, 44f);
         }
 
         private void CreateDragLayer()
@@ -675,16 +757,28 @@ namespace Nting.Storage
             DragController.Canvas = Canvas;
         }
 
+        private void CreateHandGrid(RectTransform parent, int index, string title, Vector2 position)
+        {
+            RectTransform panel = CreateBox(parent, "HandGrid_" + index, position, new Vector2(286f, 116f),
+                StoragePalette.PanelRaised, StoragePalette.PanelBorder, 12f, 0.8f, false);
+            RectTransform strip = CreateBox(panel, "HandTitleStrip", new Vector2(12f, -10f), new Vector2(112f, 26f),
+                new Color(StoragePalette.PanelHeader.r, StoragePalette.PanelHeader.g, StoragePalette.PanelHeader.b, 0.72f), Color.clear, 8f, 0f, false);
+            Text label = StorageUIUtility.CreateText("HandTitle", strip, title, 15, TextAnchor.MiddleLeft, StoragePalette.TextPrimary);
+            StorageUIUtility.SetTopLeft(label.rectTransform, 12f, 2f, 90f, 22f);
+
+            HandGrids[index] = CreateGrid(panel, "Grid", new Vector2(99f, -28f), 42f, 4f);
+        }
+
         private void CreatePocketGrid(RectTransform parent, int index, string title, Vector2 position)
         {
-            RectTransform panel = CreateBox(parent, "PocketGrid_" + title, position, new Vector2(286f, 204f),
+            RectTransform panel = CreateBox(parent, "PocketGrid_" + title, position, new Vector2(286f, 148f),
                 StoragePalette.PanelRaised, StoragePalette.PanelBorder, 12f, 0.8f, false);
             RectTransform strip = CreateBox(panel, "PocketTitleStrip", new Vector2(12f, -10f), new Vector2(112f, 26f),
                 new Color(StoragePalette.PanelHeader.r, StoragePalette.PanelHeader.g, StoragePalette.PanelHeader.b, 0.72f), Color.clear, 8f, 0f, false);
             Text label = StorageUIUtility.CreateText("PocketTitle", strip, title, 15, TextAnchor.MiddleLeft, StoragePalette.TextPrimary);
             StorageUIUtility.SetTopLeft(label.rectTransform, 12f, 2f, 90f, 22f);
 
-            PocketGrids[index] = CreateGrid(panel, "Grid", new Vector2(92f, -42f), 48f, 4f);
+            PocketGrids[index] = CreateGrid(panel, "Grid", new Vector2(105f, -28f), 36f, 4f);
         }
 
         private StorageGridUI CreateGrid(Transform parent, string name, Vector2 position, float cellSize, float spacing)
@@ -718,6 +812,24 @@ namespace Nting.Storage
             Color border = selected ? StoragePalette.SlotHoverBorder : StoragePalette.PanelBorder;
             Color text = enabled ? (selected ? StoragePalette.TextPrimary : StoragePalette.TextSecondary) : StoragePalette.TextMuted;
             StorageUIUtility.StyleButton(button, fill, selected ? border : Color.clear, selected ? 1f : 0f, 9f, text);
+        }
+
+        private void RefreshUseButton()
+        {
+            if (UseItemButton == null)
+            {
+                return;
+            }
+
+            bool canUse = StorageItemUseUtility.CanUse(selectedItem);
+            UseItemButton.interactable = canUse;
+            StorageUIUtility.StyleButton(
+                UseItemButton,
+                canUse ? StoragePalette.ButtonNormal : StoragePalette.TabNormal,
+                canUse ? StoragePalette.SlotHoverBorder : Color.clear,
+                canUse ? 1f : 0f,
+                9f,
+                canUse ? StoragePalette.TextPrimary : StoragePalette.TextMuted);
         }
 
         private RectTransform CreateBox(Transform parent, string name, Vector2 position, Vector2 size, Color fill, Color border, float radius, float borderWidth, bool centered)

@@ -13,6 +13,11 @@ namespace NtingCampus.Gameplay.Schedule
         CheckBulletinBoard = 8,
         Socialize = 9,
         InvestigateDisturbance = 10,
-        AvoidDisturbance = 11
+        AvoidDisturbance = 11,
+        WorkCanteenCounter = 12,
+        WatchDeliveryPoint = 13,
+        PickupDelivery = 14,
+        SearchMissingDelivery = 15,
+        ReportMissingDelivery = 16
     }
 }

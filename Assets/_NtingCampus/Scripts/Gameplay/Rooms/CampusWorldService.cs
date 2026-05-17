@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using NtingCampus.Gameplay.Characters;
 using NtingCampus.Gameplay.Core;
 using NtingCampus.Gameplay.UI;
@@ -29,11 +30,12 @@ namespace NtingCampus.Gameplay.Rooms
             return FindFirstRoom(roomType, true);
         }
 
-        public CampusGameplayRoom FindFirstRoom(CampusRoomType roomType, bool requireUsableForGameplay = false)
+        public List<CampusGameplayRoom> GetRoomsByType(CampusRoomType roomType, bool requireUsableForGameplay = false)
         {
+            List<CampusGameplayRoom> matches = new List<CampusGameplayRoom>();
             if (roomRegistry == null || roomRegistry.Rooms == null)
             {
-                return null;
+                return matches;
             }
 
             for (int i = 0; i < roomRegistry.Rooms.Count; i++)
@@ -46,11 +48,17 @@ namespace NtingCampus.Gameplay.Rooms
 
                 if (!requireUsableForGameplay || room.IsUsableForGameplay)
                 {
-                    return room;
+                    matches.Add(room);
                 }
             }
 
-            return null;
+            return matches;
+        }
+
+        public CampusGameplayRoom FindFirstRoom(CampusRoomType roomType, bool requireUsableForGameplay = false)
+        {
+            List<CampusGameplayRoom> matches = GetRoomsByType(roomType, requireUsableForGameplay);
+            return matches.Count > 0 ? matches[0] : null;
         }
 
         public CampusGameplayRoom FindRoomById(string roomId)

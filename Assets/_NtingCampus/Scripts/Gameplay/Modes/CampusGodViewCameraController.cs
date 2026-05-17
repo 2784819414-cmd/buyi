@@ -18,7 +18,7 @@ namespace NtingCampus.Gameplay.Modes
         [SerializeField, Min(0.01f)] private float godViewZoomSpeed = 5f;
         [SerializeField, Min(0.1f)] private float minOrthographicSize = 3f;
         [SerializeField, Min(0.1f)] private float maxOrthographicSize = 80f;
-        [SerializeField, Min(0.1f)] private float studentModeOrthographicSize = 5f;
+        [SerializeField, Min(0.1f)] private float studentModeOrthographicSize = 7.5f;
         [SerializeField, Min(0.1f)] private float godViewOrthographicSize = 15f;
 
         private CampusGameMode currentMode = CampusGameMode.StudentBody;

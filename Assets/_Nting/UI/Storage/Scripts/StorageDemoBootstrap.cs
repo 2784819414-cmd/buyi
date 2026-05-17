@@ -13,6 +13,7 @@ namespace Nting.Storage
 
         private StorageWindowUI window;
         private StorageMemory memory;
+        private StorageContainerModel[] hands;
         private StorageContainerModel[] pockets;
         private StorageContainerModel backpack;
         private StorageContainerModel testBox;
@@ -29,7 +30,7 @@ namespace Nting.Storage
             bootstrap.BackpackEquipped = backpackEquipped;
             bootstrap.EnsureDemoData();
             bootstrap.EnsureWindow();
-            bootstrap.window.Open(bootstrap.pockets, bootstrap.backpack, bootstrap.BackpackEquipped, bootstrap.testBox);
+            bootstrap.window.OpenPlayerStorage(bootstrap.hands, bootstrap.pockets, bootstrap.backpack, bootstrap.BackpackEquipped, bootstrap.testBox, false);
         }
 
         private void Start()
@@ -42,7 +43,7 @@ namespace Nting.Storage
         {
             EnsureDemoData();
             EnsureWindow();
-            window.Open(pockets, backpack, BackpackEquipped, testBox);
+            window.OpenPlayerStorage(hands, pockets, backpack, BackpackEquipped, testBox, false);
         }
 
         [ContextMenu("Save Storage Memory To PlayerPrefs")]
@@ -60,7 +61,7 @@ namespace Nting.Storage
             EnsureDemoData();
             if (window != null && window.IsOpen)
             {
-                window.Open(pockets, backpack, BackpackEquipped, testBox);
+                window.OpenPlayerStorage(hands, pockets, backpack, BackpackEquipped, testBox, false);
             }
         }
 
@@ -80,15 +81,9 @@ namespace Nting.Storage
         {
             EnsureMemory();
 
-            pockets = new[]
-            {
-                memory.GetOrCreateContainer("pocket_left_chest", "左胸袋", 2, 3, 1.5f),
-                memory.GetOrCreateContainer("pocket_right_chest", "右胸袋", 2, 3, 1.5f),
-                memory.GetOrCreateContainer("pocket_left_pants", "左裤袋", 2, 3, 2f),
-                memory.GetOrCreateContainer("pocket_right_pants", "右裤袋", 2, 3, 2f)
-            };
-
-            backpack = memory.GetOrCreateContainer("school_backpack", "学生书包", 5, 6, 20f);
+            hands = StoragePlayerInventoryUtility.GetOrCreateHandContainers(memory);
+            pockets = StoragePlayerInventoryUtility.GetOrCreatePocketContainers(memory);
+            backpack = StoragePlayerInventoryUtility.GetOrCreateBackpack(memory);
             testBox = memory.GetOrCreateContainer("test_box", "测试箱", 4, 4, 12f);
 
             if (!memory.IsSessionFlagSet(DemoSeedFlag))
@@ -101,29 +96,20 @@ namespace Nting.Storage
         private void EnsureMemory()
         {
             memory = StorageMemory.GetOrCreate();
-            if (ItemRegistry == null)
-            {
-                ItemRegistry = Resources.Load<StorageItemRegistry>("StorageItemRegistry");
-            }
-
-            if (ItemRegistry == null)
-            {
-                ItemRegistry = StorageItemRegistry.CreateDemoRegistry();
-            }
-
+            ItemRegistry = ItemRegistry != null ? ItemRegistry : StoragePlayerInventoryUtility.EnsureRegistry(memory);
             memory.SetRegistry(ItemRegistry);
         }
 
         private void SeedDemoItems()
         {
-            memory.TryPlaceNewItem("pocket_left_chest", "phone", "phone_player_001", 0, 0);
-            memory.TryPlaceNewItem("pocket_left_chest", "note", "note_player_001", 1, 0);
-            memory.TryPlaceNewItem("pocket_right_chest", "key", "key_player_001", 0, 0);
-            memory.TryPlaceNewItem("pocket_left_pants", "snack", "snack_player_001", 0, 1);
+            memory.TryPlaceNewItem(StoragePlayerInventoryUtility.LeftChestPocketContainerId, "phone", "phone_player_001", 0, 0);
+            memory.TryPlaceNewItem(StoragePlayerInventoryUtility.LeftChestPocketContainerId, "note", "note_player_001", 1, 0);
+            memory.TryPlaceNewItem(StoragePlayerInventoryUtility.RightChestPocketContainerId, "key", "key_player_001", 0, 0);
+            memory.TryPlaceNewItem(StoragePlayerInventoryUtility.LeftPantsPocketContainerId, "snack", "snack_player_001", 0, 1);
 
-            memory.TryPlaceNewItem("school_backpack", "textbook", "textbook_player_001", 0, 0);
-            memory.TryPlaceNewItem("school_backpack", "workbook", "workbook_player_001", 2, 0);
-            memory.TryPlaceNewItem("school_backpack", "pencil_case", "pencil_case_player_001", 2, 2);
+            memory.TryPlaceNewItem(StoragePlayerInventoryUtility.BackpackContainerId, "textbook", "textbook_player_001", 0, 0);
+            memory.TryPlaceNewItem(StoragePlayerInventoryUtility.BackpackContainerId, "workbook", "workbook_player_001", 2, 0);
+            memory.TryPlaceNewItem(StoragePlayerInventoryUtility.BackpackContainerId, "pencil_case", "pencil_case_player_001", 2, 2);
 
             memory.TryPlaceNewItem("test_box", "lunch_box", "lunch_box_test_box_001", 0, 0);
         }

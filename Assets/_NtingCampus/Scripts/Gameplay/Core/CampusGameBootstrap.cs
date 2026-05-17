@@ -28,6 +28,7 @@ namespace NtingCampus.Gameplay.Core
         [SerializeField] private CampusGameplayEventHub gameplayEventHub;
         [SerializeField] private CampusPrankService prankService;
         [SerializeField] private CampusSanctionService sanctionService;
+        [SerializeField] private CampusPlayerInventoryController playerInventoryController;
         [SerializeField] private CampusGameState gameState = new CampusGameState();
         [SerializeField] private CampusResourceState resourceState = new CampusResourceState();
         [SerializeField] private CampusEventLog eventLog = new CampusEventLog();
@@ -48,6 +49,7 @@ namespace NtingCampus.Gameplay.Core
         public CampusGameplayEventHub GameplayEventHub => gameplayEventHub;
         public CampusPrankService PrankService => prankService;
         public CampusSanctionService SanctionService => sanctionService;
+        public CampusPlayerInventoryController PlayerInventoryController => playerInventoryController;
 
         public static CampusGameBootstrap EnsureSceneBootstrap()
         {
@@ -68,6 +70,7 @@ namespace NtingCampus.Gameplay.Core
             bootstrap.EnsureClassroomLoopService();
             bootstrap.EnsureSanctionService();
             bootstrap.EnsurePrankService();
+            bootstrap.EnsurePlayerInventoryController();
             bootstrap.EnsureDebugPanel();
             bootstrap.EnsureSettingsOverlay();
             bootstrap.EnsureLaunchSelectionApplier();
@@ -118,6 +121,9 @@ namespace NtingCampus.Gameplay.Core
             prankService = EnsurePrankService();
             prankService.Initialize(this);
 
+            playerInventoryController = EnsurePlayerInventoryController();
+            playerInventoryController.Initialize(this);
+
             isInitialized = true;
             eventLog.AddLog("[System] " + timeController.CurrentDateText +
                             " gameplay bootstrap initialized. Money=" + resourceState.Money +
@@ -140,6 +146,7 @@ namespace NtingCampus.Gameplay.Core
             EnsureDebugPanel();
             EnsureSettingsOverlay();
             EnsureLaunchSelectionApplier();
+            EnsurePlayerInventoryController();
         }
 
         private void OnDestroy()
@@ -160,6 +167,9 @@ namespace NtingCampus.Gameplay.Core
             initialGameState.InitialCampusChaos = Mathf.Clamp(initialGameState.InitialCampusChaos, CampusGameState.StatMin, CampusGameState.StatMax);
             initialGameState.InitialTeacherAlertness = Mathf.Clamp(initialGameState.InitialTeacherAlertness, CampusGameState.StatMin, CampusGameState.StatMax);
             initialGameState.InitialDivineInterest = Mathf.Clamp(initialGameState.InitialDivineInterest, CampusGameState.StatMin, CampusGameState.StatMax);
+            initialGameState.InitialPlayerSuspicion = Mathf.Clamp(initialGameState.InitialPlayerSuspicion, CampusGameState.StatMin, CampusGameState.StatMax);
+            initialGameState.InitialCanteenAlertLevel = Mathf.Clamp(initialGameState.InitialCanteenAlertLevel, CampusGameState.StatMin, CampusGameState.StatMax);
+            initialGameState.InitialDeliveryAlertLevel = Mathf.Clamp(initialGameState.InitialDeliveryAlertLevel, CampusGameState.StatMin, CampusGameState.StatMax);
             initialGameState.InitialDailyWarningCount = Mathf.Max(0, initialGameState.InitialDailyWarningCount);
         }
 
@@ -201,6 +211,22 @@ namespace NtingCampus.Gameplay.Core
             {
                 gameObject.AddComponent<CampusGameplaySettingsOverlay>();
             }
+        }
+
+        private CampusPlayerInventoryController EnsurePlayerInventoryController()
+        {
+            if (playerInventoryController != null)
+            {
+                return playerInventoryController;
+            }
+
+            playerInventoryController = GetComponent<CampusPlayerInventoryController>();
+            if (playerInventoryController == null)
+            {
+                playerInventoryController = gameObject.AddComponent<CampusPlayerInventoryController>();
+            }
+
+            return playerInventoryController;
         }
 
         private CampusTimeController EnsureTimeController()

@@ -13,6 +13,7 @@ namespace NtingCampus.Gameplay.Characters
         [SerializeField] private CampusLocalizedText localizedDisplayName;
         [SerializeField] private CampusCharacterRole role = CampusCharacterRole.Student;
         [SerializeField] private CampusTeacherDuty teacherDuty = CampusTeacherDuty.None;
+        [SerializeField] private CampusStaffDuty staffDuty = CampusStaffDuty.None;
         [SerializeField] private string classId = string.Empty;
         [SerializeField] private string currentRoomId = string.Empty;
         [SerializeField] private CampusCharacterState state = CampusCharacterState.Normal;
@@ -32,6 +33,7 @@ namespace NtingCampus.Gameplay.Characters
         public CampusLocalizedText LocalizedDisplayName => localizedDisplayName;
         public CampusCharacterRole Role => role;
         public CampusTeacherDuty TeacherDuty => teacherDuty;
+        public CampusStaffDuty StaffDuty => staffDuty;
         public string ClassId => classId;
         public string CurrentRoomId => currentRoomId;
         public CampusCharacterState State => state;
@@ -57,13 +59,15 @@ namespace NtingCampus.Gameplay.Characters
             bool playerControlled,
             int initialSleepiness,
             int initialMischief,
-            IEnumerable<CampusCharacterTrait> characterTraits)
+            IEnumerable<CampusCharacterTrait> characterTraits,
+            CampusStaffDuty staffDuties = CampusStaffDuty.None)
         {
             id = string.IsNullOrWhiteSpace(characterId) ? Guid.NewGuid().ToString("N") : characterId.Trim();
             legacyDisplayName = string.IsNullOrWhiteSpace(legacyCharacterName) ? string.Empty : legacyCharacterName.Trim();
             localizedDisplayName = characterName;
             role = characterRole;
             teacherDuty = duties;
+            staffDuty = staffDuties;
             classId = string.IsNullOrWhiteSpace(characterClassId) ? string.Empty : characterClassId.Trim();
             state = characterState;
             isPlayerControlled = playerControlled;

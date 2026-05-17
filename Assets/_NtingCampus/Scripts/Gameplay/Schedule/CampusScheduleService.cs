@@ -2,6 +2,7 @@ using NtingCampus.Gameplay.Characters;
 using NtingCampus.Gameplay.Core;
 using NtingCampus.Gameplay.Rooms;
 using NtingCampus.Gameplay.UI;
+using System.Collections.Generic;
 using UnityEngine;
 
 namespace NtingCampus.Gameplay.Schedule
@@ -94,6 +95,11 @@ namespace NtingCampus.Gameplay.Schedule
                 return BuildTeacherDirective(data, segment);
             }
 
+            if (data.Role == CampusCharacterRole.Staff)
+            {
+                return BuildStaffDirective(data, segment);
+            }
+
             return BuildStudentDirective(data, segment);
         }
 
@@ -112,12 +118,13 @@ namespace NtingCampus.Gameplay.Schedule
                 return currentRoom;
             }
 
-            CampusGameplayRoom scheduledRoom = worldService.FindFirstUsableRoom(directive.TargetRoomType);
-            if (scheduledRoom == null)
+            List<CampusGameplayRoom> candidates = worldService.GetRoomsByType(directive.TargetRoomType, true);
+            if (candidates.Count == 0)
             {
-                scheduledRoom = worldService.FindFirstRoom(directive.TargetRoomType);
+                candidates = worldService.GetRoomsByType(directive.TargetRoomType, false);
             }
 
+            CampusGameplayRoom scheduledRoom = ResolveDistributedRoom(runtime, currentRoom, directive, candidates);
             if (scheduledRoom != null)
             {
                 return scheduledRoom;
@@ -130,6 +137,162 @@ namespace NtingCampus.Gameplay.Schedule
             }
 
             return currentRoom;
+        }
+
+        private CampusGameplayRoom ResolveDistributedRoom(
+            CampusCharacterRuntime runtime,
+            CampusGameplayRoom currentRoom,
+            CampusCharacterTaskDirective directive,
+            List<CampusGameplayRoom> candidates)
+        {
+            if (candidates == null || candidates.Count == 0)
+            {
+                return null;
+            }
+
+            if (candidates.Count == 1)
+            {
+                return candidates[0];
+            }
+
+            string runtimeKey = ResolveRuntimeDistributionKey(runtime, directive);
+            int runtimeSeed = StableHash(runtimeKey);
+            float distanceWeight = ResolveDistanceWeight(directive != null ? directive.TargetRoomType : CampusRoomType.Unknown);
+
+            CampusGameplayRoom bestRoom = null;
+            float bestScore = float.MaxValue;
+            for (int i = 0; i < candidates.Count; i++)
+            {
+                CampusGameplayRoom room = candidates[i];
+                if (room == null)
+                {
+                    continue;
+                }
+
+                float score = ScoreRoomCandidate(runtime, currentRoom, directive, room, runtimeSeed, distanceWeight);
+                if (score < bestScore)
+                {
+                    bestScore = score;
+                    bestRoom = room;
+                }
+            }
+
+            return bestRoom;
+        }
+
+        private float ScoreRoomCandidate(
+            CampusCharacterRuntime runtime,
+            CampusGameplayRoom currentRoom,
+            CampusCharacterTaskDirective directive,
+            CampusGameplayRoom candidate,
+            int runtimeSeed,
+            float distanceWeight)
+        {
+            float score = PseudoRandom01(runtimeSeed, StableHash(candidate.RoomId) + (int)candidate.RoomType * 97) * 5f;
+
+            if (runtime != null)
+            {
+                score += Vector2.SqrMagnitude((Vector2)(candidate.WorldCenter - runtime.transform.position)) * distanceWeight;
+            }
+
+            if (currentRoom != null && candidate.FloorIndex == currentRoom.FloorIndex)
+            {
+                score -= 0.8f;
+            }
+
+            if (directive != null && directive.PreferredFacilityType != CampusFacilityType.Unknown)
+            {
+                score += candidate.GetFacilityCount(directive.PreferredFacilityType) > 0 ? -4f : 8f;
+            }
+
+            if (directive != null && directive.TargetRoomType == CampusRoomType.Classroom && runtime != null && runtime.Data != null)
+            {
+                score += ClassroomScatterBias(runtime.Data.ClassId, candidate.RoomId);
+            }
+
+            return score;
+        }
+
+        private static float ResolveDistanceWeight(CampusRoomType roomType)
+        {
+            switch (roomType)
+            {
+                case CampusRoomType.Classroom:
+                case CampusRoomType.Office:
+                case CampusRoomType.Dormitory:
+                    return 0.22f;
+                case CampusRoomType.Corridor:
+                case CampusRoomType.CommonActivityZone:
+                    return 0.035f;
+                default:
+                    return 0.08f;
+            }
+        }
+
+        private static float ClassroomScatterBias(string classId, string roomId)
+        {
+            if (string.IsNullOrWhiteSpace(classId) || string.IsNullOrWhiteSpace(roomId))
+            {
+                return 0f;
+            }
+
+            int classSeed = StableHash(classId);
+            int roomSeed = StableHash(roomId);
+            return PseudoRandom01(classSeed, roomSeed) * 1.2f;
+        }
+
+        private static string ResolveRuntimeDistributionKey(CampusCharacterRuntime runtime, CampusCharacterTaskDirective directive)
+        {
+            if (runtime == null)
+            {
+                return "npc|" + (directive != null ? directive.TaskType.ToString() : "None");
+            }
+
+            CampusCharacterData data = runtime.Data;
+            if (data != null)
+            {
+                if (!string.IsNullOrWhiteSpace(data.ClassId) &&
+                    directive != null &&
+                    directive.TargetRoomType == CampusRoomType.Classroom)
+                {
+                    return data.ClassId + "|" + runtime.CharacterId;
+                }
+
+                return data.Id + "|" + data.Role + "|" + data.TeacherDuty;
+            }
+
+            return !string.IsNullOrWhiteSpace(runtime.CharacterId)
+                ? runtime.CharacterId
+                : runtime.GetInstanceID().ToString();
+        }
+
+        private static int StableHash(string value)
+        {
+            unchecked
+            {
+                int hash = 23;
+                if (!string.IsNullOrEmpty(value))
+                {
+                    for (int i = 0; i < value.Length; i++)
+                    {
+                        hash = hash * 31 + value[i];
+                    }
+                }
+
+                return hash == int.MinValue ? int.MaxValue : Mathf.Abs(hash);
+            }
+        }
+
+        private static float PseudoRandom01(int seed, int salt)
+        {
+            unchecked
+            {
+                int value = seed;
+                value ^= salt * 374761393;
+                value = (value << 13) ^ value;
+                int mixed = value * (value * value * 15731 + 789221) + 1376312589;
+                return (mixed & 0x7fffffff) / 2147483647f;
+            }
         }
 
         private CampusGameplayRoom ResolveFallbackRoom(CampusRoomType targetRoomType)
@@ -354,13 +517,47 @@ namespace NtingCampus.Gameplay.Schedule
             return directive;
         }
 
+        private static CampusCharacterTaskDirective BuildStaffDirective(CampusCharacterData data, CampusTimeSegment segment)
+        {
+            CampusCharacterTaskDirective directive = new CampusCharacterTaskDirective();
+
+            if ((data.StaffDuty & CampusStaffDuty.CanteenClerk) != 0)
+            {
+                directive.TaskType = CampusCharacterTaskType.WorkCanteenCounter;
+                directive.TargetRoomType = CampusRoomType.Canteen;
+                directive.PreferredFacilityType = CampusFacilityType.CanteenCounter;
+                directive.HoldRadius = 0.18f;
+                directive.DebugLabel = "CanteenClerk";
+                return directive;
+            }
+
+            if ((data.StaffDuty & CampusStaffDuty.DeliveryWatcher) != 0)
+            {
+                directive.TaskType = CampusCharacterTaskType.WatchDeliveryPoint;
+                directive.TargetRoomType = CampusRoomType.Outdoor;
+                directive.PreferredFacilityType = CampusFacilityType.DeliveryDropPoint;
+                directive.HoldRadius = 0.2f;
+                directive.DebugLabel = "DeliveryWatch";
+                return directive;
+            }
+
+            directive.TaskType = CampusCharacterTaskType.WanderCommonArea;
+            directive.TargetRoomType = CampusRoomType.CommonActivityZone;
+            directive.PreferredFacilityType = CampusFacilityType.Door;
+            directive.HoldRadius = 0.3f;
+            directive.DebugLabel = "StaffIdle";
+            return directive;
+        }
+
         private static CampusRoomType ResolveScheduledRoomType(CampusCharacterData data, CampusTimeSegment currentSegment)
         {
             CampusCharacterTaskDirective directive = data == null
                 ? null
                 : data.Role == CampusCharacterRole.Teacher
                     ? BuildTeacherDirective(data, currentSegment)
-                    : BuildStudentDirective(data, currentSegment);
+                    : data.Role == CampusCharacterRole.Staff
+                        ? BuildStaffDirective(data, currentSegment)
+                        : BuildStudentDirective(data, currentSegment);
             return directive != null ? directive.TargetRoomType : CampusRoomType.Unknown;
         }
 
