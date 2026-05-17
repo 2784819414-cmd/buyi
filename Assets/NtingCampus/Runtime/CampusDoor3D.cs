@@ -5,7 +5,7 @@ using UnityEngine;
 namespace NtingCampusMapEditor
 {
     /// <summary>
-    /// Thin 3D door leaf with a wall-style prism and 2D gameplay collision.
+    /// Procedural 2.5D door that rotates around a hinge pivot and follows CampusPlacedObject rotation.
     /// </summary>
     [ExecuteAlways]
     [DisallowMultipleComponent]
@@ -32,6 +32,8 @@ namespace NtingCampusMapEditor
         public float PanelDepth = 0.42f;
         public float TopDepth = -0.015f;
         public float EndBevel = 0.055f;
+        public float HingeWidth = 0.06f;
+        public bool OpenClockwise;
 
         [SerializeField]
         private bool isOpen;
@@ -83,6 +85,7 @@ namespace NtingCampusMapEditor
             UpperFaceTopExposure = Mathf.Clamp(UpperFaceTopExposure, 0.02f, UpperFaceBaseExposure);
             PanelDepth = Mathf.Max(0.02f, PanelDepth);
             EndBevel = Mathf.Clamp(EndBevel, 0f, PanelWidth * 0.45f);
+            HingeWidth = Mathf.Clamp(HingeWidth, 0.01f, PanelWidth * 0.2f);
             AnimationDuration = Mathf.Max(0f, AnimationDuration);
 
             CacheReferences();
@@ -159,7 +162,7 @@ namespace NtingCampusMapEditor
             }
 
             isOpen = open;
-            ApplyVisualAngle(open ? OpenAngle : 0f);
+            ApplyVisualState(open ? GetSignedOpenAngle() : 0f);
             ApplyBlockingState(open, true);
         }
 
@@ -175,6 +178,7 @@ namespace NtingCampusMapEditor
             DoorMeshFilter.sharedMesh = mesh;
             ApplyMaterials();
             ApplyColliderDefaults();
+            ApplyVisualState(isOpen ? GetSignedOpenAngle() : 0f);
         }
 
         private IEnumerator AnimateDoor(bool open)
@@ -182,34 +186,32 @@ namespace NtingCampusMapEditor
             isOpen = open;
             ApplyBlockingState(open, false);
 
-            float startAngle = DoorPivot != null ? DoorPivot.localEulerAngles.z : 0f;
-            if (startAngle > 180f)
-            {
-                startAngle -= 360f;
-            }
-
-            float targetAngle = open ? OpenAngle : 0f;
+            float startAngle = GetCurrentSwingAngle();
+            float targetAngle = open ? GetSignedOpenAngle() : 0f;
             float elapsed = 0f;
             while (elapsed < AnimationDuration)
             {
                 elapsed += Time.deltaTime;
                 float t = Mathf.Clamp01(elapsed / AnimationDuration);
                 t = t * t * (3f - 2f * t);
-                ApplyVisualAngle(Mathf.Lerp(startAngle, targetAngle, t));
+                ApplyVisualState(Mathf.Lerp(startAngle, targetAngle, t));
                 yield return null;
             }
 
-            ApplyVisualAngle(targetAngle);
+            ApplyVisualState(targetAngle);
             ApplyBlockingState(open, true);
             animationRoutine = null;
         }
 
-        private void ApplyVisualAngle(float angle)
+        private void ApplyVisualState(float swingAngle)
         {
-            if (DoorPivot != null)
+            if (DoorPivot == null)
             {
-                DoorPivot.localRotation = Quaternion.Euler(0f, 0f, angle);
+                return;
             }
+
+            DoorPivot.localPosition = GetClosedPivotLocalPosition();
+            DoorPivot.localRotation = Quaternion.Euler(0f, 0f, GetClosedAngle() + swingAngle);
         }
 
         private void ApplyBlockingState(bool open, bool finalState)
@@ -368,6 +370,7 @@ namespace NtingCampusMapEditor
             float upperBase = Mathf.Max(0.02f, UpperFaceBaseExposure);
             float upperTop = Mathf.Clamp(UpperFaceTopExposure, 0.02f, upperBase);
             float bevel = Mathf.Clamp(EndBevel, 0f, width * 0.45f);
+            float hingeWidth = Mathf.Clamp(HingeWidth, 0.01f, width * 0.2f);
             float topZ = TopDepth;
             float baseZ = PanelDepth;
 
@@ -386,6 +389,8 @@ namespace NtingCampusMapEditor
             AddQuad(bSW, bNW, tNW, tSW, faceTriangles, 0f, 0f, 0.08f, 1f);
             AddQuad(bNE, bSE, tSE, tNE, faceTriangles, 0.92f, 0f, 1f, 1f);
 
+            AddHingeGeometry(lowerBase, lowerTop, upperBase, upperTop, baseZ, topZ, hingeWidth);
+
             mesh.Clear();
             mesh.SetVertices(vertices);
             mesh.SetUVs(0, uvs);
@@ -394,6 +399,27 @@ namespace NtingCampusMapEditor
             mesh.SetTriangles(topTriangles, 1);
             mesh.RecalculateNormals();
             mesh.RecalculateBounds();
+        }
+
+        private void AddHingeGeometry(float lowerBase, float lowerTop, float upperBase, float upperTop, float baseZ, float topZ, float hingeWidth)
+        {
+            float hingeMinX = -hingeWidth;
+            float hingeMaxX = 0f;
+            float hingeTopInset = hingeWidth * 0.2f;
+
+            Vector3 bSW = new Vector3(hingeMinX, -lowerBase, baseZ);
+            Vector3 bSE = new Vector3(hingeMaxX, -lowerBase, baseZ);
+            Vector3 bNE = new Vector3(hingeMaxX, upperBase, baseZ);
+            Vector3 bNW = new Vector3(hingeMinX, upperBase, baseZ);
+            Vector3 tSW = new Vector3(hingeMinX + hingeTopInset, -lowerTop, topZ);
+            Vector3 tSE = new Vector3(hingeMaxX, -lowerTop, topZ);
+            Vector3 tNE = new Vector3(hingeMaxX, upperTop, topZ);
+            Vector3 tNW = new Vector3(hingeMinX + hingeTopInset, upperTop, topZ);
+
+            AddQuad(tSW, tSE, tNE, tNW, topTriangles, 0f, 0f, 0.12f, 1f);
+            AddQuad(bSE, bSW, tSW, tSE, faceTriangles, 0f, 0f, 0.12f, 1f);
+            AddQuad(bNW, bNE, tNE, tNW, faceTriangles, 0f, 0f, 0.12f, 1f);
+            AddQuad(bSW, bNW, tNW, tSW, faceTriangles, 0f, 0f, 0.12f, 1f);
         }
 
         private void AddQuad(Vector3 a, Vector3 b, Vector3 c, Vector3 d, List<int> triangles)
@@ -456,28 +482,60 @@ namespace NtingCampusMapEditor
             if (DoorCollider is BoxCollider2D blocker)
             {
                 blocker.isTrigger = false;
-                blocker.offset = GetPanelCenterLocal(blocker.transform);
+                blocker.offset = new Vector2(Mathf.Max(0.1f, PanelWidth) * 0.5f, GetPanelCenterY());
                 blocker.size = new Vector2(Mathf.Max(0.1f, PanelWidth), GetBaseThickness());
             }
 
             if (InteractionCollider is BoxCollider2D trigger)
             {
                 trigger.isTrigger = true;
-                trigger.offset = GetPanelCenterLocal(trigger.transform);
-                float triggerSize = Mathf.Max(0.7f, PanelWidth + 0.45f);
+                trigger.offset = new Vector2(0f, GetPanelCenterY());
+                float triggerSize = Mathf.Max(1f, PanelWidth + 0.45f);
                 trigger.size = new Vector2(triggerSize, triggerSize);
             }
         }
 
-        private Vector2 GetPanelCenterLocal(Transform target)
+        private float GetCurrentSwingAngle()
         {
-            float width = Mathf.Max(0.1f, PanelWidth);
-            float centerY = (Mathf.Max(0.02f, UpperFaceBaseExposure) - Mathf.Max(0.02f, LowerFaceBaseExposure)) * 0.5f;
-            Transform pivot = DoorPivot != null ? DoorPivot : transform;
-            Transform localTarget = target != null ? target : transform;
-            Vector3 worldCenter = pivot.TransformPoint(new Vector3(width * 0.5f, centerY, 0f));
-            Vector3 localCenter = localTarget.InverseTransformPoint(worldCenter);
-            return new Vector2(localCenter.x, localCenter.y);
+            if (DoorPivot == null)
+            {
+                return 0f;
+            }
+
+            return Mathf.DeltaAngle(GetClosedAngle(), DoorPivot.localEulerAngles.z);
+        }
+
+        private float GetClosedAngle()
+        {
+            return ResolvePlacementRotation90() * 90f;
+        }
+
+        private Vector3 GetClosedPivotLocalPosition()
+        {
+            float halfWidth = Mathf.Max(0.1f, PanelWidth) * 0.5f;
+            float angle = GetClosedAngle() * Mathf.Deg2Rad;
+            return new Vector3(-Mathf.Cos(angle) * halfWidth, -Mathf.Sin(angle) * halfWidth, 0f);
+        }
+
+        private int ResolvePlacementRotation90()
+        {
+            if (PlacedObject != null)
+            {
+                return PlacedObject.ResolveAllowedRotation90(PlacedObject.Rotation90);
+            }
+
+            return CampusPlacedObject.NormalizeRotation90(Mathf.RoundToInt(transform.localEulerAngles.z / 90f));
+        }
+
+        private float GetSignedOpenAngle()
+        {
+            float magnitude = Mathf.Abs(OpenAngle);
+            return OpenClockwise ? -magnitude : magnitude;
+        }
+
+        private float GetPanelCenterY()
+        {
+            return (Mathf.Max(0.02f, UpperFaceBaseExposure) - Mathf.Max(0.02f, LowerFaceBaseExposure)) * 0.5f;
         }
 
         private float GetBaseThickness()

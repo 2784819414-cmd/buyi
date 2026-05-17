@@ -98,6 +98,8 @@ MonoBehaviour:
   Cell: {x: 0, y: 0, z: 0}
   FootprintSize: {x: 1, y: 1}
   Rotation90: 0
+  OverrideAllowRotation: 1
+  AllowRotation: 1
   SortingOrderOffset: 8
   BlocksMovement: 1
   BlocksSight: 1

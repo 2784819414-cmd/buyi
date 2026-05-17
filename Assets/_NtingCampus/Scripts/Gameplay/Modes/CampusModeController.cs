@@ -1,3 +1,5 @@
+using System.Reflection;
+using NtingCampus.Gameplay.Characters;
 using NtingCampus.Gameplay.Core;
 using NtingCampusMapEditor;
 using UnityEngine;
@@ -8,7 +10,7 @@ namespace NtingCampus.Gameplay.Modes
     public sealed class CampusModeController : MonoBehaviour
     {
         [SerializeField] private CampusGameBootstrap bootstrap;
-        [SerializeField] private CampusTestPlayerController playerController;
+        [SerializeField] private CampusCharacterRuntime playerRuntime;
         [SerializeField] private CampusGodViewCameraController cameraController;
         [SerializeField] private KeyCode toggleModeKey = KeyCode.Tab;
         [SerializeField] private KeyCode pauseKey = KeyCode.Alpha1;
@@ -136,9 +138,33 @@ namespace NtingCampus.Gameplay.Modes
                 }
             }
 
-            if (playerController == null)
+            if (bootstrap != null && bootstrap.RosterService != null && bootstrap.RosterService.PlayerRuntime != null)
             {
-                playerController = FindFirstObjectByType<CampusTestPlayerController>(FindObjectsInactive.Include);
+                playerRuntime = bootstrap.RosterService.PlayerRuntime;
+            }
+
+            if (playerRuntime == null)
+            {
+                CampusPlayerCharacter playerCharacter = FindFirstObjectByType<CampusPlayerCharacter>(FindObjectsInactive.Include);
+                if (playerCharacter != null)
+                {
+                    playerRuntime = playerCharacter.CharacterRuntime;
+                }
+            }
+
+            if (playerRuntime == null)
+            {
+                CampusCharacterRuntime[] runtimes =
+                    FindObjectsByType<CampusCharacterRuntime>(FindObjectsInactive.Include, FindObjectsSortMode.None);
+                for (int i = 0; i < runtimes.Length; i++)
+                {
+                    CampusCharacterRuntime runtime = runtimes[i];
+                    if (runtime != null && runtime.Data != null && runtime.Data.IsPlayerControlled)
+                    {
+                        playerRuntime = runtime;
+                        break;
+                    }
+                }
             }
 
             if (cameraController == null)
@@ -153,6 +179,11 @@ namespace NtingCampus.Gameplay.Modes
                         cameraController = host.AddComponent<CampusGodViewCameraController>();
                     }
                 }
+            }
+
+            if (cameraController != null && CurrentMode == CampusGameMode.StudentBody && playerRuntime != null)
+            {
+                cameraController.SetGameMode(CampusGameMode.StudentBody, playerRuntime.transform);
             }
         }
 
@@ -172,14 +203,11 @@ namespace NtingCampus.Gameplay.Modes
             bootstrap.GameState.SetMode(mode);
 
             bool enablePlayerGameplayInput = mode == CampusGameMode.StudentBody;
-            if (playerController != null)
-            {
-                playerController.SetGameplayInputEnabled(enablePlayerGameplayInput);
-            }
+            ApplyPlayerGameplayInput(enablePlayerGameplayInput);
 
             if (cameraController != null)
             {
-                cameraController.SetGameMode(mode, playerController != null ? playerController.transform : null);
+                cameraController.SetGameMode(mode, playerRuntime != null ? playerRuntime.transform : null);
             }
 
             if (writeLog && bootstrap.EventLog != null)
@@ -187,6 +215,37 @@ namespace NtingCampus.Gameplay.Modes
                 bootstrap.EventLog.AddLog(mode == CampusGameMode.StudentBody
                     ? "[System] Switched to student body mode."
                     : "[System] Switched to god view mode.");
+            }
+        }
+
+        private void ApplyPlayerGameplayInput(bool enabled)
+        {
+            if (playerRuntime == null)
+            {
+                return;
+            }
+
+            MonoBehaviour[] components = playerRuntime.GetComponents<MonoBehaviour>();
+            for (int i = 0; i < components.Length; i++)
+            {
+                MonoBehaviour component = components[i];
+                if (component == null)
+                {
+                    continue;
+                }
+
+                MethodInfo method = component.GetType().GetMethod(
+                    "SetGameplayInputEnabled",
+                    BindingFlags.Instance | BindingFlags.Public,
+                    null,
+                    new[] { typeof(bool) },
+                    null);
+                if (method == null)
+                {
+                    continue;
+                }
+
+                method.Invoke(component, new object[] { enabled });
             }
         }
     }

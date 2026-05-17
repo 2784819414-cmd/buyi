@@ -11,6 +11,13 @@ namespace NtingCampusMapEditor
     /// </summary>
     public static class CampusWallMeshRenderer
     {
+        public const float WallHalfCell = 0.5f;
+        public const float WallTopHalfWidth = 0.205f;
+        public const float WallBottomHalfWidth = 0.330f;
+        public const float WallTopDepth = -0.015f;
+        public const float WallBaseDepth = 0.46f;
+        public const float HorizontalWallTopYOffset = 0.055f;
+
         private const int ReservedLegacySurface = 0;
         private const int WallSouthSurface = 1;
         private const int WallEastSurface = 2;
@@ -20,11 +27,12 @@ namespace NtingCampusMapEditor
         private const int EdgeSurface = 6;
         private const int SurfaceCount = 7;
 
-        private const float HalfCell = 0.5f;
-        private const float TopHalfWidth = 0.205f;
-        private const float BottomHalfWidth = 0.330f;
-        private const float TopDepth = -0.015f;
-        private const float BaseDepth = 0.46f;
+        private const float HalfCell = WallHalfCell;
+        private const float TopHalfWidth = WallTopHalfWidth;
+        private const float BottomHalfWidth = WallBottomHalfWidth;
+        private const float TopDepth = WallTopDepth;
+        private const float BaseDepth = WallBaseDepth;
+        private const float HorizontalTopYOffset = HorizontalWallTopYOffset;
         private const float WallTextureDensity = 1.45f;
         private const string WallTwoSidedMeshLitShaderName = "Nting Campus/2D/Wall Mesh Lit Two Sided";
         private const string LegacyWallTwoSidedMeshUnlitShaderName = "Nting Campus/2D/Wall Mesh Unlit Two Sided";
@@ -433,6 +441,64 @@ namespace NtingCampusMapEditor
             }
         }
 
+        public static Vector3 GetWallFaceCenterLocal(int rotation90)
+        {
+            GetWallFaceCorners(rotation90, out Vector3 bottomLeft, out Vector3 bottomRight, out Vector3 topRight, out Vector3 topLeft);
+            return (bottomLeft + bottomRight + topRight + topLeft) * 0.25f;
+        }
+
+        public static void GetWallFaceBasis(int rotation90, out Vector3 widthAxis, out Vector3 heightAxis, out Vector3 normalAxis)
+        {
+            GetWallFaceCorners(rotation90, out Vector3 bottomLeft, out Vector3 bottomRight, out Vector3 topRight, out Vector3 topLeft);
+            widthAxis = (bottomRight - bottomLeft).normalized;
+
+            Vector3 rawHeight = ((topLeft + topRight) - (bottomLeft + bottomRight)) * 0.5f;
+            normalAxis = Vector3.Cross(widthAxis, rawHeight).normalized;
+            heightAxis = Vector3.Cross(normalAxis, widthAxis).normalized;
+            if (Vector3.Dot(heightAxis, rawHeight) < 0f)
+            {
+                heightAxis = -heightAxis;
+                normalAxis = -normalAxis;
+            }
+        }
+
+        private static void GetWallFaceCorners(int rotation90, out Vector3 bottomLeft, out Vector3 bottomRight, out Vector3 topRight, out Vector3 topLeft)
+        {
+            switch (NormalizeWallFaceRotation(rotation90))
+            {
+                case 1:
+                    bottomLeft = new Vector3(WallBottomHalfWidth, -WallBottomHalfWidth, WallBaseDepth);
+                    bottomRight = new Vector3(WallBottomHalfWidth, WallBottomHalfWidth, WallBaseDepth);
+                    topRight = new Vector3(WallTopHalfWidth, WallTopHalfWidth, WallTopDepth);
+                    topLeft = new Vector3(WallTopHalfWidth, -WallTopHalfWidth, WallTopDepth);
+                    return;
+                case 2:
+                    bottomLeft = new Vector3(WallBottomHalfWidth, -WallBottomHalfWidth, WallBaseDepth);
+                    bottomRight = new Vector3(-WallBottomHalfWidth, -WallBottomHalfWidth, WallBaseDepth);
+                    topRight = new Vector3(-WallTopHalfWidth, -WallTopHalfWidth, WallTopDepth);
+                    topLeft = new Vector3(WallTopHalfWidth, -WallTopHalfWidth, WallTopDepth);
+                    return;
+                case 3:
+                    bottomLeft = new Vector3(-WallBottomHalfWidth, WallBottomHalfWidth, WallBaseDepth);
+                    bottomRight = new Vector3(-WallBottomHalfWidth, -WallBottomHalfWidth, WallBaseDepth);
+                    topRight = new Vector3(-WallTopHalfWidth, -WallTopHalfWidth, WallTopDepth);
+                    topLeft = new Vector3(-WallTopHalfWidth, WallTopHalfWidth, WallTopDepth);
+                    return;
+                default:
+                    bottomLeft = new Vector3(-WallBottomHalfWidth, WallBottomHalfWidth, WallBaseDepth);
+                    bottomRight = new Vector3(WallBottomHalfWidth, WallBottomHalfWidth, WallBaseDepth);
+                    topRight = new Vector3(WallTopHalfWidth, WallTopHalfWidth, WallTopDepth);
+                    topLeft = new Vector3(-WallTopHalfWidth, WallTopHalfWidth, WallTopDepth);
+                    return;
+            }
+        }
+
+        private static int NormalizeWallFaceRotation(int rotation90)
+        {
+            int normalized = rotation90 % 4;
+            return normalized < 0 ? normalized + 4 : normalized;
+        }
+
         private static void UpdateOrCreateBatchModel(Transform root, CampusFloorRoot floor, WallMeshBatch batch, WallMeshRootRegistry registry)
         {
             if (root == null || batch == null || !batch.Builder.HasGeometry)
@@ -518,11 +584,15 @@ namespace NtingCampusMapEditor
                 }
             }
 
+            bool hasHorizontalArm = eastArm || westArm;
+            float horizontalTopYOffset = hasHorizontalArm ? HorizontalTopYOffset : 0f;
+            float centerTopMinY = -TopHalfWidth + (!southArm ? horizontalTopYOffset : 0f);
+            float centerTopMaxY = TopHalfWidth + (!northArm ? horizontalTopYOffset : 0f);
             builder.AddPrism(
                 -TopHalfWidth,
-                -TopHalfWidth,
+                centerTopMinY,
                 TopHalfWidth,
-                TopHalfWidth,
+                centerTopMaxY,
                 -BottomHalfWidth,
                 -BottomHalfWidth,
                 BottomHalfWidth,
@@ -536,9 +606,9 @@ namespace NtingCampusMapEditor
             {
                 builder.AddPrism(
                     TopHalfWidth,
-                    -TopHalfWidth,
+                    -TopHalfWidth + horizontalTopYOffset,
                     HalfCell,
-                    TopHalfWidth,
+                    TopHalfWidth + horizontalTopYOffset,
                     BottomHalfWidth,
                     -BottomHalfWidth,
                     HalfCell,
@@ -553,9 +623,9 @@ namespace NtingCampusMapEditor
             {
                 builder.AddPrism(
                     -HalfCell,
+                    -TopHalfWidth + horizontalTopYOffset,
                     -TopHalfWidth,
-                    -TopHalfWidth,
-                    TopHalfWidth,
+                    TopHalfWidth + horizontalTopYOffset,
                     -HalfCell,
                     -BottomHalfWidth,
                     -BottomHalfWidth,

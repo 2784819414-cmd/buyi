@@ -1,0 +1,60 @@
+﻿{
+    "ObjectId": "Desk_1x1",
+    "DisplayNameOverride": "Desk",
+    "OverrideFootprintSize": true,
+    "FootprintSize": {
+        "x": 1,
+        "y": 1
+    },
+    "VisualScale": {
+        "x": 1.0,
+        "y": 1.0
+    },
+    "LockVisualScaleAspect": true,
+    "IsWallMounted": false,
+    "OverrideAllowRotation": true,
+    "AllowRotation": true,
+    "OverrideRotation0Sprite": true,
+    "Rotation0SpritePath": "ObjectSettings/Desk_1x1/rotation_0.png",
+    "OverrideRotation90Sprite": true,
+    "Rotation90SpritePath": "ObjectSettings/Desk_1x1/rotation_90.png",
+    "OverrideRotation180Sprite": true,
+    "Rotation180SpritePath": "ObjectSettings/Desk_1x1/rotation_180.png",
+    "OverrideRotation270Sprite": true,
+    "Rotation270SpritePath": "ObjectSettings/Desk_1x1/rotation_270.png",
+    "IsStorageContainer": true,
+    "StorageSize": {
+        "x": 4,
+        "y": 4
+    },
+    "StorageMaxWeight": 12.0,
+    "UseCustomInteractionAnchor": true,
+    "CustomInteractionAnchorLocalPosition": {
+        "x": 0.0,
+        "y": 0.0,
+        "z": 0.0
+    },
+    "CustomInteractionAnchorRadius": 0.6499999761581421,
+    "CustomInteractionPromptText": "打开桌肚",
+    "CustomInteractionAnchors": [
+        {
+            "AnchorId": "custom_1",
+            "DisplayName": "当前锚点 1",
+            "Enabled": true,
+            "LocalPosition": {
+                "x": 0.0,
+                "y": 0.0,
+                "z": 0.0
+            },
+            "Radius": 0.6499999761581421,
+            "PromptText": "打开桌肚",
+            "ActionId": "campus.storage.open",
+            "Payload": "",
+            "TargetComponentType": "",
+            "Priority": 120,
+            "UseTargetDoorStatePrompt": false,
+            "LogInteraction": true,
+            "InteractionLogMessage": ""
+        }
+    ]
+}

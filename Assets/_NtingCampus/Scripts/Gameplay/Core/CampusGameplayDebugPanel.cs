@@ -13,11 +13,16 @@ namespace NtingCampus.Gameplay.Core
     public sealed class CampusGameplayDebugPanel : MonoBehaviour
     {
         private static readonly Rect PanelRect = new Rect(10f, 10f, 620f, 920f);
+        private static readonly Vector2 ReferenceResolution = new Vector2(1920f, 1080f);
 
         [SerializeField] private CampusGameBootstrap bootstrap;
         [SerializeField] private CampusPrankService prankService;
         [SerializeField] private CampusSanctionService sanctionService;
-        [SerializeField] private CampusDisplayLanguage displayLanguage = CampusDisplayLanguage.Chinese;
+        [SerializeField] private CampusDisplayLanguage defaultLanguage = CampusDisplayLanguage.Chinese;
+        [SerializeField, Range(0.5f, 1.5f)] private float uiScaleSensitivity = 1f;
+        [SerializeField, Range(0f, 1f)] private float uiScaleMatchWidthOrHeight = 0.45f;
+        [SerializeField, Min(0.5f)] private float minUiScale = 0.85f;
+        [SerializeField, Min(1f)] private float maxUiScale = 2.1f;
         [SerializeField] private string selectedCharacterId = string.Empty;
         [SerializeField] private Vector2 scrollPosition;
 
@@ -60,30 +65,43 @@ namespace NtingCampus.Gameplay.Core
             CampusRosterService rosterService = targetBootstrap.RosterService;
             CampusPrankService targetPrankService = ResolvePrankService();
             CampusSanctionService targetSanctionService = ResolveSanctionService();
+            CampusDisplayLanguage displayLanguage = CampusLanguageState.CurrentLanguage;
+            if (!Application.isPlaying)
+            {
+                displayLanguage = defaultLanguage;
+            }
 
-            GUILayout.BeginArea(PanelRect, GUI.skin.box);
-            scrollPosition = GUILayout.BeginScrollView(scrollPosition, false, true);
-            GUILayout.Label(CampusGameplayDebugTextCatalog.FormatLine(displayLanguage, CampusGameplayDebugTextId.GameDate, timeController != null ? timeController.CurrentDateText : "-"));
-            GUILayout.Label(CampusGameplayDebugTextCatalog.FormatLine(displayLanguage, CampusGameplayDebugTextId.Time, timeController != null ? timeController.CurrentClockText : "-"));
-            GUILayout.Label(CampusGameplayDebugTextCatalog.FormatLine(displayLanguage, CampusGameplayDebugTextId.Segment, timeController != null ? timeController.CurrentSegmentName : "-"));
-            GUILayout.Label(CampusGameplayDebugTextCatalog.FormatLine(displayLanguage, CampusGameplayDebugTextId.Schedule, timeController != null ? timeController.CurrentTimeLabel : "-"));
-            GUILayout.Label(CampusGameplayDebugTextCatalog.FormatLine(displayLanguage, CampusGameplayDebugTextId.Mode, targetModeController != null ? CampusGameplayDebugTextCatalog.FormatMode(displayLanguage, targetModeController.CurrentMode) : "-"));
-            DrawGameState(gameState, displayLanguage);
-            GUILayout.Label(CampusGameplayDebugTextCatalog.FormatLine(displayLanguage, CampusGameplayDebugTextId.Money, resourceState != null ? resourceState.Money.ToString() : "-"));
-            GUILayout.Label(CampusGameplayDebugTextCatalog.FormatLine(displayLanguage, CampusGameplayDebugTextId.DivinePower, resourceState != null ? resourceState.DivinePower.ToString() : "-"));
-            GUILayout.Label(CampusGameplayDebugTextCatalog.FormatLine(displayLanguage, CampusGameplayDebugTextId.TimeScale, timeController != null ? timeController.TimeScale.ToString("0.##") + "x" : "-"));
-            GUILayout.Label(CampusGameplayDebugTextCatalog.FormatLine(displayLanguage, CampusGameplayDebugTextId.SpeedMode, timeController != null ? CampusGameplayDebugTextCatalog.FormatSpeedMode(displayLanguage, timeController.SpeedMode) : "-"));
-            GUILayout.Label(CampusGameplayDebugTextCatalog.FormatLine(displayLanguage, CampusGameplayDebugTextId.CameraOrtho, ResolveCameraOrthoText(displayLanguage)));
-            DrawM1Controls(targetModeController, timeController, displayLanguage);
-            GUILayout.Space(4f);
-            DrawRosterState(rosterService, displayLanguage);
-            GUILayout.Space(4f);
-            DrawFormalMainlineState(targetPrankService, targetSanctionService);
-            GUILayout.Space(4f);
-            GUILayout.Label(CampusGameplayDebugTextCatalog.Get(displayLanguage, CampusGameplayDebugTextId.RecentEventLogs));
-            DrawRecentLogs(eventLog, 10, displayLanguage);
-            GUILayout.EndScrollView();
-            GUILayout.EndArea();
+            using (CampusGuiScaleUtility.BeginScaledGui(
+                       ReferenceResolution,
+                       uiScaleMatchWidthOrHeight,
+                       uiScaleSensitivity,
+                       minUiScale,
+                       maxUiScale))
+            {
+                GUILayout.BeginArea(PanelRect, GUI.skin.box);
+                scrollPosition = GUILayout.BeginScrollView(scrollPosition, false, true);
+                GUILayout.Label(CampusGameplayDebugTextCatalog.FormatLine(displayLanguage, CampusGameplayDebugTextId.GameDate, timeController != null ? timeController.CurrentDateText : "-"));
+                GUILayout.Label(CampusGameplayDebugTextCatalog.FormatLine(displayLanguage, CampusGameplayDebugTextId.Time, timeController != null ? timeController.CurrentClockText : "-"));
+                GUILayout.Label(CampusGameplayDebugTextCatalog.FormatLine(displayLanguage, CampusGameplayDebugTextId.Segment, timeController != null ? timeController.CurrentSegmentName : "-"));
+                GUILayout.Label(CampusGameplayDebugTextCatalog.FormatLine(displayLanguage, CampusGameplayDebugTextId.Schedule, timeController != null ? timeController.CurrentTimeLabel : "-"));
+                GUILayout.Label(CampusGameplayDebugTextCatalog.FormatLine(displayLanguage, CampusGameplayDebugTextId.Mode, targetModeController != null ? CampusGameplayDebugTextCatalog.FormatMode(displayLanguage, targetModeController.CurrentMode) : "-"));
+                DrawGameState(gameState, displayLanguage);
+                GUILayout.Label(CampusGameplayDebugTextCatalog.FormatLine(displayLanguage, CampusGameplayDebugTextId.Money, resourceState != null ? resourceState.Money.ToString() : "-"));
+                GUILayout.Label(CampusGameplayDebugTextCatalog.FormatLine(displayLanguage, CampusGameplayDebugTextId.DivinePower, resourceState != null ? resourceState.DivinePower.ToString() : "-"));
+                GUILayout.Label(CampusGameplayDebugTextCatalog.FormatLine(displayLanguage, CampusGameplayDebugTextId.TimeScale, timeController != null ? timeController.TimeScale.ToString("0.##") + "x" : "-"));
+                GUILayout.Label(CampusGameplayDebugTextCatalog.FormatLine(displayLanguage, CampusGameplayDebugTextId.SpeedMode, timeController != null ? CampusGameplayDebugTextCatalog.FormatSpeedMode(displayLanguage, timeController.SpeedMode) : "-"));
+                GUILayout.Label(CampusGameplayDebugTextCatalog.FormatLine(displayLanguage, CampusGameplayDebugTextId.CameraOrtho, ResolveCameraOrthoText(displayLanguage)));
+                DrawM1Controls(targetModeController, timeController, displayLanguage);
+                GUILayout.Space(4f);
+                DrawRosterState(rosterService, displayLanguage);
+                GUILayout.Space(4f);
+                DrawFormalMainlineState(targetPrankService, targetSanctionService);
+                GUILayout.Space(4f);
+                GUILayout.Label(CampusGameplayDebugTextCatalog.Get(displayLanguage, CampusGameplayDebugTextId.RecentEventLogs));
+                DrawRecentLogs(eventLog, 10, displayLanguage);
+                GUILayout.EndScrollView();
+                GUILayout.EndArea();
+            }
         }
 
         private CampusGameBootstrap ResolveBootstrap()

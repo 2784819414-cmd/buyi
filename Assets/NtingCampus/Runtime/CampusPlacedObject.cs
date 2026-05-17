@@ -51,6 +51,12 @@ namespace NtingCampusMapEditor
         private const string CustomInteractionAnchorName = "\u73a9\u5bb6\u4ea4\u4e92";
         private const string CustomInteractionAnchorPrefix = "\u81ea\u5b9a\u4e49\u4ea4\u4e92_";
         private const string CustomInteractionPromptFallback = "\u4ea4\u4e92";
+        private const string WallMountedVisualRootName = "WallMountedVisual";
+        private const string WallMountedMeshNamePrefix = "WallMountedPlateMesh_";
+        private const string WallMountedMaterialNamePrefix = "WallMountedPlateMaterial_";
+        private const float WallMountedThickness = 0.04f;
+        private const float WallMountedSurfaceGap = 0.001f;
+        private const int WallMountedSortingOrderOffset = 1;
         public const float DefaultInteractionAnchorRadius = 0.65f;
         public const float MinInteractionAnchorRadius = 0.3f;
         public const float MaxInteractionAnchorRadius = 8f;
@@ -79,6 +85,7 @@ namespace NtingCampusMapEditor
         public bool OverrideRotation270Sprite;
         public Sprite Rotation270Sprite;
         public string Rotation270SpritePath;
+        public bool IsWallMounted;
         public int Rotation90;
         public int SortingOrderOffset;
         public bool BlocksMovement;
@@ -105,6 +112,8 @@ namespace NtingCampusMapEditor
 
         public float NormalizedStorageMaxWeight => NormalizeStorageMaxWeight(StorageMaxWeight);
 
+        public bool SuppressFlatSpriteRotation => IsWallMounted;
+
         public string DisplayName
         {
             get
@@ -125,6 +134,15 @@ namespace NtingCampusMapEditor
             CacheDefaultSprite();
             ApplyRotationVisualState();
             ApplyInteractionState();
+            EnsureShadowRegistration();
+        }
+
+        private void OnEnable()
+        {
+            if (Application.isPlaying)
+            {
+                EnsureShadowRegistration();
+            }
         }
 
         private void OnValidate()
@@ -151,6 +169,11 @@ namespace NtingCampusMapEditor
         public void ApplyRotationVisualState()
         {
             Rotation90 = ResolveAllowedRotation90(Rotation90);
+            if (IsWallMounted && SortingOrderOffset < WallMountedSortingOrderOffset)
+            {
+                SortingOrderOffset = WallMountedSortingOrderOffset;
+            }
+
             if (!CanEditSceneHierarchy())
             {
                 return;
@@ -159,6 +182,9 @@ namespace NtingCampusMapEditor
             transform.localRotation = Quaternion.identity;
             ApplyColliderFootprintSize();
             ApplyDirectionalSprite();
+            ApplyWallMountedVisualState();
+            ApplyPlacementDrivenComponentVisuals();
+            EnsureShadowRegistration();
         }
 
         public void ApplyVisualScaleState()
@@ -169,6 +195,27 @@ namespace NtingCampusMapEditor
             }
 
             ApplyVisualScale(GetPrimarySpriteRenderer());
+            ApplyWallMountedVisualState();
+            EnsureShadowRegistration();
+        }
+
+        public void EnsureShadowRegistration()
+        {
+            if (!CanEditSceneHierarchy())
+            {
+                return;
+            }
+
+            if (GetComponentInParent<CampusFloorRoot>(true) == null)
+            {
+                return;
+            }
+
+            NtingShadowCasterProfile profile = NtingShadowCasterProfile.EnsureForPlacedObject(this);
+            if (profile != null && (Application.isPlaying || NtingCustomShadowSystem.HasActiveSystemInstance()))
+            {
+                NtingCustomShadowSystem.EnsureSceneSystem().MarkSceneDirty();
+            }
         }
 
         public void ApplyCustomInteractionAnchorState()
@@ -479,6 +526,12 @@ namespace NtingCampusMapEditor
         public Sprite ResolveSpriteForRotation(int requestedRotation90, out bool usesAuthoredDirectionalSprite, out int effectiveRotation90)
         {
             effectiveRotation90 = ResolveAllowedRotation90(requestedRotation90);
+            if (IsWallMounted)
+            {
+                usesAuthoredDirectionalSprite = true;
+                return Rotation0Sprite != null ? Rotation0Sprite : runtimeDefaultSprite;
+            }
+
             Sprite directionalSprite = GetDirectionalSprite(effectiveRotation90);
             usesAuthoredDirectionalSprite = directionalSprite != null;
             if (usesAuthoredDirectionalSprite)
@@ -507,7 +560,7 @@ namespace NtingCampusMapEditor
                 return;
             }
 
-            transform.position = GetFootprintWorldCenter(grid, Cell, RotatedFootprintSize);
+            transform.position = GetPlacementWorldCenter(grid, Cell, RotatedFootprintSize, IsWallMounted, Rotation90);
         }
 
         public Vector3Int ResolveCellFromTransform(Grid grid)
@@ -515,6 +568,11 @@ namespace NtingCampusMapEditor
             if (grid == null)
             {
                 return Vector3Int.zero;
+            }
+
+            if (IsWallMounted)
+            {
+                return grid.WorldToCell(transform.position - GetWallMountedAnchorLocalOffset(Rotation90));
             }
 
             Vector2Int footprint = RotatedFootprintSize;
@@ -599,6 +657,29 @@ namespace NtingCampusMapEditor
             return (grid.GetCellCenterWorld(anchorCell) + grid.GetCellCenterWorld(farCell)) * 0.5f;
         }
 
+        public static Vector3 GetPlacementWorldCenter(
+            Grid grid,
+            Vector3Int anchorCell,
+            Vector2Int rotatedFootprintSize,
+            bool isWallMounted,
+            int rotation90)
+        {
+            return isWallMounted
+                ? GetWallMountedWorldCenter(grid, anchorCell, rotation90)
+                : GetFootprintWorldCenter(grid, anchorCell, rotatedFootprintSize);
+        }
+
+        public static Vector3 GetWallMountedWorldCenter(Grid grid, Vector3Int anchorCell, int rotation90)
+        {
+            if (grid == null)
+            {
+                return Vector3.zero;
+            }
+
+            Vector3 cellCenter = grid.GetCellCenterWorld(anchorCell);
+            return cellCenter + GetWallMountedAnchorLocalOffset(rotation90);
+        }
+
         private void CacheDefaultSprite()
         {
             SpriteRenderer renderer = GetPrimarySpriteRenderer();
@@ -613,6 +694,12 @@ namespace NtingCampusMapEditor
             BoxCollider2D box = GetComponent<BoxCollider2D>();
             if (box != null)
             {
+                box.enabled = !IsWallMounted;
+                if (IsWallMounted)
+                {
+                    return;
+                }
+
                 Vector2Int footprint = RotatedFootprintSize;
                 box.size = new Vector2(footprint.x, footprint.y);
             }
@@ -635,10 +722,12 @@ namespace NtingCampusMapEditor
             if (visualTransform != null)
             {
                 ApplyVisualScale(renderer);
-                visualTransform.localRotation = usesAuthoredDirectionSprite || !AllowRotation
+                visualTransform.localRotation = IsWallMounted || usesAuthoredDirectionSprite || !AllowRotation
                     ? Quaternion.identity
                     : Quaternion.Euler(0f, 0f, Rotation90 * 90f);
             }
+
+            renderer.enabled = !IsWallMounted;
         }
 
         private void ApplyVisualScale(SpriteRenderer renderer)
@@ -652,6 +741,205 @@ namespace NtingCampusMapEditor
             Vector2 visualScale = NormalizedVisualScale;
             float z = Mathf.Approximately(visualTransform.localScale.z, 0f) ? 1f : visualTransform.localScale.z;
             visualTransform.localScale = new Vector3(visualScale.x, visualScale.y, z);
+        }
+
+        private void ApplyWallMountedVisualState()
+        {
+            Transform root = transform.Find(WallMountedVisualRootName);
+            if (!IsWallMounted)
+            {
+                if (root != null)
+                {
+                    DestroyImmediateSafe(root.gameObject);
+                }
+
+                SpriteRenderer spriteRenderer = GetPrimarySpriteRenderer();
+                if (spriteRenderer != null)
+                {
+                    spriteRenderer.enabled = true;
+                }
+
+                return;
+            }
+
+            Sprite sprite = Rotation0Sprite != null ? Rotation0Sprite : runtimeDefaultSprite;
+            if (sprite == null)
+            {
+                if (root != null)
+                {
+                    DestroyImmediateSafe(root.gameObject);
+                }
+
+                return;
+            }
+
+            if (root == null)
+            {
+                GameObject rootObject = new GameObject(WallMountedVisualRootName);
+                rootObject.layer = gameObject.layer;
+                root = rootObject.transform;
+                root.SetParent(transform, false);
+            }
+
+            root.gameObject.layer = gameObject.layer;
+            root.localPosition = Vector3.zero;
+            root.localRotation = Quaternion.identity;
+            root.localScale = Vector3.one;
+
+            MeshFilter filter = root.GetComponent<MeshFilter>();
+            if (filter == null)
+            {
+                filter = root.gameObject.AddComponent<MeshFilter>();
+            }
+
+            MeshRenderer meshRenderer = root.GetComponent<MeshRenderer>();
+            if (meshRenderer == null)
+            {
+                meshRenderer = root.gameObject.AddComponent<MeshRenderer>();
+            }
+
+            Mesh mesh = filter.sharedMesh;
+            mesh = GetOrCreateUniqueWallMountedMesh(filter, mesh);
+
+            BuildWallMountedPlateMesh(mesh, sprite);
+            meshRenderer.sharedMaterial = GetOrCreateWallMountedMaterial(meshRenderer.sharedMaterial, sprite.texture);
+            meshRenderer.shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.On;
+            meshRenderer.receiveShadows = true;
+
+            SpriteRenderer renderer = GetPrimarySpriteRenderer();
+            if (renderer != null)
+            {
+                renderer.enabled = false;
+            }
+        }
+
+        private void BuildWallMountedPlateMesh(Mesh mesh, Sprite sprite)
+        {
+            if (mesh == null || sprite == null)
+            {
+                return;
+            }
+
+            Vector2 visualScale = NormalizedVisualScale;
+            float width = Mathf.Max(0.05f, sprite.bounds.size.x * visualScale.x);
+            float height = Mathf.Max(0.05f, sprite.bounds.size.y * visualScale.y);
+            float halfWidth = width * 0.5f;
+            float halfHeight = height * 0.5f;
+            CampusWallMeshRenderer.GetWallFaceBasis(Rotation90, out Vector3 widthAxis, out Vector3 heightAxis, out Vector3 normalAxis);
+
+            Vector3 backBottomLeft = -widthAxis * halfWidth - heightAxis * halfHeight;
+            Vector3 backBottomRight = widthAxis * halfWidth - heightAxis * halfHeight;
+            Vector3 backTopRight = widthAxis * halfWidth + heightAxis * halfHeight;
+            Vector3 backTopLeft = -widthAxis * halfWidth + heightAxis * halfHeight;
+            Vector3 thicknessOffset = normalAxis * WallMountedThickness;
+
+            Vector3[] vertices =
+            {
+                backBottomLeft,
+                backBottomRight,
+                backTopRight,
+                backTopLeft,
+                backBottomLeft + thicknessOffset,
+                backBottomRight + thicknessOffset,
+                backTopRight + thicknessOffset,
+                backTopLeft + thicknessOffset
+            };
+
+            Rect textureRect = sprite.textureRect;
+            Texture texture = sprite.texture;
+            float textureWidth = Mathf.Max(1f, texture != null ? texture.width : textureRect.width);
+            float textureHeight = Mathf.Max(1f, texture != null ? texture.height : textureRect.height);
+            Vector2 uvMin = new Vector2(textureRect.xMin / textureWidth, textureRect.yMin / textureHeight);
+            Vector2 uvMax = new Vector2(textureRect.xMax / textureWidth, textureRect.yMax / textureHeight);
+            Vector2[] uvs =
+            {
+                new Vector2(uvMin.x, uvMin.y),
+                new Vector2(uvMax.x, uvMin.y),
+                new Vector2(uvMax.x, uvMax.y),
+                new Vector2(uvMin.x, uvMax.y),
+                new Vector2(uvMin.x, uvMin.y),
+                new Vector2(uvMax.x, uvMin.y),
+                new Vector2(uvMax.x, uvMax.y),
+                new Vector2(uvMin.x, uvMax.y)
+            };
+
+            int[] triangles =
+            {
+                0, 2, 1, 0, 3, 2,
+                4, 5, 6, 4, 6, 7,
+                0, 1, 5, 0, 5, 4,
+                1, 2, 6, 1, 6, 5,
+                2, 3, 7, 2, 7, 6,
+                3, 0, 4, 3, 4, 7
+            };
+
+            mesh.Clear();
+            mesh.vertices = vertices;
+            mesh.uv = uvs;
+            mesh.triangles = triangles;
+            mesh.RecalculateNormals();
+            mesh.RecalculateBounds();
+        }
+
+        private Mesh GetOrCreateUniqueWallMountedMesh(MeshFilter filter, Mesh existing)
+        {
+            string expectedName = WallMountedMeshNamePrefix + GetInstanceID();
+            if (existing != null && existing.name == expectedName)
+            {
+                return existing;
+            }
+
+            DestroyGeneratedObjectIfNeeded(existing, WallMountedMeshNamePrefix);
+            Mesh mesh = new Mesh
+            {
+                name = expectedName,
+                hideFlags = HideFlags.DontSaveInEditor | HideFlags.DontSaveInBuild
+            };
+            filter.sharedMesh = mesh;
+            return mesh;
+        }
+
+        private Material GetOrCreateWallMountedMaterial(Material existing, Texture texture)
+        {
+            Shader shader = Shader.Find("Universal Render Pipeline/2D/Sprite-Lit-Default");
+            if (shader == null)
+            {
+                shader = Shader.Find("Sprites/Default");
+            }
+
+            string expectedName = WallMountedMaterialNamePrefix + GetInstanceID();
+            Material material = existing;
+            if (material == null || material.shader != shader || material.name != expectedName)
+            {
+                DestroyGeneratedObjectIfNeeded(material, WallMountedMaterialNamePrefix);
+                material = new Material(shader)
+                {
+                    name = expectedName,
+                    hideFlags = HideFlags.DontSaveInEditor | HideFlags.DontSaveInBuild
+                };
+            }
+
+            if (material.HasProperty("_MainTex"))
+            {
+                material.mainTexture = texture;
+            }
+
+            if (material.HasProperty("_BaseMap"))
+            {
+                material.SetTexture("_BaseMap", texture);
+            }
+
+            if (material.HasProperty("_Color"))
+            {
+                material.SetColor("_Color", Color.white);
+            }
+
+            if (material.HasProperty("_BaseColor"))
+            {
+                material.SetColor("_BaseColor", Color.white);
+            }
+
+            return material;
         }
 
         private SpriteRenderer GetPrimarySpriteRenderer()
@@ -691,6 +979,58 @@ namespace NtingCampusMapEditor
                    Rotation90Sprite != null ||
                    Rotation180Sprite != null ||
                    Rotation270Sprite != null;
+        }
+
+        private void ApplyPlacementDrivenComponentVisuals()
+        {
+            CampusDoor3D[] doors = GetComponentsInChildren<CampusDoor3D>(true);
+            for (int i = 0; i < doors.Length; i++)
+            {
+                CampusDoor3D door = doors[i];
+                if (door != null)
+                {
+                    door.RebuildDoorMesh();
+                }
+            }
+        }
+
+        private static Vector3 GetWallMountedAnchorLocalOffset(int rotation90)
+        {
+            Vector3 faceCenter = CampusWallMeshRenderer.GetWallFaceCenterLocal(rotation90);
+            CampusWallMeshRenderer.GetWallFaceBasis(rotation90, out _, out _, out Vector3 normalAxis);
+            return faceCenter + normalAxis * WallMountedSurfaceGap;
+        }
+
+        private void DestroyGeneratedObjectIfNeeded(UnityEngine.Object target, string expectedPrefix)
+        {
+            if (target == null || string.IsNullOrEmpty(expectedPrefix))
+            {
+                return;
+            }
+
+            if (!target.name.StartsWith(expectedPrefix, StringComparison.Ordinal))
+            {
+                return;
+            }
+
+            DestroyImmediateSafe(target);
+        }
+
+        private void DestroyImmediateSafe(UnityEngine.Object target)
+        {
+            if (target == null)
+            {
+                return;
+            }
+
+            if (Application.isPlaying)
+            {
+                Destroy(target);
+            }
+            else
+            {
+                DestroyImmediate(target);
+            }
         }
 
         private Transform EnsureCustomInteractionAnchorRoot()
@@ -794,4 +1134,5 @@ namespace NtingCampusMapEditor
             return gameObject.scene.IsValid();
         }
     }
+
 }

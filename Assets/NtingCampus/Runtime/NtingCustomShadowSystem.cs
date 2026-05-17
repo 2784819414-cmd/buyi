@@ -76,7 +76,6 @@ namespace NtingCampusMapEditor
         private readonly List<ShadowLightInfo> pointLights = new List<ShadowLightInfo>(16);
         private readonly List<Light2D> allLights = new List<Light2D>(32);
         private readonly List<CampusFloorRoot> floors = new List<CampusFloorRoot>(8);
-        private readonly List<CampusPlacedObject> placedObjects = new List<CampusPlacedObject>(128);
         private readonly List<NtingShadowCasterProfile> scratchProfiles = new List<NtingShadowCasterProfile>(256);
 
         private ShadowLightInfo[] pointLightSnapshot = System.Array.Empty<ShadowLightInfo>();
@@ -246,9 +245,8 @@ namespace NtingCampusMapEditor
             bool forceCasterRefresh = false;
             if (forceScan || Time.realtimeSinceStartup >= nextScanTime)
             {
-                bool autoRegisterMissingProfiles = forceScan;
                 forceCasterRefresh = forceScan;
-                ScanScene(autoRegisterMissingProfiles);
+                ScanScene();
                 nextScanTime = Time.realtimeSinceStartup + Mathf.Max(minScanInterval, scanInterval);
                 forceScan = false;
             }
@@ -266,25 +264,12 @@ namespace NtingCampusMapEditor
             RefreshWallPointShadows(sortingLayerId);
         }
 
-        private void ScanScene(bool autoRegisterMissingProfiles)
+        private void ScanScene()
         {
             NtingShadowCasterProfile.PurgeLegacySpriteProxyObjectsInSceneOnce();
             ResolveSceneRoots();
             CampusSceneLightUtility.CollectLights(allLights, true);
             RefreshFloorReferences();
-
-            if (autoRegisterPlacedObjects && autoRegisterMissingProfiles)
-            {
-                CollectPlacedObjects();
-                for (int i = 0; i < placedObjects.Count; i++)
-                {
-                    CampusPlacedObject placed = placedObjects[i];
-                    if (placed != null && placed.GetComponentInChildren<SpriteRenderer>(true) != null)
-                    {
-                        NtingShadowCasterProfile.EnsureForPlacedObject(placed);
-                    }
-                }
-            }
 
             casterProfiles.Clear();
             CollectCasterProfiles();
@@ -355,24 +340,10 @@ namespace NtingCampusMapEditor
             }
         }
 
-        private void CollectPlacedObjects()
-        {
-            placedObjects.Clear();
-            for (int i = 0; i < floors.Count; i++)
-            {
-                CampusFloorRoot floor = floors[i];
-                if (floor == null || floor.PropsRoot == null)
-                {
-                    continue;
-                }
-
-                floor.PropsRoot.GetComponentsInChildren(true, placedObjects);
-            }
-        }
-
         private void CollectCasterProfiles()
         {
-            scratchProfiles.Clear();
+            CollectFloorCasterProfiles();
+
             NtingShadowCasterProfile[] sceneProfiles = Object.FindObjectsByType<NtingShadowCasterProfile>(
                 FindObjectsInactive.Include,
                 FindObjectsSortMode.None);
@@ -383,23 +354,48 @@ namespace NtingCampusMapEditor
 
             for (int i = 0; i < sceneProfiles.Length; i++)
             {
-                NtingShadowCasterProfile profile = sceneProfiles[i];
-                if (profile == null)
+                AddCasterProfile(sceneProfiles[i]);
+            }
+        }
+
+        private void CollectFloorCasterProfiles()
+        {
+            for (int i = 0; i < floors.Count; i++)
+            {
+                CampusFloorRoot floor = floors[i];
+                if (floor == null)
                 {
                     continue;
                 }
 
-                scratchProfiles.Add(profile);
+                AddCasterProfilesFromRoot(floor.PropsRoot);
+                AddCasterProfilesFromRoot(floor.StairsRoot);
+            }
+        }
+
+        private void AddCasterProfilesFromRoot(Transform root)
+        {
+            if (root == null)
+            {
+                return;
             }
 
+            scratchProfiles.Clear();
+            root.GetComponentsInChildren(true, scratchProfiles);
             for (int i = 0; i < scratchProfiles.Count; i++)
             {
-                NtingShadowCasterProfile profile = scratchProfiles[i];
-                if (profile != null)
-                {
-                    casterProfiles.Add(profile);
-                }
+                AddCasterProfile(scratchProfiles[i]);
             }
+        }
+
+        private void AddCasterProfile(NtingShadowCasterProfile profile)
+        {
+            if (profile == null || casterProfiles.Contains(profile))
+            {
+                return;
+            }
+
+            casterProfiles.Add(profile);
         }
 
         private void CollectPointLights()

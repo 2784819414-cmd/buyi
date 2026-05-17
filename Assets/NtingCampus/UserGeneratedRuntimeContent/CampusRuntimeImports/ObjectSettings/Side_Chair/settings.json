@@ -1,0 +1,39 @@
+﻿{
+    "ObjectId": "Side_Chair",
+    "DisplayNameOverride": "",
+    "OverrideFootprintSize": false,
+    "FootprintSize": {
+        "x": 1,
+        "y": 2
+    },
+    "VisualScale": {
+        "x": 0.25,
+        "y": 0.25
+    },
+    "LockVisualScaleAspect": true,
+    "OverrideAllowRotation": false,
+    "AllowRotation": false,
+    "OverrideRotation0Sprite": false,
+    "Rotation0SpritePath": "",
+    "OverrideRotation90Sprite": false,
+    "Rotation90SpritePath": "",
+    "OverrideRotation180Sprite": false,
+    "Rotation180SpritePath": "",
+    "OverrideRotation270Sprite": false,
+    "Rotation270SpritePath": "",
+    "IsStorageContainer": false,
+    "StorageSize": {
+        "x": 4,
+        "y": 4
+    },
+    "StorageMaxWeight": 12.0,
+    "UseCustomInteractionAnchor": false,
+    "CustomInteractionAnchorLocalPosition": {
+        "x": 0.0,
+        "y": 0.0,
+        "z": 0.0
+    },
+    "CustomInteractionAnchorRadius": 0.6499999761581421,
+    "CustomInteractionPromptText": "交互",
+    "CustomInteractionAnchors": []
+}

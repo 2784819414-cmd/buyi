@@ -1,5 +1,6 @@
-using NtingCampus.Gameplay.Core;
 using NtingCampus.Gameplay.Characters;
+using NtingCampus.Gameplay.Core;
+using NtingCampus.Gameplay.UI;
 using UnityEngine;
 
 namespace NtingCampus.Gameplay.Rooms
@@ -25,6 +26,11 @@ namespace NtingCampus.Gameplay.Rooms
 
         public CampusGameplayRoom FindFirstUsableRoom(CampusRoomType roomType)
         {
+            return FindFirstRoom(roomType, true);
+        }
+
+        public CampusGameplayRoom FindFirstRoom(CampusRoomType roomType, bool requireUsableForGameplay = false)
+        {
             if (roomRegistry == null || roomRegistry.Rooms == null)
             {
                 return null;
@@ -33,7 +39,12 @@ namespace NtingCampus.Gameplay.Rooms
             for (int i = 0; i < roomRegistry.Rooms.Count; i++)
             {
                 CampusGameplayRoom room = roomRegistry.Rooms[i];
-                if (room != null && room.RoomType == roomType && room.IsUsableForGameplay)
+                if (room == null || room.RoomType != roomType)
+                {
+                    continue;
+                }
+
+                if (!requireUsableForGameplay || room.IsUsableForGameplay)
                 {
                     return room;
                 }
@@ -73,15 +84,41 @@ namespace NtingCampus.Gameplay.Rooms
                 return null;
             }
 
-            int floorIndex = 1;
-            NtingCampusMapEditor.CampusTestPlayerController playerController =
-                runtime.GetComponent<NtingCampusMapEditor.CampusTestPlayerController>();
-            if (playerController != null)
+            if (runtime.Data != null && !string.IsNullOrWhiteSpace(runtime.Data.CurrentRoomId))
             {
-                floorIndex = Mathf.Max(1, playerController.FloorIndex);
+                CampusGameplayRoom boundRoom = FindRoomById(runtime.Data.CurrentRoomId);
+                if (boundRoom != null)
+                {
+                    return boundRoom;
+                }
             }
 
-            return FindRoomForPosition(floorIndex, runtime.transform.position);
+            return FindRoomForPosition(ResolveFloorIndex(runtime), runtime.transform.position);
+        }
+
+        private int ResolveFloorIndex(CampusCharacterRuntime runtime)
+        {
+            if (CampusRuntimeGameplayOverlayLoader.TryGetManagedEntity(runtime, out CampusRuntimeGameplayOverlayEntity entity))
+            {
+                return entity.FloorIndex;
+            }
+
+            CampusSceneCharacterDefinition sceneCharacter = runtime.GetComponent<CampusSceneCharacterDefinition>();
+            if (sceneCharacter != null)
+            {
+                return sceneCharacter.FloorIndex;
+            }
+
+            if (runtime.Data != null && !string.IsNullOrWhiteSpace(runtime.Data.CurrentRoomId))
+            {
+                CampusGameplayRoom room = FindRoomById(runtime.Data.CurrentRoomId);
+                if (room != null)
+                {
+                    return room.FloorIndex;
+                }
+            }
+
+            return 1;
         }
 
         private void ResolveRoomRegistry()

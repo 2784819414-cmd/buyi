@@ -514,6 +514,8 @@ GameObject:
   - component: {fileID: 8437249493106964633}
   - component: {fileID: 7886707807699322260}
   - component: {fileID: 1619725816242020705}
+  - component: {fileID: 900000000000001001}
+  - component: {fileID: 900000000000001002}
   m_Layer: 0
   m_Name: "\u6D4B\u8BD5\u4EBA\u7269"
   m_TagString: Player
@@ -733,6 +735,42 @@ MonoBehaviour:
   PollInput: 0
   RefreshEveryFrame: 0
   AutoCreatePromptView: 1
+--- !u!114 &900000000000001001
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5530350508439876142}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 0b8e4529dccca284799f18b5ee17313d, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::NtingCampus.Gameplay.Characters.CampusCharacterRuntime
+--- !u!114 &900000000000001002
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5530350508439876142}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 862c85da64db4f83be37f619477b568b, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::NtingCampus.Gameplay.Characters.CampusSceneCharacterDefinition
+  characterId: student_player
+  displayName: LiXiaonao
+  role: 0
+  teacherDuty: 0
+  classId: class_1
+  initialState: 0
+  isPlayerControlled: 1
+  floorIndex: 1
+  sleepiness: 58
+  mischief: 78
+  traits:
+  - 1
 --- !u!1 &7527754588263073107
 GameObject:
   m_ObjectHideFlags: 0

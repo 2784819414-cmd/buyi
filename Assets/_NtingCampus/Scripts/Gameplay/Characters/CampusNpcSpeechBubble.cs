@@ -1,4 +1,5 @@
 using UnityEngine;
+using UnityEngine.UI;
 
 namespace NtingCampus.Gameplay.Characters
 {
@@ -6,14 +7,26 @@ namespace NtingCampus.Gameplay.Characters
     public sealed class CampusNpcSpeechBubble : MonoBehaviour
     {
         private const string BubbleRootName = "SpeechBubble";
+        private const string TextNodeName = "SpeechText";
+        private const int BubbleSortingOrder = 31000;
 
         [SerializeField] private Transform anchor;
-        [SerializeField] private TextMesh textMesh;
+        [SerializeField] private Canvas bubbleCanvas;
+        [SerializeField] private RectTransform bubbleRect;
+        [SerializeField] private Text bubbleText;
+        [SerializeField] private Outline bubbleOutline;
         [SerializeField] private float hideAtTime = -1f;
+        [SerializeField] private Vector2 bubbleSize = new Vector2(320f, 96f);
+        [SerializeField] private float worldScale = 0.01f;
 
         public void Bind(Transform targetAnchor)
         {
-            anchor = targetAnchor;
+            if (anchor == targetAnchor && bubbleCanvas != null && bubbleText != null)
+            {
+                return;
+            }
+
+            anchor = targetAnchor != null ? targetAnchor : transform;
             EnsureVisual();
             HideImmediate();
         }
@@ -27,26 +40,32 @@ namespace NtingCampus.Gameplay.Characters
             }
 
             EnsureVisual();
-            if (textMesh == null)
+            if (bubbleText == null || bubbleCanvas == null)
             {
                 return;
             }
 
-            textMesh.text = line.Trim();
-            textMesh.gameObject.SetActive(true);
+            bubbleText.text = line.Trim();
+            bubbleCanvas.enabled = true;
+            bubbleText.gameObject.SetActive(true);
             hideAtTime = Time.time + Mathf.Max(0.8f, durationSeconds);
         }
 
-        private void Update()
+        private void LateUpdate()
         {
-            if (textMesh == null || hideAtTime < 0f)
+            if (bubbleCanvas == null)
             {
                 return;
             }
 
-            if (Time.time >= hideAtTime)
+            if (hideAtTime >= 0f && Time.time >= hideAtTime)
             {
                 HideImmediate();
+            }
+
+            if (bubbleCanvas.enabled)
+            {
+                UpdateBubbleTransform();
             }
         }
 
@@ -57,49 +76,174 @@ namespace NtingCampus.Gameplay.Characters
                 anchor = transform;
             }
 
-            if (textMesh != null)
+            Transform root = anchor.Find(BubbleRootName);
+            if (root == null)
+            {
+                GameObject bubbleObject = new GameObject(BubbleRootName, typeof(RectTransform), typeof(Canvas), typeof(GraphicRaycaster));
+                bubbleObject.transform.SetParent(anchor, false);
+                root = bubbleObject.transform;
+            }
+
+            root.localPosition = Vector3.zero;
+            root.localRotation = Quaternion.identity;
+            root.localScale = Vector3.one * worldScale;
+
+            bubbleRect = root as RectTransform;
+            if (bubbleRect == null)
+            {
+                bubbleRect = root.gameObject.GetComponent<RectTransform>();
+            }
+
+            DestroyLegacyTextMesh(root.gameObject);
+
+            bubbleCanvas = GetOrAdd<Canvas>(root.gameObject);
+            bubbleCanvas.renderMode = RenderMode.WorldSpace;
+            bubbleCanvas.worldCamera = Camera.main;
+            bubbleCanvas.overrideSorting = true;
+            bubbleCanvas.sortingLayerID = SortingLayer.NameToID("Default");
+            bubbleCanvas.sortingOrder = BubbleSortingOrder;
+
+            GraphicRaycaster raycaster = root.gameObject.GetComponent<GraphicRaycaster>();
+            if (raycaster != null)
+            {
+                raycaster.enabled = false;
+            }
+
+            bubbleRect.anchorMin = new Vector2(0.5f, 0.5f);
+            bubbleRect.anchorMax = new Vector2(0.5f, 0.5f);
+            bubbleRect.pivot = new Vector2(0.5f, 0f);
+            bubbleRect.anchoredPosition = Vector2.zero;
+            bubbleRect.sizeDelta = bubbleSize;
+
+            RectTransform textRect = FindOrCreateTextRect(root);
+            textRect.anchorMin = Vector2.zero;
+            textRect.anchorMax = Vector2.one;
+            textRect.offsetMin = Vector2.zero;
+            textRect.offsetMax = Vector2.zero;
+            textRect.pivot = new Vector2(0.5f, 0.5f);
+
+            bubbleText = GetOrAdd<Text>(textRect.gameObject);
+            bubbleText.font = ResolveSpeechFont();
+            bubbleText.fontSize = 30;
+            bubbleText.alignment = TextAnchor.LowerCenter;
+            bubbleText.horizontalOverflow = HorizontalWrapMode.Wrap;
+            bubbleText.verticalOverflow = VerticalWrapMode.Overflow;
+            bubbleText.supportRichText = false;
+            bubbleText.raycastTarget = false;
+            bubbleText.color = new Color(0.98f, 0.98f, 0.93f, 1f);
+
+            bubbleOutline = GetOrAdd<Outline>(textRect.gameObject);
+            bubbleOutline.effectColor = Color.black;
+            bubbleOutline.effectDistance = new Vector2(1.2f, -1.2f);
+            bubbleOutline.useGraphicAlpha = true;
+
+            UpdateBubbleTransform();
+        }
+
+        private void UpdateBubbleTransform()
+        {
+            if (bubbleRect == null || anchor == null)
             {
                 return;
             }
 
-            Transform bubbleRoot = anchor.Find(BubbleRootName);
-            if (bubbleRoot == null)
+            Camera camera = Camera.main;
+            if (bubbleCanvas != null)
             {
-                GameObject bubbleObject = new GameObject(BubbleRootName);
-                bubbleObject.transform.SetParent(anchor, false);
-                bubbleObject.transform.localPosition = new Vector3(0f, 0.55f, 0f);
-                bubbleRoot = bubbleObject.transform;
+                bubbleCanvas.worldCamera = camera;
             }
 
-            textMesh = bubbleRoot.GetComponent<TextMesh>();
-            if (textMesh == null)
+            Vector3 position = anchor.position;
+            Quaternion rotation = Quaternion.identity;
+
+            if (camera != null)
             {
-                textMesh = bubbleRoot.gameObject.AddComponent<TextMesh>();
+                rotation = camera.transform.rotation;
+                position = MoveInFrontOfScene(position, camera);
             }
 
-            textMesh.anchor = TextAnchor.LowerCenter;
-            textMesh.alignment = TextAlignment.Center;
-            textMesh.characterSize = 0.055f;
-            textMesh.fontSize = 48;
-            textMesh.color = new Color(0.98f, 0.98f, 0.93f, 1f);
-            textMesh.font = ResolveSpeechFont();
-
-            MeshRenderer renderer = textMesh.GetComponent<MeshRenderer>();
-            if (renderer != null)
-            {
-                renderer.sortingLayerID = SortingLayer.NameToID("Default");
-                renderer.sortingOrder = 1800;
-            }
+            bubbleRect.position = position;
+            bubbleRect.rotation = rotation;
+            bubbleRect.localScale = Vector3.one * worldScale;
         }
 
         private void HideImmediate()
         {
             hideAtTime = -1f;
-            if (textMesh != null)
+            if (bubbleText != null)
             {
-                textMesh.text = string.Empty;
-                textMesh.gameObject.SetActive(false);
+                bubbleText.text = string.Empty;
+                bubbleText.gameObject.SetActive(false);
             }
+
+            if (bubbleCanvas != null)
+            {
+                bubbleCanvas.enabled = false;
+            }
+        }
+
+        private static RectTransform FindOrCreateTextRect(Transform root)
+        {
+            Transform child = root.Find(TextNodeName);
+            if (child == null)
+            {
+                GameObject textObject = new GameObject(TextNodeName, typeof(RectTransform), typeof(Text), typeof(Outline));
+                textObject.transform.SetParent(root, false);
+                child = textObject.transform;
+            }
+
+            return child as RectTransform;
+        }
+
+        private static void DestroyLegacyTextMesh(GameObject root)
+        {
+            TextMesh legacyText = root.GetComponent<TextMesh>();
+            if (legacyText != null)
+            {
+                DestroyRuntimeOrEditor(legacyText);
+            }
+
+            MeshRenderer legacyRenderer = root.GetComponent<MeshRenderer>();
+            if (legacyRenderer != null)
+            {
+                DestroyRuntimeOrEditor(legacyRenderer);
+            }
+        }
+
+        private static T GetOrAdd<T>(GameObject target) where T : Component
+        {
+            T component = target.GetComponent<T>();
+            return component != null ? component : target.AddComponent<T>();
+        }
+
+        private static void DestroyRuntimeOrEditor(Object target)
+        {
+            if (Application.isPlaying)
+            {
+                Destroy(target);
+            }
+            else
+            {
+                DestroyImmediate(target);
+            }
+        }
+
+        private static Vector3 MoveInFrontOfScene(Vector3 position, Camera camera)
+        {
+            if (camera == null || !camera.orthographic)
+            {
+                return position;
+            }
+
+            Vector3 forward = camera.transform.forward;
+            if (Mathf.Abs(forward.z) <= 0.0001f)
+            {
+                return position;
+            }
+
+            Vector3 nearPosition = camera.transform.position + forward * (camera.nearClipPlane + 0.06f);
+            position.z = nearPosition.z;
+            return position;
         }
 
         private static Font ResolveSpeechFont()

@@ -79,6 +79,7 @@ namespace NtingCampusMapEditor
             NtingShadowCasterProfile profile = EnsureForObject(placed.gameObject);
             if (profile != null)
             {
+                profile.sourceSpriteRenderer = profile.FindSourceSpriteRenderer();
                 profile.ApplyPlacedObjectDefaults(placed);
             }
 
@@ -145,7 +146,7 @@ namespace NtingCampusMapEditor
             int sortingLayerId,
             int sortingOrder)
         {
-            if (sourceSpriteRenderer == null || IsProxyRenderer(sourceSpriteRenderer))
+            if (sourceSpriteRenderer == null || IsProxyRenderer(sourceSpriteRenderer) || !IsRendererOwnedByProfile(sourceSpriteRenderer))
             {
                 sourceSpriteRenderer = FindSourceSpriteRenderer();
             }
@@ -949,6 +950,13 @@ namespace NtingCampusMapEditor
         private static bool IsProxyRenderer(SpriteRenderer renderer)
         {
             return renderer != null && IsProxyObjectName(renderer.gameObject.name);
+        }
+
+        private bool IsRendererOwnedByProfile(SpriteRenderer renderer)
+        {
+            return renderer != null &&
+                renderer.transform != null &&
+                renderer.transform.IsChildOf(transform);
         }
 
         private static bool IsProxyObjectName(string objectName)

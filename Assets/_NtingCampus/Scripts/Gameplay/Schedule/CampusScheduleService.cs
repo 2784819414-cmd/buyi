@@ -1,6 +1,7 @@
 using NtingCampus.Gameplay.Characters;
 using NtingCampus.Gameplay.Core;
 using NtingCampus.Gameplay.Rooms;
+using NtingCampus.Gameplay.UI;
 using UnityEngine;
 
 namespace NtingCampus.Gameplay.Schedule
@@ -61,6 +62,70 @@ namespace NtingCampus.Gameplay.Schedule
             return timeController != null && IsClassSession(timeController.CurrentSegment);
         }
 
+        public CampusRoomType GetScheduledRoomType(CampusCharacterData data)
+        {
+            return timeController == null ? CampusRoomType.Unknown : ResolveScheduledRoomType(data, timeController.CurrentSegment);
+        }
+
+        public CampusCharacterTaskDirective BuildDirective(CampusCharacterRuntime runtime)
+        {
+            CampusCharacterData data = runtime != null ? runtime.Data : null;
+            CampusTimeSegment segment = timeController != null ? timeController.CurrentSegment : CampusTimeSegment.WakeUp;
+            CampusCharacterTaskDirective directive = new CampusCharacterTaskDirective();
+
+            if (data == null)
+            {
+                directive.TaskType = CampusCharacterTaskType.Idle;
+                directive.DebugLabel = "NoData";
+                return directive;
+            }
+
+            if (data.State == CampusCharacterState.Punished)
+            {
+                directive.TaskType = CampusCharacterTaskType.UseOfficeDesk;
+                directive.TargetRoomType = CampusRoomType.Office;
+                directive.PreferredFacilityType = CampusFacilityType.OfficeDesk;
+                directive.DebugLabel = "Punished";
+                return directive;
+            }
+
+            if (data.Role == CampusCharacterRole.Teacher)
+            {
+                return BuildTeacherDirective(data, segment);
+            }
+
+            return BuildStudentDirective(data, segment);
+        }
+
+        public CampusGameplayRoom ResolveBestRoom(CampusCharacterRuntime runtime, CampusCharacterTaskDirective directive)
+        {
+            if (directive == null || worldService == null)
+            {
+                return null;
+            }
+
+            CampusGameplayRoom currentRoom = worldService.FindRoomForRuntime(runtime);
+            if (currentRoom != null &&
+                directive.TargetRoomType != CampusRoomType.Unknown &&
+                currentRoom.RoomType == directive.TargetRoomType)
+            {
+                return currentRoom;
+            }
+
+            CampusGameplayRoom scheduledRoom = worldService.FindFirstUsableRoom(directive.TargetRoomType);
+            if (scheduledRoom == null)
+            {
+                scheduledRoom = worldService.FindFirstRoom(directive.TargetRoomType);
+            }
+
+            if (scheduledRoom != null)
+            {
+                return scheduledRoom;
+            }
+
+            return currentRoom;
+        }
+
         private void OnDestroy()
         {
             if (timeController != null)
@@ -77,9 +142,6 @@ namespace NtingCampus.Gameplay.Schedule
 
         private void HandleDailySettlementStarted(CampusGameDate _)
         {
-            // Day advancement is owned by CampusTimeController.
-            // Schedule service must not advance day.
-
             if (rosterService == null)
             {
                 return;
@@ -93,6 +155,7 @@ namespace NtingCampus.Gameplay.Schedule
                 }
 
                 runtime.Data.SetState(CampusCharacterState.Normal);
+                runtime.Data.SetSleepiness(Mathf.Clamp(runtime.Data.Sleepiness + 15, 0, 100));
             }
         }
 
@@ -104,6 +167,8 @@ namespace NtingCampus.Gameplay.Schedule
             }
 
             CampusTimeSegment currentSegment = timeController.CurrentSegment;
+            bool classSession = IsClassSession(currentSegment);
+
             foreach (CampusCharacterRuntime runtime in rosterService.Runtimes)
             {
                 if (runtime == null || runtime.Data == null)
@@ -111,68 +176,149 @@ namespace NtingCampus.Gameplay.Schedule
                     continue;
                 }
 
-                CampusRoomType targetRoomType = ResolveTargetRoomType(runtime.Data, currentSegment);
-                CampusGameplayRoom targetRoom = worldService.FindFirstUsableRoom(targetRoomType);
-                if (targetRoom == null)
-                {
-                    continue;
-                }
+                SyncRuntimeRoomBinding(runtime);
 
-                Vector3 offset = ResolveRoomOffset(runtime.Data);
-                runtime.transform.position = targetRoom.WorldCenter + offset;
-                runtime.Data.SetCurrentRoom(targetRoom.RoomId);
-
-                if (runtime.Data.Role == CampusCharacterRole.Student && IsClassSession(currentSegment))
+                if (runtime.Data.Role == CampusCharacterRole.Student && classSession)
                 {
                     runtime.Data.SetState(CampusCharacterState.Normal);
                 }
             }
         }
 
-        private static CampusRoomType ResolveTargetRoomType(CampusCharacterData data, CampusTimeSegment currentSegment)
+        private void SyncRuntimeRoomBinding(CampusCharacterRuntime runtime)
         {
-            if (data == null)
+            int floorIndex = ResolveFloorIndex(runtime);
+            CampusGameplayRoom actualRoom = worldService.FindRoomForPosition(floorIndex, runtime.transform.position);
+            runtime.Data.SetCurrentRoom(actualRoom != null ? actualRoom.RoomId : string.Empty);
+        }
+
+        private static CampusCharacterTaskDirective BuildTeacherDirective(CampusCharacterData data, CampusTimeSegment segment)
+        {
+            CampusCharacterTaskDirective directive = new CampusCharacterTaskDirective();
+            bool instructional = IsInstructionalSegment(segment);
+            bool patrolTeacher = (data.TeacherDuty & CampusTeacherDuty.PatrolDirector) != 0;
+
+            if (instructional)
             {
-                return CampusRoomType.Unknown;
+                directive.TaskType = CampusCharacterTaskType.TeachClass;
+                directive.TargetRoomType = CampusRoomType.Classroom;
+                directive.PreferredFacilityType = CampusFacilityType.Podium;
+                directive.HoldRadius = 0.12f;
+                directive.RequiresFacingFront = true;
+                directive.DebugLabel = "TeachClass";
+                return directive;
             }
 
-            if (data.Role == CampusCharacterRole.Teacher)
+            if (segment == CampusTimeSegment.DormCheck || segment == CampusTimeSegment.NightFree)
             {
-                if (currentSegment == CampusTimeSegment.NightFree ||
-                    currentSegment == CampusTimeSegment.DormReturn ||
-                    currentSegment == CampusTimeSegment.DormCheck ||
-                    currentSegment == CampusTimeSegment.LightsOut)
+                directive.TaskType = patrolTeacher ? CampusCharacterTaskType.PatrolHallway : CampusCharacterTaskType.UseOfficeDesk;
+                directive.TargetRoomType = patrolTeacher ? CampusRoomType.CommonActivityZone : CampusRoomType.Office;
+                directive.PreferredFacilityType = patrolTeacher ? CampusFacilityType.Door : CampusFacilityType.OfficeDesk;
+                directive.HoldRadius = 0.2f;
+                directive.DebugLabel = patrolTeacher ? "NightPatrol" : "OfficeDuty";
+                return directive;
+            }
+
+            directive.TaskType = patrolTeacher ? CampusCharacterTaskType.PatrolHallway : CampusCharacterTaskType.UseOfficeDesk;
+            directive.TargetRoomType = patrolTeacher ? CampusRoomType.CommonActivityZone : CampusRoomType.Office;
+            directive.PreferredFacilityType = patrolTeacher ? CampusFacilityType.Door : CampusFacilityType.OfficeDesk;
+            directive.HoldRadius = patrolTeacher ? 0.35f : 0.16f;
+            directive.DebugLabel = patrolTeacher ? "Patrol" : "Office";
+            return directive;
+        }
+
+        private static CampusCharacterTaskDirective BuildStudentDirective(CampusCharacterData data, CampusTimeSegment segment)
+        {
+            CampusCharacterTaskDirective directive = new CampusCharacterTaskDirective();
+            bool instructional = IsInstructionalSegment(segment);
+
+            if (segment == CampusTimeSegment.WakeUp ||
+                segment == CampusTimeSegment.DormReturn ||
+                segment == CampusTimeSegment.DormCheck ||
+                segment == CampusTimeSegment.LightsOut ||
+                segment == CampusTimeSegment.NightFree)
+            {
+                directive.TaskType = CampusCharacterTaskType.RestInDorm;
+                directive.TargetRoomType = CampusRoomType.Dormitory;
+                directive.PreferredFacilityType = CampusFacilityType.Bed;
+                directive.HoldRadius = 0.18f;
+                directive.DebugLabel = "Dorm";
+                return directive;
+            }
+
+            if (instructional)
+            {
+                directive.TargetRoomType = CampusRoomType.Classroom;
+                directive.PreferredFacilityType = CampusFacilityType.StudentDesk;
+                directive.RequiresSeat = true;
+                directive.RequiresFacingFront = true;
+                directive.HoldRadius = 0.12f;
+
+                if (data.Sleepiness >= 55 && data.HasTrait(CampusCharacterTrait.Sleepyhead))
                 {
-                    return CampusRoomType.Office;
+                    directive.TaskType = CampusCharacterTaskType.DozeAtDesk;
+                    directive.DebugLabel = "DozeAtDesk";
+                    return directive;
                 }
 
-                return IsInstructionalSegment(currentSegment)
-                    ? CampusRoomType.Classroom
-                    : CampusRoomType.Office;
+                directive.TaskType = CampusCharacterTaskType.AttendClass;
+                directive.DebugLabel = "AttendClass";
+                return directive;
             }
 
-            switch (currentSegment)
+            if (segment == CampusTimeSegment.MorningBreak1 ||
+                segment == CampusTimeSegment.MorningExerciseBreak ||
+                segment == CampusTimeSegment.MorningBreak2 ||
+                segment == CampusTimeSegment.AfternoonBreak1 ||
+                segment == CampusTimeSegment.AfternoonBreak2 ||
+                segment == CampusTimeSegment.AfternoonBreak3 ||
+                segment == CampusTimeSegment.EveningBreak1 ||
+                segment == CampusTimeSegment.EveningBreak2)
             {
-                case CampusTimeSegment.WakeUp:
-                case CampusTimeSegment.LightsOut:
-                case CampusTimeSegment.DormReturn:
-                case CampusTimeSegment.DormCheck:
-                case CampusTimeSegment.NightFree:
-                    return CampusRoomType.Dormitory;
-                case CampusTimeSegment.LunchBreak:
-                case CampusTimeSegment.DinnerBreak:
-                case CampusTimeSegment.MorningBreak1:
-                case CampusTimeSegment.MorningExerciseBreak:
-                case CampusTimeSegment.MorningBreak2:
-                case CampusTimeSegment.AfternoonBreak1:
-                case CampusTimeSegment.AfternoonBreak2:
-                case CampusTimeSegment.AfternoonBreak3:
-                case CampusTimeSegment.EveningBreak1:
-                case CampusTimeSegment.EveningBreak2:
-                    return CampusRoomType.CommonActivityZone;
-                default:
-                    return CampusRoomType.Classroom;
+                if (data.HasTrait(CampusCharacterTrait.Tattletale))
+                {
+                    directive.TaskType = CampusCharacterTaskType.CheckBulletinBoard;
+                    directive.TargetRoomType = CampusRoomType.CommonActivityZone;
+                    directive.PreferredFacilityType = CampusFacilityType.BulletinBoard;
+                    directive.HoldRadius = 0.18f;
+                    directive.DebugLabel = "CheckBoard";
+                    return directive;
+                }
+
+                if (data.HasTrait(CampusCharacterTrait.Troublemaker))
+                {
+                    directive.TaskType = CampusCharacterTaskType.Socialize;
+                    directive.TargetRoomType = CampusRoomType.CommonActivityZone;
+                    directive.PreferredFacilityType = CampusFacilityType.Door;
+                    directive.HoldRadius = 0.28f;
+                    directive.DebugLabel = "Socialize";
+                    return directive;
+                }
+
+                directive.TaskType = CampusCharacterTaskType.WanderCommonArea;
+                directive.TargetRoomType = CampusRoomType.CommonActivityZone;
+                directive.PreferredFacilityType = CampusFacilityType.Door;
+                directive.HoldRadius = 0.35f;
+                directive.DebugLabel = "Break";
+                return directive;
             }
+
+            directive.TaskType = CampusCharacterTaskType.WanderCommonArea;
+            directive.TargetRoomType = CampusRoomType.CommonActivityZone;
+            directive.PreferredFacilityType = CampusFacilityType.Door;
+            directive.HoldRadius = 0.3f;
+            directive.DebugLabel = "Free";
+            return directive;
+        }
+
+        private static CampusRoomType ResolveScheduledRoomType(CampusCharacterData data, CampusTimeSegment currentSegment)
+        {
+            CampusCharacterTaskDirective directive = data == null
+                ? null
+                : data.Role == CampusCharacterRole.Teacher
+                    ? BuildTeacherDirective(data, currentSegment)
+                    : BuildStudentDirective(data, currentSegment);
+            return directive != null ? directive.TargetRoomType : CampusRoomType.Unknown;
         }
 
         private static bool IsInstructionalSegment(CampusTimeSegment currentSegment)
@@ -197,21 +343,34 @@ namespace NtingCampus.Gameplay.Schedule
             }
         }
 
-        private static Vector3 ResolveRoomOffset(CampusCharacterData data)
+        private int ResolveFloorIndex(CampusCharacterRuntime runtime)
         {
-            if (data == null)
+            if (runtime == null)
             {
-                return Vector3.zero;
+                return 1;
             }
 
-            if (data.IsPlayerControlled)
+            if (CampusRuntimeGameplayOverlayLoader.TryGetManagedEntity(runtime, out CampusRuntimeGameplayOverlayEntity overlayEntity))
             {
-                return new Vector3(-0.6f, -0.4f, 0f);
+                return overlayEntity.FloorIndex;
             }
 
-            return data.Role == CampusCharacterRole.Teacher
-                ? new Vector3(0.4f, 0.7f, 0f)
-                : new Vector3(0.8f, -0.2f, 0f);
+            CampusSceneCharacterDefinition sceneCharacter = runtime.GetComponent<CampusSceneCharacterDefinition>();
+            if (sceneCharacter != null)
+            {
+                return sceneCharacter.FloorIndex;
+            }
+
+            if (runtime.Data != null && !string.IsNullOrWhiteSpace(runtime.Data.CurrentRoomId))
+            {
+                CampusGameplayRoom room = worldService.FindRoomById(runtime.Data.CurrentRoomId);
+                if (room != null)
+                {
+                    return room.FloorIndex;
+                }
+            }
+
+            return 1;
         }
     }
 }

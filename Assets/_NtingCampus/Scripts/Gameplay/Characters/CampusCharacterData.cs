@@ -79,6 +79,11 @@ namespace NtingCampus.Gameplay.Characters
             currentRoomId = string.IsNullOrWhiteSpace(roomId) ? string.Empty : roomId.Trim();
         }
 
+        public void SetPlayerControlled(bool value)
+        {
+            isPlayerControlled = value;
+        }
+
         public void SetState(CampusCharacterState nextState)
         {
             state = nextState;

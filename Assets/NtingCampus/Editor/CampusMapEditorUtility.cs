@@ -2867,7 +2867,11 @@ namespace NtingCampusMapEditor
                         : objectData.CustomInteractionPromptText;
                     placed.CustomInteractionAnchors = CampusPlacedObject.CloneInteractionAnchors(objectData.CustomInteractionAnchors);
                     placed.ApplyInteractionState();
+                    placed.EnsureShadowRegistration();
+                    CampusDynamicShadowUtility.EnsureObjectShadowCasters(placed, floor.Grid);
                 }
+
+                NtingCustomShadowSystem.EnsureSceneSystem().RefreshNow();
 
                 for (int stairIndex = 0; stairIndex < floorData.Stairs.Count; stairIndex++)
                 {

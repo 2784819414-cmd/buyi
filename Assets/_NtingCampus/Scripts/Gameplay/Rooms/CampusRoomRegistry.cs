@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using NtingCampus.Gameplay.UI;
 using NtingCampusMapEditor;
 using UnityEngine;
 
@@ -135,12 +136,13 @@ namespace NtingCampus.Gameplay.Rooms
 
         private void BuildRoomsFromGameplayMarkers()
         {
+            CampusRuntimeGameplayOverlayLoader overlayLoader = CampusRuntimeGameplayOverlayLoader.Instance;
             CampusGameplayRoomMarker[] gameplayMarkers =
                 FindObjectsByType<CampusGameplayRoomMarker>(FindObjectsInactive.Include, FindObjectsSortMode.None);
             for (int i = 0; i < gameplayMarkers.Length; i++)
             {
                 CampusGameplayRoomMarker gameplayMarker = gameplayMarkers[i];
-                if (gameplayMarker == null)
+                if (gameplayMarker == null || (overlayLoader != null && !overlayLoader.ShouldIncludeExplicitMarker(gameplayMarker)))
                 {
                     continue;
                 }
@@ -318,12 +320,13 @@ namespace NtingCampus.Gameplay.Rooms
 
         private void AssignFacilities(CampusMapRoot root)
         {
+            CampusRuntimeGameplayOverlayLoader overlayLoader = CampusRuntimeGameplayOverlayLoader.Instance;
             CampusGameplayFacilityMarker[] explicitFacilities =
                 FindObjectsByType<CampusGameplayFacilityMarker>(FindObjectsInactive.Include, FindObjectsSortMode.None);
             for (int i = 0; i < explicitFacilities.Length; i++)
             {
                 CampusGameplayFacilityMarker facilityMarker = explicitFacilities[i];
-                if (facilityMarker == null)
+                if (facilityMarker == null || (overlayLoader != null && !overlayLoader.ShouldIncludeExplicitMarker(facilityMarker)))
                 {
                     continue;
                 }
@@ -564,122 +567,7 @@ namespace NtingCampus.Gameplay.Rooms
 
         private static CampusFacilityType InferFacilityType(CampusPlacedObject placedObject)
         {
-            if (placedObject == null)
-            {
-                return CampusFacilityType.Unknown;
-            }
-
-            string objectId = NormalizeKey(placedObject.ObjectId);
-            string displayName = NormalizeKey(placedObject.DisplayName);
-            string rawDisplayName = placedObject.DisplayName ?? string.Empty;
-            string combined = objectId + "|" + displayName;
-
-            if (combined.Contains("door"))
-            {
-                return CampusFacilityType.Door;
-            }
-
-            if (rawDisplayName.Contains("门"))
-            {
-                return CampusFacilityType.Door;
-            }
-
-            if (combined.Contains("chair_desk") || combined.Contains("desk"))
-            {
-                return CampusFacilityType.Desk;
-            }
-
-            if (combined.Contains("blackboard") || rawDisplayName.Contains("黑板"))
-            {
-                return CampusFacilityType.Blackboard;
-            }
-
-            if (combined.Contains("podium") || rawDisplayName.Contains("讲台"))
-            {
-                return CampusFacilityType.Podium;
-            }
-
-            if (combined.Contains("bed") || rawDisplayName.Contains("床"))
-            {
-                return CampusFacilityType.Bed;
-            }
-
-            if (combined.Contains("office_desk") || rawDisplayName.Contains("办公桌"))
-            {
-                return CampusFacilityType.OfficeDesk;
-            }
-
-            if (combined.Contains("bulletin") || rawDisplayName.Contains("公告栏"))
-            {
-                return CampusFacilityType.BulletinBoard;
-            }
-
-            if (combined.Contains("recruit") || rawDisplayName.Contains("招募"))
-            {
-                return CampusFacilityType.Recruitment;
-            }
-
-            if (rawDisplayName.Contains("课桌") || rawDisplayName.Contains("书桌") || rawDisplayName.Contains("桌"))
-            {
-                return CampusFacilityType.StudentDesk;
-            }
-
-            if (combined.Contains("chair"))
-            {
-                return CampusFacilityType.Chair;
-            }
-
-            if (rawDisplayName.Contains("椅"))
-            {
-                return CampusFacilityType.Chair;
-            }
-
-            if (combined.Contains("dining_table") || combined.Contains("diningtable") || combined.Contains("table"))
-            {
-                return CampusFacilityType.DiningTable;
-            }
-
-            if (rawDisplayName.Contains("餐桌"))
-            {
-                return CampusFacilityType.DiningTable;
-            }
-
-            if (combined.Contains("urinal"))
-            {
-                return CampusFacilityType.Urinal;
-            }
-
-            if (rawDisplayName.Contains("小便池"))
-            {
-                return CampusFacilityType.Urinal;
-            }
-
-            if (combined.Contains("squatstall") || combined.Contains("stall") || combined.Contains("toilet"))
-            {
-                return CampusFacilityType.RestroomStall;
-            }
-
-            if (rawDisplayName.Contains("蹲坑") || rawDisplayName.Contains("厕位") || rawDisplayName.Contains("马桶"))
-            {
-                return CampusFacilityType.RestroomStall;
-            }
-
-            if (combined.Contains("sink"))
-            {
-                return CampusFacilityType.Sink;
-            }
-
-            if (rawDisplayName.Contains("洗手池") || rawDisplayName.Contains("水池"))
-            {
-                return CampusFacilityType.Sink;
-            }
-
-            if (placedObject.IsStorageContainer)
-            {
-                return CampusFacilityType.Storage;
-            }
-
-            return CampusFacilityType.Unknown;
+            return CampusFacilityTypeResolver.Resolve(placedObject);
         }
     }
 }

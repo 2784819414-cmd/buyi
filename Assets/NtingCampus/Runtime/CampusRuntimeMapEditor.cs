@@ -5,6 +5,7 @@ using System.IO;
 using System.Runtime.InteropServices;
 using System.Text;
 using System.Text.RegularExpressions;
+using NtingCampus.Gameplay.Rooms;
 using NtingCampus.Gameplay.UI;
 using UnityEngine;
 using Unity.Profiling;
@@ -39,6 +40,7 @@ namespace NtingCampusMapEditor
         PlaceObject,
         PlaceStair,
         PlaceRoom,
+        RectangleRoom,
         CreateRoomPrefab,
         PlaceRoomPrefab,
         PlaceLight,
@@ -116,14 +118,15 @@ namespace NtingCampusMapEditor
         private const float SceneReferenceRetryInterval = 0.5f;
         private const float AmbientLightIntensity = 0.3f;
         private const float PlacedLightIntensity = 1.15f;
-        private const int PaletteTileSize = 72;
-        private const int ToolbarButtonWidth = 82;
+        private const int PaletteTileSize = 92;
+        private const int ToolbarButtonWidth = 110;
         private const float ZoomStep = 0.12f;
-        private const float PanelMargin = 20f;
-        private const float TopMargin = 56f;
-        private const float BottomToolbarHeight = 56f;
+        private const float PanelMargin = 28f;
+        private const float TopMargin = 72f;
+        private const float BottomToolbarHeight = 74f;
         private const float ObjectSettingsMinScale = 0.05f;
         private const float ObjectSettingsMaxScale = 8f;
+        private const byte RuntimeObjectSpriteAlphaThreshold = 8;
         private const string TextInputControlPrefix = "CampusRuntimeTextInput_";
         private const int WallStrokeVisualBatchCellThreshold = 8;
         private const int WallStrokeVisualBatchChunkThreshold = 4;
@@ -218,7 +221,6 @@ namespace NtingCampusMapEditor
         private Rect helpPanelRect;
         private Light2D selectedLight;
         private CampusDayNightController dayNightController;
-        private Sprite roomMarkerSprite;
         private Transform runtimeImportPrefabRoot;
         private CampusRuntimeImportTarget activeImportTarget = CampusRuntimeImportTarget.Floor;
         private string activeImportLabel = string.Empty;
@@ -285,7 +287,6 @@ namespace NtingCampusMapEditor
         private Texture2D objectSettingsHighlightTexture;
         private Texture2D lineTexture;
         private Texture2D tileFallbackTexture;
-        private Texture2D roomMarkerTexture;
 
         [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.AfterSceneLoad)]
         private static void Install()
@@ -378,6 +379,10 @@ namespace NtingCampusMapEditor
                     MarkSceneReferencesDirty();
                     RefreshSceneReferencesIfNeeded(true);
                 }
+                else
+                {
+                    SaveCurrentMapSource(false);
+                }
                 SetStatus(isOpen
                     ? CampusRuntimeEditorTextCatalog.Get(displayLanguage, CampusRuntimeEditorTextId.EditorOpenedStatus)
                     : CampusRuntimeEditorTextCatalog.Get(displayLanguage, CampusRuntimeEditorTextId.EditorClosedStatus));
@@ -409,6 +414,7 @@ namespace NtingCampusMapEditor
             EnsureStyles();
             if (!isOpen)
             {
+                HideAllRoomMarkerSpriteRenderers();
                 textInputFocused = false;
                 return;
             }
@@ -848,12 +854,81 @@ namespace NtingCampusMapEditor
                 Mathf.Max(
                     texture.width / (float)normalizedFootprint.x,
                     texture.height / (float)normalizedFootprint.y));
-            Sprite sprite = Sprite.Create(texture, new Rect(0f, 0f, texture.width, texture.height), new Vector2(0.5f, 0.5f), pixelsPerUnit);
+            Rect spriteRect = ResolveRuntimeObjectSpriteRect(texture);
+            Vector2 pivot = ResolveRuntimeObjectSpritePivot(texture, spriteRect, new Vector2(0.5f, 0.5f));
+            Sprite sprite = Sprite.Create(texture, spriteRect, pivot, pixelsPerUnit);
             sprite.name = spriteName;
             sprite.hideFlags = HideFlags.DontSave;
             importedSprites.Add(sprite);
             importedAssets.Add(sprite);
             return sprite;
+        }
+
+        private static Rect ResolveRuntimeObjectSpriteRect(Texture2D texture)
+        {
+            if (texture == null || texture.width <= 0 || texture.height <= 0)
+            {
+                return new Rect(0f, 0f, 1f, 1f);
+            }
+
+            Rect fullRect = new Rect(0f, 0f, texture.width, texture.height);
+            Color32[] pixels;
+            try
+            {
+                pixels = texture.GetPixels32();
+            }
+            catch (UnityException)
+            {
+                return fullRect;
+            }
+
+            if (pixels == null || pixels.Length == 0)
+            {
+                return fullRect;
+            }
+
+            int minX = texture.width;
+            int minY = texture.height;
+            int maxX = -1;
+            int maxY = -1;
+            for (int y = 0; y < texture.height; y++)
+            {
+                int row = y * texture.width;
+                for (int x = 0; x < texture.width; x++)
+                {
+                    if (pixels[row + x].a <= RuntimeObjectSpriteAlphaThreshold)
+                    {
+                        continue;
+                    }
+
+                    minX = Mathf.Min(minX, x);
+                    minY = Mathf.Min(minY, y);
+                    maxX = Mathf.Max(maxX, x);
+                    maxY = Mathf.Max(maxY, y);
+                }
+            }
+
+            if (maxX < minX || maxY < minY)
+            {
+                return fullRect;
+            }
+
+            return new Rect(minX, minY, maxX - minX + 1, maxY - minY + 1);
+        }
+
+        private static Vector2 ResolveRuntimeObjectSpritePivot(Texture2D texture, Rect spriteRect, Vector2 fullTexturePivot)
+        {
+            if (texture == null || spriteRect.width <= 0f || spriteRect.height <= 0f)
+            {
+                return new Vector2(0.5f, 0.5f);
+            }
+
+            Vector2 pivotPixels = new Vector2(
+                Mathf.Clamp01(fullTexturePivot.x) * texture.width,
+                Mathf.Clamp01(fullTexturePivot.y) * texture.height);
+            return new Vector2(
+                Mathf.Clamp01((pivotPixels.x - spriteRect.xMin) / spriteRect.width),
+                Mathf.Clamp01((pivotPixels.y - spriteRect.yMin) / spriteRect.height));
         }
 
         private void CreateRuntimeObjectFromEditorFields()
@@ -1914,6 +1989,7 @@ namespace NtingCampusMapEditor
             return mode == CampusRuntimeBrushMode.RectangleFloor ||
                    mode == CampusRuntimeBrushMode.RectangleWall ||
                    mode == CampusRuntimeBrushMode.RectangleErase ||
+                   mode == CampusRuntimeBrushMode.RectangleRoom ||
                    mode == CampusRuntimeBrushMode.CreateRoomPrefab;
         }
 
@@ -1950,6 +2026,10 @@ namespace NtingCampusMapEditor
                             wallLogic.SetTransformMatrix(cell, BuildTileTransform());
                         }
                     }
+                    else if (mode == CampusRuntimeBrushMode.RectangleRoom)
+                    {
+                        PlaceRoomMarker(floor, cell, false, false);
+                    }
                     else
                     {
                         EraseAtCell(floor, cell, false);
@@ -1957,8 +2037,18 @@ namespace NtingCampusMapEditor
                 }
             }
 
-            RebuildWallVisuals(floor);
+            if (mode == CampusRuntimeBrushMode.RectangleWall || mode == CampusRuntimeBrushMode.RectangleErase)
+            {
+                RebuildWallVisuals(floor);
+            }
+
             floor.MarkUsedBoundsDirty();
+            if (mode == CampusRuntimeBrushMode.RectangleRoom)
+            {
+                RebuildGameplayRoomRegistrySafe();
+                SchedulePlayerMapSave();
+                SetStatus("Marked room area: " + GetSelectedRoomName());
+            }
         }
 
         private void PaintTileArea(Tilemap tilemap, Vector3Int anchorCell, int size, TileBase tile, Matrix4x4 transform)
@@ -1990,10 +2080,21 @@ namespace NtingCampusMapEditor
             CampusPlacedObject prefabPlaced = prefab.GetComponent<CampusPlacedObject>();
             Vector2Int footprint = prefabPlaced != null ? prefabPlaced.NormalizedFootprintSize : Vector2Int.one;
             int effectiveRotation90 = prefabPlaced != null ? prefabPlaced.ResolveAllowedRotation90(rotation90) : 0;
+            if (prefabPlaced != null && prefabPlaced.IsWallMounted)
+            {
+                footprint = Vector2Int.one;
+                if (!CanPlaceWallMountedObject(floor, cell, effectiveRotation90, out string wallPlacementError))
+                {
+                    SetStatus(wallPlacementError);
+                    return;
+                }
+            }
+
             Vector2Int rotatedFootprint = CampusPlacedObject.RotateFootprintSize(footprint, effectiveRotation90);
             EraseObjectsAtCells(floor, cell, rotatedFootprint);
 
             GameObject instance = Instantiate(prefab, floor.PropsRoot);
+            CampusSceneInstanceUtility.NormalizeSceneInstance(instance);
             instance.SetActive(true);
             string displayName = GetObjectDisplayName(prefab);
             instance.name = displayName + "_F" + floor.FloorIndex + "_" + cell.x + "_" + cell.y;
@@ -2018,14 +2119,68 @@ namespace NtingCampusMapEditor
                 placed.StorageSize = prefabPlaced.NormalizedStorageSize;
                 placed.StorageMaxWeight = prefabPlaced.NormalizedStorageMaxWeight;
                 placed.SortingOrderOffset = prefabPlaced.SortingOrderOffset;
+                if (prefabPlaced.IsWallMounted)
+                {
+                    placed.SortingOrderOffset = Mathf.Max(placed.SortingOrderOffset, 1);
+                }
             }
 
             placed.ApplyCellToTransform(floor.Grid);
             placed.ApplyInteractionState();
+            placed.EnsureShadowRegistration();
             CampusDynamicShadowUtility.EnsureObjectShadowCasters(placed, floor.Grid);
             CampusRenderSortingUtility.ApplyFloorSorting(floor, floor.FloorIndex * mapRoot.SortingOrderStepPerFloor);
+            NtingCustomShadowSystem.EnsureSceneSystem().RefreshNow();
             floor.MarkUsedBoundsDirty();
             SetStatus("Placed object: " + displayName);
+        }
+
+        private bool CanPlaceWallMountedObject(CampusFloorRoot floor, Vector3Int cell, int rotation90Value, out string error)
+        {
+            error = string.Empty;
+            if (floor == null)
+            {
+                error = "\u627e\u4e0d\u5230\u5f53\u524d\u697c\u5c42\u3002";
+                return false;
+            }
+
+            Tilemap wallLogic = CampusWallTileUtility.GetWallLogicTilemap(floor);
+            if (wallLogic == null)
+            {
+                error = "\u5f53\u524d\u697c\u5c42\u6ca1\u6709\u5899\u4f53\u903b\u8f91\u5c42\u3002";
+                return false;
+            }
+
+            if (!CampusWallTileUtility.HasWall(wallLogic, cell))
+            {
+                error = "\u58c1\u6302\u7269\u4f53\u53ea\u80fd\u653e\u5728\u5899\u4f53\u683c\u5b50\u4e0a\u3002";
+                return false;
+            }
+
+            int exposedMask = CampusWallTileUtility.GetExposedMask(wallLogic, cell);
+            int targetFaceMask = Rotation90ToWallMask(rotation90Value);
+            if ((exposedMask & targetFaceMask) == 0)
+            {
+                error = "\u5f53\u524d\u65cb\u8f6c\u65b9\u5411\u6ca1\u6709\u53ef\u5438\u9644\u7684\u5899\u9762\u3002";
+                return false;
+            }
+
+            return true;
+        }
+
+        private static int Rotation90ToWallMask(int rotation90Value)
+        {
+            switch (CampusPlacedObject.NormalizeRotation90(rotation90Value))
+            {
+                case 1:
+                    return CampusWallTileUtility.EastMask;
+                case 2:
+                    return CampusWallTileUtility.SouthMask;
+                case 3:
+                    return CampusWallTileUtility.WestMask;
+                default:
+                    return CampusWallTileUtility.NorthMask;
+            }
         }
 
         private void PlaceStair(CampusFloorRoot floor, Vector3Int cell)
@@ -2069,6 +2224,7 @@ namespace NtingCampusMapEditor
         private void CreateStairInstance(GameObject prefab, CampusFloorRoot floor, int fromFloor, int toFloor, Vector3Int fromCell, Vector3Int secondaryCell, Vector3Int toCell, int stairRotation90, string linkId, bool isAutoReturn)
         {
             GameObject instance = Instantiate(prefab, floor.StairsRoot);
+            CampusSceneInstanceUtility.NormalizeSceneInstance(instance);
             instance.name = CampusObjectNames.GetDisplayName(prefab.name) + "_F" + fromFloor + "_To_F" + toFloor + "_" + fromCell.x + "_" + fromCell.y;
             instance.transform.position = GetStairWorldCenter(floor.Grid, fromCell, secondaryCell);
             instance.transform.rotation = Quaternion.Euler(0f, 0f, stairRotation90 * 90f);
@@ -2092,7 +2248,7 @@ namespace NtingCampusMapEditor
             CampusDynamicShadowUtility.EnsureRendererShadowCasters(instance);
         }
 
-        private void PlaceRoomMarker(CampusFloorRoot floor, Vector3Int cell)
+        private void PlaceRoomMarker(CampusFloorRoot floor, Vector3Int cell, bool showStatus = true, bool rebuildGameplayRooms = true)
         {
             if (floor == null || floor.Grid == null || floor.PropsRoot == null)
             {
@@ -2118,7 +2274,16 @@ namespace NtingCampusMapEditor
             marker.HideMarkerVisual = false;
             AddRoomMarkerVisual(markerObject, floor);
             floor.MarkUsedBoundsDirty();
-            SetStatus("Placed room marker: " + roomName);
+            SchedulePlayerMapSave();
+            if (rebuildGameplayRooms)
+            {
+                RebuildGameplayRoomRegistrySafe();
+            }
+
+            if (showStatus)
+            {
+                SetStatus("Placed room marker: " + roomName);
+            }
         }
 
         private void CreateRoomPrefabFromSelection(CampusFloorRoot floor, Vector3Int start, Vector3Int end)
@@ -2507,7 +2672,7 @@ namespace NtingCampusMapEditor
 
             EraseObjectsAtCell(floor, cell);
             EraseStairsAtCell(floor, cell);
-            EraseRoomMarkersAtCell(floor, cell);
+            bool erasedRoomMarker = EraseRoomMarkersAtCell(floor, cell);
             EraseLightsAtCell(floor, cell);
 
             if (rebuildWalls)
@@ -2516,6 +2681,12 @@ namespace NtingCampusMapEditor
                 wallVisualRebuildCells.Add(cell);
                 RebuildWallVisuals(floor, wallVisualRebuildCells);
                 floor.MarkUsedBoundsDirty();
+            }
+
+            if (erasedRoomMarker)
+            {
+                SchedulePlayerMapSave();
+                RebuildGameplayRoomRegistrySafe();
             }
         }
 
@@ -2548,13 +2719,14 @@ namespace NtingCampusMapEditor
             }
         }
 
-        private void EraseRoomMarkersAtCell(CampusFloorRoot floor, Vector3Int cell)
+        private bool EraseRoomMarkersAtCell(CampusFloorRoot floor, Vector3Int cell)
         {
             if (floor == null || floor.PropsRoot == null)
             {
-                return;
+                return false;
             }
 
+            bool erased = false;
             CampusRuntimeRoomMarker[] markers = floor.PropsRoot.GetComponentsInChildren<CampusRuntimeRoomMarker>(true);
             for (int i = markers.Length - 1; i >= 0; i--)
             {
@@ -2562,8 +2734,11 @@ namespace NtingCampusMapEditor
                 if (marker != null && marker.Cell == cell && marker.FloorIndex == floor.FloorIndex)
                 {
                     DestroyRuntimeObject(marker.gameObject);
+                    erased = true;
                 }
             }
+
+            return erased;
         }
 
         private void EraseStairsAtCell(CampusFloorRoot floor, Vector3Int cell)
@@ -3000,6 +3175,52 @@ namespace NtingCampusMapEditor
             SavePlayerMap(true);
         }
 
+        public void CreateBlankMap(bool savePlayerMap)
+        {
+            RefreshSceneReferences(true);
+            if (mapRoot == null)
+            {
+                return;
+            }
+
+            roomNames.Clear();
+            roomRequiredCounts.Clear();
+            mapRoot.RebuildFloorReferences();
+            for (int i = 0; i < mapRoot.Floors.Count; i++)
+            {
+                CampusFloorRoot floor = mapRoot.Floors[i];
+                if (floor == null)
+                {
+                    continue;
+                }
+
+                ClearFloorAuthoredContent(floor);
+                floor.IsUnlocked = floor.FloorIndex <= 1;
+                CampusRenderSortingUtility.ApplyFloorSorting(floor, floor.FloorIndex * mapRoot.SortingOrderStepPerFloor);
+                floor.RefreshUsedBounds();
+            }
+
+            ClearRuntimeEditableLights();
+            selectedFloorIndex = 1;
+            mapRoot.CurrentPreviewFloor = selectedFloorIndex;
+            RememberMapLoadSource(CampusRuntimeMapLoadSource.Scene, GetActiveScenePath());
+            MarkSceneReferencesDirty();
+            RefreshSceneReferencesIfNeeded(true);
+            PrepareRuntimeMapPresentationSafe();
+
+            if (savePlayerMap)
+            {
+                SavePlayerMap(false);
+            }
+
+            SetStatus("Created blank map.");
+        }
+
+        public bool SaveNamedMap(string path, CampusRuntimeMapLoadSource source, bool showStatus)
+        {
+            return SaveMapToPath(path, source, showStatus);
+        }
+
         private void SavePlayerMap(bool showStatus)
         {
             if (playerSaveInProgress)
@@ -3041,6 +3262,63 @@ namespace NtingCampusMapEditor
             finally
             {
                 playerSaveInProgress = false;
+            }
+        }
+
+        private bool SaveCurrentMapSource(bool showStatus)
+        {
+            switch (lastMapLoadSource)
+            {
+                case CampusRuntimeMapLoadSource.AuthoringPackage:
+                    if (!string.IsNullOrWhiteSpace(lastMapLoadPath))
+                    {
+                        return SaveMapToPath(lastMapLoadPath, CampusRuntimeMapLoadSource.AuthoringPackage, showStatus);
+                    }
+
+                    return false;
+                case CampusRuntimeMapLoadSource.PlayerSave:
+                    SavePlayerMap(showStatus);
+                    return true;
+                default:
+                    return false;
+            }
+        }
+
+        private bool SaveMapToPath(string path, CampusRuntimeMapLoadSource source, bool showStatus)
+        {
+            if (string.IsNullOrWhiteSpace(path))
+            {
+                return false;
+            }
+
+            try
+            {
+                EnsureImportFolders();
+                string folder = Path.GetDirectoryName(path);
+                if (!string.IsNullOrWhiteSpace(folder))
+                {
+                    Directory.CreateDirectory(folder);
+                }
+
+                File.WriteAllText(path, BuildSnapshotJson(), Encoding.UTF8);
+                RememberMapLoadSource(source, path);
+                RefreshAssetDatabaseIfAvailable();
+                if (showStatus)
+                {
+                    SetStatus("Saved map: " + path);
+                }
+
+                return true;
+            }
+            catch (Exception exception)
+            {
+                Debug.LogWarning("[NtingCampusRuntimeMapEditor] Save map failed: " + exception.Message);
+                if (showStatus)
+                {
+                    SetStatus("Save map failed: " + exception.Message);
+                }
+
+                return false;
             }
         }
 
@@ -3611,6 +3889,7 @@ namespace NtingCampusMapEditor
             objectSnapshot.OverrideFootprintSize = placed.OverrideFootprintSize;
             objectSnapshot.VisualScale = placed.NormalizedVisualScale;
             objectSnapshot.LockVisualScaleAspect = placed.LockVisualScaleAspect;
+            objectSnapshot.IsWallMounted = placed.IsWallMounted;
             objectSnapshot.OverrideAllowRotation = placed.OverrideAllowRotation;
             objectSnapshot.AllowRotation = placed.AllowRotation;
             objectSnapshot.OverrideRotation0Sprite = placed.OverrideRotation0Sprite;
@@ -3654,6 +3933,7 @@ namespace NtingCampusMapEditor
             clone.OverrideFootprintSize = source.OverrideFootprintSize;
             clone.VisualScale = source.VisualScale;
             clone.LockVisualScaleAspect = source.LockVisualScaleAspect;
+            clone.IsWallMounted = source.IsWallMounted;
             clone.OverrideAllowRotation = source.OverrideAllowRotation;
             clone.AllowRotation = source.AllowRotation;
             clone.OverrideRotation0Sprite = source.OverrideRotation0Sprite;
@@ -3696,6 +3976,7 @@ namespace NtingCampusMapEditor
                 }
 
                 GameObject instance = Instantiate(prefab, floor.PropsRoot);
+                CampusSceneInstanceUtility.NormalizeSceneInstance(instance);
                 instance.SetActive(true);
                 string displayName = string.IsNullOrWhiteSpace(objectSnapshot.DisplayNameOverride)
                     ? GetObjectDisplayName(prefab)
@@ -3715,10 +3996,28 @@ namespace NtingCampusMapEditor
                 placed.FootprintSize = objectSnapshot.FootprintSize;
                 placed.VisualScale = CampusPlacedObject.NormalizeVisualScale(objectSnapshot.VisualScale);
                 placed.LockVisualScaleAspect = objectSnapshot.LockVisualScaleAspect;
+                placed.IsWallMounted = objectSnapshot.IsWallMounted;
+                if (placed.IsWallMounted)
+                {
+                    placed.OverrideFootprintSize = true;
+                    placed.FootprintSize = Vector2Int.one;
+                    placed.OverrideAllowRotation = true;
+                    placed.AllowRotation = true;
+                    placed.SortingOrderOffset = Mathf.Max(placed.SortingOrderOffset, 1);
+                    placed.BlocksMovement = false;
+                    placed.BlocksSight = false;
+                }
+
                 if (objectSnapshot.OverrideAllowRotation)
                 {
                     placed.OverrideAllowRotation = true;
                     placed.AllowRotation = objectSnapshot.AllowRotation;
+                }
+
+                if (placed.IsWallMounted)
+                {
+                    placed.OverrideAllowRotation = true;
+                    placed.AllowRotation = true;
                 }
 
                 AssignRuntimeObjectDirectionSprite(placed, 0, objectSnapshot.OverrideRotation0Sprite, objectSnapshot.Rotation0SpritePath, objectSnapshot.ObjectId);
@@ -3758,8 +4057,12 @@ namespace NtingCampusMapEditor
                     instance.transform.position = objectSnapshot.Position;
                 }
 
+                placed.EnsureShadowRegistration();
                 CampusDynamicShadowUtility.EnsureObjectShadowCasters(placed, floor.Grid);
             }
+
+            CampusRenderSortingUtility.ApplyFloorSorting(floor, floor.FloorIndex * mapRoot.SortingOrderStepPerFloor);
+            NtingCustomShadowSystem.EnsureSceneSystem().RefreshNow();
         }
 
         private void CaptureStairs(CampusFloorRoot floor, List<CampusRuntimeStairSnapshot> output)
@@ -4065,6 +4368,23 @@ namespace NtingCampusMapEditor
             selectedLight = null;
         }
 
+        private void ClearRuntimeEditableLights()
+        {
+            Light2D[] sceneLights = FindObjectsByType<Light2D>(FindObjectsInactive.Include, FindObjectsSortMode.None);
+            for (int i = sceneLights.Length - 1; i >= 0; i--)
+            {
+                Light2D light = sceneLights[i];
+                if (!IsRuntimeEditableLight(light))
+                {
+                    continue;
+                }
+
+                DestroyRuntimeObject(light.gameObject);
+            }
+
+            selectedLight = null;
+        }
+
         private static bool IsManagedSceneLight(Light2D light)
         {
             if (light == null)
@@ -4091,32 +4411,32 @@ namespace NtingCampusMapEditor
 
         private void ResolveLayoutRects()
         {
-            float toolbarY = Mathf.Max(Screen.height - BottomToolbarHeight - PanelMargin, TopMargin + 280f);
+            float toolbarY = Mathf.Max(Screen.height - BottomToolbarHeight - PanelMargin, TopMargin + 340f);
             bottomToolbarRect = new Rect(PanelMargin, toolbarY, Mathf.Max(360f, Screen.width - PanelMargin * 2f), BottomToolbarHeight);
 
-            float rightWidth = Mathf.Clamp(Screen.width * 0.18f, 280f, 360f);
+            float rightWidth = Mathf.Clamp(Screen.width * 0.2f, 320f, 420f);
             float availableLeftWidth = Screen.width - rightWidth - PanelMargin * 3f;
-            float leftWidth = Mathf.Clamp(Screen.width * 0.26f, 300f, 440f);
-            leftWidth = Mathf.Min(leftWidth, Mathf.Max(280f, availableLeftWidth));
-            float panelHeight = Mathf.Max(280f, toolbarY - TopMargin - PanelMargin);
+            float leftWidth = Mathf.Clamp(Screen.width * 0.28f, 360f, 520f);
+            leftWidth = Mathf.Min(leftWidth, Mathf.Max(320f, availableLeftWidth));
+            float panelHeight = Mathf.Max(340f, toolbarY - TopMargin - PanelMargin);
             leftPanelRect = new Rect(PanelMargin, TopMargin, leftWidth, panelHeight);
 
             float rightX = Mathf.Max(leftPanelRect.xMax + PanelMargin, Screen.width - rightWidth - PanelMargin);
             rightWidth = Mathf.Min(rightWidth, Screen.width - rightX - PanelMargin);
-            if (rightWidth < 240f)
+            if (rightWidth < 280f)
             {
-                rightWidth = 240f;
+                rightWidth = 280f;
                 rightX = Screen.width - rightWidth - PanelMargin;
             }
 
-            float floorHeight = Mathf.Clamp(Screen.height * 0.22f, 176f, 260f);
+            float floorHeight = Mathf.Clamp(Screen.height * 0.24f, 220f, 320f);
             floorPanelRect = new Rect(rightX, TopMargin, rightWidth, floorHeight);
-            float checklistY = floorPanelRect.yMax + 14f;
-            float checklistHeight = Mathf.Max(180f, toolbarY - checklistY - PanelMargin);
+            float checklistY = floorPanelRect.yMax + 18f;
+            float checklistHeight = Mathf.Max(220f, toolbarY - checklistY - PanelMargin);
             checklistPanelRect = new Rect(rightX, checklistY, rightWidth, checklistHeight);
-            settingsPanelRect = new Rect(Mathf.Clamp(Screen.width - 390f - PanelMargin, PanelMargin, Screen.width - 390f), Mathf.Max(TopMargin, toolbarY - 330f), 370f, Mathf.Min(300f, toolbarY - TopMargin - PanelMargin));
-            float objectSettingsWidth = Mathf.Clamp(Screen.width * 0.34f, 440f, 620f);
-            float objectSettingsHeight = Mathf.Clamp(toolbarY - TopMargin - PanelMargin, 420f, 690f);
+            settingsPanelRect = new Rect(Mathf.Clamp(Screen.width - 460f - PanelMargin, PanelMargin, Screen.width - 460f), Mathf.Max(TopMargin, toolbarY - 390f), 430f, Mathf.Min(360f, toolbarY - TopMargin - PanelMargin));
+            float objectSettingsWidth = Mathf.Clamp(Screen.width * 0.36f, 520f, 760f);
+            float objectSettingsHeight = Mathf.Clamp(toolbarY - TopMargin - PanelMargin, 500f, 800f);
             float objectSettingsX = leftPanelRect.xMax + PanelMargin;
             float objectSettingsRightLimit = floorPanelRect.x - PanelMargin;
             if (objectSettingsRightLimit - objectSettingsX < objectSettingsWidth)
@@ -4125,24 +4445,24 @@ namespace NtingCampusMapEditor
             }
 
             objectSettingsPanelRect = new Rect(objectSettingsX, TopMargin, objectSettingsWidth, Mathf.Min(objectSettingsHeight, toolbarY - TopMargin - PanelMargin));
-            helpPanelRect = new Rect(Mathf.Max(PanelMargin, Screen.width * 0.5f - 285f), TopMargin + 24f, Mathf.Min(570f, Screen.width - PanelMargin * 2f), Mathf.Min(390f, toolbarY - TopMargin - 48f));
+            helpPanelRect = new Rect(Mathf.Max(PanelMargin, Screen.width * 0.5f - 360f), TopMargin + 30f, Mathf.Min(720f, Screen.width - PanelMargin * 2f), Mathf.Min(480f, toolbarY - TopMargin - 56f));
         }
 
         private void DrawLeftPanel()
         {
             GUI.Box(leftPanelRect, GUIContent.none, panelStyle);
-            Rect tabRect = new Rect(leftPanelRect.x + 12f, leftPanelRect.y + 10f, leftPanelRect.width - 24f, 46f);
-            float tabGap = 6f;
+            Rect tabRect = new Rect(leftPanelRect.x + 14f, leftPanelRect.y + 12f, leftPanelRect.width - 28f, 54f);
+            float tabGap = 8f;
             float tabWidth = (tabRect.width - tabGap * 3f) / 4f;
             DrawTabButton(new Rect(tabRect.x, tabRect.y, tabWidth, tabRect.height), CampusRuntimeEditorTab.Build, "Build");
             DrawTabButton(new Rect(tabRect.x + (tabWidth + tabGap), tabRect.y, tabWidth, tabRect.height), CampusRuntimeEditorTab.Rooms, "Rooms");
             DrawTabButton(new Rect(tabRect.x + (tabWidth + tabGap) * 2f, tabRect.y, tabWidth, tabRect.height), CampusRuntimeEditorTab.Objects, "Objects");
             DrawTabButton(new Rect(tabRect.x + (tabWidth + tabGap) * 3f, tabRect.y, tabWidth, tabRect.height), CampusRuntimeEditorTab.Lighting, "Lighting");
 
-            Rect titleRect = new Rect(leftPanelRect.x + 16f, leftPanelRect.y + 66f, leftPanelRect.width - 32f, 42f);
+            Rect titleRect = new Rect(leftPanelRect.x + 18f, leftPanelRect.y + 76f, leftPanelRect.width - 36f, 48f);
             GUI.Box(titleRect, GetActiveTabTitle(), headerStyle);
 
-            Rect contentRect = new Rect(leftPanelRect.x + 14f, leftPanelRect.y + 116f, leftPanelRect.width - 28f, leftPanelRect.height - 134f);
+            Rect contentRect = new Rect(leftPanelRect.x + 16f, leftPanelRect.y + 132f, leftPanelRect.width - 32f, leftPanelRect.height - 150f);
             switch (activeTab)
             {
                 case CampusRuntimeEditorTab.Build:
@@ -4383,8 +4703,11 @@ namespace NtingCampusMapEditor
             GUI.Label(new Rect(0f, y, viewRect.width, 26f), "Room Tools", headerStyle);
             y += 34f;
             DrawModeButtonRow(ref y, viewRect.width,
-                new CampusRuntimeBrushMode[] { CampusRuntimeBrushMode.PlaceRoom, CampusRuntimeBrushMode.CreateRoomPrefab, CampusRuntimeBrushMode.PlaceRoomPrefab },
-                new string[] { "Mark", "Box Module", "Place Module" });
+                new CampusRuntimeBrushMode[] { CampusRuntimeBrushMode.PlaceRoom, CampusRuntimeBrushMode.RectangleRoom, CampusRuntimeBrushMode.CreateRoomPrefab },
+                new string[] { "Mark", "Box Mark", "Box Module" });
+            DrawModeButtonRow(ref y, viewRect.width,
+                new CampusRuntimeBrushMode[] { CampusRuntimeBrushMode.PlaceRoomPrefab },
+                new string[] { "Place Module" });
             DrawModeButtonRow(ref y, viewRect.width,
                 new CampusRuntimeBrushMode[] { CampusRuntimeBrushMode.Erase, CampusRuntimeBrushMode.Pick },
                 new string[] { "Erase", "Pick" });
@@ -4828,8 +5151,8 @@ namespace NtingCampusMapEditor
         }        private void DrawBottomToolbar()
         {
             GUI.Box(bottomToolbarRect, GUIContent.none, panelStyle);
-            float x = bottomToolbarRect.x + 12f;
-            float y = bottomToolbarRect.y + 10f;
+            float x = bottomToolbarRect.x + 14f;
+            float y = bottomToolbarRect.y + 14f;
             DrawToolbarButton(ref x, y, CampusRuntimeEditorTextCatalog.Get(displayLanguage, CampusRuntimeEditorTextId.Close), delegate { isOpen = false; });
             DrawToolbarButton(ref x, y, CampusRuntimeEditorTextCatalog.Get(displayLanguage, CampusRuntimeEditorTextId.Help), delegate { showHelpOverlay = !showHelpOverlay; });
             DrawToolbarButton(ref x, y, CampusRuntimeEditorTextCatalog.Get(displayLanguage, CampusRuntimeEditorTextId.Import), ImportLatestJson);
@@ -4837,20 +5160,20 @@ namespace NtingCampusMapEditor
             DrawToolbarButton(ref x, y, CampusRuntimeEditorTextCatalog.Get(displayLanguage, CampusRuntimeEditorTextId.Undo), UndoSnapshot, undoSnapshots.Count > 0);
             DrawToolbarButton(ref x, y, CampusRuntimeEditorTextCatalog.Get(displayLanguage, CampusRuntimeEditorTextId.Redo), RedoSnapshot, redoSnapshots.Count > 0);
 
-            float rightX = bottomToolbarRect.xMax - 268f;
-            if (GUI.Button(new Rect(rightX, y, 78f, 38f), showGridOverlay
+            float rightX = bottomToolbarRect.xMax - 354f;
+            if (GUI.Button(new Rect(rightX, y, 106f, 46f), showGridOverlay
                     ? CampusRuntimeEditorTextCatalog.Get(displayLanguage, CampusRuntimeEditorTextId.GridOn)
                     : CampusRuntimeEditorTextCatalog.Get(displayLanguage, CampusRuntimeEditorTextId.GridOff), showGridOverlay ? selectedButtonStyle : buttonStyle))
             {
                 showGridOverlay = !showGridOverlay;
             }
 
-            if (GUI.Button(new Rect(rightX + 88f, y, 78f, 38f), CampusRuntimeEditorTextCatalog.Get(displayLanguage, CampusRuntimeEditorTextId.Settings), showSettings ? selectedButtonStyle : buttonStyle))
+            if (GUI.Button(new Rect(rightX + 116f, y, 106f, 46f), CampusRuntimeEditorTextCatalog.Get(displayLanguage, CampusRuntimeEditorTextId.Settings), showSettings ? selectedButtonStyle : buttonStyle))
             {
                 showSettings = !showSettings;
             }
 
-            if (GUI.Button(new Rect(rightX + 176f, y, 78f, 38f), CampusRuntimeEditorTextCatalog.Get(displayLanguage, CampusRuntimeEditorTextId.Rebuild), buttonStyle))
+            if (GUI.Button(new Rect(rightX + 232f, y, 106f, 46f), CampusRuntimeEditorTextCatalog.Get(displayLanguage, CampusRuntimeEditorTextId.Rebuild), buttonStyle))
             {
                 PrepareRuntimeMapPresentationSafe();
                 SetStatus(CampusRuntimeEditorTextCatalog.Get(displayLanguage, CampusRuntimeEditorTextId.WallVisualsRebuiltStatus));
@@ -4934,10 +5257,24 @@ namespace NtingCampusMapEditor
             }
 
             DrawSelectedLightRangeOverlay();
+            DrawRoomMarkerOverlay(floor);
 
             if (rectangleDragActive)
             {
-                DrawCellRect(floor.Grid, rectangleStartCell, hoverCell, new Color(0.2f, 0.85f, 1f, 0.45f), 2f);
+                if (brushMode == CampusRuntimeBrushMode.RectangleRoom)
+                {
+                    DrawFilledCellRect(
+                        floor.Grid,
+                        rectangleStartCell,
+                        hoverCell,
+                        new Color(0.2f, 0.85f, 1f, 0.22f),
+                        new Color(0.2f, 0.85f, 1f, 0.72f),
+                        2f);
+                }
+                else
+                {
+                    DrawCellRect(floor.Grid, rectangleStartCell, hoverCell, new Color(0.2f, 0.85f, 1f, 0.45f), 2f);
+                }
             }
             else if (brushMode == CampusRuntimeBrushMode.PlaceLight)
             {
@@ -4961,10 +5298,164 @@ namespace NtingCampusMapEditor
                 Vector3Int secondary = hoverCell + CampusStairLink.DirectionFromRotation(rotation90);
                 DrawCellRect(floor.Grid, hoverCell, secondary, new Color(0.2f, 0.85f, 1f, 0.72f), 2f);
             }
+            else if (brushMode == CampusRuntimeBrushMode.PlaceRoom || brushMode == CampusRuntimeBrushMode.RectangleRoom)
+            {
+                DrawFilledCellRect(
+                    floor.Grid,
+                    hoverCell,
+                    hoverCell,
+                    new Color(0.2f, 0.85f, 1f, 0.22f),
+                    new Color(0.2f, 0.85f, 1f, 0.72f),
+                    2f);
+            }
             else
             {
                 Vector3Int end = new Vector3Int(hoverCell.x + Mathf.Max(1, brushSize) - 1, hoverCell.y + Mathf.Max(1, brushSize) - 1, 0);
                 DrawCellRect(floor.Grid, hoverCell, end, new Color(1f, 0.96f, 0.25f, 0.55f), 2f);
+            }
+        }
+
+        private bool ShouldDrawRoomMarkerOverlay()
+        {
+            return activeTab == CampusRuntimeEditorTab.Rooms &&
+                   (brushMode == CampusRuntimeBrushMode.PlaceRoom ||
+                    brushMode == CampusRuntimeBrushMode.RectangleRoom);
+        }
+
+        private void DrawRoomMarkerOverlay(CampusFloorRoot floor)
+        {
+            HideRoomMarkerSpriteRenderers(floor);
+            if (!ShouldDrawRoomMarkerOverlay() || floor == null || floor.Grid == null || floor.PropsRoot == null)
+            {
+                return;
+            }
+
+            CampusRuntimeRoomMarker[] markers = floor.PropsRoot.GetComponentsInChildren<CampusRuntimeRoomMarker>(true);
+            if (markers == null || markers.Length == 0)
+            {
+                return;
+            }
+
+            Dictionary<string, HashSet<Vector3Int>> cellsByRoomName =
+                new Dictionary<string, HashSet<Vector3Int>>(StringComparer.OrdinalIgnoreCase);
+            for (int i = 0; i < markers.Length; i++)
+            {
+                CampusRuntimeRoomMarker marker = markers[i];
+                if (marker == null || marker.FloorIndex != floor.FloorIndex)
+                {
+                    continue;
+                }
+
+                Vector3Int cell = marker.Cell;
+                cell.z = 0;
+                string roomName = string.IsNullOrWhiteSpace(marker.RoomName)
+                    ? "Unnamed Room"
+                    : marker.RoomName.Trim();
+                if (!cellsByRoomName.TryGetValue(roomName, out HashSet<Vector3Int> cells))
+                {
+                    cells = new HashSet<Vector3Int>();
+                    cellsByRoomName[roomName] = cells;
+                }
+
+                cells.Add(cell);
+            }
+
+            if (cellsByRoomName.Count == 0)
+            {
+                return;
+            }
+
+            Color oldColor = GUI.color;
+            foreach (KeyValuePair<string, HashSet<Vector3Int>> pair in cellsByRoomName)
+            {
+                Color roomColor = ResolveRoomOverlayColor(pair.Key);
+                GUI.color = new Color(roomColor.r, roomColor.g, roomColor.b, 0.24f);
+                foreach (Vector3Int cell in pair.Value)
+                {
+                    DrawCellFill(floor.Grid, cell);
+                }
+
+                GUI.color = new Color(roomColor.r, roomColor.g, roomColor.b, 0.82f);
+                foreach (Vector3Int cell in pair.Value)
+                {
+                    DrawCellOuterEdges(floor.Grid, pair.Value, cell, 2f);
+                }
+            }
+
+            GUI.color = oldColor;
+        }
+
+        private static Color ResolveRoomOverlayColor(string roomName)
+        {
+            string key = string.IsNullOrWhiteSpace(roomName) ? "Unnamed Room" : roomName.Trim().ToLowerInvariant();
+            int hash = 17;
+            for (int i = 0; i < key.Length; i++)
+            {
+                hash = unchecked(hash * 31 + key[i]);
+            }
+
+            float hue = Mathf.Repeat(Mathf.Abs(hash) * 0.6180339f, 1f);
+            return Color.HSVToRGB(hue, 0.52f, 1f);
+        }
+
+        private void HideRoomMarkerSpriteRenderers(CampusFloorRoot floor)
+        {
+            if (floor == null || floor.PropsRoot == null)
+            {
+                return;
+            }
+
+            CampusRuntimeRoomMarker[] markers = floor.PropsRoot.GetComponentsInChildren<CampusRuntimeRoomMarker>(true);
+            for (int i = 0; i < markers.Length; i++)
+            {
+                CampusRuntimeRoomMarker marker = markers[i];
+                if (marker == null)
+                {
+                    continue;
+                }
+
+                SpriteRenderer renderer = marker.GetComponent<SpriteRenderer>();
+                if (renderer != null)
+                {
+                    renderer.enabled = false;
+                }
+            }
+        }
+
+        private void HideAllRoomMarkerSpriteRenderers()
+        {
+            CampusRuntimeRoomMarker[] markers =
+                FindObjectsByType<CampusRuntimeRoomMarker>(FindObjectsInactive.Include, FindObjectsSortMode.None);
+            for (int i = 0; i < markers.Length; i++)
+            {
+                CampusRuntimeRoomMarker marker = markers[i];
+                if (marker == null)
+                {
+                    continue;
+                }
+
+                SpriteRenderer renderer = marker.GetComponent<SpriteRenderer>();
+                if (renderer != null)
+                {
+                    renderer.enabled = false;
+                }
+            }
+        }
+
+        private void RebuildGameplayRoomRegistrySafe()
+        {
+            try
+            {
+                CampusRoomRegistry registry =
+                    FindFirstObjectByType<CampusRoomRegistry>(FindObjectsInactive.Include);
+                if (registry != null)
+                {
+                    registry.RebuildRegistry();
+                }
+            }
+            catch (Exception exception)
+            {
+                Debug.LogWarning("[NtingCampusRuntimeMapEditor] Failed to rebuild gameplay rooms: " + exception.Message);
             }
         }
 
@@ -5009,6 +5500,95 @@ namespace NtingCampusMapEditor
             GUI.color = Color.white;
         }
 
+        private void DrawFilledCellRect(Grid grid, Vector3Int start, Vector3Int end, Color fillColor, Color borderColor, float thickness)
+        {
+            if (grid == null)
+            {
+                return;
+            }
+
+            int minX = Mathf.Min(start.x, end.x);
+            int maxX = Mathf.Max(start.x, end.x);
+            int minY = Mathf.Min(start.y, end.y);
+            int maxY = Mathf.Max(start.y, end.y);
+
+            Color oldColor = GUI.color;
+            GUI.color = fillColor;
+            for (int y = minY; y <= maxY; y++)
+            {
+                for (int x = minX; x <= maxX; x++)
+                {
+                    DrawCellFill(grid, new Vector3Int(x, y, 0));
+                }
+            }
+
+            GUI.color = borderColor;
+            DrawCellRect(grid, start, end, borderColor, thickness);
+            GUI.color = oldColor;
+        }
+
+        private void DrawCellFill(Grid grid, Vector3Int cell)
+        {
+            if (grid == null || lineTexture == null)
+            {
+                return;
+            }
+
+            Vector2 min = WorldToGuiPoint(grid.CellToWorld(new Vector3Int(cell.x, cell.y, 0)));
+            Vector2 max = WorldToGuiPoint(grid.CellToWorld(new Vector3Int(cell.x + 1, cell.y + 1, 0)));
+            Rect rect = Rect.MinMaxRect(
+                Mathf.Min(min.x, max.x),
+                Mathf.Min(min.y, max.y),
+                Mathf.Max(min.x, max.x),
+                Mathf.Max(min.y, max.y));
+            GUI.DrawTexture(rect, lineTexture);
+        }
+
+        private void DrawCellOuterEdges(Grid grid, HashSet<Vector3Int> markedCells, Vector3Int cell, float thickness)
+        {
+            if (grid == null || markedCells == null)
+            {
+                return;
+            }
+
+            Vector3Int right = new Vector3Int(cell.x + 1, cell.y, 0);
+            Vector3Int left = new Vector3Int(cell.x - 1, cell.y, 0);
+            Vector3Int up = new Vector3Int(cell.x, cell.y + 1, 0);
+            Vector3Int down = new Vector3Int(cell.x, cell.y - 1, 0);
+
+            if (!markedCells.Contains(down))
+            {
+                DrawGuiLine(
+                    WorldToGuiPoint(grid.CellToWorld(new Vector3Int(cell.x, cell.y, 0))),
+                    WorldToGuiPoint(grid.CellToWorld(new Vector3Int(cell.x + 1, cell.y, 0))),
+                    thickness);
+            }
+
+            if (!markedCells.Contains(right))
+            {
+                DrawGuiLine(
+                    WorldToGuiPoint(grid.CellToWorld(new Vector3Int(cell.x + 1, cell.y, 0))),
+                    WorldToGuiPoint(grid.CellToWorld(new Vector3Int(cell.x + 1, cell.y + 1, 0))),
+                    thickness);
+            }
+
+            if (!markedCells.Contains(up))
+            {
+                DrawGuiLine(
+                    WorldToGuiPoint(grid.CellToWorld(new Vector3Int(cell.x + 1, cell.y + 1, 0))),
+                    WorldToGuiPoint(grid.CellToWorld(new Vector3Int(cell.x, cell.y + 1, 0))),
+                    thickness);
+            }
+
+            if (!markedCells.Contains(left))
+            {
+                DrawGuiLine(
+                    WorldToGuiPoint(grid.CellToWorld(new Vector3Int(cell.x, cell.y + 1, 0))),
+                    WorldToGuiPoint(grid.CellToWorld(new Vector3Int(cell.x, cell.y, 0))),
+                    thickness);
+            }
+        }
+
         private void DrawCellGrid(Grid grid, Vector3Int anchor, Vector2Int size, Color color, float thickness)
         {
             size = new Vector2Int(Mathf.Max(1, size.x), Mathf.Max(1, size.y));
@@ -5049,7 +5629,12 @@ namespace NtingCampusMapEditor
                 return;
             }
 
-            Vector3 worldCenter = CampusPlacedObject.GetFootprintWorldCenter(grid, anchor, footprint);
+            Vector3 worldCenter = CampusPlacedObject.GetPlacementWorldCenter(
+                grid,
+                anchor,
+                footprint,
+                placed != null && placed.IsWallMounted,
+                effectiveRotation90);
             Vector2 previewScale = placed != null ? placed.NormalizedVisualScale : new Vector2(renderer.transform.localScale.x, renderer.transform.localScale.y);
             Rect rect = BuildWorldPreviewRect(worldCenter, sprite, new Vector3(previewScale.x, previewScale.y, renderer.transform.localScale.z));
             if (rect.width <= 0f || rect.height <= 0f)
@@ -5057,7 +5642,7 @@ namespace NtingCampusMapEditor
                 return;
             }
 
-            float previewRotation = placed != null && placed.AllowRotation && !usesAuthoredDirectionalSprite ? -effectiveRotation90 * 90f : 0f;
+            float previewRotation = placed != null && placed.AllowRotation && !usesAuthoredDirectionalSprite && !placed.SuppressFlatSpriteRotation ? -effectiveRotation90 * 90f : 0f;
             Matrix4x4 oldMatrix = GUI.matrix;
             Color oldColor = GUI.color;
             GUI.color = new Color(1f, 1f, 1f, 0.58f);
@@ -5468,6 +6053,7 @@ namespace NtingCampusMapEditor
             float y = 0f;
 
             DrawObjectSettingsRenameControls(ref y, viewWidth, prefab, placed);
+            DrawObjectSettingsWallMountControls(ref y, viewWidth, placed);
             DrawObjectSettingsPreviewControls(ref y, viewWidth, prefab, placed);
             DrawObjectSettingsFootprintControls(ref y, viewWidth, placed);
             DrawObjectSettingsStorageControls(ref y, viewWidth, placed);
@@ -5869,7 +6455,17 @@ namespace NtingCampusMapEditor
                 return true;
             }
 
-            TryAssignSelectedObjectDirectionSprite(targetRotation90, sourcePath);
+            GameObject prefab = GetSelectedObjectPrefab();
+            CampusPlacedObject placed = EnsureRuntimePlacedObject(prefab);
+            if (placed != null && placed.IsWallMounted)
+            {
+                TryAssignSelectedWallMountedSprite(sourcePath);
+            }
+            else
+            {
+                TryAssignSelectedObjectDirectionSprite(targetRotation90, sourcePath);
+            }
+
             objectSettingsDirectionDropRotation90 = -1;
             return true;
         }
@@ -6079,7 +6675,7 @@ namespace NtingCampusMapEditor
             selectedObjectFootprintY = Mathf.Max(1, placed.NormalizedFootprintSize.y);
         }
 
-                private void ApplySelectedObjectFootprint()
+        private void ApplySelectedObjectFootprint()
         {
             GameObject prefab = GetSelectedObjectPrefab();
             if (prefab == null)
@@ -6100,6 +6696,97 @@ namespace NtingCampusMapEditor
             SaveSelectedObjectSettings();
             SetStatus("Applied footprint size: " + placed.FootprintSize.x + "x" + placed.FootprintSize.y);
         }
+
+        private void ConfigureWallMountedSettings(CampusPlacedObject placed, bool enabled, bool clearDirectionalOverrides)
+        {
+            if (placed == null)
+            {
+                return;
+            }
+
+            placed.IsWallMounted = enabled;
+            if (enabled)
+            {
+                placed.OverrideAllowRotation = true;
+                placed.AllowRotation = true;
+                placed.OverrideFootprintSize = true;
+                placed.FootprintSize = Vector2Int.one;
+                placed.SortingOrderOffset = Mathf.Max(placed.SortingOrderOffset, 1);
+                placed.BlocksMovement = false;
+                placed.BlocksSight = false;
+                if (clearDirectionalOverrides)
+                {
+                    AssignRuntimeObjectDirectionSprite(placed, 1, false, string.Empty, placed.ObjectId);
+                    AssignRuntimeObjectDirectionSprite(placed, 2, false, string.Empty, placed.ObjectId);
+                    AssignRuntimeObjectDirectionSprite(placed, 3, false, string.Empty, placed.ObjectId);
+                }
+            }
+
+            placed.ApplyRotationVisualState();
+            placed.ApplyInteractionState();
+        }
+
+        private void SetSelectedWallMountedSprite()
+        {
+            string sourcePath = SelectSingleImageFile("\u9009\u62e9\u58c1\u6302\u4e3b\u8d34\u56fe");
+            if (string.IsNullOrEmpty(sourcePath))
+            {
+                return;
+            }
+
+            TryAssignSelectedWallMountedSprite(sourcePath);
+        }
+
+        private bool TryAssignSelectedWallMountedSprite(string sourcePath)
+        {
+            GameObject prefab = GetSelectedObjectPrefab();
+            CampusPlacedObject placed = EnsureRuntimePlacedObject(prefab);
+            if (prefab == null || placed == null)
+            {
+                SetStatus("\u8bf7\u5148\u9009\u62e9\u7269\u54c1\u3002");
+                return false;
+            }
+
+            if (!IsSupportedImportImage(sourcePath))
+            {
+                SetStatus("Choose a png/jpg/jpeg/bmp image.");
+                return false;
+            }
+
+            try
+            {
+                ConfigureWallMountedSettings(placed, true, true);
+                string storedPath = CopyObjectDirectionSprite(prefab.name, 0, sourcePath);
+                AssignRuntimeObjectDirectionSprite(placed, 0, true, storedPath, prefab.name);
+                placed.ApplyRotationVisualState();
+                SaveSelectedObjectSettings();
+                SetStatus("\u5df2\u8bbe\u7f6e\u58c1\u6302\u4e3b\u8d34\u56fe\u3002");
+                return true;
+            }
+            catch (Exception exception)
+            {
+                Debug.LogWarning("[NtingCampusRuntimeMapEditor] Failed to set wall-mounted sprite: " + exception.Message);
+                SetStatus("\u58c1\u6302\u8d34\u56fe\u8bbe\u7f6e\u5931\u8d25\u3002");
+                return false;
+            }
+        }
+
+        private void ClearSelectedWallMountedSprite()
+        {
+            GameObject prefab = GetSelectedObjectPrefab();
+            CampusPlacedObject placed = EnsureRuntimePlacedObject(prefab);
+            if (prefab == null || placed == null)
+            {
+                SetStatus("\u8bf7\u5148\u9009\u62e9\u7269\u54c1\u3002");
+                return;
+            }
+
+            AssignRuntimeObjectDirectionSprite(placed, 0, false, string.Empty, prefab.name);
+            placed.ApplyRotationVisualState();
+            SaveSelectedObjectSettings();
+            SetStatus("\u5df2\u6e05\u7a7a\u58c1\u6302\u4e3b\u8d34\u56fe\u3002");
+        }
+
         private void SetSelectedObjectDirectionSprite(int rotation90Index)
         {
             string sourcePath = SelectSingleImageFile("\u9009\u62e9 " + (rotation90Index * 90) + " \u5ea6\u8d34\u56fe");
@@ -6119,6 +6806,11 @@ namespace NtingCampusMapEditor
             {
                 SetStatus("\u8bf7\u5148\u9009\u62e9\u7269\u54c1\u3002");
                 return false;
+            }
+
+            if (placed.IsWallMounted)
+            {
+                return rotation90Index == 0 && TryAssignSelectedWallMountedSprite(sourcePath);
             }
 
             if (!IsSupportedImportImage(sourcePath))
@@ -6154,6 +6846,16 @@ namespace NtingCampusMapEditor
             if (prefab == null || placed == null)
             {
                 SetStatus("\u8bf7\u5148\u9009\u62e9\u7269\u54c1\u3002");
+                return;
+            }
+
+            if (placed.IsWallMounted)
+            {
+                if (rotation90Index == 0)
+                {
+                    ClearSelectedWallMountedSprite();
+                }
+
                 return;
             }
 
@@ -6218,47 +6920,59 @@ namespace NtingCampusMapEditor
                 return 0;
             }
 
+            string targetObjectTypeKey = ResolveObjectTypeKey(settings.ObjectId, prefab.name);
+            if (string.IsNullOrEmpty(targetObjectTypeKey))
+            {
+                return 0;
+            }
+
             int appliedCount = 0;
             bool undoRecorded = false;
+            HashSet<CampusFloorRoot> affectedFloors = new HashSet<CampusFloorRoot>();
             mapRoot.RebuildFloorReferences();
-            for (int floorIndex = 0; floorIndex < mapRoot.Floors.Count; floorIndex++)
+            CampusPlacedObject[] objects = mapRoot.GetComponentsInChildren<CampusPlacedObject>(true);
+            for (int objectIndex = 0; objectIndex < objects.Length; objectIndex++)
             {
-                CampusFloorRoot floor = mapRoot.Floors[floorIndex];
-                if (floor == null || floor.PropsRoot == null)
+                CampusPlacedObject placed = objects[objectIndex];
+                if (!DoesPlacedObjectMatchTypeKey(placed, targetObjectTypeKey))
                 {
                     continue;
                 }
 
-                CampusPlacedObject[] objects = floor.PropsRoot.GetComponentsInChildren<CampusPlacedObject>(true);
-                for (int objectIndex = 0; objectIndex < objects.Length; objectIndex++)
+                if (recordUndo && !undoRecorded)
                 {
-                    CampusPlacedObject placed = objects[objectIndex];
-                    if (!DoesPlacedObjectMatchPrefab(placed, prefab))
-                    {
-                        continue;
-                    }
+                    RecordUndo();
+                    undoRecorded = true;
+                }
 
-                    if (recordUndo && !undoRecorded)
-                    {
-                        RecordUndo();
-                        undoRecorded = true;
-                    }
+                int preservedRotation = placed.Rotation90;
+                Vector3Int preservedCell = placed.Cell;
+                int preservedFloor = placed.FloorIndex;
+                ApplyRuntimeObjectSettings(placed.gameObject, settings);
+                placed.Rotation90 = preservedRotation;
+                placed.Cell = preservedCell;
+                placed.FloorIndex = preservedFloor;
+                placed.ApplyRotationVisualState();
+                placed.ApplyInteractionState();
 
-                    int preservedRotation = placed.Rotation90;
-                    Vector3Int preservedCell = placed.Cell;
-                    int preservedFloor = placed.FloorIndex;
-                    ApplyRuntimeObjectSettings(placed.gameObject, settings);
-                    placed.Rotation90 = preservedRotation;
-                    placed.Cell = preservedCell;
-                    placed.FloorIndex = preservedFloor;
-                    placed.ApplyRotationVisualState();
-                    placed.ApplyInteractionState();
+                CampusFloorRoot floor = ResolveFloorForPlacedObject(placed);
+                if (floor != null)
+                {
+                    affectedFloors.Add(floor);
                     if (floor.Grid != null)
                     {
                         placed.ApplyCellToTransform(floor.Grid);
                     }
+                }
 
-                    appliedCount++;
+                appliedCount++;
+            }
+
+            foreach (CampusFloorRoot floor in affectedFloors)
+            {
+                if (floor == null)
+                {
+                    continue;
                 }
 
                 CampusRenderSortingUtility.ApplyFloorSorting(floor, floor.FloorIndex * mapRoot.SortingOrderStepPerFloor);
@@ -6314,16 +7028,25 @@ namespace NtingCampusMapEditor
                 placed.VisualScale = new Vector2(uniform, uniform);
             }
 
-            if (settings.OverrideFootprintSize)
+            placed.OverrideFootprintSize = settings.OverrideFootprintSize;
+            placed.FootprintSize = CampusPlacedObject.NormalizeFootprintSize(settings.FootprintSize);
+            placed.IsWallMounted = settings.IsWallMounted;
+            if (placed.IsWallMounted)
             {
                 placed.OverrideFootprintSize = true;
-                placed.FootprintSize = CampusPlacedObject.NormalizeFootprintSize(settings.FootprintSize);
+                placed.FootprintSize = Vector2Int.one;
+                placed.OverrideAllowRotation = true;
+                placed.AllowRotation = true;
+                placed.BlocksMovement = false;
+                placed.BlocksSight = false;
             }
 
-            if (settings.OverrideAllowRotation)
+            placed.OverrideAllowRotation = settings.OverrideAllowRotation;
+            placed.AllowRotation = settings.AllowRotation;
+            if (placed.IsWallMounted)
             {
                 placed.OverrideAllowRotation = true;
-                placed.AllowRotation = settings.AllowRotation;
+                placed.AllowRotation = true;
             }
 
             AssignRuntimeObjectDirectionSprite(placed, 0, settings.OverrideRotation0Sprite, settings.Rotation0SpritePath, target.name);
@@ -6346,10 +7069,7 @@ namespace NtingCampusMapEditor
                 EnsureStorageInteractionAnchor(placed);
             }
 
-            if (placed.UseCustomInteractionAnchor)
-            {
-                placed.IsInteractable = true;
-            }
+            placed.IsInteractable = placed.UseCustomInteractionAnchor || placed.IsStorageContainer;
 
             placed.ApplyRotationVisualState();
             placed.ApplyInteractionState();
@@ -6372,6 +7092,7 @@ namespace NtingCampusMapEditor
             settings.FootprintSize = placed.NormalizedFootprintSize;
             settings.VisualScale = placed.NormalizedVisualScale;
             settings.LockVisualScaleAspect = placed.LockVisualScaleAspect;
+            settings.IsWallMounted = placed.IsWallMounted;
             settings.OverrideAllowRotation = placed.OverrideAllowRotation;
             settings.AllowRotation = placed.AllowRotation;
             settings.OverrideRotation0Sprite = placed.OverrideRotation0Sprite;
@@ -6583,20 +7304,61 @@ namespace NtingCampusMapEditor
             return placed;
         }
 
-        private bool DoesPlacedObjectMatchPrefab(CampusPlacedObject placed, GameObject prefab)
+        private bool DoesPlacedObjectMatchTypeKey(CampusPlacedObject placed, string targetObjectTypeKey)
         {
-            if (placed == null || prefab == null)
+            if (placed == null || string.IsNullOrEmpty(targetObjectTypeKey))
             {
                 return false;
             }
 
-            string prefabName = prefab.name;
-            string prefabDisplayName = CampusObjectNames.GetDisplayName(prefabName);
-            string objectId = string.IsNullOrWhiteSpace(placed.ObjectId) ? placed.gameObject.name : placed.ObjectId;
-            string objectDisplayName = CampusObjectNames.GetDisplayName(objectId);
-            return objectId == prefabName ||
-                   objectDisplayName == prefabDisplayName ||
-                   placed.gameObject.name.StartsWith(prefabDisplayName + "_F", StringComparison.Ordinal);
+            string objectTypeKey = ResolvePlacedObjectTypeKey(placed);
+            return string.Equals(objectTypeKey, targetObjectTypeKey, StringComparison.Ordinal);
+        }
+
+        private string ResolvePlacedObjectTypeKey(CampusPlacedObject placed)
+        {
+            if (placed == null)
+            {
+                return string.Empty;
+            }
+
+            return ResolveObjectTypeKey(placed.ObjectId, placed.gameObject != null ? placed.gameObject.name : string.Empty);
+        }
+
+        private static string ResolveObjectTypeKey(string objectId, string fallbackName)
+        {
+            string resolved = !string.IsNullOrWhiteSpace(objectId) ? objectId : fallbackName;
+            if (string.IsNullOrWhiteSpace(resolved))
+            {
+                return string.Empty;
+            }
+
+            return resolved.Trim();
+        }
+
+        private CampusFloorRoot ResolveFloorForPlacedObject(CampusPlacedObject placed)
+        {
+            if (placed == null || mapRoot == null || mapRoot.Floors == null)
+            {
+                return null;
+            }
+
+            Transform placedTransform = placed.transform;
+            for (int floorIndex = 0; floorIndex < mapRoot.Floors.Count; floorIndex++)
+            {
+                CampusFloorRoot floor = mapRoot.Floors[floorIndex];
+                if (floor == null || floor.PropsRoot == null)
+                {
+                    continue;
+                }
+
+                if (placedTransform.IsChildOf(floor.PropsRoot))
+                {
+                    return floor;
+                }
+            }
+
+            return mapRoot.GetFloor(placed.FloorIndex);
         }
 
         private void OpenImportLocation(string path)
@@ -6628,13 +7390,13 @@ namespace NtingCampusMapEditor
         private void DrawToolbarButton(ref float x, float y, string label, Action action, bool enabled)
         {
             GUI.enabled = enabled;
-            if (GUI.Button(new Rect(x, y, ToolbarButtonWidth, 38f), label, buttonStyle))
+            if (GUI.Button(new Rect(x, y, ToolbarButtonWidth, 46f), label, buttonStyle))
             {
                 action();
             }
 
             GUI.enabled = true;
-            x += ToolbarButtonWidth + 8f;
+            x += ToolbarButtonWidth + 10f;
         }
 
         private void DrawTilePreview(Rect rect, TileBase tile)
@@ -6694,42 +7456,41 @@ namespace NtingCampusMapEditor
             objectSettingsHighlightTexture = MakeTexture(new Color(0.97f, 0.75f, 0.26f, 0.28f));
             lineTexture = MakeTexture(Color.white);
             tileFallbackTexture = MakeCheckerTexture(new Color(0.32f, 0.38f, 0.45f, 1f), new Color(0.20f, 0.24f, 0.29f, 1f));
-            roomMarkerTexture = MakeRoomMarkerTexture();
 
             panelStyle = new GUIStyle(GUI.skin.box);
             panelStyle.normal.background = panelTexture;
             panelStyle.normal.textColor = Color.white;
             panelStyle.border = new RectOffset(4, 4, 4, 4);
-            panelStyle.padding = new RectOffset(8, 8, 6, 6);
+            panelStyle.padding = new RectOffset(10, 10, 8, 8);
             panelStyle.alignment = TextAnchor.MiddleCenter;
-            panelStyle.fontSize = 18;
+            panelStyle.fontSize = 22;
 
             headerStyle = new GUIStyle(GUI.skin.box);
             headerStyle.normal.background = headerTexture;
             headerStyle.normal.textColor = Color.white;
-            headerStyle.fontSize = 22;
+            headerStyle.fontSize = 28;
             headerStyle.fontStyle = FontStyle.Bold;
             headerStyle.alignment = TextAnchor.MiddleLeft;
-            headerStyle.padding = new RectOffset(12, 8, 0, 0);
+            headerStyle.padding = new RectOffset(14, 10, 0, 0);
 
             bodyStyle = new GUIStyle(GUI.skin.label);
             bodyStyle.normal.textColor = Color.white;
-            bodyStyle.fontSize = 20;
+            bodyStyle.fontSize = 24;
             bodyStyle.wordWrap = true;
 
             smallBodyStyle = new GUIStyle(GUI.skin.label);
             smallBodyStyle.normal.textColor = Color.white;
-            smallBodyStyle.fontSize = 14;
+            smallBodyStyle.fontSize = 17;
             smallBodyStyle.alignment = TextAnchor.MiddleCenter;
             smallBodyStyle.clipping = TextClipping.Clip;
 
             mutedStyle = new GUIStyle(bodyStyle);
             mutedStyle.normal.textColor = new Color(0.76f, 0.84f, 0.93f, 1f);
-            mutedStyle.fontSize = 16;
+            mutedStyle.fontSize = 19;
 
             warningStyle = new GUIStyle(bodyStyle);
             warningStyle.normal.textColor = new Color(1f, 0.86f, 0.58f, 1f);
-            warningStyle.fontSize = 18;
+            warningStyle.fontSize = 22;
 
             buttonStyle = new GUIStyle(GUI.skin.button);
             buttonStyle.normal.background = buttonTexture;
@@ -6738,14 +7499,15 @@ namespace NtingCampusMapEditor
             buttonStyle.normal.textColor = Color.white;
             buttonStyle.hover.textColor = Color.white;
             buttonStyle.active.textColor = Color.white;
-            buttonStyle.fontSize = 18;
+            buttonStyle.fontSize = 21;
             buttonStyle.alignment = TextAnchor.MiddleCenter;
+            buttonStyle.padding = new RectOffset(8, 8, 6, 6);
 
             selectedButtonStyle = new GUIStyle(buttonStyle);
             selectedButtonStyle.normal.background = selectedTexture;
 
             iconButtonStyle = new GUIStyle(buttonStyle);
-            iconButtonStyle.fontSize = 18;
+            iconButtonStyle.fontSize = 20;
 
             inputStyle = new GUIStyle(GUI.skin.textField);
             inputStyle.normal.background = inputTexture;
@@ -6756,9 +7518,9 @@ namespace NtingCampusMapEditor
             inputStyle.focused.textColor = Color.white;
             inputStyle.hover.textColor = Color.white;
             inputStyle.active.textColor = Color.white;
-            inputStyle.fontSize = 18;
+            inputStyle.fontSize = 21;
             inputStyle.alignment = TextAnchor.MiddleLeft;
-            inputStyle.padding = new RectOffset(8, 8, 4, 4);
+            inputStyle.padding = new RectOffset(10, 10, 6, 6);
 
             objectSettingsHighlightStyle = new GUIStyle(GUI.skin.box);
             objectSettingsHighlightStyle.normal.background = objectSettingsHighlightTexture;
@@ -6783,28 +7545,6 @@ namespace NtingCampusMapEditor
                 for (int x = 0; x < 16; x++)
                 {
                     texture.SetPixel(x, y, ((x / 4 + y / 4) % 2) == 0 ? a : b);
-                }
-            }
-
-            texture.Apply();
-            return texture;
-        }
-
-        private Texture2D MakeRoomMarkerTexture()
-        {
-            Texture2D texture = new Texture2D(16, 16, TextureFormat.RGBA32, false);
-            texture.hideFlags = HideFlags.DontSave;
-            Color clear = new Color(0f, 0f, 0f, 0f);
-            Color fill = new Color(0.25f, 0.85f, 1f, 0.92f);
-            Color edge = new Color(0.06f, 0.12f, 0.17f, 1f);
-            for (int y = 0; y < 16; y++)
-            {
-                for (int x = 0; x < 16; x++)
-                {
-                    int dx = x - 8;
-                    int dy = y - 8;
-                    int d = dx * dx + dy * dy;
-                    texture.SetPixel(x, y, d < 50 ? (d > 38 ? edge : fill) : clear);
                 }
             }
 
@@ -7575,21 +8315,16 @@ namespace NtingCampusMapEditor
 
         private void AddRoomMarkerVisual(GameObject markerObject, CampusFloorRoot floor)
         {
+            if (markerObject == null)
+            {
+                return;
+            }
+
             SpriteRenderer renderer = markerObject.GetComponent<SpriteRenderer>();
-            if (renderer == null)
+            if (renderer != null)
             {
-                renderer = markerObject.AddComponent<SpriteRenderer>();
+                renderer.enabled = false;
             }
-
-            if (roomMarkerSprite == null)
-            {
-                roomMarkerSprite = Sprite.Create(roomMarkerTexture, new Rect(0f, 0f, roomMarkerTexture.width, roomMarkerTexture.height), new Vector2(0.5f, 0.5f), 16f);
-                roomMarkerSprite.hideFlags = HideFlags.DontSave;
-            }
-
-            renderer.sprite = roomMarkerSprite;
-            renderer.sortingOrder = floor != null && mapRoot != null ? floor.FloorIndex * mapRoot.SortingOrderStepPerFloor + CampusRenderSortingUtility.OverlayOffset + 30 : 9999;
-            renderer.color = new Color(0.25f, 0.86f, 1f, 0.9f);
         }
 
         private void DestroyChildren(Transform root)
@@ -8204,6 +8939,45 @@ namespace NtingCampusMapEditor
             y += 40f;
         }
 
+        private void DrawObjectSettingsWallMountControls(ref float y, float width, CampusPlacedObject placed)
+        {
+            if (placed == null)
+            {
+                return;
+            }
+
+            bool nextWallMounted = GUI.Toggle(new Rect(0f, y, width, 24f), placed.IsWallMounted, "\u58c1\u6302\u7269\u4f53");
+            if (nextWallMounted != placed.IsWallMounted)
+            {
+                ConfigureWallMountedSettings(placed, nextWallMounted, true);
+            }
+
+            y += 30f;
+            if (!placed.IsWallMounted)
+            {
+                return;
+            }
+
+            string spriteName = placed.Rotation0Sprite != null
+                ? Truncate(placed.Rotation0Sprite.name, 22)
+                : CampusRuntimeEditorTextCatalog.Get(displayLanguage, CampusRuntimeEditorTextId.NotSet);
+            GUI.Label(new Rect(0f, y, 84f, 28f), "\u4e3b\u8d34\u56fe", bodyStyle);
+            GUI.Box(new Rect(88f, y, Mathf.Max(10f, width - 216f), 30f), spriteName, buttonStyle);
+            if (GUI.Button(new Rect(width - 120f, y, 56f, 28f), CampusRuntimeEditorTextCatalog.Get(displayLanguage, CampusRuntimeEditorTextId.PickSprite), buttonStyle))
+            {
+                SetSelectedWallMountedSprite();
+            }
+
+            if (GUI.Button(new Rect(width - 58f, y, 56f, 28f), CampusRuntimeEditorTextCatalog.Get(displayLanguage, CampusRuntimeEditorTextId.Clear), buttonStyle))
+            {
+                ClearSelectedWallMountedSprite();
+            }
+
+            y += 34f;
+            GUI.Label(new Rect(0f, y, width, 42f), "\u58c1\u6302\u6a21\u5f0f\u53ea\u4f7f\u7528\u8fd9\u4e00\u5f20\u8d34\u56fe\uff0c\u573a\u666f\u4e2d\u4f1a\u81ea\u52a8\u751f\u62103D\u8584\u7247\u5e76\u5438\u9644\u5230\u5899\u4f53\u3002", mutedStyle);
+            y += 48f;
+        }
+
         private void DrawObjectSettingsPreviewControls(ref float y, float width, GameObject prefab, CampusPlacedObject placed)
         {
             bool usesDirectionalSprite;
@@ -8223,7 +8997,9 @@ namespace NtingCampusMapEditor
             float textWidth = Mathf.Max(10f, width - textX);
             GUI.Label(new Rect(textX, y + 4f, textWidth, 24f), Truncate(spriteName, 32), mutedStyle);
             GUI.Label(new Rect(textX, y + 30f, textWidth, 24f), CampusRuntimeEditorTextCatalog.Get(displayLanguage, CampusRuntimeEditorTextId.PreviewGrid) + ": " + footprint.x + "x" + footprint.y, mutedStyle);
-            string previewMode = usesDirectionalSprite
+            string previewMode = placed != null && placed.IsWallMounted
+                ? "\u58c1\u6302\u5438\u9644"
+                : usesDirectionalSprite
                 ? CampusRuntimeEditorTextCatalog.Get(displayLanguage, CampusRuntimeEditorTextId.DirectionalSprite)
                 : CampusRuntimeEditorTextCatalog.Get(displayLanguage, CampusRuntimeEditorTextId.DefaultSprite);
             GUI.Label(new Rect(textX, y + 56f, textWidth, 24f), previewMode + " / " + (effectiveRotation * 90) + "\u00b0", mutedStyle);
@@ -8233,11 +9009,26 @@ namespace NtingCampusMapEditor
 
         private void DrawObjectSettingsFootprintControls(ref float y, float width, CampusPlacedObject placed)
         {
+            if (placed != null && placed.IsWallMounted)
+            {
+                placed.OverrideFootprintSize = true;
+                placed.FootprintSize = Vector2Int.one;
+                GUI.Label(new Rect(0f, y, width, 24f), "\u58c1\u6302\u7269\u4f53\u56fa\u5b9a\u4f7f\u7528 1x1 \u5899\u4f53\u951a\u70b9\u3002", mutedStyle);
+                y += 34f;
+                return;
+            }
+
             DrawSelectedObjectFootprintControls(ref y, width);
         }
 
         private void DrawObjectSettingsStorageControls(ref float y, float width, CampusPlacedObject placed)
         {
+            if (placed != null && placed.IsWallMounted)
+            {
+                placed.BlocksMovement = false;
+                placed.BlocksSight = false;
+            }
+
             placed.IsStorageContainer = GUI.Toggle(new Rect(0f, y, width, 24f), placed.IsStorageContainer, CampusRuntimeEditorTextCatalog.Get(displayLanguage, CampusRuntimeEditorTextId.StorageContainer));
             y += 30f;
             GUI.enabled = placed.IsStorageContainer;
@@ -8284,6 +9075,30 @@ namespace NtingCampusMapEditor
 
         private void DrawObjectSettingsRotationControls(ref float y, float width, CampusPlacedObject placed)
         {
+            if (placed != null && placed.IsWallMounted)
+            {
+                placed.OverrideAllowRotation = true;
+                placed.AllowRotation = true;
+                GUI.Label(new Rect(0f, y, width, 24f), "\u65cb\u8f6c\u51b3\u5b9a\u5438\u9644\u5899\u9762", bodyStyle);
+                y += 28f;
+                float wallFaceButtonWidth = Mathf.Max(54f, (width - 24f) * 0.25f);
+                string[] faceLabels = { "0\u00b0 \u5317", "90\u00b0 \u4e1c", "180\u00b0 \u5357", "270\u00b0 \u897f" };
+                for (int i = 0; i < 4; i++)
+                {
+                    Rect buttonRect = new Rect((wallFaceButtonWidth + 8f) * i, y, wallFaceButtonWidth, 28f);
+                    GUIStyle style = objectSettingsPreviewRotation90 == i ? selectedButtonStyle : buttonStyle;
+                    if (GUI.Button(buttonRect, faceLabels[i], style))
+                    {
+                        objectSettingsPreviewRotation90 = i;
+                    }
+                }
+
+                y += 40f;
+                GUI.Label(new Rect(0f, y, width, 42f), "\u58c1\u6302\u7269\u4f53\u53ea\u4f7f\u7528\u4e00\u5f20\u4e3b\u8d34\u56fe\uff0c\u9884\u89c8\u65cb\u8f6c\u8868\u793a\u5438\u9644\u7684\u5899\u9762\u3002", mutedStyle);
+                y += 48f;
+                return;
+            }
+
             bool allowRotation = GUI.Toggle(new Rect(0f, y, width, 24f), placed.AllowRotation, CampusRuntimeEditorTextCatalog.Get(displayLanguage, CampusRuntimeEditorTextId.AllowFourDirections));
             if (allowRotation != placed.AllowRotation)
             {
@@ -8595,7 +9410,9 @@ namespace NtingCampusMapEditor
                 pixelHeight);
 
             Matrix4x4 oldMatrix = GUI.matrix;
-            if (!usesDirectionalSprite && !Mathf.Approximately(effectiveRotation90 * 90f, 0f))
+            if (!usesDirectionalSprite &&
+                (placed == null || !placed.SuppressFlatSpriteRotation) &&
+                !Mathf.Approximately(effectiveRotation90 * 90f, 0f))
             {
                 GUIUtility.RotateAroundPivot(-effectiveRotation90 * 90f, spriteRect.center);
             }
@@ -9405,6 +10222,7 @@ namespace NtingCampusMapEditor
         public bool OverrideFootprintSize;
         public Vector2 VisualScale = Vector2.one;
         public bool LockVisualScaleAspect = true;
+        public bool IsWallMounted;
         public bool OverrideAllowRotation;
         public bool AllowRotation;
         public bool OverrideRotation0Sprite;
@@ -9438,6 +10256,7 @@ namespace NtingCampusMapEditor
         public Vector2Int FootprintSize = Vector2Int.one;
         public Vector2 VisualScale = Vector2.one;
         public bool LockVisualScaleAspect = true;
+        public bool IsWallMounted;
         public bool OverrideAllowRotation;
         public bool AllowRotation;
         public bool OverrideRotation0Sprite;

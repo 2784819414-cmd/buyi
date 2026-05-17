@@ -1,0 +1,60 @@
+﻿{
+    "ObjectId": "书架2_2x1",
+    "DisplayNameOverride": "书架2",
+    "OverrideFootprintSize": true,
+    "FootprintSize": {
+        "x": 2,
+        "y": 1
+    },
+    "VisualScale": {
+        "x": 2.0,
+        "y": 2.0
+    },
+    "LockVisualScaleAspect": true,
+    "IsWallMounted": false,
+    "OverrideAllowRotation": true,
+    "AllowRotation": true,
+    "OverrideRotation0Sprite": true,
+    "Rotation0SpritePath": "ObjectSettings/书架2_2x1/rotation_0.png",
+    "OverrideRotation90Sprite": true,
+    "Rotation90SpritePath": "ObjectSettings/书架2_2x1/rotation_90.png",
+    "OverrideRotation180Sprite": true,
+    "Rotation180SpritePath": "ObjectSettings/书架2_2x1/rotation_180.png",
+    "OverrideRotation270Sprite": true,
+    "Rotation270SpritePath": "ObjectSettings/书架2_2x1/rotation_270.png",
+    "IsStorageContainer": false,
+    "StorageSize": {
+        "x": 4,
+        "y": 4
+    },
+    "StorageMaxWeight": 12.0,
+    "UseCustomInteractionAnchor": true,
+    "CustomInteractionAnchorLocalPosition": {
+        "x": 0.0,
+        "y": 0.0,
+        "z": 0.0
+    },
+    "CustomInteractionAnchorRadius": 0.6499999761581421,
+    "CustomInteractionPromptText": "交互",
+    "CustomInteractionAnchors": [
+        {
+            "AnchorId": "custom_1",
+            "DisplayName": "当前锚点 1",
+            "Enabled": true,
+            "LocalPosition": {
+                "x": 0.0,
+                "y": 0.0,
+                "z": 0.0
+            },
+            "Radius": 0.6499999761581421,
+            "PromptText": "交互",
+            "ActionId": "",
+            "Payload": "",
+            "TargetComponentType": "",
+            "Priority": 120,
+            "UseTargetDoorStatePrompt": false,
+            "LogInteraction": true,
+            "InteractionLogMessage": ""
+        }
+    ]
+}

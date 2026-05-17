@@ -11,8 +11,8 @@
         "y": 1.0
     },
     "LockVisualScaleAspect": true,
-    "OverrideAllowRotation": false,
-    "AllowRotation": false,
+    "OverrideAllowRotation": true,
+    "AllowRotation": true,
     "OverrideRotation0Sprite": false,
     "Rotation0SpritePath": "",
     "OverrideRotation90Sprite": false,

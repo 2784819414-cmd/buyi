@@ -12,14 +12,14 @@ namespace NtingCampus.Gameplay.Modes
     {
         [SerializeField] private Camera controlledCamera;
         [SerializeField] private Transform studentTarget;
-        [SerializeField] private Vector3 studentViewOffset = new Vector3(0f, 0f, -10f);
+        [SerializeField] private Vector3 studentViewOffset = new Vector3(0f, 0f, -5f);
         [SerializeField, Min(0f)] private float studentFollowLerp = 14f;
         [SerializeField, Min(0.1f)] private float godViewMoveSpeed = 14f;
         [SerializeField, Min(0.01f)] private float godViewZoomSpeed = 5f;
         [SerializeField, Min(0.1f)] private float minOrthographicSize = 3f;
         [SerializeField, Min(0.1f)] private float maxOrthographicSize = 80f;
-        [SerializeField, Min(0.1f)] private float studentModeOrthographicSize = 2f;
-        [SerializeField, Min(0.1f)] private float godViewOrthographicSize = 13.23f;
+        [SerializeField, Min(0.1f)] private float studentModeOrthographicSize = 5f;
+        [SerializeField, Min(0.1f)] private float godViewOrthographicSize = 15f;
 
         private CampusGameMode currentMode = CampusGameMode.StudentBody;
 

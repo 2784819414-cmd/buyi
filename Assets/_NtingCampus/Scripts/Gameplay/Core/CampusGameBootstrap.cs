@@ -5,6 +5,7 @@ using NtingCampus.Gameplay.Pranks;
 using NtingCampus.Gameplay.Rooms;
 using NtingCampus.Gameplay.Sanctions;
 using NtingCampus.Gameplay.Schedule;
+using NtingCampus.Gameplay.UI;
 using UnityEngine;
 
 namespace NtingCampus.Gameplay.Core
@@ -65,6 +66,8 @@ namespace NtingCampus.Gameplay.Core
             bootstrap.EnsureSanctionService();
             bootstrap.EnsurePrankService();
             bootstrap.EnsureDebugPanel();
+            bootstrap.EnsureSettingsOverlay();
+            bootstrap.EnsureLaunchSelectionApplier();
             return bootstrap;
         }
 
@@ -88,14 +91,14 @@ namespace NtingCampus.Gameplay.Core
             timeController = EnsureTimeController();
             timeController.InitializeTimeSystem(this, true);
 
-            modeController = EnsureModeController();
-            modeController.InitializeModes(this, false);
-
             worldService = EnsureWorldService();
             worldService.Initialize(this);
 
             rosterService = EnsureRosterService();
             rosterService.Initialize(this);
+
+            modeController = EnsureModeController();
+            modeController.InitializeModes(this, false);
 
             scheduleService = EnsureScheduleService();
             scheduleService.Initialize(this);
@@ -129,6 +132,8 @@ namespace NtingCampus.Gameplay.Core
             Instance = this;
             InitializeGameplay();
             EnsureDebugPanel();
+            EnsureSettingsOverlay();
+            EnsureLaunchSelectionApplier();
         }
 
         private void OnDestroy()
@@ -166,6 +171,30 @@ namespace NtingCampus.Gameplay.Core
             }
 
             debugPanel.Bind(this);
+        }
+
+        private void EnsureLaunchSelectionApplier()
+        {
+            CampusLaunchSelectionApplier launchSelectionApplier = GetComponent<CampusLaunchSelectionApplier>();
+            if (launchSelectionApplier == null)
+            {
+                gameObject.AddComponent<CampusLaunchSelectionApplier>();
+            }
+
+            CampusRuntimeGameplayOverlayLoader overlayLoader = GetComponent<CampusRuntimeGameplayOverlayLoader>();
+            if (overlayLoader == null)
+            {
+                gameObject.AddComponent<CampusRuntimeGameplayOverlayLoader>();
+            }
+        }
+
+        private void EnsureSettingsOverlay()
+        {
+            CampusGameplaySettingsOverlay settingsOverlay = GetComponent<CampusGameplaySettingsOverlay>();
+            if (settingsOverlay == null)
+            {
+                gameObject.AddComponent<CampusGameplaySettingsOverlay>();
+            }
         }
 
         private CampusTimeController EnsureTimeController()

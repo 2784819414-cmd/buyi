@@ -1,0 +1,28 @@
+{
+  "Rules": [
+    {
+      "FacilityType": "StudentDesk",
+      "ObjectIds": [ "desk_1x1" ],
+      "DisplayNames": [ "Desk", "StudentDesk", "课桌", "书桌" ],
+      "Contains": [ "student_desk", "studentdesk", "课桌", "书桌" ]
+    },
+    {
+      "FacilityType": "BulletinBoard",
+      "ObjectIds": [ "公告栏_1x1" ],
+      "DisplayNames": [ "公告栏", "BulletinBoard" ],
+      "Contains": [ "公告栏", "bulletin" ]
+    },
+    {
+      "FacilityType": "Bed",
+      "ObjectIds": [ "Bed" ],
+      "DisplayNames": [ "Bed", "床" ],
+      "Contains": [ "bed", "床" ]
+    },
+    {
+      "FacilityType": "Door",
+      "ObjectIds": [ "门" ],
+      "DisplayNames": [ "门", "Door" ],
+      "Contains": [ "door", "门" ]
+    }
+  ]
+}

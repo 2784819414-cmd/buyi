@@ -802,7 +802,9 @@ namespace NtingCampusMapEditor
             placed.ApplyPlacementRotation(effectiveRotation90);
             placed.ApplyCellToTransform(floor.Grid);
             placed.ApplyInteractionState();
+            placed.EnsureShadowRegistration();
             CampusDynamicShadowUtility.EnsureObjectShadowCasters(placed, floor.Grid);
+            NtingCustomShadowSystem.EnsureSceneSystem().RefreshNow();
 
             CampusRenderSortingUtility.ApplyFloorSorting(floor, floor.FloorIndex * window.MapRoot.SortingOrderStepPerFloor);
             EditorUtility.SetDirty(instance);
@@ -1305,8 +1307,16 @@ namespace NtingCampusMapEditor
             }
             else if (activeMode == CampusBrushMode.PlacePrefab)
             {
-                Vector2Int footprint = GetRotatedPrefabFootprintSize(window.GetCurrentPrefabOrFallback(), window.Rotation90);
-                previewCenter = CampusPlacedObject.GetFootprintWorldCenter(floor.Grid, cell, footprint);
+                GameObject currentPrefab = window.GetCurrentPrefabOrFallback();
+                CampusPlacedObject currentPlaced = currentPrefab != null ? currentPrefab.GetComponent<CampusPlacedObject>() : null;
+                Vector2Int footprint = GetRotatedPrefabFootprintSize(currentPrefab, window.Rotation90);
+                int effectiveRotation90 = currentPlaced != null ? currentPlaced.ResolveAllowedRotation90(window.Rotation90) : window.Rotation90;
+                previewCenter = CampusPlacedObject.GetPlacementWorldCenter(
+                    floor.Grid,
+                    cell,
+                    footprint,
+                    currentPlaced != null && currentPlaced.IsWallMounted,
+                    effectiveRotation90);
                 previewSize = new Vector3(cellSize.x * footprint.x, cellSize.y * footprint.y, 0f);
             }
             else if (activeMode == CampusBrushMode.PlaceLight)
@@ -1365,7 +1375,7 @@ namespace NtingCampusMapEditor
                 return;
             }
 
-            float previewRotation = placed != null && placed.AllowRotation && !usesAuthoredDirectionalSprite ? -effectiveRotation90 * 90f : 0f;
+            float previewRotation = placed != null && placed.AllowRotation && !usesAuthoredDirectionalSprite && !placed.SuppressFlatSpriteRotation ? -effectiveRotation90 * 90f : 0f;
             Handles.BeginGUI();
             Matrix4x4 oldMatrix = GUI.matrix;
             Color oldColor = GUI.color;

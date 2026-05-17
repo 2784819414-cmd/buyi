@@ -1,26 +1,23 @@
 using UnityEngine;
-using UnityEngine.Rendering;
 #if ENABLE_INPUT_SYSTEM
 using UnityEngine.InputSystem;
 #endif
 
 namespace NtingCampusMapEditor
 {
-    [RequireComponent(typeof(Rigidbody2D))]
+    [RequireComponent(typeof(CampusCharacterBodyController))]
     [DisallowMultipleComponent]
     public sealed class CampusTestPlayerController : MonoBehaviour
     {
         public float MoveSpeed = 3.5f;
         public int FloorIndex = 1;
         public KeyCode InteractKey = KeyCode.E;
-        public float InteractionForwardOffset = 0.45f;
-        public float InteractionRadius = 0.55f;
+        public float InteractionForwardOffset = 0.28f;
+        public float InteractionRadius = 0.82f;
         public LayerMask InteractionMask = Physics2D.AllLayers;
 
-        private Rigidbody2D body;
-        private SortingGroup sortingGroup;
+        private CampusCharacterBodyController bodyController;
         private CampusInteractionController interactionController;
-        private NtingShadowCasterProfile shadowCasterProfile;
         private Vector2 moveInput;
         private Vector2 facingDirection = Vector2.down;
 
@@ -28,17 +25,14 @@ namespace NtingCampusMapEditor
 
         private void Awake()
         {
-            body = GetComponent<Rigidbody2D>();
-            sortingGroup = GetComponent<SortingGroup>();
-            if (sortingGroup == null)
+            bodyController = GetComponent<CampusCharacterBodyController>();
+            if (bodyController == null)
             {
-                sortingGroup = gameObject.AddComponent<SortingGroup>();
+                bodyController = gameObject.AddComponent<CampusCharacterBodyController>();
             }
 
-            EnsureShadowCasterProfile();
-            ConfigureBody();
+            ConfigureBodyController();
             ConfigureInteractionController();
-            RefreshSorting();
         }
 
         private void Update()
@@ -46,6 +40,8 @@ namespace NtingCampusMapEditor
             if (!GameplayInputEnabled)
             {
                 moveInput = Vector2.zero;
+                ConfigureBodyController();
+                bodyController.SetMovementInput(Vector2.zero);
                 return;
             }
 
@@ -55,6 +51,8 @@ namespace NtingCampusMapEditor
                 facingDirection = moveInput.normalized;
             }
 
+            ConfigureBodyController();
+            bodyController.SetMovementInput(moveInput);
             ConfigureInteractionController();
             interactionController.SetFacingDirection(facingDirection);
             interactionController.RefreshTarget();
@@ -64,28 +62,15 @@ namespace NtingCampusMapEditor
             }
         }
 
-        private void FixedUpdate()
-        {
-            if (body == null)
-            {
-                return;
-            }
-
-            Vector2 delta = moveInput.normalized * (MoveSpeed * Time.fixedDeltaTime);
-            body.MovePosition(body.position + delta);
-        }
-
-        private void LateUpdate()
-        {
-            RefreshSorting();
-        }
-
         private void Reset()
         {
-            body = GetComponent<Rigidbody2D>();
-            sortingGroup = GetComponent<SortingGroup>();
-            EnsureShadowCasterProfile();
-            ConfigureBody();
+            bodyController = GetComponent<CampusCharacterBodyController>();
+            if (bodyController == null)
+            {
+                bodyController = gameObject.AddComponent<CampusCharacterBodyController>();
+            }
+
+            ConfigureBodyController();
             ConfigureInteractionController();
         }
 
@@ -93,6 +78,9 @@ namespace NtingCampusMapEditor
         {
             GameplayInputEnabled = enabled;
             moveInput = Vector2.zero;
+            ConfigureBodyController();
+            bodyController.SetMovementEnabled(enabled);
+            bodyController.SetMovementInput(Vector2.zero);
 
             ConfigureInteractionController();
             if (interactionController != null)
@@ -101,16 +89,16 @@ namespace NtingCampusMapEditor
             }
         }
 
-        private void ConfigureBody()
+        private void ConfigureBodyController()
         {
-            if (body == null)
+            if (bodyController == null)
             {
                 return;
             }
 
-            body.gravityScale = 0f;
-            body.freezeRotation = true;
-            body.interpolation = RigidbodyInterpolation2D.Interpolate;
+            bodyController.MoveSpeed = MoveSpeed;
+            bodyController.FloorIndex = FloorIndex;
+            bodyController.EnsureSetup();
         }
 
         private void ConfigureInteractionController()
@@ -135,20 +123,6 @@ namespace NtingCampusMapEditor
             sensor.Radius = InteractionRadius;
             sensor.InteractionMask = InteractionMask;
             sensor.SetFacingDirection(facingDirection);
-        }
-
-        private void EnsureShadowCasterProfile()
-        {
-            shadowCasterProfile = NtingShadowCasterProfile.EnsureForObject(gameObject);
-            if (shadowCasterProfile == null)
-            {
-                return;
-            }
-
-            shadowCasterProfile.ApplyCharacterDefaults();
-            shadowCasterProfile.castCustomShadows = true;
-            shadowCasterProfile.castPointLightShadows = true;
-            shadowCasterProfile.castSunShadow = true;
         }
 
         private static Vector2 ReadMoveInput()
@@ -233,18 +207,5 @@ namespace NtingCampusMapEditor
         }
 #endif
 
-        private void RefreshSorting()
-        {
-            if (sortingGroup == null)
-            {
-                return;
-            }
-
-            CampusRenderSortingUtility.ConfigureTopDownTransparencySort();
-            CampusMapRoot root = FindFirstObjectByType<CampusMapRoot>();
-            int step = root != null ? root.SortingOrderStepPerFloor : 1000;
-            sortingGroup.sortingOrder = Mathf.Max(1, FloorIndex) * step + CampusRenderSortingUtility.SharedWallObjectOffset;
-            sortingGroup.sortingLayerID = SortingLayer.NameToID("Default");
-        }
     }
 }

@@ -9,6 +9,7 @@ namespace NtingCampus.Gameplay.Core
     {
         [SerializeField] private CampusGameBootstrap bootstrap;
         [SerializeField] private CampusGameDate initialDate = CampusGameDate.DefaultStartDate;
+        [SerializeField] private CampusTimeSegment initialSegment = CampusTimeSegment.MorningClass1;
         [SerializeField] private CampusGameDate currentDate = CampusGameDate.DefaultStartDate;
         [SerializeField] private CampusTimeSegment currentSegment = CampusTimeSegment.WakeUp;
         [SerializeField, Min(0f)] private float segmentElapsedMinutes;
@@ -45,7 +46,7 @@ namespace NtingCampus.Gameplay.Core
             ResolveReferences();
             NormalizeDates();
             currentDate = initialDate;
-            currentSegment = CampusTimeSegment.WakeUp;
+            currentSegment = initialSegment;
             segmentElapsedMinutes = 0f;
             isInitialized = true;
             SyncGameStateDay(false);
