@@ -20,6 +20,7 @@ namespace NtingCampus.Gameplay.Characters
         private const string InteractionTargetName = "NpcInteractionTarget";
         private const float ArrivalDistance = 0.14f;
         private const float DisturbanceMemorySeconds = 10f;
+        private const int MaxPathSearchIterations = 900;
 
         private static readonly Dictionary<int, Sprite> CachedBodySprites = new Dictionary<int, Sprite>();
 
@@ -40,17 +41,61 @@ namespace NtingCampus.Gameplay.Characters
         [SerializeField, Min(2f)] private float maxAmbientSpeechSeconds = 8f;
         [SerializeField, Min(0.2f)] private float patrolStride = 0.65f;
         [SerializeField, Min(0.2f)] private float doorInteractDistance = 0.92f;
+        [SerializeField, Min(0f)] private float separationRadius = 0.86f;
+        [SerializeField, Min(0f)] private float separationStrength = 1.15f;
+        [SerializeField, Range(0f, 0.35f)] private float personalSpeedVariance = 0.16f;
+        [SerializeField, Min(0.15f)] private float pathReplanIntervalSeconds = 0.85f;
+        [SerializeField, Min(0f)] private float waypointArrivalDistance = 0.16f;
+        [SerializeField, Min(0.2f)] private float npcCollisionRefreshSeconds = 0.9f;
+        [SerializeField, Min(0.5f)] private float npcDoorCloseDelaySeconds = 2.4f;
+        [SerializeField, Min(0.4f)] private float npcDoorClearanceRadius = 0.92f;
+        [SerializeField, Min(1f)] private float freeRoamTargetRefreshSeconds = 4.5f;
 
         [SerializeField] private CampusCharacterTaskType currentTaskType;
         [SerializeField] private string currentTaskLabel = string.Empty;
         [SerializeField] private Vector3 targetPosition;
         [SerializeField] private Vector3 anchorPosition;
+        [SerializeField] private Vector3 pathWaypointPosition;
         [SerializeField] private float nextRetargetTime;
+        [SerializeField] private float nextPathReplanTime;
+        [SerializeField] private float nextBehaviorDecisionTime;
+        [SerializeField] private float pauseUntilTime;
+        [SerializeField] private float nextNpcCollisionRefreshTime;
         [SerializeField] private float nextAmbientSpeechTime;
         [SerializeField] private float latestRoomDisturbanceAt = -999f;
+        [SerializeField] private int personalSeed;
+        [SerializeField] private float personalSpeedMultiplier = 1f;
         [SerializeField] private bool isMoving;
+        [SerializeField] private int pathCellIndex;
+        [SerializeField] private Vector3Int lastPathStartCell;
+        [SerializeField] private Vector3Int lastPathTargetCell;
+
+        private static readonly Dictionary<string, string> ReservedFacilityOwnerByKey =
+            new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
+
+        private static readonly Dictionary<string, string> ReservedFacilityKeyByOwner =
+            new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
+
+        private static readonly Dictionary<string, string> ReservedStandOwnerByKey =
+            new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
+
+        private static readonly Dictionary<string, string> ReservedStandKeyByOwner =
+            new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
+
+        private static readonly Dictionary<CampusDoor3D, float> PendingDoorCloseTimeByDoor =
+            new Dictionary<CampusDoor3D, float>();
+
+        private static readonly Dictionary<RestroomStallDoor, float> PendingStallDoorCloseTimeByDoor =
+            new Dictionary<RestroomStallDoor, float>();
+
+        private static readonly List<CampusDoor3D> DoorCloseScratch = new List<CampusDoor3D>();
+        private static readonly List<RestroomStallDoor> StallDoorCloseScratch = new List<RestroomStallDoor>();
+        private static float nextSharedDoorMaintenanceTime;
 
         private CampusGameplayEventHub gameplayEventHub;
+        private readonly List<Vector3Int> pathCells = new List<Vector3Int>();
+        private string activeReservedFacilityKey = string.Empty;
+        private string activeReservedStandKey = string.Empty;
         private bool subscribedToGameplayEvents;
 
         public CampusCharacterRuntime Runtime => runtime;
@@ -71,13 +116,21 @@ namespace NtingCampus.Gameplay.Characters
             EnsureBodyController();
             EnsureInteraction();
             EnsureGameplayEventSubscription();
+            EnsurePersonalProfile();
 
             anchorPosition = transform.position;
             targetPosition = transform.position;
+            pathWaypointPosition = transform.position;
             currentTaskType = CampusCharacterTaskType.Idle;
             currentTaskLabel = "Idle";
-            nextRetargetTime = Time.time + UnityEngine.Random.Range(0.1f, 0.45f);
+            nextRetargetTime = Time.time + ResolvePersonalDelay(0.1f, 0.45f, 13);
+            nextPathReplanTime = 0f;
+            nextBehaviorDecisionTime = Time.time + ResolvePersonalDelay(0.35f, 1.1f, 17);
+            pauseUntilTime = 0f;
+            nextNpcCollisionRefreshTime = 0f;
             nextAmbientSpeechTime = Time.time + UnityEngine.Random.Range(minAmbientSpeechSeconds, maxAmbientSpeechSeconds);
+            pathCells.Clear();
+            pathCellIndex = 0;
             isMoving = false;
         }
 
@@ -92,7 +145,7 @@ namespace NtingCampus.Gameplay.Characters
             Say(spokenLine, 3.2f, true);
             if (runtime != null && runtime.Data != null)
             {
-                runtime.Data.AddMemory("talked_to_player");
+                runtime.Data.AddMemory(CampusCharacterMemoryId.TalkedToPlayer);
             }
 
             return true;
@@ -106,6 +159,7 @@ namespace NtingCampus.Gameplay.Characters
 
         private void OnDestroy()
         {
+            ReleaseFacilityReservation();
             ReleaseGameplayEventSubscription();
         }
 
@@ -120,6 +174,8 @@ namespace NtingCampus.Gameplay.Characters
             UpdateStateFromTaskContext();
             RefreshTaskIfNeeded();
             ApplyMovement();
+            RefreshNpcCollisionIgnoresIfNeeded();
+            UpdateNpcDoorHabit();
             UpdateAmbientSpeech();
         }
 
@@ -170,6 +226,26 @@ namespace NtingCampus.Gameplay.Characters
             EnsureInteraction();
             EnsureBodyController();
             EnsureGameplayEventSubscription();
+            EnsurePersonalProfile();
+        }
+
+        private void EnsurePersonalProfile()
+        {
+            if (runtime == null)
+            {
+                return;
+            }
+
+            if (personalSeed == 0)
+            {
+                string key = !string.IsNullOrWhiteSpace(runtime.CharacterId)
+                    ? runtime.CharacterId
+                    : gameObject.GetInstanceID().ToString();
+                personalSeed = Mathf.Max(1, Mathf.Abs(StableHash(key)));
+            }
+
+            float speedNoise = PseudoRandom01(personalSeed, 31) * 2f - 1f;
+            personalSpeedMultiplier = Mathf.Max(0.55f, 1f + speedNoise * personalSpeedVariance);
         }
 
         private void EnsurePresentation()
@@ -289,7 +365,9 @@ namespace NtingCampus.Gameplay.Characters
             anchor.InteractionTarget = interactable;
             anchor.ActionId = CampusInteractionActionIds.NpcTalk;
             anchor.PromptAnchor = speechAnchor != null ? speechAnchor : transform;
-            anchor.PromptText = "Talk " + ResolveDisplayName();
+            anchor.PromptText = CampusCharacterTextCatalog.FormatTalkPrompt(
+                CampusLanguageState.CurrentLanguage,
+                ResolveDisplayName());
             anchor.Priority = 95;
             anchor.IsAvailable = true;
             anchor.HideWhenUnavailable = false;
@@ -323,6 +401,9 @@ namespace NtingCampus.Gameplay.Characters
             gameplayEventHub.PrankAttempted += HandlePrankAttempted;
             gameplayEventHub.PrankResolved += HandlePrankResolved;
             gameplayEventHub.SanctionIssued += HandleSanctionIssued;
+            gameplayEventHub.StudentDozedOff += HandleStudentDozedOff;
+            gameplayEventHub.TeacherDistracted += HandleTeacherDistracted;
+            gameplayEventHub.PlayerSkipClass += HandlePlayerSkipClass;
             subscribedToGameplayEvents = true;
         }
 
@@ -336,6 +417,9 @@ namespace NtingCampus.Gameplay.Characters
             gameplayEventHub.PrankAttempted -= HandlePrankAttempted;
             gameplayEventHub.PrankResolved -= HandlePrankResolved;
             gameplayEventHub.SanctionIssued -= HandleSanctionIssued;
+            gameplayEventHub.StudentDozedOff -= HandleStudentDozedOff;
+            gameplayEventHub.TeacherDistracted -= HandleTeacherDistracted;
+            gameplayEventHub.PlayerSkipClass -= HandlePlayerSkipClass;
             subscribedToGameplayEvents = false;
         }
 
@@ -348,6 +432,11 @@ namespace NtingCampus.Gameplay.Characters
             }
 
             if (data.State == CampusCharacterState.Punished)
+            {
+                return;
+            }
+
+            if (data.State == CampusCharacterState.Sleeping && currentTaskType == CampusCharacterTaskType.DozeAtDesk)
             {
                 return;
             }
@@ -392,16 +481,30 @@ namespace NtingCampus.Gameplay.Characters
                 return;
             }
 
-            nextRetargetTime = Time.time + retargetIntervalSeconds;
+            nextRetargetTime = Time.time + ResolvePersonalDelay(
+                retargetIntervalSeconds * 0.75f,
+                retargetIntervalSeconds * 1.65f,
+                Mathf.FloorToInt(Time.time * 7f));
             CampusCharacterTaskDirective directive = BuildEffectiveDirective();
+            CampusCharacterTaskType previousTaskType = currentTaskType;
+            Vector3 previousTarget = targetPosition;
             currentTaskType = directive.TaskType;
             currentTaskLabel = directive.DebugLabel;
+            if (!ShouldReserveFacilityTask(currentTaskType))
+            {
+                ReleaseFacilityReservation();
+            }
 
             CampusGameplayRoom targetRoom = scheduleService != null
                 ? scheduleService.ResolveBestRoom(runtime, directive)
                 : ResolveCurrentRoom();
             anchorPosition = ResolveTaskAnchor(targetRoom, directive);
             targetPosition = ResolveTaskTarget(targetRoom, directive, anchorPosition);
+            if (previousTaskType != currentTaskType || Vector2.Distance(previousTarget, targetPosition) > 0.18f)
+            {
+                nextPathReplanTime = 0f;
+            }
+
             isMoving = Vector2.Distance(transform.position, targetPosition) > Mathf.Max(ArrivalDistance, directive.HoldRadius * 0.5f);
         }
 
@@ -451,26 +554,54 @@ namespace NtingCampus.Gameplay.Characters
         private void ApplyMovement()
         {
             EnsureBodyController();
-            bodyController.MoveSpeed = walkSpeed;
+            bodyController.MoveSpeed = walkSpeed * personalSpeedMultiplier;
             bodyController.FloorIndex = ResolveRuntimeFloorIndex();
-            TryOpenBlockingDoor();
-
-            Vector2 direction = (Vector2)(targetPosition - transform.position);
-            if (direction.sqrMagnitude <= ArrivalDistance * ArrivalDistance)
+            UpdateIndividualPause();
+            if (Time.time < pauseUntilTime)
             {
                 isMoving = false;
                 bodyController.SetMovementInput(Vector2.zero);
                 return;
             }
 
+            RefreshPathIfNeeded();
+            AdvancePathWaypointIfNeeded();
+            TryOpenBlockingDoor();
+
+            Vector2 toFinalTarget = (Vector2)(targetPosition - transform.position);
+            if (toFinalTarget.sqrMagnitude <= ArrivalDistance * ArrivalDistance)
+            {
+                isMoving = false;
+                bodyController.SetMovementInput(Vector2.zero);
+                return;
+            }
+
+            Vector2 desired = (Vector2)(pathWaypointPosition - transform.position);
+            if (desired.sqrMagnitude <= 0.0001f)
+            {
+                desired = toFinalTarget;
+            }
+
+            Vector2 separation = ResolveSeparationVector();
+            Vector2 input = desired.normalized + separation * separationStrength;
+            if (input.sqrMagnitude <= 0.0001f)
+            {
+                input = desired.normalized;
+            }
+
             isMoving = true;
-            bodyController.SetMovementInput(direction.normalized);
+            bodyController.SetMovementInput(input.normalized);
         }
 
         private void TryOpenBlockingDoor()
         {
             Vector2 currentPosition = transform.position;
-            Vector2 toTarget = (Vector2)(targetPosition - transform.position);
+            Vector2 toTarget = (Vector2)(pathWaypointPosition - transform.position);
+            if (toTarget.sqrMagnitude <= 0.01f)
+            {
+                toTarget = (Vector2)(targetPosition - transform.position);
+            }
+
             if (toTarget.sqrMagnitude <= 0.01f)
             {
                 return;
@@ -480,13 +611,202 @@ namespace NtingCampus.Gameplay.Characters
             if (TryFindClosedDoor(currentPosition, moveDirection, out CampusDoor3D door3D))
             {
                 door3D.Open();
+                ScheduleDoorClose(door3D);
                 return;
             }
 
             if (TryFindClosedStallDoor(currentPosition, moveDirection, out RestroomStallDoor stallDoor))
             {
                 stallDoor.Open();
+                ScheduleDoorClose(stallDoor);
             }
+        }
+
+        private void RefreshNpcCollisionIgnoresIfNeeded()
+        {
+            if (Time.time < nextNpcCollisionRefreshTime)
+            {
+                return;
+            }
+
+            nextNpcCollisionRefreshTime = Time.time + ResolvePersonalDelay(
+                npcCollisionRefreshSeconds * 0.75f,
+                npcCollisionRefreshSeconds * 1.35f,
+                89);
+
+            RefreshNpcCollisionIgnores();
+        }
+
+        private void RefreshNpcCollisionIgnores()
+        {
+            if (!IsAiControlledCharacter(this) || bodyController == null || bodyController.SolidCollider == null)
+            {
+                return;
+            }
+
+            CapsuleCollider2D selfCollider = bodyController.SolidCollider;
+            CampusNpcAgent[] agents = FindObjectsByType<CampusNpcAgent>(FindObjectsInactive.Exclude, FindObjectsSortMode.None);
+            for (int i = 0; i < agents.Length; i++)
+            {
+                CampusNpcAgent other = agents[i];
+                if (other == null || other == this || other.bodyController == null || other.bodyController.SolidCollider == null)
+                {
+                    continue;
+                }
+
+                bool ignoreCollision = IsAiControlledCharacter(other);
+                Physics2D.IgnoreCollision(selfCollider, other.bodyController.SolidCollider, ignoreCollision);
+            }
+        }
+
+        private static bool IsAiControlledCharacter(CampusNpcAgent agent)
+        {
+            return agent != null &&
+                   agent.runtime != null &&
+                   agent.runtime.Data != null &&
+                   !agent.runtime.Data.IsPlayerControlled;
+        }
+
+        private void ScheduleDoorClose(CampusDoor3D door)
+        {
+            if (door == null)
+            {
+                return;
+            }
+
+            float closeAt = Time.time + npcDoorCloseDelaySeconds;
+            if (PendingDoorCloseTimeByDoor.TryGetValue(door, out float existingCloseAt))
+            {
+                closeAt = Mathf.Max(closeAt, existingCloseAt);
+            }
+
+            PendingDoorCloseTimeByDoor[door] = closeAt;
+        }
+
+        private void ScheduleDoorClose(RestroomStallDoor door)
+        {
+            if (door == null)
+            {
+                return;
+            }
+
+            float closeAt = Time.time + npcDoorCloseDelaySeconds;
+            if (PendingStallDoorCloseTimeByDoor.TryGetValue(door, out float existingCloseAt))
+            {
+                closeAt = Mathf.Max(closeAt, existingCloseAt);
+            }
+
+            PendingStallDoorCloseTimeByDoor[door] = closeAt;
+        }
+
+        private void UpdateNpcDoorHabit()
+        {
+            if (Time.time < nextSharedDoorMaintenanceTime)
+            {
+                return;
+            }
+
+            nextSharedDoorMaintenanceTime = Time.time + 0.25f;
+            ProcessPendingDoorClosures();
+            ProcessPendingStallDoorClosures();
+        }
+
+        private void ProcessPendingDoorClosures()
+        {
+            if (PendingDoorCloseTimeByDoor.Count == 0)
+            {
+                return;
+            }
+
+            DoorCloseScratch.Clear();
+            foreach (KeyValuePair<CampusDoor3D, float> entry in PendingDoorCloseTimeByDoor)
+            {
+                DoorCloseScratch.Add(entry.Key);
+            }
+
+            for (int i = 0; i < DoorCloseScratch.Count; i++)
+            {
+                CampusDoor3D door = DoorCloseScratch[i];
+                if (door == null || !door.IsOpen)
+                {
+                    PendingDoorCloseTimeByDoor.Remove(door);
+                    continue;
+                }
+
+                if (!PendingDoorCloseTimeByDoor.TryGetValue(door, out float closeAt) || Time.time < closeAt)
+                {
+                    continue;
+                }
+
+                if (IsAnyCharacterNearDoor(door.transform.position))
+                {
+                    PendingDoorCloseTimeByDoor[door] = Time.time + 0.75f;
+                    continue;
+                }
+
+                door.Close();
+                PendingDoorCloseTimeByDoor.Remove(door);
+            }
+
+            DoorCloseScratch.Clear();
+        }
+
+        private void ProcessPendingStallDoorClosures()
+        {
+            if (PendingStallDoorCloseTimeByDoor.Count == 0)
+            {
+                return;
+            }
+
+            StallDoorCloseScratch.Clear();
+            foreach (KeyValuePair<RestroomStallDoor, float> entry in PendingStallDoorCloseTimeByDoor)
+            {
+                StallDoorCloseScratch.Add(entry.Key);
+            }
+
+            for (int i = 0; i < StallDoorCloseScratch.Count; i++)
+            {
+                RestroomStallDoor door = StallDoorCloseScratch[i];
+                if (door == null || !door.IsOpen)
+                {
+                    PendingStallDoorCloseTimeByDoor.Remove(door);
+                    continue;
+                }
+
+                if (!PendingStallDoorCloseTimeByDoor.TryGetValue(door, out float closeAt) || Time.time < closeAt)
+                {
+                    continue;
+                }
+
+                if (IsAnyCharacterNearDoor(door.transform.position))
+                {
+                    PendingStallDoorCloseTimeByDoor[door] = Time.time + 0.75f;
+                    continue;
+                }
+
+                door.Close();
+                PendingStallDoorCloseTimeByDoor.Remove(door);
+            }
+
+            StallDoorCloseScratch.Clear();
+        }
+
+        private bool IsAnyCharacterNearDoor(Vector3 doorPosition)
+        {
+            float radiusSqr = npcDoorClearanceRadius * npcDoorClearanceRadius;
+            CampusCharacterBodyController[] bodies = FindObjectsByType<CampusCharacterBodyController>(
+                FindObjectsInactive.Exclude,
+                FindObjectsSortMode.None);
+            for (int i = 0; i < bodies.Length; i++)
+            {
+                CampusCharacterBodyController body = bodies[i];
+                if (body != null && ((Vector2)(body.transform.position - doorPosition)).sqrMagnitude <= radiusSqr)
+                {
+                    return true;
+                }
+            }
+
+            return false;
         }
 
         private bool TryFindClosedDoor(Vector2 currentPosition, Vector2 moveDirection, out CampusDoor3D door3D)
@@ -567,6 +887,381 @@ namespace NtingCampus.Gameplay.Characters
             return stallDoor != null;
         }
 
+        private void RefreshPathIfNeeded()
+        {
+            Vector3Int startCell = ResolveCurrentCell();
+            Vector3Int targetCell = WorldToCell(targetPosition);
+            bool targetChanged = targetCell != lastPathTargetCell;
+            bool startMovedOffPath = pathCells.Count == 0 || !pathCells.Contains(startCell);
+            if (!targetChanged && !startMovedOffPath && Time.time < nextPathReplanTime)
+            {
+                return;
+            }
+
+            nextPathReplanTime = Time.time + ResolvePersonalDelay(
+                pathReplanIntervalSeconds * 0.75f,
+                pathReplanIntervalSeconds * 1.45f,
+                Mathf.FloorToInt(Time.time * 5f));
+            lastPathStartCell = startCell;
+            lastPathTargetCell = targetCell;
+            pathCells.Clear();
+            pathCellIndex = 0;
+
+            if (TryBuildPath(startCell, targetCell, pathCells))
+            {
+                pathCellIndex = Mathf.Min(1, pathCells.Count - 1);
+                pathWaypointPosition = pathCells.Count > 0 ? CellCenterToWorld(pathCells[pathCellIndex]) : targetPosition;
+                return;
+            }
+
+            pathWaypointPosition = targetPosition;
+        }
+
+        private void AdvancePathWaypointIfNeeded()
+        {
+            if (pathCells.Count == 0)
+            {
+                pathWaypointPosition = targetPosition;
+                return;
+            }
+
+            while (pathCellIndex < pathCells.Count - 1 &&
+                   Vector2.Distance(transform.position, CellCenterToWorld(pathCells[pathCellIndex])) <= waypointArrivalDistance)
+            {
+                pathCellIndex++;
+            }
+
+            pathWaypointPosition = pathCellIndex >= 0 && pathCellIndex < pathCells.Count
+                ? CellCenterToWorld(pathCells[pathCellIndex])
+                : targetPosition;
+        }
+
+        private bool TryBuildPath(Vector3Int startCell, Vector3Int targetCell, List<Vector3Int> output)
+        {
+            output.Clear();
+            if (startCell == targetCell)
+            {
+                output.Add(startCell);
+                return true;
+            }
+
+            CampusFloorRoot floor = ResolveCurrentFloor();
+            if (floor == null)
+            {
+                return false;
+            }
+
+            targetCell = ResolveNearestWalkableCell(floor, targetCell, startCell);
+            int minX = Mathf.Min(startCell.x, targetCell.x) - 18;
+            int maxX = Mathf.Max(startCell.x, targetCell.x) + 18;
+            int minY = Mathf.Min(startCell.y, targetCell.y) - 18;
+            int maxY = Mathf.Max(startCell.y, targetCell.y) + 18;
+
+            floor.RefreshUsedBoundsIfDirty();
+            if (floor.UsedBounds.size.x > 0 && floor.UsedBounds.size.y > 0)
+            {
+                minX = Mathf.Max(minX, floor.UsedBounds.xMin - 2);
+                maxX = Mathf.Min(maxX, floor.UsedBounds.xMax + 2);
+                minY = Mathf.Max(minY, floor.UsedBounds.yMin - 2);
+                maxY = Mathf.Min(maxY, floor.UsedBounds.yMax + 2);
+            }
+
+            Dictionary<Vector3Int, PathNode> nodes = new Dictionary<Vector3Int, PathNode>();
+            List<PathNode> open = new List<PathNode>();
+            HashSet<Vector3Int> closed = new HashSet<Vector3Int>();
+            PathNode start = new PathNode(startCell, 0f, Heuristic(startCell, targetCell), null);
+            nodes[startCell] = start;
+            open.Add(start);
+
+            int iterations = 0;
+            while (open.Count > 0 && iterations++ < MaxPathSearchIterations)
+            {
+                int bestIndex = 0;
+                float bestScore = open[0].TotalCost;
+                for (int i = 1; i < open.Count; i++)
+                {
+                    if (open[i].TotalCost < bestScore)
+                    {
+                        bestScore = open[i].TotalCost;
+                        bestIndex = i;
+                    }
+                }
+
+                PathNode current = open[bestIndex];
+                open.RemoveAt(bestIndex);
+                if (!closed.Add(current.Cell))
+                {
+                    continue;
+                }
+
+                if (current.Cell == targetCell)
+                {
+                    ReconstructPath(current, output);
+                    return output.Count > 0;
+                }
+
+                AddPathNeighbor(floor, current, new Vector3Int(current.Cell.x + 1, current.Cell.y, 0), targetCell, minX, maxX, minY, maxY, nodes, open, closed);
+                AddPathNeighbor(floor, current, new Vector3Int(current.Cell.x - 1, current.Cell.y, 0), targetCell, minX, maxX, minY, maxY, nodes, open, closed);
+                AddPathNeighbor(floor, current, new Vector3Int(current.Cell.x, current.Cell.y + 1, 0), targetCell, minX, maxX, minY, maxY, nodes, open, closed);
+                AddPathNeighbor(floor, current, new Vector3Int(current.Cell.x, current.Cell.y - 1, 0), targetCell, minX, maxX, minY, maxY, nodes, open, closed);
+            }
+
+            return false;
+        }
+
+        private void AddPathNeighbor(
+            CampusFloorRoot floor,
+            PathNode current,
+            Vector3Int neighbor,
+            Vector3Int targetCell,
+            int minX,
+            int maxX,
+            int minY,
+            int maxY,
+            Dictionary<Vector3Int, PathNode> nodes,
+            List<PathNode> open,
+            HashSet<Vector3Int> closed)
+        {
+            if (neighbor.x < minX || neighbor.x > maxX || neighbor.y < minY || neighbor.y > maxY || closed.Contains(neighbor))
+            {
+                return;
+            }
+
+            if (neighbor != targetCell && !IsWalkableCell(floor, neighbor))
+            {
+                return;
+            }
+
+            float movementCost = current.CostFromStart +
+                                 1f +
+                                 PersonalCellCost(neighbor) +
+                                 DynamicOccupancyCost(neighbor, targetCell);
+            if (nodes.TryGetValue(neighbor, out PathNode existing))
+            {
+                if (movementCost >= existing.CostFromStart)
+                {
+                    return;
+                }
+
+                existing.CostFromStart = movementCost;
+                existing.Parent = current;
+                return;
+            }
+
+            PathNode node = new PathNode(neighbor, movementCost, Heuristic(neighbor, targetCell), current);
+            nodes[neighbor] = node;
+            open.Add(node);
+        }
+
+        private float PersonalCellCost(Vector3Int cell)
+        {
+            return PseudoRandom01(personalSeed + cell.x * 193 + cell.y * 389, 71) * 0.18f;
+        }
+
+        private float DynamicOccupancyCost(Vector3Int cell, Vector3Int targetCell)
+        {
+            float cost = 0f;
+            string ownerId = ResolveReservationOwnerId();
+            string targetStandKey = BuildStandReservationKey(cell);
+            if (ReservedStandOwnerByKey.TryGetValue(targetStandKey, out string standOwner) &&
+                !string.Equals(standOwner, ownerId, StringComparison.OrdinalIgnoreCase))
+            {
+                cost += cell == targetCell ? 18f : 5f;
+            }
+
+            CampusNpcAgent[] agents = FindObjectsByType<CampusNpcAgent>(FindObjectsInactive.Exclude, FindObjectsSortMode.None);
+            for (int i = 0; i < agents.Length; i++)
+            {
+                CampusNpcAgent other = agents[i];
+                if (other == null || other == this || other.runtime == null || other.runtime.Data == null || other.runtime.Data.IsPlayerControlled)
+                {
+                    continue;
+                }
+
+                Vector3Int otherCell = other.ResolveCurrentCell();
+                if (otherCell == cell)
+                {
+                    cost += cell == targetCell ? 12f : 4.5f;
+                }
+
+                Vector3Int otherWaypointCell = WorldToCell(other.pathWaypointPosition);
+                if (otherWaypointCell == cell)
+                {
+                    cost += 1.8f;
+                }
+            }
+
+            return cost;
+        }
+
+        private static float Heuristic(Vector3Int a, Vector3Int b)
+        {
+            return Mathf.Abs(a.x - b.x) + Mathf.Abs(a.y - b.y);
+        }
+
+        private static void ReconstructPath(PathNode endNode, List<Vector3Int> output)
+        {
+            output.Clear();
+            PathNode current = endNode;
+            while (current != null)
+            {
+                output.Add(current.Cell);
+                current = current.Parent;
+            }
+
+            output.Reverse();
+        }
+
+        private Vector3Int ResolveNearestWalkableCell(CampusFloorRoot floor, Vector3Int preferredCell, Vector3Int fromCell)
+        {
+            preferredCell.z = 0;
+            if (IsWalkableCell(floor, preferredCell))
+            {
+                return preferredCell;
+            }
+
+            Vector3Int best = preferredCell;
+            float bestScore = float.PositiveInfinity;
+            for (int radius = 1; radius <= 5; radius++)
+            {
+                for (int y = preferredCell.y - radius; y <= preferredCell.y + radius; y++)
+                {
+                    for (int x = preferredCell.x - radius; x <= preferredCell.x + radius; x++)
+                    {
+                        if (Mathf.Abs(x - preferredCell.x) != radius && Mathf.Abs(y - preferredCell.y) != radius)
+                        {
+                            continue;
+                        }
+
+                        Vector3Int cell = new Vector3Int(x, y, 0);
+                        if (!IsWalkableCell(floor, cell))
+                        {
+                            continue;
+                        }
+
+                        float score = Mathf.Abs(x - fromCell.x) + Mathf.Abs(y - fromCell.y);
+                        if (score < bestScore)
+                        {
+                            bestScore = score;
+                            best = cell;
+                        }
+                    }
+                }
+
+                if (bestScore < float.PositiveInfinity)
+                {
+                    return best;
+                }
+            }
+
+            return preferredCell;
+        }
+
+        private bool IsWalkableCell(CampusFloorRoot floor, Vector3Int cell)
+        {
+            cell.z = 0;
+            if (floor == null)
+            {
+                return false;
+            }
+
+            if (floor.FloorTilemap != null && !floor.FloorTilemap.HasTile(cell))
+            {
+                return false;
+            }
+
+            if (CampusWallTileUtility.HasWall(CampusWallTileUtility.GetWallLogicTilemap(floor), cell))
+            {
+                return false;
+            }
+
+            return !IsBlockedByPlacedObject(floor, cell);
+        }
+
+        private bool IsBlockedByPlacedObject(CampusFloorRoot floor, Vector3Int cell)
+        {
+            if (floor == null || floor.PropsRoot == null)
+            {
+                return false;
+            }
+
+            CampusPlacedObject[] placedObjects = floor.PropsRoot.GetComponentsInChildren<CampusPlacedObject>(true);
+            for (int i = 0; i < placedObjects.Length; i++)
+            {
+                CampusPlacedObject placedObject = placedObjects[i];
+                if (placedObject == null || !placedObject.BlocksMovement || !placedObject.ContainsCell(cell))
+                {
+                    continue;
+                }
+
+                if (placedObject.GetComponent<CampusDoor3D>() != null)
+                {
+                    continue;
+                }
+
+                return true;
+            }
+
+            return false;
+        }
+
+        private CampusFloorRoot ResolveCurrentFloor()
+        {
+            CampusMapRoot mapRoot = FindFirstObjectByType<CampusMapRoot>(FindObjectsInactive.Include);
+            return mapRoot != null ? mapRoot.GetFloor(ResolveRuntimeFloorIndex()) : null;
+        }
+
+        private Vector2 ResolveSeparationVector()
+        {
+            if (separationRadius <= 0f)
+            {
+                return Vector2.zero;
+            }
+
+            Vector2 currentPosition = transform.position;
+            Vector2 separation = Vector2.zero;
+            CampusNpcAgent[] agents = FindObjectsByType<CampusNpcAgent>(FindObjectsInactive.Exclude, FindObjectsSortMode.None);
+            for (int i = 0; i < agents.Length; i++)
+            {
+                CampusNpcAgent other = agents[i];
+                if (other == null || other == this || other.runtime == null || other.runtime.Data == null || other.runtime.Data.IsPlayerControlled)
+                {
+                    continue;
+                }
+
+                Vector2 delta = currentPosition - (Vector2)other.transform.position;
+                float distance = delta.magnitude;
+                if (distance <= 0.001f || distance > separationRadius)
+                {
+                    continue;
+                }
+
+                separation += delta.normalized * ((separationRadius - distance) / separationRadius);
+            }
+
+            return separation.sqrMagnitude > 1f ? separation.normalized : separation;
+        }
+
+        private void UpdateIndividualPause()
+        {
+            if (Time.time < nextBehaviorDecisionTime)
+            {
+                return;
+            }
+
+            nextBehaviorDecisionTime = Time.time + ResolvePersonalDelay(0.55f, 1.65f, Mathf.FloorToInt(Time.time * 11f));
+            float chance = IsStrictScheduleTask(currentTaskType) ? 0.012f : 0.075f;
+            if (PseudoRandom01(personalSeed + Mathf.FloorToInt(Time.time * 19f), 97) > chance)
+            {
+                return;
+            }
+
+            float pauseDuration = IsStrictScheduleTask(currentTaskType)
+                ? ResolvePersonalDelay(0.08f, 0.22f, 101)
+                : ResolvePersonalDelay(0.18f, 0.65f, 103);
+            pauseUntilTime = Mathf.Max(pauseUntilTime, Time.time + pauseDuration);
+        }
+
         private void UpdateAmbientSpeech()
         {
             if (Time.time < nextAmbientSpeechTime)
@@ -589,8 +1284,8 @@ namespace NtingCampus.Gameplay.Characters
                 return null;
             }
 
-            CampusGameplayRoom room = worldService.FindRoomById(runtime.Data.CurrentRoomId);
-            return room ?? worldService.FindRoomForRuntime(runtime);
+            CampusGameplayRoom room = worldService.FindRoomForPosition(ResolveRuntimeFloorIndex(), transform.position);
+            return room ?? worldService.FindRoomById(runtime.Data.CurrentRoomId);
         }
 
         private Vector3 ResolveTaskAnchor(CampusGameplayRoom room, CampusCharacterTaskDirective directive)
@@ -628,6 +1323,11 @@ namespace NtingCampus.Gameplay.Characters
 
         private Vector3 ResolveTaskTarget(CampusGameplayRoom room, CampusCharacterTaskDirective directive, Vector3 anchor)
         {
+            if (TryResolveRoomEntryTarget(room, directive, out Vector3 entryTarget))
+            {
+                return entryTarget;
+            }
+
             CampusCharacterRuntime player = bootstrap != null && bootstrap.RosterService != null
                 ? bootstrap.RosterService.PlayerRuntime
                 : null;
@@ -645,16 +1345,31 @@ namespace NtingCampus.Gameplay.Characters
                 case CampusCharacterTaskType.CheckBulletinBoard:
                     return ClampToRoom(room, anchor);
                 case CampusCharacterTaskType.PatrolHallway:
+                    if (TryResolvePersonalRoamTarget(room, seed + 31, Mathf.FloorToInt(Time.time / freeRoamTargetRefreshSeconds), out Vector3 patrolTarget))
+                    {
+                        return patrolTarget;
+                    }
+
                     return ClampToRoom(room, anchor + ResolveLoopOffset(seed, patrolStride));
                 case CampusCharacterTaskType.WanderCommonArea:
-                    return ClampToRoom(room, anchor + ResolveLoopOffset(seed + Mathf.FloorToInt(Time.time * 0.7f), patrolStride * 0.8f));
+                    if (TryResolvePersonalRoamTarget(room, seed, Mathf.FloorToInt(Time.time / freeRoamTargetRefreshSeconds), out Vector3 wanderTarget))
+                    {
+                        return wanderTarget;
+                    }
+
+                    return ClampToRoom(room, anchor + ResolveLoopOffset(seed + Mathf.FloorToInt(Time.time * 0.2f), patrolStride * 2.2f));
                 case CampusCharacterTaskType.Socialize:
                     if (player != null && SameRoom(player, room != null ? room.RoomId : string.Empty))
                     {
                         return ClampToRoom(room, ResolveOffsetFromPlayer(player, 0.9f));
                     }
 
-                    return ClampToRoom(room, anchor + ResolveLoopOffset(seed + 17, 0.45f));
+                    if (TryResolvePersonalRoamTarget(room, seed + 17, Mathf.FloorToInt(Time.time / (freeRoamTargetRefreshSeconds * 1.4f)), out Vector3 socialTarget))
+                    {
+                        return socialTarget;
+                    }
+
+                    return ClampToRoom(room, anchor + ResolveLoopOffset(seed + 17, patrolStride * 1.8f));
                 case CampusCharacterTaskType.InvestigateDisturbance:
                     if (player != null && SameRoom(player, room != null ? room.RoomId : string.Empty))
                     {
@@ -680,11 +1395,83 @@ namespace NtingCampus.Gameplay.Characters
             return new Vector3(Mathf.Cos(angle) * radius, Mathf.Sin(angle) * radius * 0.65f, 0f);
         }
 
+        private bool TryResolvePersonalRoamTarget(
+            CampusGameplayRoom room,
+            int seed,
+            int bucket,
+            out Vector3 target)
+        {
+            target = default;
+            if (room == null || room.MarkerBounds.size.x <= 0 || room.MarkerBounds.size.y <= 0)
+            {
+                return false;
+            }
+
+            BoundsInt bounds = room.MarkerBounds;
+            int width = Mathf.Max(1, bounds.size.x);
+            int height = Mathf.Max(1, bounds.size.y);
+            int total = width * height;
+            int start = Mathf.Abs(seed * 73856093 ^ bucket * 19349663) % total;
+            int step = Mathf.Abs(seed * 83492791) % Mathf.Max(1, total - 1) + 1;
+            if (GreatestCommonDivisor(step, total) != 1)
+            {
+                step = 1;
+            }
+
+            for (int i = 0; i < total; i++)
+            {
+                int index = (start + i * step) % total;
+                Vector3Int cell = new Vector3Int(bounds.xMin + index % width, bounds.yMin + index / width, 0);
+                if (!IsStandableRoomCell(room, cell) || ShouldAvoidOccupiedStandCell(cell))
+                {
+                    continue;
+                }
+
+                target = CellCenterToWorld(cell);
+                return true;
+            }
+
+            for (int i = 0; i < total; i++)
+            {
+                int index = (start + i * step) % total;
+                Vector3Int cell = new Vector3Int(bounds.xMin + index % width, bounds.yMin + index / width, 0);
+                if (!IsStandableRoomCell(room, cell))
+                {
+                    continue;
+                }
+
+                target = CellCenterToWorld(cell);
+                return true;
+            }
+
+            return false;
+        }
+
+        private static int GreatestCommonDivisor(int left, int right)
+        {
+            left = Mathf.Abs(left);
+            right = Mathf.Abs(right);
+            while (right != 0)
+            {
+                int remainder = left % right;
+                left = right;
+                right = remainder;
+            }
+
+            return Mathf.Max(1, left);
+        }
+
         private Vector3 ResolveFacilityPosition(CampusGameplayRoom room, CampusFacilityType facilityType, Vector3 fallback)
+        {
+            CampusGameplayRoom.FacilityRecord record = ResolveFacilityRecord(room, facilityType);
+            return record != null ? ResolveFacilityStandPosition(room, record, fallback) : fallback;
+        }
+
+        private CampusGameplayRoom.FacilityRecord ResolveFacilityRecord(CampusGameplayRoom room, CampusFacilityType facilityType)
         {
             if (room == null || room.Facilities == null || room.Facilities.Count == 0)
             {
-                return fallback;
+                return null;
             }
 
             List<CampusGameplayRoom.FacilityRecord> candidates = new List<CampusGameplayRoom.FacilityRecord>();
@@ -699,17 +1486,733 @@ namespace NtingCampus.Gameplay.Characters
 
             if (candidates.Count == 0)
             {
+                if (ShouldReserveFacilityType(facilityType))
+                {
+                    ReleaseFacilityReservation();
+                }
+
+                return null;
+            }
+
+            candidates.Sort((left, right) =>
+                FacilityChoiceScore(room, left, facilityType).CompareTo(FacilityChoiceScore(room, right, facilityType)));
+
+            if (!ShouldReserveFacilityType(facilityType))
+            {
+                return candidates[0];
+            }
+
+            string ownerId = ResolveReservationOwnerId();
+            for (int i = 0; i < candidates.Count; i++)
+            {
+                string key = BuildFacilityReservationKey(room, candidates[i], facilityType);
+                if (ReservedFacilityOwnerByKey.TryGetValue(key, out string owner) &&
+                    string.Equals(owner, ownerId, StringComparison.OrdinalIgnoreCase))
+                {
+                    if (!CanUseFacilityStand(room, candidates[i], facilityType, ownerId))
+                    {
+                        ReleaseFacilityReservation();
+                        continue;
+                    }
+
+                    activeReservedFacilityKey = key;
+                    return candidates[i];
+                }
+            }
+
+            for (int i = 0; i < candidates.Count; i++)
+            {
+                string key = BuildFacilityReservationKey(room, candidates[i], facilityType);
+                if (ReservedFacilityOwnerByKey.TryGetValue(key, out string owner) &&
+                    !string.Equals(owner, ownerId, StringComparison.OrdinalIgnoreCase))
+                {
+                    continue;
+                }
+
+                if (!CanUseFacilityStand(room, candidates[i], facilityType, ownerId))
+                {
+                    continue;
+                }
+
+                ReserveFacility(key, ownerId);
+                return candidates[i];
+            }
+
+            ReleaseFacilityReservation();
+            return null;
+        }
+
+        private float FacilityChoiceScore(
+            CampusGameplayRoom room,
+            CampusGameplayRoom.FacilityRecord record,
+            CampusFacilityType facilityType)
+        {
+            Vector3Int cell = record != null ? record.Cell : default;
+            float distance = CellDistanceScore(cell, transform.position);
+            float randomBias = PseudoRandom01(
+                personalSeed + cell.x * 131 + cell.y * 197 + (int)facilityType * 421,
+                Mathf.FloorToInt(Time.time / 45f)) * 4.5f;
+            float roleBias = runtime != null && runtime.Data != null && runtime.Data.Role == CampusCharacterRole.Teacher
+                ? -1.2f
+                : 0f;
+            return randomBias + distance * 0.08f + roleBias;
+        }
+
+        private static bool ShouldReserveFacilityType(CampusFacilityType facilityType)
+        {
+            switch (facilityType)
+            {
+                case CampusFacilityType.StudentDesk:
+                case CampusFacilityType.Podium:
+                case CampusFacilityType.Blackboard:
+                case CampusFacilityType.OfficeDesk:
+                case CampusFacilityType.Bed:
+                    return true;
+                default:
+                    return false;
+            }
+        }
+
+        private static bool ShouldReserveFacilityTask(CampusCharacterTaskType taskType)
+        {
+            switch (taskType)
+            {
+                case CampusCharacterTaskType.AttendClass:
+                case CampusCharacterTaskType.DozeAtDesk:
+                case CampusCharacterTaskType.TeachClass:
+                case CampusCharacterTaskType.UseOfficeDesk:
+                case CampusCharacterTaskType.RestInDorm:
+                    return true;
+                default:
+                    return false;
+            }
+        }
+
+        private string BuildFacilityReservationKey(
+            CampusGameplayRoom room,
+            CampusGameplayRoom.FacilityRecord record,
+            CampusFacilityType facilityType)
+        {
+            string roomId = room != null && !string.IsNullOrWhiteSpace(room.RoomId) ? room.RoomId : "room";
+            string facilityId = record != null && !string.IsNullOrWhiteSpace(record.FacilityId)
+                ? record.FacilityId
+                : facilityType.ToString();
+            Vector3Int cell = record != null ? record.Cell : default;
+            return roomId + "|" + facilityType + "|" + facilityId + "|" + cell.x + "," + cell.y;
+        }
+
+        private string ResolveReservationOwnerId()
+        {
+            return runtime != null && !string.IsNullOrWhiteSpace(runtime.CharacterId)
+                ? runtime.CharacterId
+                : GetInstanceID().ToString();
+        }
+
+        private void ReserveFacility(string key, string ownerId)
+        {
+            if (string.IsNullOrWhiteSpace(key) || string.IsNullOrWhiteSpace(ownerId))
+            {
+                return;
+            }
+
+            if (string.Equals(activeReservedFacilityKey, key, StringComparison.OrdinalIgnoreCase))
+            {
+                ReservedFacilityOwnerByKey[key] = ownerId;
+                ReservedFacilityKeyByOwner[ownerId] = key;
+                return;
+            }
+
+            ReleaseFacilityReservation();
+            activeReservedFacilityKey = key;
+            ReservedFacilityOwnerByKey[key] = ownerId;
+            ReservedFacilityKeyByOwner[ownerId] = key;
+        }
+
+        private void ReleaseFacilityReservation()
+        {
+            ReleaseStandReservation();
+            string ownerId = ResolveReservationOwnerId();
+            if (!string.IsNullOrWhiteSpace(activeReservedFacilityKey) &&
+                ReservedFacilityOwnerByKey.TryGetValue(activeReservedFacilityKey, out string owner) &&
+                string.Equals(owner, ownerId, StringComparison.OrdinalIgnoreCase))
+            {
+                ReservedFacilityOwnerByKey.Remove(activeReservedFacilityKey);
+            }
+
+            if (!string.IsNullOrWhiteSpace(ownerId) &&
+                ReservedFacilityKeyByOwner.TryGetValue(ownerId, out string ownerKey) &&
+                string.Equals(ownerKey, activeReservedFacilityKey, StringComparison.OrdinalIgnoreCase))
+            {
+                ReservedFacilityKeyByOwner.Remove(ownerId);
+            }
+
+            activeReservedFacilityKey = string.Empty;
+        }
+
+        private bool TryReserveStandCell(Vector3Int cell, string ownerId)
+        {
+            if (string.IsNullOrWhiteSpace(ownerId))
+            {
+                return false;
+            }
+
+            string key = BuildStandReservationKey(cell);
+            if (string.Equals(activeReservedStandKey, key, StringComparison.OrdinalIgnoreCase))
+            {
+                ReservedStandOwnerByKey[key] = ownerId;
+                ReservedStandKeyByOwner[ownerId] = key;
+                return true;
+            }
+
+            if (ReservedStandOwnerByKey.TryGetValue(key, out string owner) &&
+                !string.Equals(owner, ownerId, StringComparison.OrdinalIgnoreCase))
+            {
+                return false;
+            }
+
+            ReleaseStandReservation();
+            activeReservedStandKey = key;
+            ReservedStandOwnerByKey[key] = ownerId;
+            ReservedStandKeyByOwner[ownerId] = key;
+            return true;
+        }
+
+        private void ReleaseStandReservation()
+        {
+            string ownerId = ResolveReservationOwnerId();
+            if (!string.IsNullOrWhiteSpace(activeReservedStandKey) &&
+                ReservedStandOwnerByKey.TryGetValue(activeReservedStandKey, out string owner) &&
+                string.Equals(owner, ownerId, StringComparison.OrdinalIgnoreCase))
+            {
+                ReservedStandOwnerByKey.Remove(activeReservedStandKey);
+            }
+
+            if (!string.IsNullOrWhiteSpace(ownerId) &&
+                ReservedStandKeyByOwner.TryGetValue(ownerId, out string ownerKey) &&
+                string.Equals(ownerKey, activeReservedStandKey, StringComparison.OrdinalIgnoreCase))
+            {
+                ReservedStandKeyByOwner.Remove(ownerId);
+            }
+
+            activeReservedStandKey = string.Empty;
+        }
+
+        private static string BuildStandReservationKey(Vector3Int cell)
+        {
+            return "stand|" + cell.x + "," + cell.y;
+        }
+
+        private bool CanUseFacilityStand(
+            CampusGameplayRoom room,
+            CampusGameplayRoom.FacilityRecord record,
+            CampusFacilityType facilityType,
+            string ownerId)
+        {
+            if (!ShouldReserveFacilityType(facilityType))
+            {
+                return true;
+            }
+
+            if (!TryResolveFixedFacilityStandCell(room, record, out Vector3Int standCell))
+            {
+                return false;
+            }
+
+            string standKey = BuildStandReservationKey(standCell);
+            return !ReservedStandOwnerByKey.TryGetValue(standKey, out string standOwner) ||
+                   string.Equals(standOwner, ownerId, StringComparison.OrdinalIgnoreCase);
+        }
+
+        private Vector3 ResolveFacilityStandPosition(
+            CampusGameplayRoom room,
+            CampusGameplayRoom.FacilityRecord record,
+            Vector3 fallback)
+        {
+            if (room == null || record == null)
+            {
+                fallback.z = transform.position.z;
                 return fallback;
             }
 
-            int index = 0;
-            if (!string.IsNullOrWhiteSpace(runtime != null ? runtime.CharacterId : string.Empty))
+            if (ShouldReserveFacilityType(record.FacilityType))
             {
-                index = Mathf.Abs(runtime.CharacterId.GetHashCode()) % candidates.Count;
+                if (TryResolveFixedFacilityStandCell(room, record, out Vector3Int fixedCell) &&
+                    TryReserveStandCell(fixedCell, ResolveReservationOwnerId()))
+                {
+                    return CellCenterToWorld(fixedCell);
+                }
+
+                ReleaseStandReservation();
+                fallback.z = transform.position.z;
+                return fallback;
             }
 
-            Vector3Int cell = candidates[index].Cell;
+            List<Vector3Int> candidates = BuildFacilityStandCandidates(room, record);
+            for (int i = 0; i < candidates.Count; i++)
+            {
+                Vector3Int candidate = candidates[i];
+                if (!IsStandableRoomCell(room, candidate))
+                {
+                    continue;
+                }
+
+                if (ShouldAvoidOccupiedStandCell(candidate))
+                {
+                    continue;
+                }
+
+                return CellCenterToWorld(candidate);
+            }
+
+            for (int i = 0; i < candidates.Count; i++)
+            {
+                Vector3Int candidate = candidates[i];
+                if (!IsStandableRoomCell(room, candidate))
+                {
+                    continue;
+                }
+
+                return CellCenterToWorld(candidate);
+            }
+
+            if (TryFindNearestStandableRoomCell(room, record.Cell, out Vector3Int nearestCell))
+            {
+                return CellCenterToWorld(nearestCell);
+            }
+
+            fallback.z = transform.position.z;
+            return fallback;
+        }
+
+        private bool TryResolveFixedFacilityStandCell(
+            CampusGameplayRoom room,
+            CampusGameplayRoom.FacilityRecord record,
+            out Vector3Int standCell)
+        {
+            standCell = default;
+            if (room == null || record == null)
+            {
+                return false;
+            }
+
+            if (!TryGetFacilityLocalStandDirection(record.FacilityType, out Vector3Int localDirection))
+            {
+                return false;
+            }
+
+            Vector3Int worldDirection = RotateGridDirection(localDirection, ResolveFacilityRotation90(record));
+            standCell = ResolveDirectedStandCell(record, worldDirection);
+            return IsStandableRoomCell(room, standCell);
+        }
+
+        private static bool TryGetFacilityLocalStandDirection(CampusFacilityType facilityType, out Vector3Int direction)
+        {
+            switch (facilityType)
+            {
+                case CampusFacilityType.Podium:
+                    direction = Vector3Int.up;
+                    return true;
+                case CampusFacilityType.StudentDesk:
+                case CampusFacilityType.Blackboard:
+                case CampusFacilityType.OfficeDesk:
+                case CampusFacilityType.Bed:
+                case CampusFacilityType.BulletinBoard:
+                    direction = Vector3Int.down;
+                    return true;
+                default:
+                    direction = Vector3Int.zero;
+                    return false;
+            }
+        }
+
+        private static int ResolveFacilityRotation90(CampusGameplayRoom.FacilityRecord record)
+        {
+            CampusPlacedObject placedObject = record != null ? record.PlacedObject : null;
+            return placedObject != null ? CampusPlacedObject.NormalizeRotation90(placedObject.Rotation90) : 0;
+        }
+
+        private static Vector3Int RotateGridDirection(Vector3Int direction, int rotation90)
+        {
+            direction.z = 0;
+            switch (CampusPlacedObject.NormalizeRotation90(rotation90))
+            {
+                case 1:
+                    return new Vector3Int(-direction.y, direction.x, 0);
+                case 2:
+                    return new Vector3Int(-direction.x, -direction.y, 0);
+                case 3:
+                    return new Vector3Int(direction.y, -direction.x, 0);
+                default:
+                    return direction;
+            }
+        }
+
+        private static Vector3Int ResolveDirectedStandCell(
+            CampusGameplayRoom.FacilityRecord record,
+            Vector3Int direction)
+        {
+            Vector3Int origin = record != null ? record.Cell : default;
+            origin.z = 0;
+            Vector2Int size = Vector2Int.one;
+            CampusPlacedObject placedObject = record != null ? record.PlacedObject : null;
+            if (placedObject != null)
+            {
+                size = placedObject.RotatedFootprintSize;
+            }
+
+            size = new Vector2Int(Mathf.Max(1, size.x), Mathf.Max(1, size.y));
+            int minX = origin.x;
+            int maxX = origin.x + size.x - 1;
+            int minY = origin.y;
+            int maxY = origin.y + size.y - 1;
+
+            if (Mathf.Abs(direction.x) >= Mathf.Abs(direction.y) && direction.x != 0)
+            {
+                int y = minY + (size.y - 1) / 2;
+                int x = direction.x > 0 ? maxX + 1 : minX - 1;
+                return new Vector3Int(x, y, 0);
+            }
+
+            int centerX = minX + (size.x - 1) / 2;
+            int edgeY = direction.y > 0 ? maxY + 1 : minY - 1;
+            return new Vector3Int(centerX, edgeY, 0);
+        }
+
+        private List<Vector3Int> BuildFacilityStandCandidates(
+            CampusGameplayRoom room,
+            CampusGameplayRoom.FacilityRecord record)
+        {
+            List<Vector3Int> candidates = new List<Vector3Int>();
+            Vector3Int origin = record.Cell;
+            origin.z = 0;
+            Vector2Int size = Vector2Int.one;
+            CampusPlacedObject placedObject = record.PlacedObject;
+            if (placedObject != null)
+            {
+                size = placedObject.RotatedFootprintSize;
+            }
+
+            size = new Vector2Int(Mathf.Max(1, size.x), Mathf.Max(1, size.y));
+            int minX = origin.x;
+            int maxX = origin.x + size.x - 1;
+            int minY = origin.y;
+            int maxY = origin.y + size.y - 1;
+
+            if (record.FacilityType == CampusFacilityType.StudentDesk)
+            {
+                AddEdgeCells(candidates, minX, maxX, minY - 1);
+                AddVerticalEdgeCells(candidates, minX - 1, minY, maxY);
+                AddVerticalEdgeCells(candidates, maxX + 1, minY, maxY);
+                AddEdgeCells(candidates, minX, maxX, maxY + 1);
+                AddCandidate(candidates, new Vector3Int(minX - 1, minY - 1, 0));
+                AddCandidate(candidates, new Vector3Int(maxX + 1, minY - 1, 0));
+                AddCandidate(candidates, new Vector3Int(minX - 1, maxY + 1, 0));
+                AddCandidate(candidates, new Vector3Int(maxX + 1, maxY + 1, 0));
+                return candidates;
+            }
+
+            AddPerimeterCells(candidates, minX, maxX, minY, maxY);
+            if (record.FacilityType == CampusFacilityType.Door)
+            {
+                Vector3 actorPosition = transform.position;
+                candidates.Sort((left, right) =>
+                    CellDistanceScore(left, actorPosition).CompareTo(CellDistanceScore(right, actorPosition)));
+                return candidates;
+            }
+
+            Vector3 preferredSide = room != null ? room.WorldCenter : transform.position;
+            candidates.Sort((left, right) =>
+                CellDistanceScore(left, preferredSide).CompareTo(CellDistanceScore(right, preferredSide)));
+            return candidates;
+        }
+
+        private bool TryResolveRoomEntryTarget(
+            CampusGameplayRoom room,
+            CampusCharacterTaskDirective directive,
+            out Vector3 entryTarget)
+        {
+            entryTarget = default;
+            if (room == null || directive == null || !ShouldRouteThroughRoomEntry(directive.TaskType))
+            {
+                return false;
+            }
+
+            Vector3Int currentCell = ResolveCurrentCell();
+            if (room.ContainsCell(currentCell))
+            {
+                return false;
+            }
+
+            CampusGameplayRoom.FacilityRecord door = ResolveFacilityRecord(room, CampusFacilityType.Door);
+            if (door != null)
+            {
+                entryTarget = ResolveFacilityStandPosition(room, door, room.WorldCenter);
+                return true;
+            }
+
+            if (TryFindNearestStandableBoundaryCell(room, transform.position, out Vector3Int boundaryCell))
+            {
+                entryTarget = CellCenterToWorld(boundaryCell);
+                return true;
+            }
+
+            return false;
+        }
+
+        private static bool ShouldRouteThroughRoomEntry(CampusCharacterTaskType taskType)
+        {
+            switch (taskType)
+            {
+                case CampusCharacterTaskType.AttendClass:
+                case CampusCharacterTaskType.DozeAtDesk:
+                case CampusCharacterTaskType.TeachClass:
+                case CampusCharacterTaskType.UseOfficeDesk:
+                case CampusCharacterTaskType.RestInDorm:
+                case CampusCharacterTaskType.CheckBulletinBoard:
+                    return true;
+                default:
+                    return false;
+            }
+        }
+
+        private bool TryFindNearestStandableBoundaryCell(CampusGameplayRoom room, Vector3 fromPosition, out Vector3Int result)
+        {
+            result = default;
+            if (room == null || room.MarkerBounds.size.x <= 0 || room.MarkerBounds.size.y <= 0)
+            {
+                return false;
+            }
+
+            float bestScore = float.PositiveInfinity;
+            BoundsInt bounds = room.MarkerBounds;
+            for (int y = bounds.yMin; y < bounds.yMax; y++)
+            {
+                for (int x = bounds.xMin; x < bounds.xMax; x++)
+                {
+                    bool boundary =
+                        x == bounds.xMin ||
+                        x == bounds.xMax - 1 ||
+                        y == bounds.yMin ||
+                        y == bounds.yMax - 1;
+                    if (!boundary)
+                    {
+                        continue;
+                    }
+
+                    Vector3Int cell = new Vector3Int(x, y, 0);
+                    if (!IsStandableRoomCell(room, cell))
+                    {
+                        continue;
+                    }
+
+                    float score = CellDistanceScore(cell, fromPosition);
+                    if (score < bestScore)
+                    {
+                        bestScore = score;
+                        result = cell;
+                    }
+                }
+            }
+
+            return bestScore < float.PositiveInfinity;
+        }
+
+        private bool TryFindNearestStandableRoomCell(CampusGameplayRoom room, Vector3Int fromCell, out Vector3Int result)
+        {
+            result = default;
+            if (room == null || room.MarkerBounds.size.x <= 0 || room.MarkerBounds.size.y <= 0)
+            {
+                return false;
+            }
+
+            float bestScore = float.PositiveInfinity;
+            BoundsInt bounds = room.MarkerBounds;
+            Vector3 fromPosition = CellCenterToWorld(fromCell);
+            for (int y = bounds.yMin; y < bounds.yMax; y++)
+            {
+                for (int x = bounds.xMin; x < bounds.xMax; x++)
+                {
+                    Vector3Int cell = new Vector3Int(x, y, 0);
+                    if (!IsStandableRoomCell(room, cell))
+                    {
+                        continue;
+                    }
+
+                    float score = CellDistanceScore(cell, fromPosition);
+                    if (score < bestScore)
+                    {
+                        bestScore = score;
+                        result = cell;
+                    }
+                }
+            }
+
+            return bestScore < float.PositiveInfinity;
+        }
+
+        private bool IsStandableRoomCell(CampusGameplayRoom room, Vector3Int cell)
+        {
+            cell.z = 0;
+            if (room == null || !room.ContainsCell(cell))
+            {
+                return false;
+            }
+
+            if (room.Facilities == null)
+            {
+                return true;
+            }
+
+            for (int i = 0; i < room.Facilities.Count; i++)
+            {
+                CampusGameplayRoom.FacilityRecord record = room.Facilities[i];
+                CampusPlacedObject placedObject = record != null ? record.PlacedObject : null;
+                if (placedObject != null && placedObject.BlocksMovement && placedObject.ContainsCell(cell))
+                {
+                    return false;
+                }
+            }
+
+            return true;
+        }
+
+        private bool ShouldAvoidOccupiedStandCell(Vector3Int cell)
+        {
+            CampusNpcAgent[] agents = FindObjectsByType<CampusNpcAgent>(FindObjectsInactive.Exclude, FindObjectsSortMode.None);
+            for (int i = 0; i < agents.Length; i++)
+            {
+                CampusNpcAgent other = agents[i];
+                if (other == null || other == this || other.runtime == null || other.runtime.Data == null || other.runtime.Data.IsPlayerControlled)
+                {
+                    continue;
+                }
+
+                if (other.ResolveCurrentCell() == cell)
+                {
+                    return true;
+                }
+
+                if (WorldToCell(other.targetPosition) == cell)
+                {
+                    return true;
+                }
+            }
+
+            return false;
+        }
+
+        private Vector3Int ResolveCurrentCell()
+        {
+            return new Vector3Int(
+                Mathf.FloorToInt(transform.position.x),
+                Mathf.FloorToInt(transform.position.y),
+                0);
+        }
+
+        private static Vector3Int WorldToCell(Vector3 worldPosition)
+        {
+            return new Vector3Int(
+                Mathf.FloorToInt(worldPosition.x),
+                Mathf.FloorToInt(worldPosition.y),
+                0);
+        }
+
+        private Vector3 CellCenterToWorld(Vector3Int cell)
+        {
             return new Vector3(cell.x + 0.5f, cell.y + 0.5f, transform.position.z);
+        }
+
+        private static float CellDistanceScore(Vector3Int cell, Vector3 target)
+        {
+            float x = cell.x + 0.5f - target.x;
+            float y = cell.y + 0.5f - target.y;
+            return x * x + y * y;
+        }
+
+        private static void AddPerimeterCells(List<Vector3Int> candidates, int minX, int maxX, int minY, int maxY)
+        {
+            AddEdgeCells(candidates, minX, maxX, minY - 1);
+            AddEdgeCells(candidates, minX, maxX, maxY + 1);
+            AddVerticalEdgeCells(candidates, minX - 1, minY, maxY);
+            AddVerticalEdgeCells(candidates, maxX + 1, minY, maxY);
+        }
+
+        private static void AddEdgeCells(List<Vector3Int> candidates, int minX, int maxX, int y)
+        {
+            for (int x = minX; x <= maxX; x++)
+            {
+                AddCandidate(candidates, new Vector3Int(x, y, 0));
+            }
+        }
+
+        private static void AddVerticalEdgeCells(List<Vector3Int> candidates, int x, int minY, int maxY)
+        {
+            for (int y = minY; y <= maxY; y++)
+            {
+                AddCandidate(candidates, new Vector3Int(x, y, 0));
+            }
+        }
+
+        private static void AddCandidate(List<Vector3Int> candidates, Vector3Int cell)
+        {
+            if (candidates == null || candidates.Contains(cell))
+            {
+                return;
+            }
+
+            cell.z = 0;
+            candidates.Add(cell);
+        }
+
+        private float ResolvePersonalDelay(float minSeconds, float maxSeconds, int salt)
+        {
+            float min = Mathf.Max(0f, Mathf.Min(minSeconds, maxSeconds));
+            float max = Mathf.Max(min, Mathf.Max(minSeconds, maxSeconds));
+            return Mathf.Lerp(min, max, PseudoRandom01(personalSeed + Mathf.FloorToInt(Time.time * 23f), salt));
+        }
+
+        private static bool IsStrictScheduleTask(CampusCharacterTaskType taskType)
+        {
+            switch (taskType)
+            {
+                case CampusCharacterTaskType.AttendClass:
+                case CampusCharacterTaskType.DozeAtDesk:
+                case CampusCharacterTaskType.TeachClass:
+                case CampusCharacterTaskType.UseOfficeDesk:
+                case CampusCharacterTaskType.RestInDorm:
+                    return true;
+                default:
+                    return false;
+            }
+        }
+
+        private static int StableHash(string value)
+        {
+            unchecked
+            {
+                int hash = 23;
+                if (!string.IsNullOrEmpty(value))
+                {
+                    for (int i = 0; i < value.Length; i++)
+                    {
+                        hash = hash * 31 + value[i];
+                    }
+                }
+
+                return hash == int.MinValue ? int.MaxValue : hash;
+            }
+        }
+
+        private static float PseudoRandom01(int seed, int salt)
+        {
+            unchecked
+            {
+                int value = seed;
+                value ^= salt * 374761393;
+                value = (value << 13) ^ value;
+                int mixed = value * (value * value * 15731 + 789221) + 1376312589;
+                return (mixed & 0x7fffffff) / 2147483647f;
+            }
         }
 
         private Vector3 ResolveOffsetFromPlayer(CampusCharacterRuntime playerRuntime, float desiredDistance)
@@ -831,6 +2334,63 @@ namespace NtingCampus.Gameplay.Characters
             }
         }
 
+        private void HandleStudentDozedOff(CampusStudentDozedOffEvent eventData)
+        {
+            CampusGameplayRoom room = ResolveCurrentRoom();
+            if (room == null || !string.Equals(room.RoomId, eventData.RoomId, StringComparison.OrdinalIgnoreCase))
+            {
+                return;
+            }
+
+            latestRoomDisturbanceAt = Time.time;
+            nextRetargetTime = 0f;
+            if (runtime.CharacterId == eventData.StudentId)
+            {
+                Say("Zzz...", 2.2f, false);
+            }
+            else if (runtime.Data.Role == CampusCharacterRole.Student && runtime.Data.HasTrait(CampusCharacterTrait.Tattletale))
+            {
+                Say("?", 1.4f, false);
+            }
+        }
+
+        private void HandleTeacherDistracted(CampusTeacherDistractedEvent eventData)
+        {
+            CampusGameplayRoom room = ResolveCurrentRoom();
+            if (room == null || !string.Equals(room.RoomId, eventData.RoomId, StringComparison.OrdinalIgnoreCase))
+            {
+                return;
+            }
+
+            latestRoomDisturbanceAt = Time.time;
+            nextRetargetTime = 0f;
+            if (runtime.CharacterId == eventData.TeacherId)
+            {
+                Say("?", 1.6f, false);
+            }
+        }
+
+        private void HandlePlayerSkipClass(CampusPlayerSkipClassEvent eventData)
+        {
+            CampusGameplayRoom room = ResolveCurrentRoom();
+            if (room == null ||
+                !string.Equals(room.RoomId, eventData.FromRoomId, StringComparison.OrdinalIgnoreCase))
+            {
+                return;
+            }
+
+            latestRoomDisturbanceAt = Time.time;
+            nextRetargetTime = 0f;
+            if (eventData.DetectedByTeacher && runtime.Data.Role == CampusCharacterRole.Teacher)
+            {
+                Say("!", 1.7f, false);
+            }
+            else if (!eventData.DetectedByTeacher && runtime.Data.HasTrait(CampusCharacterTrait.Troublemaker))
+            {
+                Say("他溜了？", 1.8f, false);
+            }
+        }
+
         private bool SameRoom(CampusCharacterRuntime otherRuntime, string roomId)
         {
             if (otherRuntime == null || otherRuntime.Data == null || string.IsNullOrWhiteSpace(roomId))
@@ -854,36 +2414,40 @@ namespace NtingCampus.Gameplay.Characters
                 switch (currentTaskType)
                 {
                     case CampusCharacterTaskType.TeachClass:
-                        return "Back to your seat. We are not done here.";
+                        return CampusCharacterTextCatalog.GetDialogue(CampusLanguageState.CurrentLanguage, CampusCharacterDialogueId.TeacherTeachClassInteractive);
                     case CampusCharacterTaskType.InvestigateDisturbance:
-                        return "I am already tracking what happened.";
+                        return CampusCharacterTextCatalog.GetDialogue(CampusLanguageState.CurrentLanguage, CampusCharacterDialogueId.TeacherInvestigateInteractive);
                     case CampusCharacterTaskType.PatrolHallway:
-                        return "Keep the corridor clear and keep moving.";
+                        return CampusCharacterTextCatalog.GetDialogue(CampusLanguageState.CurrentLanguage, CampusCharacterDialogueId.TeacherPatrolInteractive);
                     default:
-                        return "Use your time properly. I am watching.";
+                        return CampusCharacterTextCatalog.GetDialogue(CampusLanguageState.CurrentLanguage, CampusCharacterDialogueId.TeacherDefaultInteractive);
                 }
             }
 
             switch (currentTaskType)
             {
                 case CampusCharacterTaskType.AttendClass:
-                    return data.HasTrait(CampusCharacterTrait.GoodStudent)
-                        ? "I am trying to keep up with the lesson."
-                        : "Can we talk after class instead?";
+                    return CampusCharacterTextCatalog.GetDialogue(
+                        CampusLanguageState.CurrentLanguage,
+                        data.HasTrait(CampusCharacterTrait.GoodStudent)
+                            ? CampusCharacterDialogueId.StudentAttendClassGoodInteractive
+                            : CampusCharacterDialogueId.StudentAttendClassDefaultInteractive);
                 case CampusCharacterTaskType.DozeAtDesk:
-                    return "If I close my eyes for one second, I am finished.";
+                    return CampusCharacterTextCatalog.GetDialogue(CampusLanguageState.CurrentLanguage, CampusCharacterDialogueId.StudentDozeInteractive);
                 case CampusCharacterTaskType.Socialize:
-                    return data.HasTrait(CampusCharacterTrait.Troublemaker)
-                        ? "Something has to happen around here."
-                        : "Breaks go by too fast.";
+                    return CampusCharacterTextCatalog.GetDialogue(
+                        CampusLanguageState.CurrentLanguage,
+                        data.HasTrait(CampusCharacterTrait.Troublemaker)
+                            ? CampusCharacterDialogueId.StudentSocializeTroublemakerInteractive
+                            : CampusCharacterDialogueId.StudentSocializeDefaultInteractive);
                 case CampusCharacterTaskType.AvoidDisturbance:
-                    return "No chance. I am not taking the blame for this.";
+                    return CampusCharacterTextCatalog.GetDialogue(CampusLanguageState.CurrentLanguage, CampusCharacterDialogueId.StudentAvoidDisturbanceInteractive);
                 case CampusCharacterTaskType.CheckBulletinBoard:
-                    return "There is always something worth noticing on the board.";
+                    return CampusCharacterTextCatalog.GetDialogue(CampusLanguageState.CurrentLanguage, CampusCharacterDialogueId.StudentCheckBulletinInteractive);
                 case CampusCharacterTaskType.RestInDorm:
-                    return "I just need a quiet corner for a while.";
+                    return CampusCharacterTextCatalog.GetDialogue(CampusLanguageState.CurrentLanguage, CampusCharacterDialogueId.StudentRestDormInteractive);
                 default:
-                    return "I am keeping my head down.";
+                    return CampusCharacterTextCatalog.GetDialogue(CampusLanguageState.CurrentLanguage, CampusCharacterDialogueId.StudentDefaultInteractive);
             }
         }
 
@@ -892,29 +2456,41 @@ namespace NtingCampus.Gameplay.Characters
             switch (currentTaskType)
             {
                 case CampusCharacterTaskType.AttendClass:
-                    return runtime.Data.HasTrait(CampusCharacterTrait.GoodStudent) ? "Need to remember this." : "Back to the page...";
+                    return CampusCharacterTextCatalog.GetDialogue(
+                        CampusLanguageState.CurrentLanguage,
+                        runtime.Data.HasTrait(CampusCharacterTrait.GoodStudent)
+                            ? CampusCharacterDialogueId.StudentAttendClassGoodAmbient
+                            : CampusCharacterDialogueId.StudentAttendClassDefaultAmbient);
                 case CampusCharacterTaskType.DozeAtDesk:
-                    return "Just staying awake...";
+                    return CampusCharacterTextCatalog.GetDialogue(CampusLanguageState.CurrentLanguage, CampusCharacterDialogueId.StudentDozeAmbient);
                 case CampusCharacterTaskType.TeachClass:
-                    return "Eyes on the lesson.";
+                    return CampusCharacterTextCatalog.GetDialogue(CampusLanguageState.CurrentLanguage, CampusCharacterDialogueId.TeacherTeachClassAmbient);
                 case CampusCharacterTaskType.PatrolHallway:
-                    return "Hallway stays clear.";
+                    return CampusCharacterTextCatalog.GetDialogue(CampusLanguageState.CurrentLanguage, CampusCharacterDialogueId.TeacherPatrolAmbient);
                 case CampusCharacterTaskType.UseOfficeDesk:
-                    return "Another report, another delay.";
+                    return CampusCharacterTextCatalog.GetDialogue(CampusLanguageState.CurrentLanguage, CampusCharacterDialogueId.TeacherOfficeAmbient);
                 case CampusCharacterTaskType.RestInDorm:
-                    return "Finally, a quieter room.";
+                    return CampusCharacterTextCatalog.GetDialogue(CampusLanguageState.CurrentLanguage, CampusCharacterDialogueId.StudentRestDormAmbient);
                 case CampusCharacterTaskType.WanderCommonArea:
-                    return "Break is not long enough.";
+                    return CampusCharacterTextCatalog.GetDialogue(CampusLanguageState.CurrentLanguage, CampusCharacterDialogueId.StudentWanderAmbient);
                 case CampusCharacterTaskType.CheckBulletinBoard:
-                    return "Someone always posts something interesting.";
+                    return CampusCharacterTextCatalog.GetDialogue(CampusLanguageState.CurrentLanguage, CampusCharacterDialogueId.StudentCheckBulletinAmbient);
                 case CampusCharacterTaskType.Socialize:
-                    return runtime.Data.HasTrait(CampusCharacterTrait.Troublemaker) ? "This room needs a spark." : "What happened back there?";
+                    return CampusCharacterTextCatalog.GetDialogue(
+                        CampusLanguageState.CurrentLanguage,
+                        runtime.Data.HasTrait(CampusCharacterTrait.Troublemaker)
+                            ? CampusCharacterDialogueId.StudentSocializeTroublemakerAmbient
+                            : CampusCharacterDialogueId.StudentSocializeDefaultAmbient);
                 case CampusCharacterTaskType.InvestigateDisturbance:
-                    return "No more whispers.";
+                    return CampusCharacterTextCatalog.GetDialogue(CampusLanguageState.CurrentLanguage, CampusCharacterDialogueId.TeacherInvestigateAmbient);
                 case CampusCharacterTaskType.AvoidDisturbance:
-                    return "Do not drag me into it.";
+                    return CampusCharacterTextCatalog.GetDialogue(CampusLanguageState.CurrentLanguage, CampusCharacterDialogueId.StudentAvoidDisturbanceAmbient);
                 default:
-                    return runtime.Data.Role == CampusCharacterRole.Teacher ? "Quiet room, good." : "Mm.";
+                    return CampusCharacterTextCatalog.GetDialogue(
+                        CampusLanguageState.CurrentLanguage,
+                        runtime.Data.Role == CampusCharacterRole.Teacher
+                            ? CampusCharacterDialogueId.TeacherDefaultAmbient
+                            : CampusCharacterDialogueId.StudentDefaultAmbient);
             }
         }
 
@@ -927,14 +2503,17 @@ namespace NtingCampus.Gameplay.Characters
 
             if (writeToLog && bootstrap != null && bootstrap.EventLog != null)
             {
-                bootstrap.EventLog.AddLog("[Talk] " + ResolveDisplayName() + ": " + line);
+                bootstrap.EventLog.AddLog(CampusCharacterTextCatalog.FormatTalkLog(
+                    CampusLanguageState.CurrentLanguage,
+                    ResolveDisplayName(),
+                    line));
             }
         }
 
         private string ResolveDisplayName()
         {
-            return runtime != null && runtime.Data != null && !string.IsNullOrWhiteSpace(runtime.Data.DisplayName)
-                ? runtime.Data.DisplayName
+            return runtime != null && runtime.Data != null
+                ? runtime.Data.GetDisplayName(CampusLanguageState.CurrentLanguage)
                 : gameObject.name;
         }
 
@@ -1048,6 +2627,23 @@ namespace NtingCampus.Gameplay.Characters
         {
             Color32 c = color;
             return (c.r << 16) | (c.g << 8) | c.b;
+        }
+
+        private sealed class PathNode
+        {
+            public PathNode(Vector3Int cell, float costFromStart, float estimatedCost, PathNode parent)
+            {
+                Cell = cell;
+                CostFromStart = costFromStart;
+                EstimatedCost = estimatedCost;
+                Parent = parent;
+            }
+
+            public Vector3Int Cell { get; }
+            public float CostFromStart { get; set; }
+            public float EstimatedCost { get; }
+            public float TotalCost => CostFromStart + EstimatedCost;
+            public PathNode Parent { get; set; }
         }
     }
 }

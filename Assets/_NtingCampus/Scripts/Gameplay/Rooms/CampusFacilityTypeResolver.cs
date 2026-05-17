@@ -98,51 +98,67 @@ namespace NtingCampus.Gameplay.Rooms
             rules.Add(new FacilityRule
             {
                 FacilityType = nameof(CampusFacilityType.Door),
-                ObjectIds = new[] { "door", "门" },
-                DisplayNames = new[] { "door", "门" },
-                Contains = new[] { "door", "门" }
+                ObjectIds = new[] { "door", "\u95e8" },
+                DisplayNames = new[] { "door", "\u95e8" },
+                Contains = new[] { "door", "\u95e8" }
+            });
+            rules.Add(new FacilityRule
+            {
+                FacilityType = nameof(CampusFacilityType.Podium),
+                DisplayNames = new[] { "podium", "teacher podium", "\u8bb2\u53f0", "\u6559\u5e08\u8bb2\u53f0" },
+                Contains = new[] { "podium", "teacher_podium", "teacherpodium", "\u8bb2\u53f0" }
+            });
+            rules.Add(new FacilityRule
+            {
+                FacilityType = nameof(CampusFacilityType.Blackboard),
+                DisplayNames = new[] { "blackboard", "whiteboard", "\u9ed1\u677f", "\u767d\u677f" },
+                Contains = new[] { "blackboard", "whiteboard", "chalkboard", "\u9ed1\u677f", "\u767d\u677f" }
+            });
+            rules.Add(new FacilityRule
+            {
+                FacilityType = nameof(CampusFacilityType.OfficeDesk),
+                DisplayNames = new[] { "office desk", "teacher desk", "\u529e\u516c\u684c", "\u6559\u5e08\u684c" },
+                Contains = new[] { "office_desk", "officedesk", "teacher_desk", "teacherdesk", "\u529e\u516c\u684c", "\u6559\u5e08\u684c" }
             });
             rules.Add(new FacilityRule
             {
                 FacilityType = nameof(CampusFacilityType.StudentDesk),
                 ObjectIds = new[] { "desk_1x1" },
-                DisplayNames = new[] { "desk", "student desk", "课桌", "书桌" },
-                Contains = new[] { "studentdesk", "student_desk", "课桌", "书桌" }
+                DisplayNames = new[] { "desk", "student desk", "\u8bfe\u684c", "\u4e66\u684c" },
+                Contains = new[] { "studentdesk", "student_desk", "\u8bfe\u684c", "\u4e66\u684c" }
             });
             rules.Add(new FacilityRule
             {
                 FacilityType = nameof(CampusFacilityType.Chair),
                 ObjectIds = new[] { "chair_1x2", "side_chair", "wooden_chair" },
-                DisplayNames = new[] { "chair", "椅子" },
-                Contains = new[] { "chair", "椅" }
+                DisplayNames = new[] { "chair", "\u6905\u5b50" },
+                Contains = new[] { "chair", "\u6905\u5b50" }
             });
             rules.Add(new FacilityRule
             {
                 FacilityType = nameof(CampusFacilityType.Bed),
                 ObjectIds = new[] { "bed" },
-                DisplayNames = new[] { "bed", "床" },
-                Contains = new[] { "bed", "床" }
+                DisplayNames = new[] { "bed", "\u5e8a" },
+                Contains = new[] { "bed", "\u5e8a" }
             });
             rules.Add(new FacilityRule
             {
                 FacilityType = nameof(CampusFacilityType.BulletinBoard),
-                ObjectIds = new[] { "公告栏_1x1" },
-                DisplayNames = new[] { "bulletin board", "公告栏" },
-                Contains = new[] { "bulletin", "公告栏" }
+                DisplayNames = new[] { "bulletin board", "\u516c\u544a\u680f" },
+                Contains = new[] { "bulletin", "\u516c\u544a\u680f" }
             });
             rules.Add(new FacilityRule
             {
                 FacilityType = nameof(CampusFacilityType.Sink),
                 ObjectIds = new[] { "rotating_sink" },
-                DisplayNames = new[] { "sink", "洗手池", "水池" },
-                Contains = new[] { "sink", "洗手池", "水池" }
+                DisplayNames = new[] { "sink", "\u6d17\u624b\u6c60", "\u6c34\u6c60" },
+                Contains = new[] { "sink", "\u6d17\u624b\u6c60", "\u6c34\u6c60" }
             });
             rules.Add(new FacilityRule
             {
                 FacilityType = nameof(CampusFacilityType.Storage),
-                ObjectIds = new[] { "测试箱" },
-                DisplayNames = new[] { "storage", "储物", "箱" },
-                Contains = new[] { "storage", "box", "箱" }
+                DisplayNames = new[] { "storage", "\u50a8\u7269" },
+                Contains = new[] { "storage", "box", "\u50a8\u7269", "\u7bb1" }
             });
         }
 

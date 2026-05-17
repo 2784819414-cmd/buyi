@@ -24,6 +24,7 @@ namespace NtingCampus.Gameplay.Pranks
         [SerializeField] private CampusWorldService worldService;
         [SerializeField] private CampusRosterService rosterService;
         [SerializeField] private CampusScheduleService scheduleService;
+        [SerializeField] private CampusClassroomLoopService classroomLoopService;
         [SerializeField] private CampusGameplayEventHub gameplayEventHub;
         [SerializeField, Min(0.1f)] private float prankCooldownSeconds = 1.25f;
         [SerializeField, Min(1)] private int basePassNoteReward = 5;
@@ -43,6 +44,7 @@ namespace NtingCampus.Gameplay.Pranks
             worldService = bootstrap != null ? bootstrap.WorldService : null;
             rosterService = bootstrap != null ? bootstrap.RosterService : null;
             scheduleService = bootstrap != null ? bootstrap.ScheduleService : null;
+            classroomLoopService = bootstrap != null ? bootstrap.ClassroomLoopService : null;
             gameplayEventHub = bootstrap != null ? bootstrap.GameplayEventHub : null;
 
             if (bootstrap != null && bootstrap.TimeController != null)
@@ -159,14 +161,17 @@ namespace NtingCampus.Gameplay.Pranks
                 true));
 
             int reward = ResolvePassNoteReward();
-            bool detected = teacherRuntime != null && RollTeacherDetection();
+            bool teacherDistracted = classroomLoopService != null && classroomLoopService.IsTeacherDistractedInRoom(classroom.RoomId);
+            bool detected = teacherRuntime != null && RollTeacherDetection(classroom.RoomId);
             bool succeeded = !detected;
 
-            playerRuntime.Data.AddMemory("passed_note_today");
-            targetStudent.Data.AddMemory("received_note_from_player");
+            playerRuntime.Data.AddMemory(CampusCharacterMemoryId.PassedNoteToday);
+            targetStudent.Data.AddMemory(CampusCharacterMemoryId.ReceivedNoteFromPlayer);
             if (teacherRuntime != null && teacherRuntime.Data != null)
             {
-                teacherRuntime.Data.AddMemory(detected ? "caught_note_passing" : "saw_restless_classroom");
+                teacherRuntime.Data.AddMemory(detected
+                    ? CampusCharacterMemoryId.CaughtNotePassing
+                    : CampusCharacterMemoryId.SawRestlessClassroom);
             }
 
             if (succeeded)
@@ -176,7 +181,9 @@ namespace NtingCampus.Gameplay.Pranks
                 bootstrap.GameState.AddDivineInterest(5);
                 bootstrap.GameState.AddTeacherAlertness(1);
                 bootstrap.GameState.UnlockShrineRoom();
-                WriteLog("[Prank] You passed the note cleanly. Divine Power +" + reward + ".");
+                WriteLog(teacherDistracted
+                    ? "[Prank] 老师正被睡着的同学吸引，你把纸条递了过去。Divine Power +" + reward + "."
+                    : "[Prank] You passed the note cleanly. Divine Power +" + reward + ".");
             }
             else
             {
@@ -258,10 +265,15 @@ namespace NtingCampus.Gameplay.Pranks
             }
         }
 
-        private bool RollTeacherDetection()
+        private bool RollTeacherDetection(string roomId)
         {
             int alertness = bootstrap != null && bootstrap.GameState != null ? bootstrap.GameState.TeacherAlertness : 0;
             float detectionChance = Mathf.Clamp01(0.15f + alertness / 100f * 0.55f);
+            if (classroomLoopService != null && classroomLoopService.IsTeacherDistractedInRoom(roomId))
+            {
+                detectionChance *= 0.35f;
+            }
+
             return Random.value < detectionChance;
         }
 

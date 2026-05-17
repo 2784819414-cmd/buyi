@@ -1,6 +1,6 @@
 ﻿{
     "ObjectId": "Cafeteria_Counter_4x1",
-    "DisplayNameOverride": "",
+    "DisplayNameOverride": "podium",
     "OverrideFootprintSize": true,
     "FootprintSize": {
         "x": 4,
@@ -11,6 +11,7 @@
         "y": 0.5
     },
     "LockVisualScaleAspect": true,
+    "IsWallMounted": false,
     "OverrideAllowRotation": false,
     "AllowRotation": false,
     "OverrideRotation0Sprite": false,
@@ -21,6 +22,12 @@
     "Rotation180SpritePath": "",
     "OverrideRotation270Sprite": false,
     "Rotation270SpritePath": "",
+    "IsStorageContainer": false,
+    "StorageSize": {
+        "x": 4,
+        "y": 4
+    },
+    "StorageMaxWeight": 12.0,
     "UseCustomInteractionAnchor": true,
     "CustomInteractionAnchorLocalPosition": {
         "x": 0.0,

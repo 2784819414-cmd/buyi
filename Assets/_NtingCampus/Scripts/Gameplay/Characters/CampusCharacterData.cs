@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using NtingCampus.Gameplay.UI;
 using UnityEngine;
 
 namespace NtingCampus.Gameplay.Characters
@@ -8,7 +9,8 @@ namespace NtingCampus.Gameplay.Characters
     public sealed class CampusCharacterData
     {
         [SerializeField] private string id = string.Empty;
-        [SerializeField] private string displayName = string.Empty;
+        [SerializeField] private string legacyDisplayName = string.Empty;
+        [SerializeField] private CampusLocalizedText localizedDisplayName;
         [SerializeField] private CampusCharacterRole role = CampusCharacterRole.Student;
         [SerializeField] private CampusTeacherDuty teacherDuty = CampusTeacherDuty.None;
         [SerializeField] private string classId = string.Empty;
@@ -23,10 +25,11 @@ namespace NtingCampus.Gameplay.Characters
         [SerializeField, Min(0)] private int masteryMath;
         [SerializeField, Min(0)] private int warningCountToday;
         [SerializeField] private List<CampusCharacterTrait> traits = new List<CampusCharacterTrait>();
-        [SerializeField] private List<string> memories = new List<string>();
+        [SerializeField] private List<CampusCharacterMemoryId> memories = new List<CampusCharacterMemoryId>();
 
         public string Id => id;
-        public string DisplayName => displayName;
+        public string DisplayName => GetDisplayName(CampusLanguageState.CurrentLanguage);
+        public CampusLocalizedText LocalizedDisplayName => localizedDisplayName;
         public CampusCharacterRole Role => role;
         public CampusTeacherDuty TeacherDuty => teacherDuty;
         public string ClassId => classId;
@@ -41,11 +44,12 @@ namespace NtingCampus.Gameplay.Characters
         public int MasteryMath => masteryMath;
         public int WarningCountToday => warningCountToday;
         public IReadOnlyList<CampusCharacterTrait> Traits => traits;
-        public IReadOnlyList<string> Memories => memories;
+        public IReadOnlyList<CampusCharacterMemoryId> Memories => memories;
 
         public void Configure(
             string characterId,
-            string characterName,
+            string legacyCharacterName,
+            CampusLocalizedText characterName,
             CampusCharacterRole characterRole,
             CampusTeacherDuty duties,
             string characterClassId,
@@ -56,7 +60,8 @@ namespace NtingCampus.Gameplay.Characters
             IEnumerable<CampusCharacterTrait> characterTraits)
         {
             id = string.IsNullOrWhiteSpace(characterId) ? Guid.NewGuid().ToString("N") : characterId.Trim();
-            displayName = string.IsNullOrWhiteSpace(characterName) ? id : characterName.Trim();
+            legacyDisplayName = string.IsNullOrWhiteSpace(legacyCharacterName) ? string.Empty : legacyCharacterName.Trim();
+            localizedDisplayName = characterName;
             role = characterRole;
             teacherDuty = duties;
             classId = string.IsNullOrWhiteSpace(characterClassId) ? string.Empty : characterClassId.Trim();
@@ -71,7 +76,7 @@ namespace NtingCampus.Gameplay.Characters
             warningCountToday = 0;
             currentRoomId = string.Empty;
             traits = characterTraits != null ? new List<CampusCharacterTrait>(characterTraits) : new List<CampusCharacterTrait>();
-            memories = new List<string>(5);
+            memories = new List<CampusCharacterMemoryId>(5);
         }
 
         public void SetCurrentRoom(string roomId)
@@ -149,19 +154,29 @@ namespace NtingCampus.Gameplay.Characters
             return false;
         }
 
-        public void AddMemory(string memory)
+        public string GetDisplayName(CampusDisplayLanguage language)
         {
-            if (string.IsNullOrWhiteSpace(memory))
+            return localizedDisplayName.Get(language, legacyDisplayName, id);
+        }
+
+        public string GetPreferredObjectName()
+        {
+            return localizedDisplayName.ResolvePrimary(legacyDisplayName, id);
+        }
+
+        public void AddMemory(CampusCharacterMemoryId memory)
+        {
+            if (memory == CampusCharacterMemoryId.None)
             {
                 return;
             }
 
             if (memories == null)
             {
-                memories = new List<string>(5);
+                memories = new List<CampusCharacterMemoryId>(5);
             }
 
-            memories.Add(memory.Trim());
+            memories.Add(memory);
             const int maxMemoryCount = 5;
             if (memories.Count > maxMemoryCount)
             {

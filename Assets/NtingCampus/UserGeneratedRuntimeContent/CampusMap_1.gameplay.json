@@ -5,6 +5,7 @@
     {
       "Id": "player_lixiaonao",
       "DisplayName": "LiXiaonao",
+      "LocalizedDisplayName": { "chinese": "\u674e\u5c0f\u95f9", "english": "LiXiaonao" },
       "Role": 0,
       "TeacherDuty": 0,
       "ClassId": "class_1",
@@ -19,6 +20,7 @@
     {
       "Id": "student_sunxiaotao",
       "DisplayName": "SunXiaotao",
+      "LocalizedDisplayName": { "chinese": "\u5b59\u5c0f\u6843", "english": "SunXiaotao" },
       "Role": 0,
       "TeacherDuty": 0,
       "ClassId": "class_1",
@@ -33,6 +35,7 @@
     {
       "Id": "student_qiaomianmian",
       "DisplayName": "QiaoMianmian",
+      "LocalizedDisplayName": { "chinese": "\u4e54\u7ef5\u7ef5", "english": "QiaoMianmian" },
       "Role": 0,
       "TeacherDuty": 0,
       "ClassId": "class_1",
@@ -47,6 +50,7 @@
     {
       "Id": "student_xuaiying",
       "DisplayName": "XuAiying",
+      "LocalizedDisplayName": { "chinese": "\u5f90\u7231\u82f1", "english": "XuAiying" },
       "Role": 0,
       "TeacherDuty": 0,
       "ClassId": "class_1",
@@ -61,6 +65,7 @@
     {
       "Id": "student_luowan",
       "DisplayName": "LuoWan",
+      "LocalizedDisplayName": { "chinese": "\u7f57\u665a", "english": "LuoWan" },
       "Role": 0,
       "TeacherDuty": 0,
       "ClassId": "class_2",
@@ -75,6 +80,7 @@
     {
       "Id": "student_shenmeng",
       "DisplayName": "ShenMeng",
+      "LocalizedDisplayName": { "chinese": "\u6c88\u68a6", "english": "ShenMeng" },
       "Role": 0,
       "TeacherDuty": 0,
       "ClassId": "class_2",
@@ -89,6 +95,7 @@
     {
       "Id": "student_heyulu",
       "DisplayName": "HeYulu",
+      "LocalizedDisplayName": { "chinese": "\u4f55\u96e8\u9732", "english": "HeYulu" },
       "Role": 0,
       "TeacherDuty": 0,
       "ClassId": "class_2",
@@ -103,6 +110,7 @@
     {
       "Id": "student_zhouxin",
       "DisplayName": "ZhouXin",
+      "LocalizedDisplayName": { "chinese": "\u5468\u6b23", "english": "ZhouXin" },
       "Role": 0,
       "TeacherDuty": 0,
       "ClassId": "class_2",
@@ -117,6 +125,7 @@
     {
       "Id": "student_pengzihao",
       "DisplayName": "PengZihao",
+      "LocalizedDisplayName": { "chinese": "\u5f6d\u5b50\u8c6a", "english": "PengZihao" },
       "Role": 0,
       "TeacherDuty": 0,
       "ClassId": "class_2",
@@ -131,6 +140,7 @@
     {
       "Id": "student_linshuang",
       "DisplayName": "LinShuang",
+      "LocalizedDisplayName": { "chinese": "\u6797\u971c", "english": "LinShuang" },
       "Role": 0,
       "TeacherDuty": 0,
       "ClassId": "class_3",
@@ -145,6 +155,7 @@
     {
       "Id": "student_tangyue",
       "DisplayName": "TangYue",
+      "LocalizedDisplayName": { "chinese": "\u5510\u6708", "english": "TangYue" },
       "Role": 0,
       "TeacherDuty": 0,
       "ClassId": "class_3",
@@ -159,6 +170,7 @@
     {
       "Id": "student_wuyan",
       "DisplayName": "WuYan",
+      "LocalizedDisplayName": { "chinese": "\u5434\u598d", "english": "WuYan" },
       "Role": 0,
       "TeacherDuty": 0,
       "ClassId": "class_3",
@@ -173,6 +185,7 @@
     {
       "Id": "student_gaojin",
       "DisplayName": "GaoJin",
+      "LocalizedDisplayName": { "chinese": "\u9ad8\u664b", "english": "GaoJin" },
       "Role": 0,
       "TeacherDuty": 0,
       "ClassId": "class_3",
@@ -187,6 +200,7 @@
     {
       "Id": "student_cenya",
       "DisplayName": "CenYa",
+      "LocalizedDisplayName": { "chinese": "\u5c91\u96c5", "english": "CenYa" },
       "Role": 0,
       "TeacherDuty": 0,
       "ClassId": "class_3",
@@ -201,6 +215,7 @@
     {
       "Id": "teacher_linyuwen",
       "DisplayName": "LinYuwen",
+      "LocalizedDisplayName": { "chinese": "\u6797\u8bed\u6587", "english": "LinYuwen" },
       "Role": 1,
       "TeacherDuty": 1,
       "ClassId": "class_1",
@@ -215,6 +230,7 @@
     {
       "Id": "teacher_zhouxin",
       "DisplayName": "ZhouXinTeacher",
+      "LocalizedDisplayName": { "chinese": "\u5468\u6b23\u8001\u5e08", "english": "ZhouXinTeacher" },
       "Role": 1,
       "TeacherDuty": 10,
       "ClassId": "class_2",
@@ -229,6 +245,7 @@
     {
       "Id": "teacher_suqin",
       "DisplayName": "SuQin",
+      "LocalizedDisplayName": { "chinese": "\u82cf\u7434", "english": "SuQin" },
       "Role": 1,
       "TeacherDuty": 5,
       "ClassId": "class_3",

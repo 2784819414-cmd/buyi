@@ -271,6 +271,7 @@ namespace NtingCampus.Gameplay.UI
             data.Configure(
                 actor.Id,
                 actor.DisplayName,
+                actor.LocalizedDisplayName,
                 actor.Role,
                 actor.TeacherDuty,
                 actor.ClassId,
@@ -519,6 +520,7 @@ namespace NtingCampus.Gameplay.UI
     {
         public string Id = string.Empty;
         public string DisplayName = string.Empty;
+        public CampusLocalizedText LocalizedDisplayName;
         public CampusCharacterRole Role = CampusCharacterRole.Student;
         public CampusTeacherDuty TeacherDuty = CampusTeacherDuty.None;
         public string ClassId = "class_1";

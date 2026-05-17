@@ -39,6 +39,8 @@ namespace NtingCampus.Gameplay.Sanctions
             {
                 gameplayEventHub.PrankResolved -= HandlePrankResolved;
                 gameplayEventHub.PrankResolved += HandlePrankResolved;
+                gameplayEventHub.PlayerSkipClass -= HandlePlayerSkipClass;
+                gameplayEventHub.PlayerSkipClass += HandlePlayerSkipClass;
             }
         }
 
@@ -47,6 +49,7 @@ namespace NtingCampus.Gameplay.Sanctions
             if (gameplayEventHub != null)
             {
                 gameplayEventHub.PrankResolved -= HandlePrankResolved;
+                gameplayEventHub.PlayerSkipClass -= HandlePlayerSkipClass;
             }
         }
 
@@ -63,6 +66,37 @@ namespace NtingCampus.Gameplay.Sanctions
                 return;
             }
 
+            IssueDetectedRuleBreak(playerRuntime, eventData.RoomId, string.Empty);
+        }
+
+        private void HandlePlayerSkipClass(CampusPlayerSkipClassEvent eventData)
+        {
+            if (!eventData.DetectedByTeacher || bootstrap == null || bootstrap.GameState == null)
+            {
+                return;
+            }
+
+            CampusCharacterRuntime playerRuntime = rosterService != null ? rosterService.FindRuntime(eventData.ActorId) : null;
+            if (playerRuntime == null || playerRuntime.Data == null)
+            {
+                return;
+            }
+
+            IssueDetectedRuleBreak(playerRuntime, eventData.FromRoomId, "[处分] 逃课被老师撞见。");
+        }
+
+        private void IssueDetectedRuleBreak(CampusCharacterRuntime playerRuntime, string roomId, string prefaceLog)
+        {
+            if (playerRuntime == null || playerRuntime.Data == null || bootstrap == null || bootstrap.GameState == null)
+            {
+                return;
+            }
+
+            if (!string.IsNullOrWhiteSpace(prefaceLog) && bootstrap.EventLog != null)
+            {
+                bootstrap.EventLog.AddLog(prefaceLog);
+            }
+
             int warningCount = bootstrap.GameState.DailyWarningCount + 1;
             bootstrap.GameState.SetDailyWarningCount(warningCount);
             bootstrap.GameState.AddTeacherAlertness(4);
@@ -74,7 +108,7 @@ namespace NtingCampus.Gameplay.Sanctions
 
             gameplayEventHub?.PublishSanctionIssued(new CampusSanctionIssuedEvent(
                 playerRuntime.CharacterId,
-                eventData.RoomId,
+                roomId,
                 level,
                 warningCount));
 
@@ -123,17 +157,28 @@ namespace NtingCampus.Gameplay.Sanctions
             switch (level)
             {
                 case CampusSanctionLevel.Warning:
-                    bootstrap.EventLog.AddLog("[Sanction] " + playerRuntime.Data.DisplayName + " received a verbal warning.");
+                    bootstrap.EventLog.AddLog(CampusCharacterTextCatalog.FormatSanctionIssued(
+                        UI.CampusLanguageState.CurrentLanguage,
+                        playerRuntime.Data.GetDisplayName(UI.CampusLanguageState.CurrentLanguage),
+                        level));
                     break;
                 case CampusSanctionLevel.Reprimand:
-                    bootstrap.EventLog.AddLog("[Sanction] " + playerRuntime.Data.DisplayName + " was reprimanded in class.");
+                    bootstrap.EventLog.AddLog(CampusCharacterTextCatalog.FormatSanctionIssued(
+                        UI.CampusLanguageState.CurrentLanguage,
+                        playerRuntime.Data.GetDisplayName(UI.CampusLanguageState.CurrentLanguage),
+                        level));
                     break;
                 case CampusSanctionLevel.OfficePunishment:
-                    bootstrap.EventLog.AddLog("[Sanction] " + playerRuntime.Data.DisplayName + " was sent to the office.");
+                    bootstrap.EventLog.AddLog(CampusCharacterTextCatalog.FormatSanctionIssued(
+                        UI.CampusLanguageState.CurrentLanguage,
+                        playerRuntime.Data.GetDisplayName(UI.CampusLanguageState.CurrentLanguage),
+                        level));
                     break;
             }
 
-            bootstrap.EventLog.AddLog("[Sanction] Daily warnings = " + warningCount + ".");
+            bootstrap.EventLog.AddLog(CampusCharacterTextCatalog.FormatDailyWarnings(
+                UI.CampusLanguageState.CurrentLanguage,
+                warningCount));
         }
 
         private static CampusSanctionLevel ResolveLevel(int warningCount)

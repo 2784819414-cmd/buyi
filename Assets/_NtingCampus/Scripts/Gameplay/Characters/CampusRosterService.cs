@@ -107,7 +107,9 @@ namespace NtingCampus.Gameplay.Characters
 
             if (bootstrap != null && bootstrap.EventLog != null)
             {
-                bootstrap.EventLog.AddLog("[System] Player control switched to " + playerRuntime.Data.DisplayName + ".");
+                bootstrap.EventLog.AddLog(CampusCharacterTextCatalog.FormatPlayerControlSwitched(
+                    CampusLanguageState.CurrentLanguage,
+                    playerRuntime.Data.GetDisplayName(CampusLanguageState.CurrentLanguage)));
             }
 
             return true;
@@ -319,10 +321,15 @@ namespace NtingCampus.Gameplay.Characters
                 return;
             }
 
-            bootstrap.EventLog.AddLog("[System] Scene roster ready. Students=" + StudentCount + ", Teachers=" + TeacherCount + ".");
+            bootstrap.EventLog.AddLog(CampusCharacterTextCatalog.FormatSceneRosterReady(
+                CampusLanguageState.CurrentLanguage,
+                StudentCount,
+                TeacherCount));
             if (playerRuntime != null && playerRuntime.Data != null)
             {
-                bootstrap.EventLog.AddLog("[System] Player character bound to " + playerRuntime.Data.DisplayName + ".");
+                bootstrap.EventLog.AddLog(CampusCharacterTextCatalog.FormatPlayerCharacterBound(
+                    CampusLanguageState.CurrentLanguage,
+                    playerRuntime.Data.GetDisplayName(CampusLanguageState.CurrentLanguage)));
             }
         }
 

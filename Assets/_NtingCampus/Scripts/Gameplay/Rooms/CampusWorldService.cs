@@ -71,8 +71,8 @@ namespace NtingCampus.Gameplay.Rooms
             }
 
             Vector3Int cell = new Vector3Int(
-                Mathf.RoundToInt(worldPosition.x),
-                Mathf.RoundToInt(worldPosition.y),
+                Mathf.FloorToInt(worldPosition.x),
+                Mathf.FloorToInt(worldPosition.y),
                 0);
             return roomRegistry.FindRoomByCell(floorIndex, cell);
         }
@@ -84,6 +84,12 @@ namespace NtingCampus.Gameplay.Rooms
                 return null;
             }
 
+            CampusGameplayRoom positionRoom = FindRoomForPosition(ResolveFloorIndex(runtime), runtime.transform.position);
+            if (positionRoom != null)
+            {
+                return positionRoom;
+            }
+
             if (runtime.Data != null && !string.IsNullOrWhiteSpace(runtime.Data.CurrentRoomId))
             {
                 CampusGameplayRoom boundRoom = FindRoomById(runtime.Data.CurrentRoomId);
@@ -93,7 +99,7 @@ namespace NtingCampus.Gameplay.Rooms
                 }
             }
 
-            return FindRoomForPosition(ResolveFloorIndex(runtime), runtime.transform.position);
+            return null;
         }
 
         private int ResolveFloorIndex(CampusCharacterRuntime runtime)

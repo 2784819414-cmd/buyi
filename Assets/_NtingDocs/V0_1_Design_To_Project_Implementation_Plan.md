@@ -58,7 +58,6 @@
 
 - 这是储物/道具层，不是恶作剧、搜查、证据、学习或外卖事件系统。
 - `StorageDemoBootstrap` 只负责测试数据，不应成为正式流程入口。
-- 另有 `Assets/_NtingCampus/Scripts/InventoryGrid` 早期 InventoryGrid MVP，与 `_Nting/UI/Storage` 功能重叠。V0.1 应选 `_Nting/UI/Storage` 作为正式路线，避免两套库存系统并行接入。
 
 ### 1.3 `Assets/_NtingCampus/Scripts/Gameplay/Core`
 

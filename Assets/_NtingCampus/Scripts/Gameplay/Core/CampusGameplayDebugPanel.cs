@@ -3,6 +3,7 @@ using NtingCampus.Gameplay.Characters;
 using NtingCampus.Gameplay.Modes;
 using NtingCampus.Gameplay.Pranks;
 using NtingCampus.Gameplay.Sanctions;
+using NtingCampus.Gameplay.Schedule;
 using NtingCampus.Gameplay.UI;
 using NtingCampusMapEditor;
 using UnityEngine;
@@ -18,6 +19,7 @@ namespace NtingCampus.Gameplay.Core
         [SerializeField] private CampusGameBootstrap bootstrap;
         [SerializeField] private CampusPrankService prankService;
         [SerializeField] private CampusSanctionService sanctionService;
+        [SerializeField] private CampusClassroomLoopService classroomLoopService;
         [SerializeField] private CampusDisplayLanguage defaultLanguage = CampusDisplayLanguage.Chinese;
         [SerializeField, Range(0.5f, 1.5f)] private float uiScaleSensitivity = 1f;
         [SerializeField, Range(0f, 1f)] private float uiScaleMatchWidthOrHeight = 0.45f;
@@ -65,6 +67,7 @@ namespace NtingCampus.Gameplay.Core
             CampusRosterService rosterService = targetBootstrap.RosterService;
             CampusPrankService targetPrankService = ResolvePrankService();
             CampusSanctionService targetSanctionService = ResolveSanctionService();
+            CampusClassroomLoopService targetClassroomLoopService = ResolveClassroomLoopService(targetBootstrap);
             CampusDisplayLanguage displayLanguage = CampusLanguageState.CurrentLanguage;
             if (!Application.isPlaying)
             {
@@ -95,7 +98,7 @@ namespace NtingCampus.Gameplay.Core
                 GUILayout.Space(4f);
                 DrawRosterState(rosterService, displayLanguage);
                 GUILayout.Space(4f);
-                DrawFormalMainlineState(targetPrankService, targetSanctionService);
+                DrawFormalMainlineState(targetPrankService, targetSanctionService, targetClassroomLoopService);
                 GUILayout.Space(4f);
                 GUILayout.Label(CampusGameplayDebugTextCatalog.Get(displayLanguage, CampusGameplayDebugTextId.RecentEventLogs));
                 DrawRecentLogs(eventLog, 10, displayLanguage);
@@ -141,6 +144,23 @@ namespace NtingCampus.Gameplay.Core
 
             sanctionService = FindFirstObjectByType<CampusSanctionService>(FindObjectsInactive.Include);
             return sanctionService;
+        }
+
+        private CampusClassroomLoopService ResolveClassroomLoopService(CampusGameBootstrap targetBootstrap)
+        {
+            if (classroomLoopService != null)
+            {
+                return classroomLoopService;
+            }
+
+            classroomLoopService = targetBootstrap != null ? targetBootstrap.ClassroomLoopService : null;
+            if (classroomLoopService != null)
+            {
+                return classroomLoopService;
+            }
+
+            classroomLoopService = FindFirstObjectByType<CampusClassroomLoopService>(FindObjectsInactive.Include);
+            return classroomLoopService;
         }
 
         private static void DrawM1Controls(CampusModeController modeController, CampusTimeController timeController, CampusDisplayLanguage displayLanguage)
@@ -290,7 +310,7 @@ namespace NtingCampus.Gameplay.Core
             GUILayout.Label(CampusGameplayDebugTextCatalog.FormatLine(displayLanguage, CampusGameplayDebugTextId.Teachers, rosterService.TeacherCount));
             GUILayout.Label(CampusGameplayDebugTextCatalog.FormatLine(displayLanguage, CampusGameplayDebugTextId.Player,
                             (rosterService.PlayerRuntime != null && rosterService.PlayerRuntime.Data != null
-                                ? rosterService.PlayerRuntime.Data.DisplayName
+                                ? rosterService.PlayerRuntime.Data.GetDisplayName(displayLanguage)
                                 : "-")));
 
             IReadOnlyList<CampusCharacterData> characters = rosterService.Characters;
@@ -314,7 +334,7 @@ namespace NtingCampus.Gameplay.Core
                     continue;
                 }
 
-                string buttonLabel = data.DisplayName + " [" + CampusGameplayDebugTextCatalog.FormatCharacterRole(displayLanguage, data.Role) + "]";
+                string buttonLabel = data.GetDisplayName(displayLanguage) + " [" + CampusGameplayDebugTextCatalog.FormatCharacterRole(displayLanguage, data.Role) + "]";
                 if (GUILayout.Button(buttonLabel))
                 {
                     selectedCharacterId = data.Id;
@@ -329,7 +349,7 @@ namespace NtingCampus.Gameplay.Core
 
             GUILayout.Space(4f);
             GUILayout.Label(CampusGameplayDebugTextCatalog.Get(displayLanguage, CampusGameplayDebugTextId.SelectedCharacter));
-            GUILayout.Label(CampusGameplayDebugTextCatalog.FormatLine(displayLanguage, CampusGameplayDebugTextId.Name, selected.DisplayName));
+            GUILayout.Label(CampusGameplayDebugTextCatalog.FormatLine(displayLanguage, CampusGameplayDebugTextId.Name, selected.GetDisplayName(displayLanguage)));
             GUILayout.Label(CampusGameplayDebugTextCatalog.FormatLine(displayLanguage, CampusGameplayDebugTextId.Role, CampusGameplayDebugTextCatalog.FormatCharacterRole(displayLanguage, selected.Role)));
             GUILayout.Label(CampusGameplayDebugTextCatalog.FormatLine(displayLanguage, CampusGameplayDebugTextId.Duty, CampusGameplayDebugTextCatalog.FormatTeacherDuty(displayLanguage, selected.TeacherDuty)));
             GUILayout.Label(CampusGameplayDebugTextCatalog.FormatLine(displayLanguage, CampusGameplayDebugTextId.Class, string.IsNullOrWhiteSpace(selected.ClassId) ? "-" : selected.ClassId));
@@ -346,9 +366,31 @@ namespace NtingCampus.Gameplay.Core
             GUILayout.Label(CampusGameplayDebugTextCatalog.FormatLine(displayLanguage, CampusGameplayDebugTextId.Memories, JoinMemories(selected.Memories, displayLanguage)));
         }
 
-        private static void DrawFormalMainlineState(CampusPrankService prankService, CampusSanctionService sanctionService)
+        private static void DrawFormalMainlineState(
+            CampusPrankService prankService,
+            CampusSanctionService sanctionService,
+            CampusClassroomLoopService classroomLoopService)
         {
             GUILayout.Label("Formal Mainline");
+            if (classroomLoopService == null)
+            {
+                GUILayout.Label("- ClassroomLoopService: none");
+            }
+            else
+            {
+                GUILayout.Label("- Classroom Loop: " + classroomLoopService.CurrentPrompt);
+                GUILayout.Label("- Active Classroom: " + (string.IsNullOrWhiteSpace(classroomLoopService.ActiveClassroomId) ? "-" : classroomLoopService.ActiveClassroomId));
+                GUILayout.Label("- Distracted Teacher: " + (string.IsNullOrWhiteSpace(classroomLoopService.DistractedTeacherId) ? "-" : classroomLoopService.DistractedTeacherId));
+                GUILayout.Label("- Doze/Sneak/Caught Today: " +
+                                classroomLoopService.DailyDozeEventCount + "/" +
+                                classroomLoopService.DailySneakOutCount + "/" +
+                                classroomLoopService.DailyCaughtSkippingCount);
+                if (GUILayout.Button("Force Sleepy Distraction"))
+                {
+                    classroomLoopService.TryForceSleepyDistraction();
+                }
+            }
+
             if (prankService == null)
             {
                 GUILayout.Label("- PrankService: none");
@@ -402,14 +444,20 @@ namespace NtingCampus.Gameplay.Core
             return string.Join(", ", names);
         }
 
-        private static string JoinMemories(IReadOnlyList<string> memories, CampusDisplayLanguage displayLanguage)
+        private static string JoinMemories(IReadOnlyList<CampusCharacterMemoryId> memories, CampusDisplayLanguage displayLanguage)
         {
             if (memories == null || memories.Count == 0)
             {
                 return CampusGameplayDebugTextCatalog.Get(displayLanguage, CampusGameplayDebugTextId.None);
             }
 
-            return string.Join(", ", memories);
+            List<string> names = new List<string>(memories.Count);
+            for (int i = 0; i < memories.Count; i++)
+            {
+                names.Add(CampusCharacterTextCatalog.GetMemory(displayLanguage, memories[i]));
+            }
+
+            return string.Join(", ", names);
         }
     }
 }

@@ -24,6 +24,7 @@ namespace NtingCampus.Gameplay.Core
         [SerializeField] private CampusWorldService worldService;
         [SerializeField] private CampusRosterService rosterService;
         [SerializeField] private CampusScheduleService scheduleService;
+        [SerializeField] private CampusClassroomLoopService classroomLoopService;
         [SerializeField] private CampusGameplayEventHub gameplayEventHub;
         [SerializeField] private CampusPrankService prankService;
         [SerializeField] private CampusSanctionService sanctionService;
@@ -43,6 +44,7 @@ namespace NtingCampus.Gameplay.Core
         public CampusWorldService WorldService => worldService;
         public CampusRosterService RosterService => rosterService;
         public CampusScheduleService ScheduleService => scheduleService;
+        public CampusClassroomLoopService ClassroomLoopService => classroomLoopService;
         public CampusGameplayEventHub GameplayEventHub => gameplayEventHub;
         public CampusPrankService PrankService => prankService;
         public CampusSanctionService SanctionService => sanctionService;
@@ -63,6 +65,7 @@ namespace NtingCampus.Gameplay.Core
             bootstrap.EnsureRosterService();
             bootstrap.EnsureScheduleService();
             bootstrap.EnsureGameplayEventHub();
+            bootstrap.EnsureClassroomLoopService();
             bootstrap.EnsureSanctionService();
             bootstrap.EnsurePrankService();
             bootstrap.EnsureDebugPanel();
@@ -105,6 +108,9 @@ namespace NtingCampus.Gameplay.Core
 
             gameplayEventHub = EnsureGameplayEventHub();
             gameplayEventHub.Initialize(this);
+
+            classroomLoopService = EnsureClassroomLoopService();
+            classroomLoopService.Initialize(this);
 
             sanctionService = EnsureSanctionService();
             sanctionService.Initialize(this);
@@ -307,6 +313,22 @@ namespace NtingCampus.Gameplay.Core
             }
 
             return prankService;
+        }
+
+        private CampusClassroomLoopService EnsureClassroomLoopService()
+        {
+            if (classroomLoopService != null)
+            {
+                return classroomLoopService;
+            }
+
+            classroomLoopService = GetComponent<CampusClassroomLoopService>();
+            if (classroomLoopService == null)
+            {
+                classroomLoopService = gameObject.AddComponent<CampusClassroomLoopService>();
+            }
+
+            return classroomLoopService;
         }
 
         private CampusSanctionService EnsureSanctionService()

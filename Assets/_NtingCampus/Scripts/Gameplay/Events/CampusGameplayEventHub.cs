@@ -78,6 +78,69 @@ namespace NtingCampus.Gameplay.Events
         public int WarningCount { get; }
     }
 
+    public readonly struct CampusStudentDozedOffEvent
+    {
+        public CampusStudentDozedOffEvent(string studentId, string roomId, int sleepiness)
+        {
+            StudentId = studentId ?? string.Empty;
+            RoomId = roomId ?? string.Empty;
+            Sleepiness = sleepiness;
+        }
+
+        public string StudentId { get; }
+        public string RoomId { get; }
+        public int Sleepiness { get; }
+    }
+
+    public readonly struct CampusTeacherDistractedEvent
+    {
+        public CampusTeacherDistractedEvent(
+            string teacherId,
+            string sourceStudentId,
+            string roomId,
+            float durationSeconds)
+        {
+            TeacherId = teacherId ?? string.Empty;
+            SourceStudentId = sourceStudentId ?? string.Empty;
+            RoomId = roomId ?? string.Empty;
+            DurationSeconds = durationSeconds;
+        }
+
+        public string TeacherId { get; }
+        public string SourceStudentId { get; }
+        public string RoomId { get; }
+        public float DurationSeconds { get; }
+    }
+
+    public readonly struct CampusPlayerSkipClassEvent
+    {
+        public CampusPlayerSkipClassEvent(
+            string actorId,
+            string fromRoomId,
+            string toRoomId,
+            string teacherId,
+            bool detectedByTeacher,
+            bool usedDistraction,
+            string reason)
+        {
+            ActorId = actorId ?? string.Empty;
+            FromRoomId = fromRoomId ?? string.Empty;
+            ToRoomId = toRoomId ?? string.Empty;
+            TeacherId = teacherId ?? string.Empty;
+            DetectedByTeacher = detectedByTeacher;
+            UsedDistraction = usedDistraction;
+            Reason = reason ?? string.Empty;
+        }
+
+        public string ActorId { get; }
+        public string FromRoomId { get; }
+        public string ToRoomId { get; }
+        public string TeacherId { get; }
+        public bool DetectedByTeacher { get; }
+        public bool UsedDistraction { get; }
+        public string Reason { get; }
+    }
+
     [DisallowMultipleComponent]
     public sealed class CampusGameplayEventHub : MonoBehaviour
     {
@@ -90,6 +153,9 @@ namespace NtingCampus.Gameplay.Events
         public event System.Action<CampusPrankAttemptedEvent> PrankAttempted;
         public event System.Action<CampusPrankResolvedEvent> PrankResolved;
         public event System.Action<CampusSanctionIssuedEvent> SanctionIssued;
+        public event System.Action<CampusStudentDozedOffEvent> StudentDozedOff;
+        public event System.Action<CampusTeacherDistractedEvent> TeacherDistracted;
+        public event System.Action<CampusPlayerSkipClassEvent> PlayerSkipClass;
 
         public void Initialize(CampusGameBootstrap targetBootstrap)
         {
@@ -128,6 +194,25 @@ namespace NtingCampus.Gameplay.Events
         {
             Record("sanction.issued." + Normalize(eventData.SanctionLevel));
             SanctionIssued?.Invoke(eventData);
+        }
+
+        public void PublishStudentDozedOff(CampusStudentDozedOffEvent eventData)
+        {
+            Record("classroom.student_dozed_off");
+            StudentDozedOff?.Invoke(eventData);
+        }
+
+        public void PublishTeacherDistracted(CampusTeacherDistractedEvent eventData)
+        {
+            Record("classroom.teacher_distracted");
+            TeacherDistracted?.Invoke(eventData);
+        }
+
+        public void PublishPlayerSkipClass(CampusPlayerSkipClassEvent eventData)
+        {
+            string suffix = eventData.DetectedByTeacher ? "detected" : "escaped";
+            Record("classroom.skip_class." + suffix);
+            PlayerSkipClass?.Invoke(eventData);
         }
 
         private static string Normalize(CampusPrankType prankType)

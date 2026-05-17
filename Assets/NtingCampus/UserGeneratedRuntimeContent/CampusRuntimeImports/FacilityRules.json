@@ -1,28 +1,64 @@
 {
   "Rules": [
     {
+      "FacilityType": "Podium",
+      "ObjectIds": [],
+      "DisplayNames": [ "Podium", "Teacher Podium", "\u8bb2\u53f0", "\u6559\u5e08\u8bb2\u53f0" ],
+      "Contains": [ "podium", "teacher_podium", "teacherpodium", "\u8bb2\u53f0" ]
+    },
+    {
+      "FacilityType": "Blackboard",
+      "ObjectIds": [],
+      "DisplayNames": [ "Blackboard", "Whiteboard", "\u9ed1\u677f", "\u767d\u677f" ],
+      "Contains": [ "blackboard", "whiteboard", "chalkboard", "\u9ed1\u677f", "\u767d\u677f" ]
+    },
+    {
+      "FacilityType": "OfficeDesk",
+      "ObjectIds": [],
+      "DisplayNames": [ "Office Desk", "Teacher Desk", "\u529e\u516c\u684c", "\u6559\u5e08\u684c" ],
+      "Contains": [ "office_desk", "officedesk", "teacher_desk", "teacherdesk", "\u529e\u516c\u684c", "\u6559\u5e08\u684c" ]
+    },
+    {
       "FacilityType": "StudentDesk",
       "ObjectIds": [ "desk_1x1" ],
-      "DisplayNames": [ "Desk", "StudentDesk", "课桌", "书桌" ],
-      "Contains": [ "student_desk", "studentdesk", "课桌", "书桌" ]
+      "DisplayNames": [ "Desk", "StudentDesk", "\u8bfe\u684c", "\u4e66\u684c" ],
+      "Contains": [ "student_desk", "studentdesk", "\u8bfe\u684c", "\u4e66\u684c" ]
     },
     {
       "FacilityType": "BulletinBoard",
-      "ObjectIds": [ "公告栏_1x1" ],
-      "DisplayNames": [ "公告栏", "BulletinBoard" ],
-      "Contains": [ "公告栏", "bulletin" ]
+      "ObjectIds": [],
+      "DisplayNames": [ "BulletinBoard", "Bulletin Board", "\u516c\u544a\u680f" ],
+      "Contains": [ "bulletin", "\u516c\u544a\u680f" ]
     },
     {
       "FacilityType": "Bed",
       "ObjectIds": [ "Bed" ],
-      "DisplayNames": [ "Bed", "床" ],
-      "Contains": [ "bed", "床" ]
+      "DisplayNames": [ "Bed", "\u5e8a" ],
+      "Contains": [ "bed", "\u5e8a" ]
     },
     {
       "FacilityType": "Door",
-      "ObjectIds": [ "门" ],
-      "DisplayNames": [ "门", "Door" ],
-      "Contains": [ "door", "门" ]
+      "ObjectIds": [ "Door", "\u95e8" ],
+      "DisplayNames": [ "Door", "\u95e8" ],
+      "Contains": [ "door", "\u95e8" ]
+    },
+    {
+      "FacilityType": "Chair",
+      "ObjectIds": [ "chair_1x2", "side_chair", "wooden_chair" ],
+      "DisplayNames": [ "Chair", "\u6905\u5b50" ],
+      "Contains": [ "chair", "\u6905\u5b50" ]
+    },
+    {
+      "FacilityType": "Sink",
+      "ObjectIds": [ "rotating_sink" ],
+      "DisplayNames": [ "Sink", "\u6d17\u624b\u6c60", "\u6c34\u6c60" ],
+      "Contains": [ "sink", "\u6d17\u624b\u6c60", "\u6c34\u6c60" ]
+    },
+    {
+      "FacilityType": "Storage",
+      "ObjectIds": [],
+      "DisplayNames": [ "Storage", "\u50a8\u7269" ],
+      "Contains": [ "storage", "box", "\u50a8\u7269", "\u7bb1" ]
     }
   ]
 }

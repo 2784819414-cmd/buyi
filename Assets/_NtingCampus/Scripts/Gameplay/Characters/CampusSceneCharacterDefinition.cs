@@ -1,4 +1,5 @@
 using System;
+using NtingCampus.Gameplay.UI;
 using UnityEngine;
 
 namespace NtingCampus.Gameplay.Characters
@@ -9,6 +10,7 @@ namespace NtingCampus.Gameplay.Characters
     {
         [SerializeField] private string characterId = string.Empty;
         [SerializeField] private string displayName = string.Empty;
+        [SerializeField] private CampusLocalizedText localizedDisplayName = default;
         [SerializeField] private CampusCharacterRole role = CampusCharacterRole.Student;
         [SerializeField] private CampusTeacherDuty teacherDuty = CampusTeacherDuty.None;
         [SerializeField] private string classId = "class_1";
@@ -27,6 +29,7 @@ namespace NtingCampus.Gameplay.Characters
             data.Configure(
                 characterId,
                 displayName,
+                localizedDisplayName,
                 role,
                 teacherDuty,
                 classId,

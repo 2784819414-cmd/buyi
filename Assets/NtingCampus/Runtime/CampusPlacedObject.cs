@@ -825,24 +825,17 @@ namespace NtingCampusMapEditor
             float height = Mathf.Max(0.05f, sprite.bounds.size.y * visualScale.y);
             float halfWidth = width * 0.5f;
             float halfHeight = height * 0.5f;
-            CampusWallMeshRenderer.GetWallFaceBasis(Rotation90, out Vector3 widthAxis, out Vector3 heightAxis, out Vector3 normalAxis);
-
-            Vector3 backBottomLeft = -widthAxis * halfWidth - heightAxis * halfHeight;
-            Vector3 backBottomRight = widthAxis * halfWidth - heightAxis * halfHeight;
-            Vector3 backTopRight = widthAxis * halfWidth + heightAxis * halfHeight;
-            Vector3 backTopLeft = -widthAxis * halfWidth + heightAxis * halfHeight;
-            Vector3 thicknessOffset = normalAxis * WallMountedThickness;
 
             Vector3[] vertices =
             {
-                backBottomLeft,
-                backBottomRight,
-                backTopRight,
-                backTopLeft,
-                backBottomLeft + thicknessOffset,
-                backBottomRight + thicknessOffset,
-                backTopRight + thicknessOffset,
-                backTopLeft + thicknessOffset
+                new Vector3(-halfWidth, -halfHeight, 0f),
+                new Vector3(halfWidth, -halfHeight, 0f),
+                new Vector3(halfWidth, halfHeight, 0f),
+                new Vector3(-halfWidth, halfHeight, 0f),
+                new Vector3(-halfWidth, -halfHeight, WallMountedThickness),
+                new Vector3(halfWidth, -halfHeight, WallMountedThickness),
+                new Vector3(halfWidth, halfHeight, WallMountedThickness),
+                new Vector3(-halfWidth, halfHeight, WallMountedThickness)
             };
 
             Rect textureRect = sprite.textureRect;
@@ -996,9 +989,19 @@ namespace NtingCampusMapEditor
 
         private static Vector3 GetWallMountedAnchorLocalOffset(int rotation90)
         {
-            Vector3 faceCenter = CampusWallMeshRenderer.GetWallFaceCenterLocal(rotation90);
-            CampusWallMeshRenderer.GetWallFaceBasis(rotation90, out _, out _, out Vector3 normalAxis);
-            return faceCenter + normalAxis * WallMountedSurfaceGap;
+            float outerCenter = (CampusWallMeshRenderer.WallHalfCell + CampusWallMeshRenderer.WallTopHalfWidth) * 0.5f;
+            float depth = CampusWallMeshRenderer.WallBaseDepth + WallMountedSurfaceGap;
+            switch (NormalizeRotation90(rotation90))
+            {
+                case 1:
+                    return new Vector3(outerCenter, 0f, depth);
+                case 2:
+                    return new Vector3(0f, -outerCenter, depth);
+                case 3:
+                    return new Vector3(-outerCenter, 0f, depth);
+                default:
+                    return new Vector3(0f, outerCenter, depth);
+            }
         }
 
         private void DestroyGeneratedObjectIfNeeded(UnityEngine.Object target, string expectedPrefix)

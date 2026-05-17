@@ -26,7 +26,7 @@ namespace Nting.Storage
 
         public void BeginDrag(StorageItemView view, PointerEventData eventData)
         {
-            if (view == null || view.Item == null || view.OwnerGrid == null || DragLayer == null)
+            if (view == null || view.Item == null || view.OwnerGrid == null || DragLayer == null || Window == null)
             {
                 return;
             }
@@ -43,15 +43,16 @@ namespace Nting.Storage
 
             RectTransform itemRect = view.RectTransform;
             RectTransformUtility.ScreenPointToLocalPointInRectangle(itemRect, eventData.position, EventCamera, out Vector2 itemLocalPoint);
-            Rect itemRectBounds = itemRect.rect;
+            Rect bounds = itemRect.rect;
             grabOffset = new Vector2(
-                itemLocalPoint.x - itemRectBounds.xMin,
-                itemRectBounds.yMax - itemLocalPoint.y);
+                itemLocalPoint.x - bounds.xMin,
+                bounds.yMax - itemLocalPoint.y);
 
             itemRect.SetParent(DragLayer, false);
             StorageUIUtility.SetAnchor(itemRect, new Vector2(0f, 1f), new Vector2(0f, 1f), new Vector2(0f, 1f));
             itemRect.SetAsLastSibling();
             view.SetDragVisual(true);
+
             UpdateDraggedPosition(eventData.position);
             UpdatePreview(eventData.position);
         }
@@ -69,49 +70,37 @@ namespace Nting.Storage
 
         public void EndDrag(PointerEventData eventData)
         {
-            if (currentView == null)
+            if (currentView == null || Window == null)
             {
                 return;
             }
 
             StorageItemModel item = currentView.Item;
-            bool placed = currentPlacementValid &&
-                          currentTargetGrid != null &&
-                          TryCommitPlacement(item, currentTargetGrid, currentTargetCell);
+            bool placedInGrid = currentPlacementValid &&
+                                currentTargetGrid != null &&
+                                TryCommitPlacement(item, currentTargetGrid, currentTargetCell);
 
-            if (!placed)
+            bool droppedToGround = !placedInGrid &&
+                                   currentTargetGrid == null &&
+                                   Window.TryDropItemToGround(item, sourceGrid);
+
+            if (!placedInGrid && !droppedToGround)
             {
                 item.X = sourceX;
                 item.Y = sourceY;
-                Window.ShowStatus("目标空间不足", true);
+                if (currentTargetGrid != null)
+                {
+                    Window.ShowStatus("目标空间不足", true);
+                }
             }
-            else
+            else if (placedInGrid)
             {
-                Window.ShowStatus("已移动 " + item.DisplayName, false);
+                Window.ShowStatus("已移动: " + item.DisplayName, false);
             }
 
-            GameObject draggedObject = currentView.gameObject;
-            StorageGridUI gridToRestore = sourceGrid;
-
-            ClearPreview();
-            currentView.SetDragVisual(false);
-            if (gridToRestore != null)
-            {
-                gridToRestore.SetItemsRaycast(true);
-            }
-
-            currentView = null;
-            sourceGrid = null;
-            currentTargetGrid = null;
-            currentPlacementValid = false;
-            if (draggedObject != null)
-            {
-                draggedObject.SetActive(false);
-                Destroy(draggedObject);
-            }
-
+            CleanupDraggedView();
             Window.RefreshAllGrids();
-            Window.SelectItem(item);
+            Window.SelectItem(droppedToGround ? null : item);
         }
 
         public void CancelDrag()
@@ -121,11 +110,25 @@ namespace Nting.Storage
                 return;
             }
 
+            currentView.Item.X = sourceX;
+            currentView.Item.Y = sourceY;
+            CleanupDraggedView();
+            if (Window != null)
+            {
+                Window.RefreshAllGrids();
+            }
+        }
+
+        private void CleanupDraggedView()
+        {
+            if (currentView == null)
+            {
+                return;
+            }
+
             GameObject draggedObject = currentView.gameObject;
             StorageGridUI gridToRestore = sourceGrid;
 
-            currentView.Item.X = sourceX;
-            currentView.Item.Y = sourceY;
             ClearPreview();
             currentView.SetDragVisual(false);
             if (gridToRestore != null)
@@ -137,13 +140,12 @@ namespace Nting.Storage
             sourceGrid = null;
             currentTargetGrid = null;
             currentPlacementValid = false;
+
             if (draggedObject != null)
             {
                 draggedObject.SetActive(false);
                 Destroy(draggedObject);
             }
-
-            Window.RefreshAllGrids();
         }
 
         private void UpdateDraggedPosition(Vector2 screenPosition)
@@ -187,6 +189,11 @@ namespace Nting.Storage
 
         private bool TryCommitPlacement(StorageItemModel item, StorageGridUI targetGrid, Vector2Int cell)
         {
+            if (targetGrid == null || item == null)
+            {
+                return false;
+            }
+
             if (targetGrid == sourceGrid)
             {
                 return targetGrid.PlaceItem(item, cell.x, cell.y);
@@ -197,13 +204,17 @@ namespace Nting.Storage
                 return false;
             }
 
-            if (sourceGrid.RemoveItem(item))
+            if (sourceGrid != null && sourceGrid.RemoveItem(item))
             {
                 return true;
             }
 
             targetGrid.RemoveItem(item);
-            sourceGrid.PlaceItem(item, sourceX, sourceY);
+            if (sourceGrid != null)
+            {
+                sourceGrid.PlaceItem(item, sourceX, sourceY);
+            }
+
             return false;
         }
 

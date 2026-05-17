@@ -123,7 +123,29 @@ namespace NtingCampus.Gameplay.Schedule
                 return scheduledRoom;
             }
 
+            CampusGameplayRoom fallbackRoom = ResolveFallbackRoom(directive.TargetRoomType);
+            if (fallbackRoom != null)
+            {
+                return fallbackRoom;
+            }
+
             return currentRoom;
+        }
+
+        private CampusGameplayRoom ResolveFallbackRoom(CampusRoomType targetRoomType)
+        {
+            switch (targetRoomType)
+            {
+                case CampusRoomType.Office:
+                case CampusRoomType.CommonActivityZone:
+                    return worldService.FindFirstRoom(CampusRoomType.Corridor) ??
+                           worldService.FindFirstRoom(CampusRoomType.Classroom);
+                case CampusRoomType.Corridor:
+                    return worldService.FindFirstRoom(CampusRoomType.CommonActivityZone) ??
+                           worldService.FindFirstRoom(CampusRoomType.Classroom);
+                default:
+                    return null;
+            }
         }
 
         private void OnDestroy()
@@ -197,8 +219,19 @@ namespace NtingCampus.Gameplay.Schedule
             CampusCharacterTaskDirective directive = new CampusCharacterTaskDirective();
             bool instructional = IsInstructionalSegment(segment);
             bool patrolTeacher = (data.TeacherDuty & CampusTeacherDuty.PatrolDirector) != 0;
+            bool homeroomTeacher = (data.TeacherDuty & CampusTeacherDuty.HomeroomTeacher) != 0;
 
-            if (instructional)
+            if (instructional && patrolTeacher)
+            {
+                directive.TaskType = CampusCharacterTaskType.PatrolHallway;
+                directive.TargetRoomType = CampusRoomType.Corridor;
+                directive.PreferredFacilityType = CampusFacilityType.Door;
+                directive.HoldRadius = 0.3f;
+                directive.DebugLabel = "ClassPatrol";
+                return directive;
+            }
+
+            if (instructional && homeroomTeacher)
             {
                 directive.TaskType = CampusCharacterTaskType.TeachClass;
                 directive.TargetRoomType = CampusRoomType.Classroom;
@@ -209,10 +242,20 @@ namespace NtingCampus.Gameplay.Schedule
                 return directive;
             }
 
+            if (instructional)
+            {
+                directive.TaskType = CampusCharacterTaskType.PatrolHallway;
+                directive.TargetRoomType = CampusRoomType.Corridor;
+                directive.PreferredFacilityType = CampusFacilityType.Door;
+                directive.HoldRadius = 0.3f;
+                directive.DebugLabel = "ClassSupportPatrol";
+                return directive;
+            }
+
             if (segment == CampusTimeSegment.DormCheck || segment == CampusTimeSegment.NightFree)
             {
                 directive.TaskType = patrolTeacher ? CampusCharacterTaskType.PatrolHallway : CampusCharacterTaskType.UseOfficeDesk;
-                directive.TargetRoomType = patrolTeacher ? CampusRoomType.CommonActivityZone : CampusRoomType.Office;
+                directive.TargetRoomType = patrolTeacher ? CampusRoomType.Corridor : CampusRoomType.Office;
                 directive.PreferredFacilityType = patrolTeacher ? CampusFacilityType.Door : CampusFacilityType.OfficeDesk;
                 directive.HoldRadius = 0.2f;
                 directive.DebugLabel = patrolTeacher ? "NightPatrol" : "OfficeDuty";
@@ -220,7 +263,7 @@ namespace NtingCampus.Gameplay.Schedule
             }
 
             directive.TaskType = patrolTeacher ? CampusCharacterTaskType.PatrolHallway : CampusCharacterTaskType.UseOfficeDesk;
-            directive.TargetRoomType = patrolTeacher ? CampusRoomType.CommonActivityZone : CampusRoomType.Office;
+            directive.TargetRoomType = patrolTeacher ? CampusRoomType.Corridor : CampusRoomType.Office;
             directive.PreferredFacilityType = patrolTeacher ? CampusFacilityType.Door : CampusFacilityType.OfficeDesk;
             directive.HoldRadius = patrolTeacher ? 0.35f : 0.16f;
             directive.DebugLabel = patrolTeacher ? "Patrol" : "Office";

@@ -24,9 +24,13 @@ namespace NtingCampus.Gameplay.Characters
         public void Bind(CampusCharacterData characterData, bool renameGameObject)
         {
             data = characterData;
-            if (renameGameObject && data != null && !string.IsNullOrWhiteSpace(data.DisplayName))
+            if (renameGameObject && data != null)
             {
-                gameObject.name = data.DisplayName;
+                string objectName = data.GetPreferredObjectName();
+                if (!string.IsNullOrWhiteSpace(objectName))
+                {
+                    gameObject.name = objectName;
+                }
             }
         }
 

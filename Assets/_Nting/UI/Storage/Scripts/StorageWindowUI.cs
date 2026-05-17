@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using NtingCampusMapEditor;
 using UnityEngine;
 using UnityEngine.EventSystems;
 using UnityEngine.UI;
@@ -51,6 +52,7 @@ namespace Nting.Storage
         private RectTransform externalGridPad;
         private GameObject visibleRoot;
         private bool built;
+        private GameObject groundDropSource;
 
         public bool IsOpen => visibleRoot != null && visibleRoot.activeSelf;
 
@@ -87,7 +89,35 @@ namespace Nting.Storage
             SuppressMapEditorOverlay();
             RefreshPages();
             SelectItem(null);
-            ShowStatus("拖拽物品 / 右键旋转 / 双击转移 / Esc关闭", false);
+            ShowStatus("拖拽物品 / 右键旋转 / 双击转移 / 拖出容器可放到地上 / Esc关闭", false);
+        }
+
+        public void SetGroundDropContext(GameObject groundDropContext)
+        {
+            groundDropSource = groundDropContext;
+        }
+
+        public bool TryDropItemToGround(StorageItemModel item, StorageGridUI sourceGrid)
+        {
+            if (item == null || sourceGrid == null)
+            {
+                return false;
+            }
+
+            if (!CampusStorageGroundItemUtility.TryDropItemToGround(groundDropSource, item, out string errorMessage))
+            {
+                ShowStatus(string.IsNullOrWhiteSpace(errorMessage) ? "放到地上失败" : errorMessage, true);
+                return false;
+            }
+
+            if (!sourceGrid.RemoveItem(item))
+            {
+                ShowStatus("物品已生成到地上，但未能从原容器移除。", true);
+                return false;
+            }
+
+            ShowStatus("已放到地上: " + item.DisplayName, false);
+            return true;
         }
 
         public void Close()
@@ -498,7 +528,7 @@ namespace Nting.Storage
             Text title = StorageUIUtility.CreateText("TitleText", header, "储物空间", 30, TextAnchor.MiddleLeft, StoragePalette.TextPrimary);
             StorageUIUtility.SetTopLeft(title.rectTransform, 70f, 29f, 300f, 38f);
 
-            Text hint = StorageUIUtility.CreateText("HintText", header, "拖拽物品 · 右键旋转 · 双击转移 · Esc关闭", 15, TextAnchor.MiddleLeft, StoragePalette.TextSecondary);
+            Text hint = StorageUIUtility.CreateText("HintText", header, "拖拽物品 · 右键旋转 · 双击转移 · 拖出容器可放到地上 · Esc关闭", 15, TextAnchor.MiddleLeft, StoragePalette.TextSecondary);
             StorageUIUtility.SetTopLeft(hint.rectTransform, 410f, 42f, 650f, 24f);
 
             Button close = StorageUIUtility.CreateButton("CloseButton", header, "×", Close,
