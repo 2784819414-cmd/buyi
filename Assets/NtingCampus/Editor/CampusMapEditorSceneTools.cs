@@ -797,6 +797,8 @@ namespace NtingCampusMapEditor
 
             placed.FloorIndex = floor.FloorIndex;
             placed.ObjectId = localizedPrefabName;
+            CampusPlacedObject prefabPlaced = prefab.GetComponent<CampusPlacedObject>();
+            placed.TypeId = prefabPlaced != null ? prefabPlaced.TypeId : string.Empty;
             placed.Cell = cell;
             placed.FootprintSize = authoredFootprintSize;
             placed.ApplyPlacementRotation(effectiveRotation90);

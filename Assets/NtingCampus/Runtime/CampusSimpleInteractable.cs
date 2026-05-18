@@ -535,6 +535,9 @@ namespace NtingCampusMapEditor
             CampusPlacedObject placed = worldItem.AddComponent<CampusPlacedObject>();
             placed.FloorIndex = floor.FloorIndex;
             placed.ObjectId = BuildObjectId(item);
+            placed.TypeId = item != null && !string.IsNullOrWhiteSpace(item.DefinitionId)
+                ? item.DefinitionId.Trim()
+                : string.Empty;
             placed.DisplayNameOverride = item.DisplayName;
             placed.Cell = cell;
             placed.FootprintSize = Vector2Int.one;

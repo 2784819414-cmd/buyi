@@ -65,6 +65,7 @@ namespace NtingCampusMapEditor
 
         public int FloorIndex = 1;
         public string ObjectId;
+        public string TypeId;
         public string DisplayNameOverride;
         public Vector3Int Cell;
         public Vector2Int FootprintSize = Vector2Int.one;
@@ -113,6 +114,19 @@ namespace NtingCampusMapEditor
         public float NormalizedStorageMaxWeight => NormalizeStorageMaxWeight(StorageMaxWeight);
 
         public bool SuppressFlatSpriteRotation => IsWallMounted;
+
+        public string EffectiveTypeId
+        {
+            get
+            {
+                if (!string.IsNullOrWhiteSpace(TypeId))
+                {
+                    return TypeId.Trim();
+                }
+
+                return !string.IsNullOrWhiteSpace(ObjectId) ? ObjectId.Trim() : string.Empty;
+            }
+        }
 
         public string DisplayName
         {

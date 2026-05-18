@@ -2820,6 +2820,7 @@ namespace NtingCampusMapEditor
                     }
 
                     placed.ObjectId = objectData.ObjectId;
+                    placed.TypeId = objectData.TypeId;
                     placed.DisplayNameOverride = objectData.DisplayNameOverride;
                     placed.FloorIndex = objectData.FloorIndex;
                     placed.Cell = objectData.Cell;
@@ -3457,6 +3458,7 @@ namespace NtingCampusMapEditor
                 {
                     ObjectId = placed.ObjectId,
                     ObjectGuid = GetAssetGuid(prefabSource),
+                    TypeId = string.IsNullOrWhiteSpace(placed.TypeId) ? string.Empty : placed.TypeId.Trim(),
                     DisplayNameOverride = placed.DisplayNameOverride,
                     Position = cellCenter,
                     Cell = cell,
@@ -4065,6 +4067,7 @@ namespace NtingCampusMapEditor
             }
 
             placed.ObjectId = CampusObjectNames.TestPropBox;
+            placed.TypeId = nameof(NtingCampus.Gameplay.Rooms.CampusFacilityType.Storage);
             placed.BlocksMovement = true;
             placed.BlocksSight = false;
             placed.IsInteractable = true;

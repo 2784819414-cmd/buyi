@@ -43,6 +43,7 @@ namespace NtingCampusMapEditor
     {
         public string ObjectId;
         public string ObjectGuid;
+        public string TypeId;
         public string DisplayNameOverride;
         public Vector3 Position;
         public Vector3Int Cell;

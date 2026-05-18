@@ -22,6 +22,18 @@ namespace NtingCampus.Gameplay.Rooms
             }
 
             EnsureRulesLoaded();
+            string typeId = Normalize(placedObject.TypeId);
+            string rawTypeId = placedObject.TypeId ?? string.Empty;
+            if (!string.IsNullOrWhiteSpace(typeId))
+            {
+                if (TryResolveTypeId(typeId, rawTypeId, out CampusFacilityType typeIdType))
+                {
+                    return typeIdType;
+                }
+
+                return placedObject.IsStorageContainer ? CampusFacilityType.Storage : CampusFacilityType.Unknown;
+            }
+
             string objectId = Normalize(placedObject.ObjectId);
             string displayName = Normalize(placedObject.DisplayName);
             string rawObjectId = placedObject.ObjectId ?? string.Empty;
@@ -37,6 +49,47 @@ namespace NtingCampus.Gameplay.Rooms
             }
 
             return placedObject.IsStorageContainer ? CampusFacilityType.Storage : CampusFacilityType.Unknown;
+        }
+
+        private static bool TryResolveTypeId(string normalizedTypeId, string rawTypeId, out CampusFacilityType type)
+        {
+            type = CampusFacilityType.Unknown;
+            if (Enum.TryParse(rawTypeId, true, out CampusFacilityType parsedType) &&
+                parsedType != CampusFacilityType.Unknown)
+            {
+                type = parsedType;
+                return true;
+            }
+
+            string compactTypeId = normalizedTypeId.Replace("_", string.Empty);
+            Array values = Enum.GetValues(typeof(CampusFacilityType));
+            for (int i = 0; i < values.Length; i++)
+            {
+                CampusFacilityType candidate = (CampusFacilityType)values.GetValue(i);
+                if (candidate == CampusFacilityType.Unknown)
+                {
+                    continue;
+                }
+
+                string candidateKey = Normalize(candidate.ToString()).Replace("_", string.Empty);
+                if (string.Equals(candidateKey, compactTypeId, StringComparison.OrdinalIgnoreCase))
+                {
+                    type = candidate;
+                    return true;
+                }
+            }
+
+            for (int i = 0; i < Rules.Count; i++)
+            {
+                FacilityRule rule = Rules[i];
+                if (rule != null && rule.TryResolveTypeId(normalizedTypeId, out CampusFacilityType ruleType))
+                {
+                    type = ruleType;
+                    return true;
+                }
+            }
+
+            return false;
         }
 
         private static void EnsureRulesLoaded()
@@ -98,6 +151,7 @@ namespace NtingCampus.Gameplay.Rooms
             rules.Add(new FacilityRule
             {
                 FacilityType = nameof(CampusFacilityType.Door),
+                TypeIds = new[] { "Door", "door" },
                 ObjectIds = new[] { "door", "\u95e8" },
                 DisplayNames = new[] { "door", "\u95e8" },
                 Contains = new[] { "door", "\u95e8" }
@@ -105,24 +159,28 @@ namespace NtingCampus.Gameplay.Rooms
             rules.Add(new FacilityRule
             {
                 FacilityType = nameof(CampusFacilityType.Podium),
+                TypeIds = new[] { "Podium", "podium", "teacher_podium" },
                 DisplayNames = new[] { "podium", "teacher podium", "\u8bb2\u53f0", "\u6559\u5e08\u8bb2\u53f0" },
                 Contains = new[] { "podium", "teacher_podium", "teacherpodium", "\u8bb2\u53f0" }
             });
             rules.Add(new FacilityRule
             {
                 FacilityType = nameof(CampusFacilityType.Blackboard),
+                TypeIds = new[] { "Blackboard", "blackboard", "whiteboard", "chalkboard" },
                 DisplayNames = new[] { "blackboard", "whiteboard", "\u9ed1\u677f", "\u767d\u677f" },
                 Contains = new[] { "blackboard", "whiteboard", "chalkboard", "\u9ed1\u677f", "\u767d\u677f" }
             });
             rules.Add(new FacilityRule
             {
                 FacilityType = nameof(CampusFacilityType.OfficeDesk),
+                TypeIds = new[] { "OfficeDesk", "office_desk", "teacher_desk" },
                 DisplayNames = new[] { "office desk", "teacher desk", "\u529e\u516c\u684c", "\u6559\u5e08\u684c" },
                 Contains = new[] { "office_desk", "officedesk", "teacher_desk", "teacherdesk", "\u529e\u516c\u684c", "\u6559\u5e08\u684c" }
             });
             rules.Add(new FacilityRule
             {
                 FacilityType = nameof(CampusFacilityType.StudentDesk),
+                TypeIds = new[] { "StudentDesk", "student_desk", "desk_1x1" },
                 ObjectIds = new[] { "desk_1x1" },
                 DisplayNames = new[] { "desk", "student desk", "\u8bfe\u684c", "\u4e66\u684c" },
                 Contains = new[] { "studentdesk", "student_desk", "\u8bfe\u684c", "\u4e66\u684c" }
@@ -130,6 +188,7 @@ namespace NtingCampus.Gameplay.Rooms
             rules.Add(new FacilityRule
             {
                 FacilityType = nameof(CampusFacilityType.Chair),
+                TypeIds = new[] { "Chair", "chair", "side_chair", "wooden_chair" },
                 ObjectIds = new[] { "chair_1x2", "side_chair", "wooden_chair" },
                 DisplayNames = new[] { "chair", "\u6905\u5b50" },
                 Contains = new[] { "chair", "\u6905\u5b50" }
@@ -137,6 +196,7 @@ namespace NtingCampus.Gameplay.Rooms
             rules.Add(new FacilityRule
             {
                 FacilityType = nameof(CampusFacilityType.Bed),
+                TypeIds = new[] { "Bed", "bed" },
                 ObjectIds = new[] { "bed" },
                 DisplayNames = new[] { "bed", "\u5e8a" },
                 Contains = new[] { "bed", "\u5e8a" }
@@ -144,12 +204,14 @@ namespace NtingCampus.Gameplay.Rooms
             rules.Add(new FacilityRule
             {
                 FacilityType = nameof(CampusFacilityType.BulletinBoard),
+                TypeIds = new[] { "BulletinBoard", "bulletin_board", "bulletin" },
                 DisplayNames = new[] { "bulletin board", "\u516c\u544a\u680f" },
                 Contains = new[] { "bulletin", "\u516c\u544a\u680f" }
             });
             rules.Add(new FacilityRule
             {
                 FacilityType = nameof(CampusFacilityType.Sink),
+                TypeIds = new[] { "Sink", "sink" },
                 ObjectIds = new[] { "rotating_sink" },
                 DisplayNames = new[] { "sink", "\u6d17\u624b\u6c60", "\u6c34\u6c60" },
                 Contains = new[] { "sink", "\u6d17\u624b\u6c60", "\u6c34\u6c60" }
@@ -157,48 +219,56 @@ namespace NtingCampus.Gameplay.Rooms
             rules.Add(new FacilityRule
             {
                 FacilityType = nameof(CampusFacilityType.Storage),
+                TypeIds = new[] { "Storage", "storage", "storage_box" },
                 DisplayNames = new[] { "storage", "\u50a8\u7269" },
                 Contains = new[] { "storage", "box", "\u50a8\u7269", "\u7bb1" }
             });
             rules.Add(new FacilityRule
             {
                 FacilityType = nameof(CampusFacilityType.CanteenCounter),
+                TypeIds = new[] { "CanteenCounter", "canteen_counter", "food_counter" },
                 DisplayNames = new[] { "canteen counter", "food counter", "\u98df\u5802\u67dc\u53f0", "\u7a97\u53e3" },
                 Contains = new[] { "canteen_counter", "foodcounter", "malatang", "noodle", "\u98df\u5802\u67dc\u53f0", "\u7a97\u53e3", "\u9ebb\u8fa3\u70eb", "\u9762\u6761" }
             });
             rules.Add(new FacilityRule
             {
                 FacilityType = nameof(CampusFacilityType.CanteenQueuePoint),
+                TypeIds = new[] { "CanteenQueuePoint", "canteen_queue", "meal_queue" },
                 DisplayNames = new[] { "canteen queue", "meal queue", "\u98df\u5802\u6392\u961f\u70b9", "\u6253\u996d\u961f\u5217" },
                 Contains = new[] { "canteen_queue", "mealqueue", "food_queue", "\u98df\u5802\u6392\u961f", "\u6253\u996d\u961f" }
             });
             rules.Add(new FacilityRule
             {
                 FacilityType = nameof(CampusFacilityType.CanteenFoodTray),
+                TypeIds = new[] { "CanteenFoodTray", "canteen_food", "food_tray", "fried_chicken", "burger", "oden" },
                 DisplayNames = new[] { "canteen food tray", "fried chicken tray", "\u98df\u5802\u83dc\u76d8", "\u70b8\u9e21\u76d8" },
                 Contains = new[] { "canteen_food", "foodtray", "friedchicken", "burger", "oden", "\u70b8\u9e21", "\u6c49\u5821", "\u5173\u4e1c\u716e" }
             });
             rules.Add(new FacilityRule
             {
                 FacilityType = nameof(CampusFacilityType.StoreShelf),
+                TypeIds = new[] { "StoreShelf", "store_shelf", "shop_shelf", "snack_shelf" },
                 DisplayNames = new[] { "store shelf", "shop shelf", "snack shelf", "\u8d85\u5e02\u8d27\u67b6", "\u5c0f\u5356\u90e8\u8d27\u67b6" },
                 Contains = new[] { "store_shelf", "shopshelf", "snackshelf", "goods_shelf", "\u8d27\u67b6", "\u96f6\u98df\u67b6" }
             });
             rules.Add(new FacilityRule
             {
                 FacilityType = nameof(CampusFacilityType.StoreCheckout),
+                TypeIds = new[] { "StoreCheckout", "store_checkout", "cash_register", "checkout" },
                 DisplayNames = new[] { "store checkout", "cash register", "checkout counter", "\u8d85\u5e02\u6536\u94f6\u53f0", "\u6536\u94f6\u53f0" },
                 Contains = new[] { "store_checkout", "checkout", "cashregister", "cashier", "\u6536\u94f6", "\u6536\u94f6\u53f0" }
             });
             rules.Add(new FacilityRule
             {
                 FacilityType = nameof(CampusFacilityType.StoreQueuePoint),
+                TypeIds = new[] { "StoreQueuePoint", "store_queue", "checkout_queue" },
                 DisplayNames = new[] { "store queue", "checkout queue", "\u8d85\u5e02\u6392\u961f\u70b9", "\u6536\u94f6\u961f\u5217" },
                 Contains = new[] { "store_queue", "checkout_queue", "cashier_queue", "\u8d85\u5e02\u6392\u961f", "\u6536\u94f6\u961f" }
             });
             rules.Add(new FacilityRule
             {
                 FacilityType = nameof(CampusFacilityType.DeliveryDropPoint),
+                TypeIds = new[] { "DeliveryDropPoint", "delivery_drop", "delivery", "takeout", "waimai" },
                 DisplayNames = new[] { "delivery drop point", "delivery point", "\u5916\u5356\u70b9", "\u5916\u5356\u653e\u7f6e\u70b9" },
                 Contains = new[] { "delivery", "takeout", "waimai", "\u5916\u5356" }
             });
@@ -221,9 +291,27 @@ namespace NtingCampus.Gameplay.Rooms
         private sealed class FacilityRule
         {
             public string FacilityType = string.Empty;
+            public string[] TypeIds = Array.Empty<string>();
             public string[] ObjectIds = Array.Empty<string>();
             public string[] DisplayNames = Array.Empty<string>();
             public string[] Contains = Array.Empty<string>();
+
+            public bool TryResolveTypeId(string normalizedTypeId, out CampusFacilityType type)
+            {
+                type = CampusFacilityType.Unknown;
+                if (!Enum.TryParse(FacilityType, true, out CampusFacilityType parsedType))
+                {
+                    return false;
+                }
+
+                if (MatchesExact(TypeIds, normalizedTypeId) || MatchesExact(ObjectIds, normalizedTypeId))
+                {
+                    type = parsedType;
+                    return true;
+                }
+
+                return false;
+            }
 
             public bool TryResolve(
                 string normalizedObjectId,

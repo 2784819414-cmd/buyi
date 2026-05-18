@@ -179,6 +179,26 @@ namespace NtingCampusMapEditor
             }
         }
 
+        private sealed class CampusRuntimeAreaPreset
+        {
+            public readonly string RoomName;
+            public readonly string ChineseLabel;
+            public readonly string EnglishLabel;
+            public readonly int RequiredCount;
+
+            public CampusRuntimeAreaPreset(
+                string roomName,
+                string chineseLabel,
+                string englishLabel,
+                int requiredCount)
+            {
+                RoomName = roomName;
+                ChineseLabel = chineseLabel;
+                EnglishLabel = englishLabel;
+                RequiredCount = Mathf.Max(0, requiredCount);
+            }
+        }
+
         private const string RuntimeResourceFolder = "NtingCampusRuntime";
         private const string RuntimeImportFolder = "CampusRuntimeImports";
         private const string FloorImportFolder = "Floors";
@@ -213,25 +233,85 @@ namespace NtingCampusMapEditor
         private const int WallStrokeVisualBatchCellThreshold = 8;
         private const int WallStrokeVisualBatchChunkThreshold = 4;
 
-        private static readonly string[] DefaultAreaDefinitionNames =
+        private static readonly CampusRuntimeAreaPreset[] DefaultAreaPresets =
         {
-            "\u6559\u5ba4\u533a",
-            "\u8d70\u5eca\u533a",
-            "\u98df\u5802\u533a",
-            "\u5916\u5356\u533a",
-            "\u8d85\u5e02\u533a",
-            "\u4e66\u5e97\u533a",
-            "\u56fe\u4e66\u9986\u533a",
-            "\u6821\u5916\u533a"
+            new CampusRuntimeAreaPreset("Classroom", "\u6559\u5ba4", "Classroom", 2),
+            new CampusRuntimeAreaPreset("Corridor", "\u8d70\u5eca", "Corridor", 1),
+            new CampusRuntimeAreaPreset("Office", "\u529e\u516c\u5ba4", "Office", 1),
+            new CampusRuntimeAreaPreset("CommonActivityZone", "\u516c\u5171\u6d3b\u52a8\u533a", "Common Activity Zone", 1),
+            new CampusRuntimeAreaPreset("Canteen", "\u98df\u5802", "Canteen", 1),
+            new CampusRuntimeAreaPreset("Store", "\u8d85\u5e02", "Store", 1),
+            new CampusRuntimeAreaPreset("Outdoor", "\u5ba4\u5916", "Outdoor", 1),
+            new CampusRuntimeAreaPreset("Dormitory", "\u5bbf\u820d", "Dormitory", 0),
+            new CampusRuntimeAreaPreset("Restroom", "\u536b\u751f\u95f4", "Restroom", 0),
+            new CampusRuntimeAreaPreset("Library", "\u56fe\u4e66\u9986", "Library", 0),
+            new CampusRuntimeAreaPreset("Stairwell", "\u697c\u68af\u95f4", "Stairwell", 0),
+            new CampusRuntimeAreaPreset("HumanResources", "\u4eba\u4e8b\u5904", "Human Resources", 0),
+            new CampusRuntimeAreaPreset("ShrineRoom", "\u795e\u9f9b\u5ba4", "Shrine Room", 0)
         };
 
         private static readonly CampusRuntimeGameplayMarkerPreset[] GameplayMarkerPresets =
         {
             CampusRuntimeGameplayMarkerPreset.FacilityPoint(
+                "\u95e8",
+                "Door",
+                CampusFacilityType.Door,
+                new Color(0.72f, 0.72f, 0.72f, 1f)),
+            CampusRuntimeGameplayMarkerPreset.FacilityPoint(
+                "\u9ed1\u677f",
+                "Blackboard",
+                CampusFacilityType.Blackboard,
+                new Color(0.12f, 0.46f, 0.36f, 1f)),
+            CampusRuntimeGameplayMarkerPreset.FacilityPoint(
+                "\u8bfe\u684c",
+                "Student Desk",
+                CampusFacilityType.StudentDesk,
+                new Color(0.26f, 0.56f, 0.96f, 1f)),
+            CampusRuntimeGameplayMarkerPreset.FacilityPoint(
+                "\u8bb2\u53f0",
+                "Podium",
+                CampusFacilityType.Podium,
+                new Color(0.18f, 0.38f, 0.86f, 1f)),
+            CampusRuntimeGameplayMarkerPreset.FacilityPoint(
+                "\u529e\u516c\u684c",
+                "Office Desk",
+                CampusFacilityType.OfficeDesk,
+                new Color(0.72f, 0.48f, 0.28f, 1f)),
+            CampusRuntimeGameplayMarkerPreset.FacilityPoint(
+                "\u5e8a",
+                "Bed",
+                CampusFacilityType.Bed,
+                new Color(0.56f, 0.42f, 0.88f, 1f)),
+            CampusRuntimeGameplayMarkerPreset.FacilityPoint(
+                "\u516c\u544a\u680f",
+                "Bulletin Board",
+                CampusFacilityType.BulletinBoard,
+                new Color(0.88f, 0.62f, 0.24f, 1f)),
+            CampusRuntimeGameplayMarkerPreset.FacilityPoint(
+                "\u62db\u52df\u70b9",
+                "Recruitment",
+                CampusFacilityType.Recruitment,
+                new Color(0.74f, 0.36f, 0.88f, 1f)),
+            CampusRuntimeGameplayMarkerPreset.FacilityPoint(
+                "\u6d17\u624b\u6c60",
+                "Sink",
+                CampusFacilityType.Sink,
+                new Color(0.22f, 0.68f, 0.92f, 1f)),
+            CampusRuntimeGameplayMarkerPreset.FacilityPoint(
+                "\u50a8\u7269\u70b9",
+                "Storage",
+                CampusFacilityType.Storage,
+                new Color(0.62f, 0.56f, 0.46f, 1f)),
+            CampusRuntimeGameplayMarkerPreset.FacilityPoint(
                 "\u98df\u5802\u67dc\u53f0",
                 "Canteen Counter",
                 CampusFacilityType.CanteenCounter,
                 new Color(0.18f, 0.68f, 0.72f, 1f)),
+            CampusRuntimeGameplayMarkerPreset.FacilityPoint(
+                "\u98df\u5802\u6392\u961f\u70b9",
+                "Canteen Queue",
+                CampusFacilityType.CanteenQueuePoint,
+                new Color(0.95f, 0.76f, 0.28f, 1f)),
             CampusRuntimeGameplayMarkerPreset.FacilityPoint(
                 "\u6253\u996d\u6258\u76d8",
                 "Food Tray",
@@ -247,6 +327,21 @@ namespace NtingCampusMapEditor
                 "Delivery Drop",
                 CampusFacilityType.DeliveryDropPoint,
                 new Color(0.32f, 0.54f, 0.98f, 1f)),
+            CampusRuntimeGameplayMarkerPreset.FacilityPoint(
+                "\u8d85\u5e02\u8d27\u67b6",
+                "Store Shelf",
+                CampusFacilityType.StoreShelf,
+                new Color(0.88f, 0.36f, 0.72f, 1f)),
+            CampusRuntimeGameplayMarkerPreset.FacilityPoint(
+                "\u8d85\u5e02\u6392\u961f\u70b9",
+                "Store Queue",
+                CampusFacilityType.StoreQueuePoint,
+                new Color(0.94f, 0.48f, 0.82f, 1f)),
+            CampusRuntimeGameplayMarkerPreset.FacilityPoint(
+                "\u8d85\u5e02\u6536\u94f6\u53f0",
+                "Store Checkout",
+                CampusFacilityType.StoreCheckout,
+                new Color(0.76f, 0.24f, 0.64f, 1f)),
             CampusRuntimeGameplayMarkerPreset.InteractionFacilityPoint(
                 "\u5077\u70b8\u9e21",
                 "Steal Chicken",
@@ -338,7 +433,6 @@ namespace NtingCampusMapEditor
         private Vector3Int hoverCell;
         private Vector3Int lastPaintCell = new Vector3Int(int.MinValue, int.MinValue, int.MinValue);
         private Vector2 lastCameraDragMouse;
-        private string newRoomName = string.Empty;
         private string lastMapLoadPath = string.Empty;
         private string newObjectName = string.Empty;
         private int newObjectFootprintX = 1;
@@ -1141,6 +1235,7 @@ namespace NtingCampusMapEditor
             if (placed != null)
             {
                 placed.ObjectId = objectId;
+                placed.TypeId = InferObjectTypeId(objectId, displayName, newObjectIsStorageContainer);
                 placed.DisplayNameOverride = displayName;
                 placed.OverrideFootprintSize = true;
                 placed.FootprintSize = footprint;
@@ -1669,59 +1764,35 @@ namespace NtingCampusMapEditor
         private void EnsureAreaDefinitionsAvailable(bool addDefaultDefinitions)
         {
             int previousSelectedIndex = selectedRoomIndex;
-            bool wasEmpty = roomNames.Count == 0;
             EnsureRoomRequirements();
-            AddAreaDefinitionsFromPlacedMarkers();
-
-            if (addDefaultDefinitions)
-            {
-                AddDefaultAreaDefinitions();
-            }
-
+            SyncPresetAreaDefinitions();
             EnsureRoomRequirements();
             if (roomNames.Count > 0)
             {
-                selectedRoomIndex = wasEmpty
-                    ? 0
-                    : Mathf.Clamp(previousSelectedIndex, 0, roomNames.Count - 1);
+                selectedRoomIndex = Mathf.Clamp(previousSelectedIndex, 0, roomNames.Count - 1);
             }
         }
 
-        private void AddDefaultAreaDefinitions()
+        private void SyncPresetAreaDefinitions()
         {
-            for (int i = 0; i < DefaultAreaDefinitionNames.Length; i++)
+            roomNames.Clear();
+            roomRequiredCounts.Clear();
+            for (int i = 0; i < DefaultAreaPresets.Length; i++)
             {
-                AddRoomDefinitionIfMissing(DefaultAreaDefinitionNames[i], 1);
+                CampusRuntimeAreaPreset preset = DefaultAreaPresets[i];
+                if (preset == null || string.IsNullOrWhiteSpace(preset.RoomName))
+                {
+                    continue;
+                }
+
+                roomNames.Add(preset.RoomName);
+                roomRequiredCounts.Add(preset.RequiredCount);
             }
         }
 
         private void AddAreaDefinitionsFromPlacedMarkers()
         {
-            CampusRuntimeRoomMarker[] runtimeMarkers =
-                FindObjectsByType<CampusRuntimeRoomMarker>(FindObjectsInactive.Include, FindObjectsSortMode.None);
-            for (int i = 0; i < runtimeMarkers.Length; i++)
-            {
-                CampusRuntimeRoomMarker marker = runtimeMarkers[i];
-                if (marker == null || string.IsNullOrWhiteSpace(marker.RoomName))
-                {
-                    continue;
-                }
-
-                AddRoomDefinitionIfMissing(marker.RoomName, Mathf.Max(1, CountRoomMarkers(marker.RoomName)));
-            }
-
-            CampusGameplayRoomMarker[] legacyMarkers =
-                FindObjectsByType<CampusGameplayRoomMarker>(FindObjectsInactive.Include, FindObjectsSortMode.None);
-            for (int i = 0; i < legacyMarkers.Length; i++)
-            {
-                CampusGameplayRoomMarker marker = legacyMarkers[i];
-                if (marker == null || string.IsNullOrWhiteSpace(marker.RoomDisplayName))
-                {
-                    continue;
-                }
-
-                AddRoomDefinitionIfMissing(marker.RoomDisplayName, 1);
-            }
+            SyncPresetAreaDefinitions();
         }
 
         private void AddRoomDefinitionIfMissing(string roomName, int required)
@@ -1736,21 +1807,168 @@ namespace NtingCampusMapEditor
 
         private int FindRoomDefinitionIndex(string roomName)
         {
-            if (string.IsNullOrWhiteSpace(roomName))
+            if (!TryResolvePresetRoomName(roomName, out string presetRoomName))
             {
                 return -1;
             }
 
-            string cleanName = roomName.Trim();
             for (int i = 0; i < roomNames.Count; i++)
             {
-                if (string.Equals(roomNames[i], cleanName, StringComparison.OrdinalIgnoreCase))
+                if (string.Equals(roomNames[i], presetRoomName, StringComparison.OrdinalIgnoreCase))
                 {
                     return i;
                 }
             }
 
             return -1;
+        }
+
+        private static bool TryResolvePresetRoomName(string roomName, out string presetRoomName)
+        {
+            presetRoomName = string.Empty;
+            if (string.IsNullOrWhiteSpace(roomName))
+            {
+                return false;
+            }
+
+            string key = NormalizeAreaPresetKey(roomName);
+            for (int i = 0; i < DefaultAreaPresets.Length; i++)
+            {
+                CampusRuntimeAreaPreset preset = DefaultAreaPresets[i];
+                if (preset == null)
+                {
+                    continue;
+                }
+
+                if (key == NormalizeAreaPresetKey(preset.RoomName) ||
+                    key == NormalizeAreaPresetKey(preset.EnglishLabel) ||
+                    key == NormalizeAreaPresetKey(preset.ChineseLabel))
+                {
+                    presetRoomName = preset.RoomName;
+                    return true;
+                }
+            }
+
+            if (ContainsRoomNameToken(key, "\u6559\u5ba4", "class"))
+            {
+                presetRoomName = "Classroom";
+                return true;
+            }
+
+            if (ContainsRoomNameToken(key, "\u8d70\u5eca", "\u8fc7\u9053", "corridor", "hall"))
+            {
+                presetRoomName = "Corridor";
+                return true;
+            }
+
+            if (ContainsRoomNameToken(key, "\u529e\u516c\u5ba4", "\u6559\u5e08", "office", "teacher"))
+            {
+                presetRoomName = "Office";
+                return true;
+            }
+
+            if (ContainsRoomNameToken(key, "\u516c\u5171", "\u6d3b\u52a8", "common", "activity"))
+            {
+                presetRoomName = "CommonActivityZone";
+                return true;
+            }
+
+            if (ContainsRoomNameToken(key, "\u98df\u5802", "\u9910\u5385", "canteen", "dining"))
+            {
+                presetRoomName = "Canteen";
+                return true;
+            }
+
+            if (ContainsRoomNameToken(key, "\u8d85\u5e02", "\u5546\u5e97", "\u5c0f\u5356", "shop", "store", "market"))
+            {
+                presetRoomName = "Store";
+                return true;
+            }
+
+            if (ContainsRoomNameToken(key, "\u5ba4\u5916", "\u6821\u5916", "\u64cd\u573a", "\u5916\u5356", "outdoor", "outside", "delivery"))
+            {
+                presetRoomName = "Outdoor";
+                return true;
+            }
+
+            if (ContainsRoomNameToken(key, "\u5bbf\u820d", "dorm"))
+            {
+                presetRoomName = "Dormitory";
+                return true;
+            }
+
+            if (ContainsRoomNameToken(key, "\u536b\u751f\u95f4", "\u5395\u6240", "\u6d17\u624b\u95f4", "restroom", "toilet", "bath"))
+            {
+                presetRoomName = "Restroom";
+                return true;
+            }
+
+            if (ContainsRoomNameToken(key, "\u56fe\u4e66\u9986", "library"))
+            {
+                presetRoomName = "Library";
+                return true;
+            }
+
+            if (ContainsRoomNameToken(key, "\u697c\u68af", "stair"))
+            {
+                presetRoomName = "Stairwell";
+                return true;
+            }
+
+            if (ContainsRoomNameToken(key, "\u4eba\u4e8b", "humanresources", "hr"))
+            {
+                presetRoomName = "HumanResources";
+                return true;
+            }
+
+            if (ContainsRoomNameToken(key, "\u795e\u9f9b", "shrine"))
+            {
+                presetRoomName = "ShrineRoom";
+                return true;
+            }
+
+            return false;
+        }
+
+        private static string NormalizeAreaPresetKey(string value)
+        {
+            if (string.IsNullOrWhiteSpace(value))
+            {
+                return string.Empty;
+            }
+
+            return value.Trim()
+                .Replace(" ", string.Empty)
+                .Replace("_", string.Empty)
+                .Replace("-", string.Empty)
+                .ToLowerInvariant();
+        }
+
+        private CampusRuntimeAreaPreset GetAreaPreset(string roomName)
+        {
+            if (!TryResolvePresetRoomName(roomName, out string presetRoomName))
+            {
+                return null;
+            }
+
+            for (int i = 0; i < DefaultAreaPresets.Length; i++)
+            {
+                CampusRuntimeAreaPreset preset = DefaultAreaPresets[i];
+                if (preset != null && string.Equals(preset.RoomName, presetRoomName, StringComparison.OrdinalIgnoreCase))
+                {
+                    return preset;
+                }
+            }
+
+            return null;
+        }
+
+        private string GetAreaPresetLabel(string roomName)
+        {
+            CampusRuntimeAreaPreset preset = GetAreaPreset(roomName);
+            return preset != null
+                ? Tr(preset.ChineseLabel, preset.EnglishLabel)
+                : roomName;
         }
 
         private void HandleShortcuts()
@@ -2322,7 +2540,7 @@ namespace NtingCampusMapEditor
             {
                 RebuildGameplayRoomRegistrySafe();
                 SchedulePlayerMapSave();
-                SetStatus(TrFormat("\u5df2\u6807\u8bb0\u533a\u57df\uff1a{0}", "Marked area: {0}", GetSelectedRoomName()));
+                SetStatus(TrFormat("\u5df2\u6807\u8bb0\u533a\u57df\uff1a{0}", "Marked area: {0}", GetAreaPresetLabel(GetSelectedRoomName())));
             }
         }
 
@@ -2381,6 +2599,7 @@ namespace NtingCampusMapEditor
             }
 
             placed.ObjectId = prefab.name;
+            placed.TypeId = prefabPlaced != null ? prefabPlaced.TypeId : string.Empty;
             placed.FloorIndex = floor.FloorIndex;
             placed.Cell = cell;
             placed.FootprintSize = footprint;
@@ -2391,6 +2610,7 @@ namespace NtingCampusMapEditor
                 placed.BlocksSight = prefabPlaced.BlocksSight;
                 placed.IsInteractable = prefabPlaced.IsInteractable;
                 placed.IsStorageContainer = prefabPlaced.IsStorageContainer;
+                placed.TypeId = prefabPlaced.TypeId;
                 placed.StorageSize = prefabPlaced.NormalizedStorageSize;
                 placed.StorageMaxWeight = prefabPlaced.NormalizedStorageMaxWeight;
                 placed.SortingOrderOffset = prefabPlaced.SortingOrderOffset;
@@ -2533,7 +2753,7 @@ namespace NtingCampusMapEditor
             string roomName = GetSelectedRoomName();
             if (string.IsNullOrEmpty(roomName))
             {
-                SetStatus(Tr("\u8bf7\u5148\u5728\u533a\u57df\u9875\u65b0\u589e\u533a\u57df\u7c7b\u578b\u3002", "Add an area type in the Areas tab first."));
+                SetStatus(Tr("\u8bf7\u5148\u5728\u533a\u57df\u9875\u9009\u62e9\u4e00\u4e2a\u9884\u8bbe\u533a\u57df\u3002", "Select a preset area in the Areas tab first."));
                 return;
             }
 
@@ -2557,7 +2777,7 @@ namespace NtingCampusMapEditor
 
             if (showStatus)
             {
-                SetStatus(TrFormat("\u5df2\u653e\u7f6e\u533a\u57df\u6807\u8bb0\uff1a{0}", "Placed area marker: {0}", roomName));
+                SetStatus(TrFormat("\u5df2\u653e\u7f6e\u533a\u57df\u6807\u8bb0\uff1a{0}", "Placed area marker: {0}", GetAreaPresetLabel(roomName)));
             }
         }
 
@@ -2949,8 +3169,13 @@ namespace NtingCampusMapEditor
                     continue;
                 }
 
+                if (!TryResolvePresetRoomName(marker.RoomName, out string roomName))
+                {
+                    continue;
+                }
+
                 CampusRuntimeRoomSnapshot roomSnapshot = new CampusRuntimeRoomSnapshot();
-                roomSnapshot.RoomName = marker.RoomName;
+                roomSnapshot.RoomName = roomName;
                 roomSnapshot.FloorIndex = 0;
                 roomSnapshot.Cell = ToRelativeCell(marker.Cell, originCell);
                 output.Add(roomSnapshot);
@@ -3217,8 +3442,14 @@ namespace NtingCampusMapEditor
                         continue;
                     }
 
+                    string sourceRoomName = string.IsNullOrWhiteSpace(marker.RoomName) ? fallbackRoomName : marker.RoomName;
+                    if (!TryResolvePresetRoomName(sourceRoomName, out string roomName))
+                    {
+                        continue;
+                    }
+
                     CampusRuntimeRoomSnapshot shifted = new CampusRuntimeRoomSnapshot();
-                    shifted.RoomName = string.IsNullOrWhiteSpace(marker.RoomName) ? fallbackRoomName : marker.RoomName;
+                    shifted.RoomName = roomName;
                     shifted.FloorIndex = floor != null ? floor.FloorIndex : 1;
                     shifted.Cell = ToAbsoluteCell(anchorCell, marker.Cell);
                     shifted.HideMarkerVisual = true;
@@ -5188,6 +5419,7 @@ namespace NtingCampusMapEditor
             }
 
             objectSnapshot.ObjectId = string.IsNullOrEmpty(placed.ObjectId) ? placed.gameObject.name : placed.ObjectId;
+            objectSnapshot.TypeId = string.IsNullOrWhiteSpace(placed.TypeId) ? string.Empty : placed.TypeId.Trim();
             objectSnapshot.DisplayNameOverride = placed.DisplayNameOverride;
             objectSnapshot.PaletteIndex = FindPrefabIndexByName(objectSnapshot.ObjectId);
             objectSnapshot.Position = placed.transform.position;
@@ -5232,6 +5464,7 @@ namespace NtingCampusMapEditor
             }
 
             clone.ObjectId = source.ObjectId;
+            clone.TypeId = source.TypeId;
             clone.DisplayNameOverride = source.DisplayNameOverride;
             clone.PaletteIndex = source.PaletteIndex;
             clone.Position = source.Position;
@@ -5297,6 +5530,7 @@ namespace NtingCampusMapEditor
                 }
 
                 placed.ObjectId = objectSnapshot.ObjectId;
+                placed.TypeId = objectSnapshot.TypeId;
                 placed.DisplayNameOverride = objectSnapshot.DisplayNameOverride;
                 placed.FloorIndex = floor.FloorIndex;
                 placed.Cell = objectSnapshot.Cell;
@@ -5444,8 +5678,13 @@ namespace NtingCampusMapEditor
                     continue;
                 }
 
+                if (!TryResolvePresetRoomName(marker.RoomName, out string roomName))
+                {
+                    continue;
+                }
+
                 CampusRuntimeRoomSnapshot roomSnapshot = new CampusRuntimeRoomSnapshot();
-                roomSnapshot.RoomName = marker.RoomName;
+                roomSnapshot.RoomName = roomName;
                 roomSnapshot.FloorIndex = floor.FloorIndex;
                 roomSnapshot.Cell = marker.Cell;
                 roomSnapshot.HideMarkerVisual = marker.HideMarkerVisual;
@@ -5463,7 +5702,12 @@ namespace NtingCampusMapEditor
             for (int i = 0; i < rooms.Count; i++)
             {
                 CampusRuntimeRoomSnapshot roomSnapshot = rooms[i];
-                GameObject markerObject = new GameObject("Room_" + roomSnapshot.RoomName + "_F" + floor.FloorIndex + "_" + roomSnapshot.Cell.x + "_" + roomSnapshot.Cell.y);
+                if (roomSnapshot == null || !TryResolvePresetRoomName(roomSnapshot.RoomName, out string roomName))
+                {
+                    continue;
+                }
+
+                GameObject markerObject = new GameObject("Room_" + roomName + "_F" + floor.FloorIndex + "_" + roomSnapshot.Cell.x + "_" + roomSnapshot.Cell.y);
                 markerObject.transform.SetParent(floor.PropsRoot, false);
                 if (floor.Grid != null)
                 {
@@ -5471,7 +5715,7 @@ namespace NtingCampusMapEditor
                 }
 
                 CampusRuntimeRoomMarker marker = markerObject.AddComponent<CampusRuntimeRoomMarker>();
-                marker.RoomName = roomSnapshot.RoomName;
+                marker.RoomName = roomName;
                 marker.FloorIndex = floor.FloorIndex;
                 marker.Cell = roomSnapshot.Cell;
                 marker.HideMarkerVisual = roomSnapshot.HideMarkerVisual;
@@ -6109,24 +6353,15 @@ namespace NtingCampusMapEditor
                 new string[] { Tr("\u6807\u8bb0\u533a\u57df", "Mark Area"), Tr("\u6846\u9009\u533a\u57df", "Box Area") });
 
             y += 12f;
-            GUI.Label(new Rect(0f, y, 52f, 30f), Tr(CampusRuntimeEditorTextId.Name), bodyStyle);
-            newRoomName = GUI.TextField(new Rect(54f, y, viewRect.width - 154f, 30f), newRoomName, buttonStyle);
-            newRoomRequiredCount = Mathf.Clamp(ParseIntField(new Rect(viewRect.width - 92f, y, 42f, 30f), newRoomRequiredCount), 0, 99);
-            if (GUI.Button(new Rect(viewRect.width - 44f, y, 44f, 30f), "+", buttonStyle))
-            {
-                RecordUndo();
-                AddOrUpdateRoomDefinition(newRoomName, newRoomRequiredCount);
-                newRoomName = string.Empty;
-                brushMode = CampusRuntimeBrushMode.PlaceRoom;
-            }
-
-            y += 38f;
-            DrawImportFileRow(ref y, viewRect.width, Tr(CampusRuntimeEditorTextId.RoomList), GetRoomImportFile());
-            y += 8f;
+            GUI.Label(
+                new Rect(0f, y, viewRect.width, 44f),
+                Tr("\u533a\u57df\u7c7b\u578b\u5df2\u7531\u9879\u76ee\u9884\u8bbe\u9501\u5b9a\uff1a\u53ea\u80fd\u9009\u62e9\u4e0b\u65b9\u533a\u57df\uff0c\u4e0d\u518d\u652f\u6301\u73a9\u5bb6\u81ea\u5b9a\u4e49\u533a\u57df\u540d\u3002", "Area types are locked to project presets. Choose one below; custom player area names are no longer supported."),
+                mutedStyle);
+            y += 52f;
 
             if (roomNames.Count == 0)
             {
-                GUI.Label(new Rect(0f, y, viewRect.width, 58f), Tr("\u5c1a\u65e0\u533a\u57df\u9884\u8bbe\u3002\u53ef\u5728\u6b64\u65b0\u589e\uff0c\u6216\u7f16\u8f91 Rooms.txt \u540e\u5237\u65b0\u5bfc\u5165\u3002", "No area presets exist. Add areas here, or edit Rooms.txt and refresh imports."), mutedStyle);
+                GUI.Label(new Rect(0f, y, viewRect.width, 58f), Tr("\u5c1a\u65e0\u533a\u57df\u9884\u8bbe\u3002", "No area presets exist."), mutedStyle);
                 y += 66f;
             }
 
@@ -6146,21 +6381,6 @@ namespace NtingCampusMapEditor
             }
 
             y += 12f;
-            if (roomNames.Count > 0)
-            {
-                if (GUI.Button(new Rect(0f, y, 118f, 32f), Tr("\u5220\u9664\u9009\u4e2d", "Delete Selected"), buttonStyle))
-                {
-                    DeleteSelectedRoomDefinition();
-                }
-
-                if (GUI.Button(new Rect(126f, y, 118f, 32f), Tr("\u6e05\u7a7a\u5168\u90e8", "Clear All"), buttonStyle))
-                {
-                    ClearRoomDefinitions();
-                }
-
-                y += 42f;
-            }
-
             GUI.Label(new Rect(0f, y, viewRect.width, 48f), Tr("\u533a\u57df\u68c0\u67e5\u6e05\u5355\u4f1a\u5b9e\u65f6\u7edf\u8ba1\u8fd0\u884c\u65f6\u6807\u8bb0\uff0c\u5e76\u968f JSON \u5bfc\u51fa\u3002", "The area checklist counts runtime area markers in real time and is included in exported JSON."), mutedStyle);
             y += 58f;
 
@@ -6175,7 +6395,7 @@ namespace NtingCampusMapEditor
             Rect noteRect = new Rect(0f, y, viewRect.width, 76f);
             GUI.Label(
                 noteRect,
-                Tr("\u533a\u57df\u4fdd\u5b58\u5728\u5730\u56fe JSON\uff0c\u8bbe\u65bd\u70b9\u4fdd\u5b58\u5728\u540c\u76ee\u5f55\u7684 .gameplay.json\u3002\u5148\u753b\u6559\u5ba4\u3001\u8d70\u5eca\u3001\u98df\u5802\u7b49\u533a\u57df\uff0c\u518d\u653e\u7f6e\u67dc\u53f0\u3001\u6258\u76d8\u3001\u70b8\u9e21\u3001\u6c49\u5821\u3001\u5173\u4e1c\u716e\u548c\u5916\u5356\u70b9\u3002", "Areas are saved in the map JSON. Facility points are saved next to the map as .gameplay.json. Draw classroom, corridor, canteen, and other areas first, then place counters, trays, chicken, burgers, oden, and delivery points."),
+                Tr("\u533a\u57df\u4fdd\u5b58\u5728\u5730\u56fe JSON\uff0c\u8bbe\u65bd\u70b9\u4fdd\u5b58\u5728\u540c\u76ee\u5f55\u7684 .gameplay.json\u3002\u5148\u6846\u9009\u533a\u57df\uff0c\u518d\u653e\u7f6e\u6559\u5ba4\u3001\u529e\u516c\u5ba4\u3001\u98df\u5802\u3001\u8d85\u5e02\u3001\u5bbf\u820d\u7b49\u8bbe\u65bd\u70b9\u3002", "Areas are saved in the map JSON. Facility points are saved next to the map as .gameplay.json. Box areas first, then place classroom, office, canteen, store, dormitory, and other facility points."),
                 mutedStyle);
             y += 84f;
 
@@ -6520,10 +6740,10 @@ namespace NtingCampusMapEditor
             {
                 int count = CountRoomMarkers(roomNames[i]);
                 int required = roomRequiredCounts[i];
-                string label = roomNames[i];
+                string label = GetAreaPresetLabel(roomNames[i]);
                 string value = count + "/" + required;
                 Rect swatchRect = new Rect(0f, i * 30f + 6f, 18f, 16f);
-                DrawAreaColorSwatch(swatchRect, label);
+                DrawAreaColorSwatch(swatchRect, roomNames[i]);
                 GUI.Label(new Rect(26f, i * 30f, viewRect.width - 92f, 28f), label, bodyStyle);
                 GUI.Label(new Rect(viewRect.width - 66f, i * 30f, 62f, 28f), value, count >= required ? bodyStyle : warningStyle);
             }
@@ -6915,10 +7135,30 @@ namespace NtingCampusMapEditor
         {
             switch (roomType)
             {
+                case CampusRoomType.Classroom:
+                    return new Color(0.25f, 0.55f, 0.98f, 1f);
+                case CampusRoomType.Corridor:
+                    return new Color(0.96f, 0.66f, 0.22f, 1f);
+                case CampusRoomType.Office:
+                    return new Color(0.72f, 0.48f, 0.28f, 1f);
+                case CampusRoomType.Dormitory:
+                    return new Color(0.56f, 0.42f, 0.88f, 1f);
+                case CampusRoomType.Restroom:
+                    return new Color(0.22f, 0.68f, 0.92f, 1f);
                 case CampusRoomType.Canteen:
                     return new Color(0.22f, 0.72f, 0.46f, 1f);
+                case CampusRoomType.Store:
+                    return new Color(0.88f, 0.36f, 0.72f, 1f);
+                case CampusRoomType.Library:
+                    return new Color(0.16f, 0.72f, 0.72f, 1f);
+                case CampusRoomType.CommonActivityZone:
+                    return new Color(0.88f, 0.62f, 0.24f, 1f);
                 case CampusRoomType.Outdoor:
                     return new Color(0.22f, 0.58f, 0.95f, 1f);
+                case CampusRoomType.HumanResources:
+                    return new Color(0.74f, 0.36f, 0.88f, 1f);
+                case CampusRoomType.ShrineRoom:
+                    return new Color(0.92f, 0.38f, 0.45f, 1f);
                 default:
                     return new Color(0.42f, 0.82f, 0.95f, 1f);
             }
@@ -6928,14 +7168,42 @@ namespace NtingCampusMapEditor
         {
             switch (facilityType)
             {
+                case CampusFacilityType.Door:
+                    return new Color(0.72f, 0.72f, 0.72f, 1f);
+                case CampusFacilityType.Blackboard:
+                    return new Color(0.12f, 0.46f, 0.36f, 1f);
+                case CampusFacilityType.StudentDesk:
+                    return new Color(0.26f, 0.56f, 0.96f, 1f);
+                case CampusFacilityType.Podium:
+                    return new Color(0.18f, 0.38f, 0.86f, 1f);
+                case CampusFacilityType.OfficeDesk:
+                    return new Color(0.72f, 0.48f, 0.28f, 1f);
+                case CampusFacilityType.Bed:
+                    return new Color(0.56f, 0.42f, 0.88f, 1f);
+                case CampusFacilityType.BulletinBoard:
+                    return new Color(0.88f, 0.62f, 0.24f, 1f);
+                case CampusFacilityType.Recruitment:
+                    return new Color(0.74f, 0.36f, 0.88f, 1f);
+                case CampusFacilityType.Sink:
+                    return new Color(0.22f, 0.68f, 0.92f, 1f);
+                case CampusFacilityType.Storage:
+                    return new Color(0.62f, 0.56f, 0.46f, 1f);
                 case CampusFacilityType.CanteenCounter:
                     return new Color(0.18f, 0.68f, 0.72f, 1f);
+                case CampusFacilityType.CanteenQueuePoint:
+                    return new Color(0.95f, 0.76f, 0.28f, 1f);
                 case CampusFacilityType.CanteenFoodTray:
                     return new Color(0.96f, 0.64f, 0.24f, 1f);
                 case CampusFacilityType.DeliveryDropPoint:
                     return new Color(0.32f, 0.54f, 0.98f, 1f);
                 case CampusFacilityType.DiningTable:
                     return new Color(0.55f, 0.76f, 0.28f, 1f);
+                case CampusFacilityType.StoreShelf:
+                    return new Color(0.88f, 0.36f, 0.72f, 1f);
+                case CampusFacilityType.StoreQueuePoint:
+                    return new Color(0.94f, 0.48f, 0.82f, 1f);
+                case CampusFacilityType.StoreCheckout:
+                    return new Color(0.76f, 0.24f, 0.64f, 1f);
                 default:
                     return new Color(0.78f, 0.78f, 0.78f, 1f);
             }
@@ -6952,6 +7220,21 @@ namespace NtingCampusMapEditor
             if (ContainsRoomNameToken(key, "\u8d70\u5eca", "\u8fc7\u9053", "corridor", "hall"))
             {
                 return new Color(0.96f, 0.66f, 0.22f, 1f);
+            }
+
+            if (ContainsRoomNameToken(key, "\u529e\u516c\u5ba4", "\u6559\u5e08", "office", "teacher"))
+            {
+                return new Color(0.72f, 0.48f, 0.28f, 1f);
+            }
+
+            if (ContainsRoomNameToken(key, "\u5bbf\u820d", "dorm"))
+            {
+                return new Color(0.56f, 0.42f, 0.88f, 1f);
+            }
+
+            if (ContainsRoomNameToken(key, "\u536b\u751f\u95f4", "\u5395\u6240", "\u6d17\u624b\u95f4", "restroom", "toilet", "bath"))
+            {
+                return new Color(0.22f, 0.68f, 0.92f, 1f);
             }
 
             if (ContainsRoomNameToken(key, "\u98df\u5802", "\u9910\u5385", "canteen", "dining"))
@@ -6977,6 +7260,26 @@ namespace NtingCampusMapEditor
             if (ContainsRoomNameToken(key, "\u56fe\u4e66\u9986", "library"))
             {
                 return new Color(0.16f, 0.72f, 0.72f, 1f);
+            }
+
+            if (ContainsRoomNameToken(key, "\u516c\u5171", "\u6d3b\u52a8", "common", "activity"))
+            {
+                return new Color(0.88f, 0.62f, 0.24f, 1f);
+            }
+
+            if (ContainsRoomNameToken(key, "\u697c\u68af", "stair"))
+            {
+                return new Color(0.62f, 0.62f, 0.62f, 1f);
+            }
+
+            if (ContainsRoomNameToken(key, "\u4eba\u4e8b", "humanresources", "hr"))
+            {
+                return new Color(0.74f, 0.36f, 0.88f, 1f);
+            }
+
+            if (ContainsRoomNameToken(key, "\u795e\u9f9b", "shrine"))
+            {
+                return new Color(0.92f, 0.38f, 0.45f, 1f);
             }
 
             if (ContainsRoomNameToken(key, "\u6821\u5916", "\u5ba4\u5916", "\u64cd\u573a", "outdoor", "outside"))
@@ -7463,7 +7766,7 @@ namespace NtingCampusMapEditor
         private void DrawAreaDefinitionRow(Rect rect, string roomName, int count, int required)
         {
             DrawAreaColorSwatch(new Rect(rect.x + 10f, rect.y + 8f, 18f, 18f), roomName);
-            GUI.Label(new Rect(rect.x + 38f, rect.y + 4f, rect.width - 108f, 26f), roomName, bodyStyle);
+            GUI.Label(new Rect(rect.x + 38f, rect.y + 4f, rect.width - 108f, 26f), GetAreaPresetLabel(roomName), bodyStyle);
             GUI.Label(new Rect(rect.xMax - 68f, rect.y + 4f, 60f, 26f), count + "/" + required, count >= required ? bodyStyle : warningStyle);
         }
 
@@ -7746,11 +8049,12 @@ namespace NtingCampusMapEditor
 
             Rect scrollRect = new Rect(panelRect.x + 14f, panelRect.y + 98f, panelRect.width - 28f, panelRect.height - 112f);
             float viewWidth = scrollRect.width - 22f;
-            Rect viewRect = new Rect(0f, 0f, viewWidth, Mathf.Max(scrollRect.height + 1f, 1360f));
+            Rect viewRect = new Rect(0f, 0f, viewWidth, Mathf.Max(scrollRect.height + 1f, 1430f));
             objectSettingsScroll = GUI.BeginScrollView(scrollRect, objectSettingsScroll, viewRect);
             float y = 0f;
 
             DrawObjectSettingsRenameControls(ref y, viewWidth, prefab, placed);
+            DrawObjectSettingsTypeIdControls(ref y, viewWidth, placed);
             DrawObjectSettingsWallMountControls(ref y, viewWidth, placed);
             DrawObjectSettingsPreviewControls(ref y, viewWidth, prefab, placed);
             DrawObjectSettingsFootprintControls(ref y, viewWidth, placed);
@@ -8620,7 +8924,7 @@ namespace NtingCampusMapEditor
                 return 0;
             }
 
-            string targetObjectTypeKey = ResolveObjectTypeKey(settings.ObjectId, prefab.name);
+            string targetObjectTypeKey = ResolveObjectTypeKey(settings.TypeId, settings.ObjectId, prefab.name);
             if (string.IsNullOrEmpty(targetObjectTypeKey))
             {
                 return 0;
@@ -8717,6 +9021,9 @@ namespace NtingCampusMapEditor
                 placed.ObjectId = !string.IsNullOrWhiteSpace(settings.ObjectId) ? settings.ObjectId : target.name;
             }
 
+            placed.TypeId = string.IsNullOrWhiteSpace(settings.TypeId)
+                ? string.Empty
+                : settings.TypeId.Trim();
             placed.DisplayNameOverride = string.IsNullOrWhiteSpace(settings.DisplayNameOverride)
                 ? string.Empty
                 : settings.DisplayNameOverride.Trim();
@@ -8787,6 +9094,7 @@ namespace NtingCampusMapEditor
 
             placed.NormalizeCustomInteractionAnchors();
             placed.NormalizeStorageSettings();
+            settings.TypeId = string.IsNullOrWhiteSpace(placed.TypeId) ? string.Empty : placed.TypeId.Trim();
             settings.DisplayNameOverride = string.IsNullOrWhiteSpace(placed.DisplayNameOverride) ? string.Empty : placed.DisplayNameOverride.Trim();
             settings.OverrideFootprintSize = placed.OverrideFootprintSize;
             settings.FootprintSize = placed.NormalizedFootprintSize;
@@ -8977,6 +9285,148 @@ namespace NtingCampusMapEditor
             }
         }
 
+        private static string InferObjectTypeId(string objectId, string displayName, bool isStorageContainer)
+        {
+            if (isStorageContainer)
+            {
+                return nameof(CampusFacilityType.Storage);
+            }
+
+            string key = NormalizeObjectTypeIdSeed(objectId) + "|" + NormalizeObjectTypeIdSeed(displayName);
+            if (ContainsObjectTypeToken(key, "studentdesk", "student_desk", "desk_1x1", "\u8bfe\u684c", "\u4e66\u684c"))
+            {
+                return nameof(CampusFacilityType.StudentDesk);
+            }
+
+            if (ContainsObjectTypeToken(key, "officedesk", "office_desk", "teacherdesk", "teacher_desk", "\u529e\u516c\u684c", "\u6559\u5e08\u684c"))
+            {
+                return nameof(CampusFacilityType.OfficeDesk);
+            }
+
+            if (ContainsObjectTypeToken(key, "blackboard", "whiteboard", "chalkboard", "\u9ed1\u677f", "\u767d\u677f"))
+            {
+                return nameof(CampusFacilityType.Blackboard);
+            }
+
+            if (ContainsObjectTypeToken(key, "podium", "teacherpodium", "teacher_podium", "\u8bb2\u53f0"))
+            {
+                return nameof(CampusFacilityType.Podium);
+            }
+
+            if (ContainsObjectTypeToken(key, "canteencounter", "canteen_counter", "foodcounter", "food_counter", "\u98df\u5802\u67dc\u53f0", "\u7a97\u53e3"))
+            {
+                return nameof(CampusFacilityType.CanteenCounter);
+            }
+
+            if (ContainsObjectTypeToken(key, "canteenqueue", "canteen_queue", "mealqueue", "meal_queue", "\u98df\u5802\u6392\u961f"))
+            {
+                return nameof(CampusFacilityType.CanteenQueuePoint);
+            }
+
+            if (ContainsObjectTypeToken(key, "foodtray", "food_tray", "friedchicken", "burger", "oden", "\u6258\u76d8", "\u70b8\u9e21", "\u6c49\u5821", "\u5173\u4e1c\u716e"))
+            {
+                return nameof(CampusFacilityType.CanteenFoodTray);
+            }
+
+            if (ContainsObjectTypeToken(key, "diningtable", "dining_table", "\u9910\u684c", "\u5403\u996d"))
+            {
+                return nameof(CampusFacilityType.DiningTable);
+            }
+
+            if (ContainsObjectTypeToken(key, "storeshelf", "store_shelf", "shopshelf", "shop_shelf", "snackshelf", "\u8d27\u67b6", "\u96f6\u98df\u67b6"))
+            {
+                return nameof(CampusFacilityType.StoreShelf);
+            }
+
+            if (ContainsObjectTypeToken(key, "storecheckout", "store_checkout", "cashregister", "cash_register", "checkout", "\u6536\u94f6"))
+            {
+                return nameof(CampusFacilityType.StoreCheckout);
+            }
+
+            if (ContainsObjectTypeToken(key, "storequeue", "store_queue", "checkoutqueue", "checkout_queue", "\u6536\u94f6\u961f", "\u8d85\u5e02\u6392\u961f"))
+            {
+                return nameof(CampusFacilityType.StoreQueuePoint);
+            }
+
+            if (ContainsObjectTypeToken(key, "delivery", "takeout", "waimai", "\u5916\u5356"))
+            {
+                return nameof(CampusFacilityType.DeliveryDropPoint);
+            }
+
+            if (ContainsObjectTypeToken(key, "bulletin", "\u516c\u544a\u680f"))
+            {
+                return nameof(CampusFacilityType.BulletinBoard);
+            }
+
+            if (ContainsObjectTypeToken(key, "recruitment", "recruit", "\u62db\u52df"))
+            {
+                return nameof(CampusFacilityType.Recruitment);
+            }
+
+            if (ContainsObjectTypeToken(key, "restroomstall", "restroom_stall", "stall", "\u9694\u95f4"))
+            {
+                return nameof(CampusFacilityType.RestroomStall);
+            }
+
+            if (ContainsObjectTypeToken(key, "urinal", "\u5c0f\u4fbf\u6c60"))
+            {
+                return nameof(CampusFacilityType.Urinal);
+            }
+
+            if (ContainsObjectTypeToken(key, "sink", "\u6d17\u624b\u6c60", "\u6c34\u6c60"))
+            {
+                return nameof(CampusFacilityType.Sink);
+            }
+
+            if (ContainsObjectTypeToken(key, "bed", "\u5e8a"))
+            {
+                return nameof(CampusFacilityType.Bed);
+            }
+
+            if (ContainsObjectTypeToken(key, "chair", "\u6905\u5b50"))
+            {
+                return nameof(CampusFacilityType.Chair);
+            }
+
+            if (ContainsObjectTypeToken(key, "door", "\u95e8"))
+            {
+                return nameof(CampusFacilityType.Door);
+            }
+
+            if (ContainsObjectTypeToken(key, "stair", "\u697c\u68af"))
+            {
+                return nameof(CampusFacilityType.Stair);
+            }
+
+            return string.Empty;
+        }
+
+        private static string NormalizeObjectTypeIdSeed(string value)
+        {
+            return string.IsNullOrWhiteSpace(value)
+                ? string.Empty
+                : value.Trim().Replace(" ", string.Empty).Replace("-", "_").ToLowerInvariant();
+        }
+
+        private static bool ContainsObjectTypeToken(string value, params string[] tokens)
+        {
+            if (string.IsNullOrEmpty(value) || tokens == null)
+            {
+                return false;
+            }
+
+            for (int i = 0; i < tokens.Length; i++)
+            {
+                string token = NormalizeObjectTypeIdSeed(tokens[i]);
+                if (!string.IsNullOrEmpty(token) && value.Contains(token))
+                {
+                    return true;
+                }
+            }
+
+            return false;
+        }
+
         private CampusPlacedObject EnsureRuntimePlacedObject(GameObject target)
         {
             if (target == null)
@@ -9022,12 +9472,16 @@ namespace NtingCampusMapEditor
                 return string.Empty;
             }
 
-            return ResolveObjectTypeKey(placed.ObjectId, placed.gameObject != null ? placed.gameObject.name : string.Empty);
+            return ResolveObjectTypeKey(placed.TypeId, placed.ObjectId, placed.gameObject != null ? placed.gameObject.name : string.Empty);
         }
 
-        private static string ResolveObjectTypeKey(string objectId, string fallbackName)
+        private static string ResolveObjectTypeKey(string typeId, string objectId, string fallbackName)
         {
-            string resolved = !string.IsNullOrWhiteSpace(objectId) ? objectId : fallbackName;
+            string resolved = !string.IsNullOrWhiteSpace(typeId)
+                ? typeId
+                : !string.IsNullOrWhiteSpace(objectId)
+                    ? objectId
+                    : fallbackName;
             if (string.IsNullOrWhiteSpace(resolved))
             {
                 return string.Empty;
@@ -9600,21 +10054,22 @@ namespace NtingCampusMapEditor
 
         private void AddOrUpdateRoomDefinition(string roomName, int required)
         {
-            if (string.IsNullOrWhiteSpace(roomName))
+            if (!TryResolvePresetRoomName(roomName, out string presetRoomName))
             {
                 return;
             }
 
-            string cleanName = roomName.Trim();
-            int index = FindRoomDefinitionIndex(cleanName);
+            CampusRuntimeAreaPreset preset = GetAreaPreset(presetRoomName);
+            int resolvedRequired = preset != null ? preset.RequiredCount : Mathf.Max(0, required);
+            int index = FindRoomDefinitionIndex(presetRoomName);
             if (index >= 0)
             {
-                roomRequiredCounts[index] = Mathf.Max(0, required);
+                roomRequiredCounts[index] = resolvedRequired;
                 return;
             }
 
-            roomNames.Add(cleanName);
-            roomRequiredCounts.Add(Mathf.Max(0, required));
+            roomNames.Add(presetRoomName);
+            roomRequiredCounts.Add(resolvedRequired);
             selectedRoomIndex = roomNames.Count - 1;
         }
 
@@ -9661,11 +10116,18 @@ namespace NtingCampusMapEditor
 
         private int CountRoomMarkers(string roomName)
         {
+            if (!TryResolvePresetRoomName(roomName, out string targetRoomName))
+            {
+                return 0;
+            }
+
             CampusRuntimeRoomMarker[] markers = FindObjectsByType<CampusRuntimeRoomMarker>(FindObjectsInactive.Include, FindObjectsSortMode.None);
             int count = 0;
             for (int i = 0; i < markers.Length; i++)
             {
-                if (markers[i] != null && markers[i].RoomName == roomName)
+                if (markers[i] != null &&
+                    TryResolvePresetRoomName(markers[i].RoomName, out string markerRoomName) &&
+                    string.Equals(markerRoomName, targetRoomName, StringComparison.OrdinalIgnoreCase))
                 {
                     count++;
                 }
@@ -9799,11 +10261,6 @@ namespace NtingCampusMapEditor
             if (!string.IsNullOrWhiteSpace(newRoomPrefabName))
             {
                 return newRoomPrefabName.Trim();
-            }
-
-            if (!string.IsNullOrWhiteSpace(newRoomName))
-            {
-                return newRoomName.Trim();
             }
 
             return GetSelectedRoomName();
@@ -10740,6 +11197,7 @@ namespace NtingCampusMapEditor
 
             placed.NormalizeStorageSettings();
             placed.NormalizeCustomInteractionAnchors();
+            placed.TypeId = string.IsNullOrWhiteSpace(placed.TypeId) ? string.Empty : placed.TypeId.Trim();
             placed.ApplyVisualScaleState();
             placed.ApplyRotationVisualState();
             placed.ApplyInteractionState();
@@ -10753,6 +11211,32 @@ namespace NtingCampusMapEditor
             string next = DrawTextInput(new Rect(102f, y, width - 102f, 30f), current, key);
             placed.DisplayNameOverride = string.IsNullOrWhiteSpace(next) ? string.Empty : next.Trim();
             y += 40f;
+        }
+
+        private void DrawObjectSettingsTypeIdControls(ref float y, float width, CampusPlacedObject placed)
+        {
+            if (placed == null)
+            {
+                return;
+            }
+
+            GUI.Label(new Rect(0f, y, 96f, 28f), Tr("\u7c7b\u578bID", "Type ID"), bodyStyle);
+            string key = BuildObjectSettingsInputKey(placed, "type_id");
+            string current = string.IsNullOrEmpty(placed.TypeId) ? string.Empty : placed.TypeId;
+            string next = DrawTextInput(new Rect(102f, y, Mathf.Max(40f, width - 168f), 30f), current, key);
+            placed.TypeId = string.IsNullOrWhiteSpace(next) ? string.Empty : next.Trim();
+            if (GUI.Button(new Rect(width - 58f, y, 58f, 28f), CampusRuntimeEditorTextCatalog.Get(displayLanguage, CampusRuntimeEditorTextId.Clear), buttonStyle))
+            {
+                placed.TypeId = string.Empty;
+                textInputDrafts[key] = string.Empty;
+            }
+
+            y += 34f;
+            GUI.Label(
+                new Rect(0f, y, width, 38f),
+                Tr("\u7528\u4e8e\u7269\u54c1/\u8bbe\u65bd\u5224\u5b9a\u7684\u7a33\u5b9aID\u3002\u4f8b\uff1aStudentDesk\u3001OfficeDesk\u3001CanteenCounter\u3001StoreShelf\u3001Storage\u3002", "Stable ID for object/facility checks. Examples: StudentDesk, OfficeDesk, CanteenCounter, StoreShelf, Storage."),
+                mutedStyle);
+            y += 46f;
         }
 
         private void DrawObjectSettingsWallMountControls(ref float y, float width, CampusPlacedObject placed)
@@ -12074,6 +12558,7 @@ namespace NtingCampusMapEditor
     public sealed class CampusRuntimeObjectSnapshot
     {
         public string ObjectId;
+        public string TypeId;
         public string DisplayNameOverride;
         public int PaletteIndex = -1;
         public Vector3 Position;
@@ -12112,6 +12597,7 @@ namespace NtingCampusMapEditor
     public sealed class CampusRuntimeObjectSettings
     {
         public string ObjectId;
+        public string TypeId;
         public string DisplayNameOverride;
         public bool OverrideFootprintSize;
         public Vector2Int FootprintSize = Vector2Int.one;

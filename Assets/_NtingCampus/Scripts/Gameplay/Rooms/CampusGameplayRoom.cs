@@ -27,8 +27,8 @@ namespace NtingCampus.Gameplay.Rooms
             {
                 placedObject = source;
                 facilityType = type;
-                facilityId = source != null && !string.IsNullOrWhiteSpace(source.ObjectId)
-                    ? source.ObjectId.Trim()
+                facilityId = source != null && !string.IsNullOrWhiteSpace(source.EffectiveTypeId)
+                    ? source.EffectiveTypeId.Trim()
                     : string.Empty;
                 displayName = source != null ? source.DisplayName : string.Empty;
                 cell = source != null ? source.Cell : default;

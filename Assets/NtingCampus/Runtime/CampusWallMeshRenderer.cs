@@ -586,8 +586,8 @@ namespace NtingCampusMapEditor
 
             bool hasHorizontalArm = eastArm || westArm;
             float horizontalTopYOffset = hasHorizontalArm ? HorizontalTopYOffset : 0f;
-            float centerTopMinY = -TopHalfWidth + (!southArm ? horizontalTopYOffset : 0f);
-            float centerTopMaxY = TopHalfWidth + (!northArm ? horizontalTopYOffset : 0f);
+            float centerTopMinY = -TopHalfWidth + horizontalTopYOffset;
+            float centerTopMaxY = TopHalfWidth + horizontalTopYOffset;
             builder.AddPrism(
                 -TopHalfWidth,
                 centerTopMinY,
@@ -605,10 +605,10 @@ namespace NtingCampusMapEditor
             if (eastArm)
             {
                 builder.AddPrism(
-                    new Vector2(TopHalfWidth, centerTopMinY),
-                    new Vector2(HalfCell, -TopHalfWidth + horizontalTopYOffset),
-                    new Vector2(HalfCell, TopHalfWidth + horizontalTopYOffset),
-                    new Vector2(TopHalfWidth, centerTopMaxY),
+                    TopHalfWidth,
+                    centerTopMinY,
+                    HalfCell,
+                    centerTopMaxY,
                     BottomHalfWidth,
                     -BottomHalfWidth,
                     HalfCell,
@@ -622,10 +622,10 @@ namespace NtingCampusMapEditor
             if (westArm)
             {
                 builder.AddPrism(
-                    new Vector2(-HalfCell, -TopHalfWidth + horizontalTopYOffset),
-                    new Vector2(-TopHalfWidth, centerTopMinY),
-                    new Vector2(-TopHalfWidth, centerTopMaxY),
-                    new Vector2(-HalfCell, TopHalfWidth + horizontalTopYOffset),
+                    -HalfCell,
+                    centerTopMinY,
+                    -TopHalfWidth,
+                    centerTopMaxY,
                     -HalfCell,
                     -BottomHalfWidth,
                     -BottomHalfWidth,
@@ -640,7 +640,7 @@ namespace NtingCampusMapEditor
             {
                 builder.AddPrism(
                     -TopHalfWidth,
-                    TopHalfWidth,
+                    centerTopMaxY,
                     TopHalfWidth,
                     HalfCell,
                     -BottomHalfWidth,
@@ -659,7 +659,7 @@ namespace NtingCampusMapEditor
                     -TopHalfWidth,
                     -HalfCell,
                     TopHalfWidth,
-                    -TopHalfWidth,
+                    centerTopMinY,
                     -BottomHalfWidth,
                     -HalfCell,
                     BottomHalfWidth,
@@ -2087,43 +2087,14 @@ namespace NtingCampusMapEditor
                 bool southFace,
                 bool westFace)
             {
-                AddPrism(
-                    new Vector2(topMinX, topMinY),
-                    new Vector2(topMaxX, topMinY),
-                    new Vector2(topMaxX, topMaxY),
-                    new Vector2(topMinX, topMaxY),
-                    bottomMinX,
-                    bottomMinY,
-                    bottomMaxX,
-                    bottomMaxY,
-                    northFace,
-                    eastFace,
-                    southFace,
-                    westFace);
-            }
-
-            public void AddPrism(
-                Vector2 topSW,
-                Vector2 topSE,
-                Vector2 topNE,
-                Vector2 topNW,
-                float bottomMinX,
-                float bottomMinY,
-                float bottomMaxX,
-                float bottomMaxY,
-                bool northFace,
-                bool eastFace,
-                bool southFace,
-                bool westFace)
-            {
                 Vector3 bSW = origin + new Vector3(bottomMinX, bottomMinY, BaseDepth);
                 Vector3 bSE = origin + new Vector3(bottomMaxX, bottomMinY, BaseDepth);
                 Vector3 bNE = origin + new Vector3(bottomMaxX, bottomMaxY, BaseDepth);
                 Vector3 bNW = origin + new Vector3(bottomMinX, bottomMaxY, BaseDepth);
-                Vector3 tSW = origin + new Vector3(topSW.x, topSW.y, TopDepth);
-                Vector3 tSE = origin + new Vector3(topSE.x, topSE.y, TopDepth);
-                Vector3 tNE = origin + new Vector3(topNE.x, topNE.y, TopDepth);
-                Vector3 tNW = origin + new Vector3(topNW.x, topNW.y, TopDepth);
+                Vector3 tSW = origin + new Vector3(topMinX, topMinY, TopDepth);
+                Vector3 tSE = origin + new Vector3(topMaxX, topMinY, TopDepth);
+                Vector3 tNE = origin + new Vector3(topMaxX, topMaxY, TopDepth);
+                Vector3 tNW = origin + new Vector3(topMinX, topMaxY, TopDepth);
 
                 AddQuad(tSW, tSE, tNE, tNW, CapSurface);
 
