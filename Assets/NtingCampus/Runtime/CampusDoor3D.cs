@@ -1,5 +1,6 @@
 using System.Collections;
 using System.Collections.Generic;
+using NtingCampus.Gameplay.Characters;
 using UnityEngine;
 
 namespace NtingCampusMapEditor
@@ -9,7 +10,7 @@ namespace NtingCampusMapEditor
     /// </summary>
     [ExecuteAlways]
     [DisallowMultipleComponent]
-    public sealed class CampusDoor3D : MonoBehaviour, ICampusInteractable
+    public sealed class CampusDoor3D : MonoBehaviour
     {
         private const string GeneratedMeshName = "CampusDoor3D_GeneratedMesh";
 
@@ -34,6 +35,14 @@ namespace NtingCampusMapEditor
         public float EndBevel = 0.055f;
         public float HingeWidth = 0.06f;
         public bool OpenClockwise;
+        public bool AutoOpenForNearbyCharacters = true;
+        public float AutoOpenRadius = 1.15f;
+        public float AutoCloseDelay = 0.7f;
+        public float AutoScanInterval = 0.15f;
+        public bool RequiresPermission;
+        public string RequiredPermissionId;
+        public List<string> AllowedCharacterIds = new List<string>();
+        public List<CampusCharacterRole> AllowedRoles = new List<CampusCharacterRole>();
 
         [SerializeField]
         private bool isOpen;
@@ -44,6 +53,8 @@ namespace NtingCampusMapEditor
         private readonly List<int> topTriangles = new List<int>();
         private Coroutine animationRoutine;
         private Mesh generatedMesh;
+        private float nextAutoScanTime;
+        private float lastAllowedCharacterNearTime = -999f;
 
         public bool IsOpen => isOpen;
 
@@ -56,6 +67,8 @@ namespace NtingCampusMapEditor
             {
                 SetOpenImmediate(StartsOpen);
             }
+
+            DisableDoorInteractionAnchors();
         }
 
         private void OnEnable()
@@ -67,6 +80,8 @@ namespace NtingCampusMapEditor
             {
                 SetOpenImmediate(StartsOpen);
             }
+
+            DisableDoorInteractionAnchors();
         }
 
         private void Reset()
@@ -74,6 +89,7 @@ namespace NtingCampusMapEditor
             CacheReferences();
             RebuildDoorMesh();
             SetOpenImmediate(StartsOpen);
+            DisableDoorInteractionAnchors();
         }
 
         private void OnValidate()
@@ -95,6 +111,8 @@ namespace NtingCampusMapEditor
             {
                 SetOpenImmediate(StartsOpen);
             }
+
+            DisableDoorInteractionAnchors();
         }
 
         private void OnDestroy()
@@ -114,16 +132,6 @@ namespace NtingCampusMapEditor
             }
 
             generatedMesh = null;
-        }
-
-        public void Interact(GameObject actor)
-        {
-            ToggleOpen();
-        }
-
-        public void ToggleOpen()
-        {
-            SetOpen(!isOpen);
         }
 
         public void Open()
@@ -163,7 +171,7 @@ namespace NtingCampusMapEditor
 
             isOpen = open;
             ApplyVisualState(open ? GetSignedOpenAngle() : 0f);
-            ApplyBlockingState(open, true);
+            ApplyBlockingState(open);
         }
 
         public void RebuildDoorMesh()
@@ -179,12 +187,13 @@ namespace NtingCampusMapEditor
             ApplyMaterials();
             ApplyColliderDefaults();
             ApplyVisualState(isOpen ? GetSignedOpenAngle() : 0f);
+            ApplyBlockingState(isOpen);
         }
 
         private IEnumerator AnimateDoor(bool open)
         {
             isOpen = open;
-            ApplyBlockingState(open, false);
+            ApplyBlockingState(open);
 
             float startAngle = GetCurrentSwingAngle();
             float targetAngle = open ? GetSignedOpenAngle() : 0f;
@@ -199,8 +208,33 @@ namespace NtingCampusMapEditor
             }
 
             ApplyVisualState(targetAngle);
-            ApplyBlockingState(open, true);
+            ApplyBlockingState(open);
             animationRoutine = null;
+        }
+
+        private void Update()
+        {
+            if (!Application.isPlaying || !AutoOpenForNearbyCharacters || Time.time < nextAutoScanTime)
+            {
+                return;
+            }
+
+            nextAutoScanTime = Time.time + Mathf.Max(0.05f, AutoScanInterval);
+            if (HasAllowedCharacterNearby())
+            {
+                lastAllowedCharacterNearTime = Time.time;
+                if (!isOpen)
+                {
+                    Open();
+                }
+
+                return;
+            }
+
+            if (isOpen && Time.time - lastAllowedCharacterNearTime >= Mathf.Max(0f, AutoCloseDelay))
+            {
+                Close();
+            }
         }
 
         private void ApplyVisualState(float swingAngle)
@@ -214,9 +248,9 @@ namespace NtingCampusMapEditor
             DoorPivot.localRotation = Quaternion.Euler(0f, 0f, GetClosedAngle() + swingAngle);
         }
 
-        private void ApplyBlockingState(bool open, bool finalState)
+        private void ApplyBlockingState(bool open)
         {
-            bool blocks = !open && finalState;
+            bool blocks = RequiresPermission && !open;
             if (DoorCollider != null)
             {
                 DoorCollider.enabled = blocks;
@@ -224,7 +258,7 @@ namespace NtingCampusMapEditor
 
             if (InteractionCollider != null)
             {
-                InteractionCollider.enabled = true;
+                InteractionCollider.enabled = false;
                 InteractionCollider.isTrigger = true;
             }
 
@@ -232,7 +266,7 @@ namespace NtingCampusMapEditor
             {
                 PlacedObject.BlocksMovement = blocks;
                 PlacedObject.BlocksSight = blocks;
-                PlacedObject.IsInteractable = true;
+                PlacedObject.IsInteractable = false;
             }
         }
 
@@ -277,7 +311,7 @@ namespace NtingCampusMapEditor
                 DoorMeshRenderer = visual.gameObject.AddComponent<MeshRenderer>();
             }
 
-            if (DoorCollider == null)
+            if (DoorCollider == null && RequiresPermission)
             {
                 Transform colliderTransform = DoorPivot != null
                     ? CampusObjectNames.FindDirectChild(DoorPivot, CampusObjectNames.DoorCollider, CampusObjectNames.LegacyDoorCollider)
@@ -307,13 +341,6 @@ namespace NtingCampusMapEditor
                 }
             }
 
-            if (InteractionCollider == null)
-            {
-                BoxCollider2D trigger = gameObject.AddComponent<BoxCollider2D>();
-                trigger.isTrigger = true;
-                InteractionCollider = trigger;
-            }
-
             if (PlacedObject == null)
             {
                 PlacedObject = GetComponent<CampusPlacedObject>();
@@ -322,6 +349,106 @@ namespace NtingCampusMapEditor
             if (PlacedObject == null)
             {
                 PlacedObject = gameObject.AddComponent<CampusPlacedObject>();
+            }
+
+            DisableDoorInteractionAnchors();
+        }
+
+        private bool HasAllowedCharacterNearby()
+        {
+            float radiusSqr = Mathf.Max(0.05f, AutoOpenRadius) * Mathf.Max(0.05f, AutoOpenRadius);
+            Vector2 doorPosition = DoorPivot != null ? DoorPivot.position : transform.position;
+            IReadOnlyList<CampusCharacterBodyController> bodies = CampusCharacterBodyController.Bodies;
+            for (int i = 0; i < bodies.Count; i++)
+            {
+                CampusCharacterBodyController body = bodies[i];
+                if (body == null || !body.isActiveAndEnabled)
+                {
+                    continue;
+                }
+
+                if (((Vector2)body.transform.position - doorPosition).sqrMagnitude > radiusSqr)
+                {
+                    continue;
+                }
+
+                if (CanCharacterOpen(body))
+                {
+                    return true;
+                }
+            }
+
+            return false;
+        }
+
+        private bool CanCharacterOpen(CampusCharacterBodyController body)
+        {
+            if (!RequiresPermission)
+            {
+                return true;
+            }
+
+            CampusCharacterRuntime runtime = body != null
+                ? body.GetComponent<CampusCharacterRuntime>() ?? body.GetComponentInParent<CampusCharacterRuntime>()
+                : null;
+            CampusCharacterData data = runtime != null ? runtime.Data : null;
+            if (data == null)
+            {
+                return false;
+            }
+
+            if (AllowedCharacterIds != null)
+            {
+                string characterId = runtime.CharacterId;
+                for (int i = 0; i < AllowedCharacterIds.Count; i++)
+                {
+                    if (!string.IsNullOrWhiteSpace(AllowedCharacterIds[i]) &&
+                        string.Equals(AllowedCharacterIds[i].Trim(), characterId, System.StringComparison.OrdinalIgnoreCase))
+                    {
+                        return true;
+                    }
+                }
+            }
+
+            if (AllowedRoles != null)
+            {
+                for (int i = 0; i < AllowedRoles.Count; i++)
+                {
+                    if (AllowedRoles[i] == data.Role)
+                    {
+                        return true;
+                    }
+                }
+            }
+
+            return false;
+        }
+
+        private void DisableDoorInteractionAnchors()
+        {
+            CampusInteractionAnchor[] anchors = GetComponentsInChildren<CampusInteractionAnchor>(true);
+            for (int i = 0; i < anchors.Length; i++)
+            {
+                CampusInteractionAnchor anchor = anchors[i];
+                if (anchor == null)
+                {
+                    continue;
+                }
+
+                if (!ReferenceEquals(anchor.InteractionTarget, this) &&
+                    !CampusInteractionActionIds.Equals(anchor.ActionId, CampusInteractionActionIds.ToggleDoor) &&
+                    !anchor.UseTargetDoorStatePrompt)
+                {
+                    continue;
+                }
+
+                anchor.IsAvailable = false;
+                anchor.HideWhenUnavailable = true;
+                Collider2D anchorCollider = anchor.GetComponent<Collider2D>();
+                if (anchorCollider != null)
+                {
+                    anchorCollider.enabled = false;
+                }
             }
         }
 

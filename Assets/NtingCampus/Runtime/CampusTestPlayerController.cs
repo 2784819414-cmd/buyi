@@ -9,6 +9,12 @@ namespace NtingCampusMapEditor
     [DisallowMultipleComponent]
     public sealed class CampusTestPlayerController : MonoBehaviour
     {
+        private enum PlayerControlState
+        {
+            Disabled,
+            FreeMove
+        }
+
         public float MoveSpeed = 3.5f;
         public int FloorIndex = 1;
         public KeyCode InteractKey = KeyCode.E;
@@ -20,17 +26,15 @@ namespace NtingCampusMapEditor
         private CampusInteractionController interactionController;
         private Vector2 moveInput;
         private Vector2 facingDirection = Vector2.down;
+        [SerializeField] private PlayerControlState controlState = PlayerControlState.FreeMove;
 
         public bool GameplayInputEnabled { get; private set; } = true;
+        public bool IsMoving => moveInput.sqrMagnitude > 0.0001f;
+        public Vector2 FacingDirection => facingDirection;
 
         private void Awake()
         {
-            bodyController = GetComponent<CampusCharacterBodyController>();
-            if (bodyController == null)
-            {
-                bodyController = gameObject.AddComponent<CampusCharacterBodyController>();
-            }
-
+            EnsureBodyController();
             ConfigureBodyController();
             ConfigureInteractionController();
         }
@@ -39,12 +43,16 @@ namespace NtingCampusMapEditor
         {
             if (!GameplayInputEnabled)
             {
-                moveInput = Vector2.zero;
-                ConfigureBodyController();
-                bodyController.SetMovementInput(Vector2.zero);
+                EnterDisabledState();
                 return;
             }
 
+            UpdateFreeMoveState();
+        }
+
+        private void UpdateFreeMoveState()
+        {
+            controlState = PlayerControlState.FreeMove;
             moveInput = ReadMoveInput();
             if (moveInput.sqrMagnitude > 0.0001f)
             {
@@ -53,7 +61,13 @@ namespace NtingCampusMapEditor
 
             ConfigureBodyController();
             bodyController.SetMovementInput(moveInput);
+            UpdateInteractionState();
+        }
+
+        private void UpdateInteractionState()
+        {
             ConfigureInteractionController();
+            interactionController.enabled = true;
             interactionController.SetFacingDirection(facingDirection);
             interactionController.RefreshTarget();
             if (CampusInteractionInput.WasKeyPressed(InteractKey))
@@ -62,25 +76,40 @@ namespace NtingCampusMapEditor
             }
         }
 
+        private void EnterDisabledState()
+        {
+            controlState = PlayerControlState.Disabled;
+            moveInput = Vector2.zero;
+            ConfigureBodyController();
+            bodyController.StopMovement();
+            ConfigureInteractionController();
+            if (interactionController != null)
+            {
+                interactionController.enabled = false;
+            }
+        }
+
         private void Reset()
         {
-            bodyController = GetComponent<CampusCharacterBodyController>();
-            if (bodyController == null)
-            {
-                bodyController = gameObject.AddComponent<CampusCharacterBodyController>();
-            }
-
+            EnsureBodyController();
             ConfigureBodyController();
             ConfigureInteractionController();
         }
 
         public void SetGameplayInputEnabled(bool enabled)
         {
+            if (enabled && !this.enabled)
+            {
+                this.enabled = true;
+            }
+
             GameplayInputEnabled = enabled;
             moveInput = Vector2.zero;
+            controlState = enabled ? PlayerControlState.FreeMove : PlayerControlState.Disabled;
+            EnsureBodyController();
             ConfigureBodyController();
             bodyController.SetMovementEnabled(enabled);
-            bodyController.SetMovementInput(Vector2.zero);
+            bodyController.StopMovement();
 
             ConfigureInteractionController();
             if (interactionController != null)
@@ -89,8 +118,22 @@ namespace NtingCampusMapEditor
             }
         }
 
+        private void EnsureBodyController()
+        {
+            if (bodyController == null)
+            {
+                bodyController = GetComponent<CampusCharacterBodyController>();
+            }
+
+            if (bodyController == null)
+            {
+                bodyController = gameObject.AddComponent<CampusCharacterBodyController>();
+            }
+        }
+
         private void ConfigureBodyController()
         {
+            EnsureBodyController();
             if (bodyController == null)
             {
                 return;

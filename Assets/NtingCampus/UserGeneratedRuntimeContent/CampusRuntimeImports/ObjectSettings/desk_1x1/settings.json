@@ -1,5 +1,6 @@
 ﻿{
     "ObjectId": "Desk_1x1",
+    "TypeId": "StudentDesk",
     "DisplayNameOverride": "Desk",
     "OverrideFootprintSize": true,
     "FootprintSize": {

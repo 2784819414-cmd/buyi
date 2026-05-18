@@ -6,7 +6,7 @@ namespace NtingCampusMapEditor
 {
     internal static class CampusWallShadowTopologyCache
     {
-        private const float WallBottomHalfWidth = 0.330f;
+        private const float WallBottomHalfWidth = CampusWallMeshRenderer.WallBottomHalfWidth;
         private const float WallCellHalf = 0.5f;
         private const float EdgeMergeTolerance = 0.0005f;
 

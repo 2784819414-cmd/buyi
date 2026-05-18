@@ -14,7 +14,7 @@ namespace NtingCampusMapEditor
         public const string RendererName = "Nting Point Light Wall Shadows";
 
         private const float WallCellHalf = 0.5f;
-        private const float WallBottomHalfWidth = 0.330f;
+        private const float WallBottomHalfWidth = CampusWallMeshRenderer.WallBottomHalfWidth;
         private const float MinSize = 0.01f;
         private const float EdgeProjectionDotThreshold = 0.05f;
         private const float EdgeMergeTolerance = 0.0005f;

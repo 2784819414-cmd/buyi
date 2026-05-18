@@ -38,11 +38,6 @@ namespace NtingCampusMapEditor
                 return TryOpenStorageWindow(payload);
             }
 
-            if (CampusInteractionActionIds.Equals(resolvedActionId, CampusInteractionActionIds.ToggleDoor))
-            {
-                return TryToggleDoor(anchor);
-            }
-
             if (CampusInteractionActionIds.Equals(resolvedActionId, CampusInteractionActionIds.InteractTarget))
             {
                 return TryInteractTarget(anchor, actor);
@@ -183,25 +178,6 @@ namespace NtingCampusMapEditor
             return placedObject.NormalizedStorageMaxWeight;
         }
 
-        private bool TryToggleDoor(CampusInteractionAnchor anchor)
-        {
-            CampusDoor3D door3D = ResolveDoor3D(anchor);
-            if (door3D != null)
-            {
-                door3D.ToggleOpen();
-                return true;
-            }
-
-            RestroomStallDoor stallDoor = ResolveRestroomStallDoor(anchor);
-            if (stallDoor != null)
-            {
-                stallDoor.ToggleOpen();
-                return true;
-            }
-
-            return false;
-        }
-
         private bool TryInteractTarget(CampusInteractionAnchor anchor, GameObject actor)
         {
             if (anchor == null || !(anchor.InteractionTarget is ICampusInteractable target) || ReferenceEquals(target, this))
@@ -211,42 +187,6 @@ namespace NtingCampusMapEditor
 
             target.Interact(actor);
             return true;
-        }
-
-        private CampusDoor3D ResolveDoor3D(CampusInteractionAnchor anchor)
-        {
-            Component target = anchor != null ? anchor.InteractionTarget as Component : null;
-            if (target is CampusDoor3D directDoor)
-            {
-                return directDoor;
-            }
-
-            CampusDoor3D targetDoor = target != null ? target.GetComponentInParent<CampusDoor3D>() : null;
-            if (targetDoor != null)
-            {
-                return targetDoor;
-            }
-
-            targetDoor = GetComponentInChildren<CampusDoor3D>(true);
-            return targetDoor != null ? targetDoor : GetComponentInParent<CampusDoor3D>();
-        }
-
-        private RestroomStallDoor ResolveRestroomStallDoor(CampusInteractionAnchor anchor)
-        {
-            Component target = anchor != null ? anchor.InteractionTarget as Component : null;
-            if (target is RestroomStallDoor directDoor)
-            {
-                return directDoor;
-            }
-
-            RestroomStallDoor targetDoor = target != null ? target.GetComponentInParent<RestroomStallDoor>() : null;
-            if (targetDoor != null)
-            {
-                return targetDoor;
-            }
-
-            targetDoor = GetComponentInChildren<RestroomStallDoor>(true);
-            return targetDoor != null ? targetDoor : GetComponentInParent<RestroomStallDoor>();
         }
 
         private void LogDefaultInteraction(GameObject actor)

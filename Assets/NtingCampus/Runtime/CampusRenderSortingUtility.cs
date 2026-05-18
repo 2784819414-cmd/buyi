@@ -21,11 +21,29 @@ namespace NtingCampusMapEditor
         public const int CollisionDebugOffset = 420;
 
         private static readonly Vector3 TopDownSortAxis = new Vector3(0f, 1f, 0f);
+        private const float CameraSortRefreshIntervalSeconds = 1f;
+        private static bool globalTransparencySortConfigured;
+        private static float nextCameraSortRefreshTime;
 
         public static void ConfigureTopDownTransparencySort()
         {
-            GraphicsSettings.transparencySortMode = TransparencySortMode.CustomAxis;
-            GraphicsSettings.transparencySortAxis = TopDownSortAxis;
+            if (!globalTransparencySortConfigured ||
+                GraphicsSettings.transparencySortMode != TransparencySortMode.CustomAxis ||
+                GraphicsSettings.transparencySortAxis != TopDownSortAxis)
+            {
+                GraphicsSettings.transparencySortMode = TransparencySortMode.CustomAxis;
+                GraphicsSettings.transparencySortAxis = TopDownSortAxis;
+                globalTransparencySortConfigured = true;
+            }
+
+            if (Application.isPlaying && Time.unscaledTime < nextCameraSortRefreshTime)
+            {
+                return;
+            }
+
+            nextCameraSortRefreshTime = Application.isPlaying
+                ? Time.unscaledTime + CameraSortRefreshIntervalSeconds
+                : 0f;
 
             Camera[] cameras = Camera.allCameras;
             for (int i = 0; i < cameras.Length; i++)

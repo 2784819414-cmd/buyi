@@ -1114,7 +1114,7 @@ MonoBehaviour:
     InitialDailyWarningCount: 0
     InitialShrineRoomUnlocked: 0
     InitialLandExpansionUnlocked: 0
-  showDebugPanel: 1
+  showDebugPanel: 0
   timeController: {fileID: 621872939}
   modeController: {fileID: 0}
   worldService: {fileID: 0}
@@ -1183,6 +1183,8 @@ MonoBehaviour:
   prankService: {fileID: 0}
   sanctionService: {fileID: 0}
   displayLanguage: 0
+  toggleKey: 290
+  isVisible: 0
   selectedCharacterId: 
   scrollPosition: {x: 0, y: 0}
 --- !u!4 &621872941

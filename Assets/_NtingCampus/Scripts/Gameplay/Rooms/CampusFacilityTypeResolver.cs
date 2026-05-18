@@ -232,6 +232,20 @@ namespace NtingCampus.Gameplay.Rooms
             });
             rules.Add(new FacilityRule
             {
+                FacilityType = nameof(CampusFacilityType.CanteenClerkStandPoint),
+                TypeIds = new[] { "CanteenClerkStandPoint", "canteen_clerk_stand", "canteen_back_counter", "canteen_staff_point" },
+                DisplayNames = new[] { "canteen clerk stand", "canteen staff point", "\u98df\u5802\u5e97\u5458\u7ad9\u4f4d", "\u67dc\u53f0\u540e\u4fa7" },
+                Contains = new[] { "canteen_clerk_stand", "canteenbackcounter", "canteen_staff", "\u5e97\u5458\u7ad9\u4f4d", "\u67dc\u53f0\u540e" }
+            });
+            rules.Add(new FacilityRule
+            {
+                FacilityType = nameof(CampusFacilityType.CanteenCustomerPickupPoint),
+                TypeIds = new[] { "CanteenCustomerPickupPoint", "canteen_pickup", "canteen_customer_point", "meal_pickup" },
+                DisplayNames = new[] { "canteen pickup", "meal pickup", "\u98df\u5802\u53d6\u9910\u70b9", "\u987e\u5ba2\u53d6\u9910\u70b9" },
+                Contains = new[] { "canteen_pickup", "mealpickup", "customer_pickup", "\u53d6\u9910\u70b9", "\u987e\u5ba2\u53d6\u9910" }
+            });
+            rules.Add(new FacilityRule
+            {
                 FacilityType = nameof(CampusFacilityType.CanteenQueuePoint),
                 TypeIds = new[] { "CanteenQueuePoint", "canteen_queue", "meal_queue" },
                 DisplayNames = new[] { "canteen queue", "meal queue", "\u98df\u5802\u6392\u961f\u70b9", "\u6253\u996d\u961f\u5217" },

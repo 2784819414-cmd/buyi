@@ -22,6 +22,8 @@ namespace NtingCampus.Gameplay.Core
         [SerializeField] private CampusSanctionService sanctionService;
         [SerializeField] private CampusClassroomLoopService classroomLoopService;
         [SerializeField] private CampusDisplayLanguage defaultLanguage = CampusDisplayLanguage.Chinese;
+        [SerializeField] private KeyCode toggleKey = KeyCode.F9;
+        [SerializeField] private bool isVisible;
         [SerializeField, Range(0.5f, 1.5f)] private float uiScaleSensitivity = 1f;
         [SerializeField, Range(0f, 1f)] private float uiScaleMatchWidthOrHeight = 0.45f;
         [SerializeField, Min(0.5f)] private float minUiScale = 0.85f;
@@ -34,6 +36,11 @@ namespace NtingCampus.Gameplay.Core
             bootstrap = targetBootstrap;
         }
 
+        public void SetVisible(bool visible)
+        {
+            isVisible = visible;
+        }
+
         private void Awake()
         {
             ResolveBootstrap();
@@ -41,9 +48,28 @@ namespace NtingCampus.Gameplay.Core
             ResolveSanctionService();
         }
 
-        private void OnGUI()
+        private void Update()
         {
             if (!Application.isPlaying)
+            {
+                return;
+            }
+
+            CampusRuntimeMapEditor runtimeMapEditor = CampusRuntimeMapEditor.Instance;
+            if (runtimeMapEditor != null && runtimeMapEditor.IsOpen)
+            {
+                return;
+            }
+
+            if (CampusInteractionInput.WasKeyPressed(toggleKey))
+            {
+                isVisible = !isVisible;
+            }
+        }
+
+        private void OnGUI()
+        {
+            if (!Application.isPlaying || !isVisible)
             {
                 return;
             }

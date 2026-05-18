@@ -76,6 +76,7 @@ namespace NtingCampus.Gameplay.UI
                 throw new InvalidOperationException("Gameplay overlay schema is invalid: " + overlayPath);
             }
 
+            NormalizeSnapshot(snapshot);
             HideRuntimeRoomMarkerVisuals();
             Transform host = EnsureGeneratedOverlayRoot();
             SpawnRooms(snapshot, host);
@@ -174,6 +175,7 @@ namespace NtingCampus.Gameplay.UI
                     continue;
                 }
 
+                facility.Normalize();
                 CampusFloorRoot floor = mapRoot != null ? mapRoot.GetFloor(Mathf.Max(1, facility.FloorIndex)) : null;
                 Vector3 worldPosition = ResolveWorldPosition(floor, facility.Cell);
                 GameObject facilityObject = new GameObject(string.IsNullOrWhiteSpace(facility.DisplayName)
@@ -188,6 +190,7 @@ namespace NtingCampus.Gameplay.UI
 
                 CampusGameplayFacilityMarker marker = facilityObject.AddComponent<CampusGameplayFacilityMarker>();
                 marker.Configure(
+                    facility.Id,
                     facility.DisplayName,
                     facility.FacilityType,
                     facility.FloorIndex,
@@ -362,6 +365,7 @@ namespace NtingCampus.Gameplay.UI
                 actor.Mischief,
                 actor.Traits,
                 actor.StaffDuty);
+            data.SetAssignments(actor.Assignments);
 
             CampusCharacterRuntime runtime = actorObject.GetComponent<CampusCharacterRuntime>();
             if (runtime == null)
@@ -577,6 +581,34 @@ namespace NtingCampus.Gameplay.UI
             return new Vector3(cell.x + 0.5f, cell.y + 0.5f, 0f);
         }
 
+        private static void NormalizeSnapshot(CampusRuntimeGameplayOverlaySnapshot snapshot)
+        {
+            if (snapshot == null)
+            {
+                return;
+            }
+
+            snapshot.Actors = snapshot.Actors ?? new List<CampusRuntimeGameplayActorSnapshot>();
+            snapshot.Rooms = snapshot.Rooms ?? new List<CampusRuntimeGameplayRoomSnapshot>();
+            snapshot.Facilities = snapshot.Facilities ?? new List<CampusRuntimeGameplayFacilitySnapshot>();
+            snapshot.PrankSpots = snapshot.PrankSpots ?? new List<CampusRuntimeGameplayPrankSpotSnapshot>();
+            for (int i = 0; i < snapshot.Actors.Count; i++)
+            {
+                if (snapshot.Actors[i] != null)
+                {
+                    snapshot.Actors[i].Normalize();
+                }
+            }
+
+            for (int i = 0; i < snapshot.Facilities.Count; i++)
+            {
+                if (snapshot.Facilities[i] != null)
+                {
+                    snapshot.Facilities[i].Normalize();
+                }
+            }
+        }
+
         private void WriteLog(string message)
         {
             if (bootstrap != null && bootstrap.EventLog != null)
@@ -628,16 +660,37 @@ namespace NtingCampus.Gameplay.UI
         public int Sleepiness = 40;
         public int Mischief = 20;
         public CampusCharacterTrait[] Traits = Array.Empty<CampusCharacterTrait>();
+        public CampusCharacterAssignmentData Assignments = new CampusCharacterAssignmentData();
+
+        public void Normalize()
+        {
+            Id = string.IsNullOrWhiteSpace(Id) ? string.Empty : Id.Trim();
+            ClassId = string.IsNullOrWhiteSpace(ClassId) ? string.Empty : ClassId.Trim();
+            Assignments = Assignments ?? new CampusCharacterAssignmentData();
+            Assignments.Normalize();
+            Traits = Traits ?? Array.Empty<CampusCharacterTrait>();
+        }
     }
 
     [Serializable]
     public sealed class CampusRuntimeGameplayFacilitySnapshot
     {
+        public string Id = string.Empty;
         public string DisplayName = string.Empty;
         public CampusFacilityType FacilityType = CampusFacilityType.Unknown;
         public int FloorIndex = 1;
         public Vector3Int Cell;
         public bool CountsAsCoreFacility = true;
+
+        public void Normalize()
+        {
+            FloorIndex = Mathf.Max(1, FloorIndex);
+            Id = CampusGameplayFacilityMarker.NormalizeFacilityId(Id);
+            if (string.IsNullOrEmpty(Id))
+            {
+                Id = CampusGameplayFacilityMarker.BuildStableFacilityId(FloorIndex, FacilityType, Cell);
+            }
+        }
     }
 
     [Serializable]

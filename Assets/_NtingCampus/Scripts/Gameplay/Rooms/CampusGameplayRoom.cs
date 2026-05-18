@@ -23,22 +23,35 @@ namespace NtingCampus.Gameplay.Rooms
             public Vector3Int Cell => cell;
             public CampusPlacedObject PlacedObject => placedObject;
 
-            internal void Bind(CampusPlacedObject source, CampusFacilityType type)
+            internal void Bind(CampusPlacedObject source, CampusFacilityType type, string explicitFacilityId)
             {
                 placedObject = source;
                 facilityType = type;
-                facilityId = source != null && !string.IsNullOrWhiteSpace(source.EffectiveTypeId)
-                    ? source.EffectiveTypeId.Trim()
-                    : string.Empty;
+                facilityId = CampusGameplayFacilityMarker.NormalizeFacilityId(explicitFacilityId);
+                if (string.IsNullOrEmpty(facilityId) && source != null)
+                {
+                    facilityId = CampusGameplayFacilityMarker.BuildStableFacilityId(source.FloorIndex, type, source.Cell);
+                }
+
                 displayName = source != null ? source.DisplayName : string.Empty;
                 cell = source != null ? source.Cell : default;
             }
 
-            internal void BindExplicit(string explicitDisplayName, CampusFacilityType type, Vector3Int targetCell)
+            internal void BindExplicit(
+                string explicitFacilityId,
+                string explicitDisplayName,
+                CampusFacilityType type,
+                int targetFloorIndex,
+                Vector3Int targetCell)
             {
                 placedObject = null;
                 facilityType = type;
-                facilityId = string.Empty;
+                facilityId = CampusGameplayFacilityMarker.NormalizeFacilityId(explicitFacilityId);
+                if (string.IsNullOrEmpty(facilityId))
+                {
+                    facilityId = CampusGameplayFacilityMarker.BuildStableFacilityId(targetFloorIndex, type, targetCell);
+                }
+
                 displayName = string.IsNullOrWhiteSpace(explicitDisplayName) ? type.ToString() : explicitDisplayName.Trim();
                 cell = targetCell;
             }
@@ -122,7 +135,7 @@ namespace NtingCampus.Gameplay.Rooms
             markerCount = Mathf.Max(1, bounds.size.x * bounds.size.y);
         }
 
-        internal void AddFacility(CampusPlacedObject placedObject, CampusFacilityType type)
+        internal void AddFacility(CampusPlacedObject placedObject, CampusFacilityType type, string explicitFacilityId = "")
         {
             if (placedObject == null)
             {
@@ -130,14 +143,14 @@ namespace NtingCampus.Gameplay.Rooms
             }
 
             FacilityRecord record = new FacilityRecord();
-            record.Bind(placedObject, type);
+            record.Bind(placedObject, type, explicitFacilityId);
             facilities.Add(record);
         }
 
-        internal void AddExplicitFacility(string displayName, CampusFacilityType type, Vector3Int targetCell)
+        internal void AddExplicitFacility(string facilityId, string displayName, CampusFacilityType type, Vector3Int targetCell)
         {
             FacilityRecord record = new FacilityRecord();
-            record.BindExplicit(displayName, type, targetCell);
+            record.BindExplicit(facilityId, displayName, type, floorIndex, targetCell);
             facilities.Add(record);
         }
 

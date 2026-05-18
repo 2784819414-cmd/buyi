@@ -20,7 +20,7 @@ namespace NtingCampus.Gameplay.Core
         [SerializeField, Min(0)] private int initialDivinePower;
         [SerializeField] private CampusGameStateInitialization initialGameState =
             CampusGameStateInitialization.CreateDefault(1);
-        [SerializeField] private bool showDebugPanel = true;
+        [SerializeField] private bool showDebugPanel = false;
         [SerializeField] private CampusTimeController timeController;
         [SerializeField] private CampusModeController modeController;
         [SerializeField] private CampusGameplayActionService actionService;
@@ -221,18 +221,15 @@ namespace NtingCampus.Gameplay.Core
 
         private void EnsureDebugPanel()
         {
-            if (!showDebugPanel)
-            {
-                return;
-            }
-
             CampusGameplayDebugPanel debugPanel = GetComponent<CampusGameplayDebugPanel>();
             if (debugPanel == null)
             {
                 debugPanel = gameObject.AddComponent<CampusGameplayDebugPanel>();
             }
 
+            debugPanel.enabled = true;
             debugPanel.Bind(this);
+            debugPanel.SetVisible(showDebugPanel);
         }
 
         private void EnsureLaunchSelectionApplier()

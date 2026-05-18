@@ -25,7 +25,19 @@
             "Mischief": 35,
             "Traits": [
                 2
-            ]
+            ],
+            "Assignments": {
+                "StudentClassroomId": "",
+                "StudentDeskId": "",
+                "TeacherClassroomId": "",
+                "TeacherPodiumId": "",
+                "OfficeRoomId": "",
+                "OfficeDeskId": "",
+                "WorkRoomId": "",
+                "PrimaryWorkstationId": "",
+                "DeliveryRoomId": "",
+                "DeliveryPointId": ""
+            }
         },
         {
             "Id": "student_sunxiaotao",
@@ -50,7 +62,19 @@
             "Mischief": 30,
             "Traits": [
                 3
-            ]
+            ],
+            "Assignments": {
+                "StudentClassroomId": "classroom_f1_1",
+                "StudentDeskId": "facility_f1_StudentDesk_-10_-14",
+                "TeacherClassroomId": "",
+                "TeacherPodiumId": "",
+                "OfficeRoomId": "",
+                "OfficeDeskId": "",
+                "WorkRoomId": "",
+                "PrimaryWorkstationId": "",
+                "DeliveryRoomId": "",
+                "DeliveryPointId": ""
+            }
         },
         {
             "Id": "student_qiaomianmian",
@@ -75,7 +99,19 @@
             "Mischief": 18,
             "Traits": [
                 4
-            ]
+            ],
+            "Assignments": {
+                "StudentClassroomId": "classroom_f1_1",
+                "StudentDeskId": "facility_f1_StudentDesk_-16_-8",
+                "TeacherClassroomId": "",
+                "TeacherPodiumId": "",
+                "OfficeRoomId": "",
+                "OfficeDeskId": "",
+                "WorkRoomId": "",
+                "PrimaryWorkstationId": "",
+                "DeliveryRoomId": "",
+                "DeliveryPointId": ""
+            }
         },
         {
             "Id": "student_xuaiying",
@@ -100,7 +136,19 @@
             "Mischief": 14,
             "Traits": [
                 1
-            ]
+            ],
+            "Assignments": {
+                "StudentClassroomId": "classroom_f1_1",
+                "StudentDeskId": "facility_f1_StudentDesk_-10_-8",
+                "TeacherClassroomId": "",
+                "TeacherPodiumId": "",
+                "OfficeRoomId": "",
+                "OfficeDeskId": "",
+                "WorkRoomId": "",
+                "PrimaryWorkstationId": "",
+                "DeliveryRoomId": "",
+                "DeliveryPointId": ""
+            }
         },
         {
             "Id": "student_luowan",
@@ -125,7 +173,19 @@
             "Mischief": 68,
             "Traits": [
                 2
-            ]
+            ],
+            "Assignments": {
+                "StudentClassroomId": "classroom_f1_1",
+                "StudentDeskId": "facility_f1_StudentDesk_-16_-14",
+                "TeacherClassroomId": "",
+                "TeacherPodiumId": "",
+                "OfficeRoomId": "",
+                "OfficeDeskId": "",
+                "WorkRoomId": "",
+                "PrimaryWorkstationId": "",
+                "DeliveryRoomId": "",
+                "DeliveryPointId": ""
+            }
         },
         {
             "Id": "student_shenmeng",
@@ -150,7 +210,19 @@
             "Mischief": 22,
             "Traits": [
                 0
-            ]
+            ],
+            "Assignments": {
+                "StudentClassroomId": "classroom_f1_1",
+                "StudentDeskId": "facility_f1_StudentDesk_-10_-11",
+                "TeacherClassroomId": "",
+                "TeacherPodiumId": "",
+                "OfficeRoomId": "",
+                "OfficeDeskId": "",
+                "WorkRoomId": "",
+                "PrimaryWorkstationId": "",
+                "DeliveryRoomId": "",
+                "DeliveryPointId": ""
+            }
         },
         {
             "Id": "student_heyulu",
@@ -175,7 +247,19 @@
             "Mischief": 25,
             "Traits": [
                 1
-            ]
+            ],
+            "Assignments": {
+                "StudentClassroomId": "classroom_f1_1",
+                "StudentDeskId": "facility_f1_StudentDesk_-13_-11",
+                "TeacherClassroomId": "",
+                "TeacherPodiumId": "",
+                "OfficeRoomId": "",
+                "OfficeDeskId": "",
+                "WorkRoomId": "",
+                "PrimaryWorkstationId": "",
+                "DeliveryRoomId": "",
+                "DeliveryPointId": ""
+            }
         },
         {
             "Id": "student_zhouxin",
@@ -200,7 +284,19 @@
             "Mischief": 44,
             "Traits": [
                 2
-            ]
+            ],
+            "Assignments": {
+                "StudentClassroomId": "classroom_f1_1",
+                "StudentDeskId": "facility_f1_StudentDesk_-13_-14",
+                "TeacherClassroomId": "",
+                "TeacherPodiumId": "",
+                "OfficeRoomId": "",
+                "OfficeDeskId": "",
+                "WorkRoomId": "",
+                "PrimaryWorkstationId": "",
+                "DeliveryRoomId": "",
+                "DeliveryPointId": ""
+            }
         },
         {
             "Id": "student_pengzihao",
@@ -225,7 +321,19 @@
             "Mischief": 12,
             "Traits": [
                 3
-            ]
+            ],
+            "Assignments": {
+                "StudentClassroomId": "classroom_f1_1",
+                "StudentDeskId": "facility_f1_StudentDesk_-7_-11",
+                "TeacherClassroomId": "",
+                "TeacherPodiumId": "",
+                "OfficeRoomId": "",
+                "OfficeDeskId": "",
+                "WorkRoomId": "",
+                "PrimaryWorkstationId": "",
+                "DeliveryRoomId": "",
+                "DeliveryPointId": ""
+            }
         },
         {
             "Id": "student_linshuang",
@@ -250,7 +358,19 @@
             "Mischief": 20,
             "Traits": [
                 4
-            ]
+            ],
+            "Assignments": {
+                "StudentClassroomId": "classroom_f1_1",
+                "StudentDeskId": "facility_f1_StudentDesk_-16_-5",
+                "TeacherClassroomId": "",
+                "TeacherPodiumId": "",
+                "OfficeRoomId": "",
+                "OfficeDeskId": "",
+                "WorkRoomId": "",
+                "PrimaryWorkstationId": "",
+                "DeliveryRoomId": "",
+                "DeliveryPointId": ""
+            }
         },
         {
             "Id": "student_tangyue",
@@ -275,7 +395,19 @@
             "Mischief": 26,
             "Traits": [
                 0
-            ]
+            ],
+            "Assignments": {
+                "StudentClassroomId": "classroom_f1_1",
+                "StudentDeskId": "facility_f1_StudentDesk_-16_-11",
+                "TeacherClassroomId": "",
+                "TeacherPodiumId": "",
+                "OfficeRoomId": "",
+                "OfficeDeskId": "",
+                "WorkRoomId": "",
+                "PrimaryWorkstationId": "",
+                "DeliveryRoomId": "",
+                "DeliveryPointId": ""
+            }
         },
         {
             "Id": "student_wuyan",
@@ -300,7 +432,19 @@
             "Mischief": 16,
             "Traits": [
                 1
-            ]
+            ],
+            "Assignments": {
+                "StudentClassroomId": "classroom_f1_1",
+                "StudentDeskId": "facility_f1_StudentDesk_-13_-5",
+                "TeacherClassroomId": "",
+                "TeacherPodiumId": "",
+                "OfficeRoomId": "",
+                "OfficeDeskId": "",
+                "WorkRoomId": "",
+                "PrimaryWorkstationId": "",
+                "DeliveryRoomId": "",
+                "DeliveryPointId": ""
+            }
         },
         {
             "Id": "student_gaojin",
@@ -325,7 +469,19 @@
             "Mischief": 58,
             "Traits": [
                 2
-            ]
+            ],
+            "Assignments": {
+                "StudentClassroomId": "classroom_f1_1",
+                "StudentDeskId": "facility_f1_StudentDesk_-13_-8",
+                "TeacherClassroomId": "",
+                "TeacherPodiumId": "",
+                "OfficeRoomId": "",
+                "OfficeDeskId": "",
+                "WorkRoomId": "",
+                "PrimaryWorkstationId": "",
+                "DeliveryRoomId": "",
+                "DeliveryPointId": ""
+            }
         },
         {
             "Id": "student_cenya",
@@ -350,7 +506,19 @@
             "Mischief": 14,
             "Traits": [
                 3
-            ]
+            ],
+            "Assignments": {
+                "StudentClassroomId": "classroom_f1_1",
+                "StudentDeskId": "facility_f1_StudentDesk_-7_-14",
+                "TeacherClassroomId": "",
+                "TeacherPodiumId": "",
+                "OfficeRoomId": "",
+                "OfficeDeskId": "",
+                "WorkRoomId": "",
+                "PrimaryWorkstationId": "",
+                "DeliveryRoomId": "",
+                "DeliveryPointId": ""
+            }
         },
         {
             "Id": "teacher_linyuwen",
@@ -375,7 +543,19 @@
             "Mischief": 0,
             "Traits": [
                 0
-            ]
+            ],
+            "Assignments": {
+                "StudentClassroomId": "",
+                "StudentDeskId": "",
+                "TeacherClassroomId": "classroom_f1_1",
+                "TeacherPodiumId": "facility_f1_Podium_-13_-2",
+                "OfficeRoomId": "room_office_main",
+                "OfficeDeskId": "facility_f1_OfficeDesk_5_0",
+                "WorkRoomId": "",
+                "PrimaryWorkstationId": "",
+                "DeliveryRoomId": "",
+                "DeliveryPointId": ""
+            }
         },
         {
             "Id": "teacher_zhouxin",
@@ -400,7 +580,19 @@
             "Mischief": 0,
             "Traits": [
                 0
-            ]
+            ],
+            "Assignments": {
+                "StudentClassroomId": "",
+                "StudentDeskId": "",
+                "TeacherClassroomId": "classroom_f1_1",
+                "TeacherPodiumId": "facility_f1_Podium_-13_-2",
+                "OfficeRoomId": "room_office_main",
+                "OfficeDeskId": "facility_f1_OfficeDesk_5_0",
+                "WorkRoomId": "",
+                "PrimaryWorkstationId": "",
+                "DeliveryRoomId": "",
+                "DeliveryPointId": ""
+            }
         },
         {
             "Id": "teacher_suqin",
@@ -425,10 +617,335 @@
             "Mischief": 0,
             "Traits": [
                 0
-            ]
+            ],
+            "Assignments": {
+                "StudentClassroomId": "",
+                "StudentDeskId": "",
+                "TeacherClassroomId": "classroom_f1_1",
+                "TeacherPodiumId": "facility_f1_Podium_-13_-2",
+                "OfficeRoomId": "room_office_main",
+                "OfficeDeskId": "facility_f1_OfficeDesk_5_0",
+                "WorkRoomId": "",
+                "PrimaryWorkstationId": "",
+                "DeliveryRoomId": "",
+                "DeliveryPointId": ""
+            }
         }
     ],
     "Rooms": [],
-    "Facilities": [],
+    "Facilities": [
+        {
+            "Id": "facility_f1_CanteenQueuePoint_45_2",
+            "DisplayName": "食堂排队点",
+            "FacilityType": 21,
+            "FloorIndex": 1,
+            "Cell": {
+                "x": 45,
+                "y": 2,
+                "z": 0
+            },
+            "CountsAsCoreFacility": true
+        },
+        {
+            "Id": "facility_f1_DiningTable_49_-2",
+            "DisplayName": "吃饭区座位",
+            "FacilityType": 4,
+            "FloorIndex": 1,
+            "Cell": {
+                "x": 49,
+                "y": -2,
+                "z": 0
+            },
+            "CountsAsCoreFacility": true
+        },
+        {
+            "Id": "facility_f1_DiningTable_52_-2",
+            "DisplayName": "吃饭区座位",
+            "FacilityType": 4,
+            "FloorIndex": 1,
+            "Cell": {
+                "x": 52,
+                "y": -2,
+                "z": 0
+            },
+            "CountsAsCoreFacility": true
+        },
+        {
+            "Id": "facility_f1_DiningTable_54_-1",
+            "DisplayName": "吃饭区座位",
+            "FacilityType": 4,
+            "FloorIndex": 1,
+            "Cell": {
+                "x": 54,
+                "y": -1,
+                "z": 0
+            },
+            "CountsAsCoreFacility": true
+        },
+        {
+            "Id": "facility_f1_DiningTable_42_-3",
+            "DisplayName": "吃饭区座位",
+            "FacilityType": 4,
+            "FloorIndex": 1,
+            "Cell": {
+                "x": 42,
+                "y": -3,
+                "z": 0
+            },
+            "CountsAsCoreFacility": true
+        },
+        {
+            "Id": "facility_f1_DiningTable_49_-1",
+            "DisplayName": "吃饭区座位",
+            "FacilityType": 4,
+            "FloorIndex": 1,
+            "Cell": {
+                "x": 49,
+                "y": -1,
+                "z": 0
+            },
+            "CountsAsCoreFacility": true
+        },
+        {
+            "Id": "facility_f1_CanteenQueuePoint_53_2",
+            "DisplayName": "食堂排队点",
+            "FacilityType": 21,
+            "FloorIndex": 1,
+            "Cell": {
+                "x": 53,
+                "y": 2,
+                "z": 0
+            },
+            "CountsAsCoreFacility": true
+        },
+        {
+            "Id": "facility_f1_CanteenQueuePoint_47_2",
+            "DisplayName": "食堂排队点",
+            "FacilityType": 21,
+            "FloorIndex": 1,
+            "Cell": {
+                "x": 47,
+                "y": 2,
+                "z": 0
+            },
+            "CountsAsCoreFacility": true
+        },
+        {
+            "Id": "facility_f1_CanteenQueuePoint_43_2",
+            "DisplayName": "食堂排队点",
+            "FacilityType": 21,
+            "FloorIndex": 1,
+            "Cell": {
+                "x": 43,
+                "y": 2,
+                "z": 0
+            },
+            "CountsAsCoreFacility": true
+        },
+        {
+            "Id": "facility_f1_CanteenQueuePoint_55_2",
+            "DisplayName": "食堂排队点",
+            "FacilityType": 21,
+            "FloorIndex": 1,
+            "Cell": {
+                "x": 55,
+                "y": 2,
+                "z": 0
+            },
+            "CountsAsCoreFacility": true
+        },
+        {
+            "Id": "facility_f1_CanteenQueuePoint_51_2",
+            "DisplayName": "食堂排队点",
+            "FacilityType": 21,
+            "FloorIndex": 1,
+            "Cell": {
+                "x": 51,
+                "y": 2,
+                "z": 0
+            },
+            "CountsAsCoreFacility": true
+        },
+        {
+            "Id": "facility_f1_DiningTable_47_-3",
+            "DisplayName": "吃饭区座位",
+            "FacilityType": 4,
+            "FloorIndex": 1,
+            "Cell": {
+                "x": 47,
+                "y": -3,
+                "z": 0
+            },
+            "CountsAsCoreFacility": true
+        },
+        {
+            "Id": "facility_f1_DiningTable_47_-1",
+            "DisplayName": "吃饭区座位",
+            "FacilityType": 4,
+            "FloorIndex": 1,
+            "Cell": {
+                "x": 47,
+                "y": -1,
+                "z": 0
+            },
+            "CountsAsCoreFacility": true
+        },
+        {
+            "Id": "facility_f1_DiningTable_44_-1",
+            "DisplayName": "吃饭区座位",
+            "FacilityType": 4,
+            "FloorIndex": 1,
+            "Cell": {
+                "x": 44,
+                "y": -1,
+                "z": 0
+            },
+            "CountsAsCoreFacility": true
+        },
+        {
+            "Id": "facility_f1_DiningTable_42_-1",
+            "DisplayName": "吃饭区座位",
+            "FacilityType": 4,
+            "FloorIndex": 1,
+            "Cell": {
+                "x": 42,
+                "y": -1,
+                "z": 0
+            },
+            "CountsAsCoreFacility": true
+        },
+        {
+            "Id": "facility_f1_DiningTable_47_-2",
+            "DisplayName": "吃饭区座位",
+            "FacilityType": 4,
+            "FloorIndex": 1,
+            "Cell": {
+                "x": 47,
+                "y": -2,
+                "z": 0
+            },
+            "CountsAsCoreFacility": true
+        },
+        {
+            "Id": "facility_f1_DiningTable_49_-3",
+            "DisplayName": "吃饭区座位",
+            "FacilityType": 4,
+            "FloorIndex": 1,
+            "Cell": {
+                "x": 49,
+                "y": -3,
+                "z": 0
+            },
+            "CountsAsCoreFacility": true
+        },
+        {
+            "Id": "facility_f1_DiningTable_42_-2",
+            "DisplayName": "吃饭区座位",
+            "FacilityType": 4,
+            "FloorIndex": 1,
+            "Cell": {
+                "x": 42,
+                "y": -2,
+                "z": 0
+            },
+            "CountsAsCoreFacility": true
+        },
+        {
+            "Id": "facility_f1_DiningTable_44_-2",
+            "DisplayName": "吃饭区座位",
+            "FacilityType": 4,
+            "FloorIndex": 1,
+            "Cell": {
+                "x": 44,
+                "y": -2,
+                "z": 0
+            },
+            "CountsAsCoreFacility": true
+        },
+        {
+            "Id": "facility_f1_DiningTable_52_-3",
+            "DisplayName": "吃饭区座位",
+            "FacilityType": 4,
+            "FloorIndex": 1,
+            "Cell": {
+                "x": 52,
+                "y": -3,
+                "z": 0
+            },
+            "CountsAsCoreFacility": true
+        },
+        {
+            "Id": "facility_f1_CanteenQueuePoint_49_2",
+            "DisplayName": "食堂排队点",
+            "FacilityType": 21,
+            "FloorIndex": 1,
+            "Cell": {
+                "x": 49,
+                "y": 2,
+                "z": 0
+            },
+            "CountsAsCoreFacility": true
+        },
+        {
+            "Id": "facility_f1_CanteenQueuePoint_41_2",
+            "DisplayName": "食堂排队点",
+            "FacilityType": 21,
+            "FloorIndex": 1,
+            "Cell": {
+                "x": 41,
+                "y": 2,
+                "z": 0
+            },
+            "CountsAsCoreFacility": true
+        },
+        {
+            "Id": "facility_f1_DiningTable_44_-3",
+            "DisplayName": "吃饭区座位",
+            "FacilityType": 4,
+            "FloorIndex": 1,
+            "Cell": {
+                "x": 44,
+                "y": -3,
+                "z": 0
+            },
+            "CountsAsCoreFacility": true
+        },
+        {
+            "Id": "facility_f1_DiningTable_52_-1",
+            "DisplayName": "吃饭区座位",
+            "FacilityType": 4,
+            "FloorIndex": 1,
+            "Cell": {
+                "x": 52,
+                "y": -1,
+                "z": 0
+            },
+            "CountsAsCoreFacility": true
+        },
+        {
+            "Id": "facility_f1_DiningTable_54_-2",
+            "DisplayName": "吃饭区座位",
+            "FacilityType": 4,
+            "FloorIndex": 1,
+            "Cell": {
+                "x": 54,
+                "y": -2,
+                "z": 0
+            },
+            "CountsAsCoreFacility": true
+        },
+        {
+            "Id": "facility_f1_DiningTable_54_-3",
+            "DisplayName": "吃饭区座位",
+            "FacilityType": 4,
+            "FloorIndex": 1,
+            "Cell": {
+                "x": 54,
+                "y": -3,
+                "z": 0
+            },
+            "CountsAsCoreFacility": true
+        }
+    ],
     "PrankSpots": []
 }

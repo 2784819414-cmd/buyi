@@ -21,6 +21,7 @@ namespace NtingCampus.Gameplay.Characters
         [SerializeField, Range(0, 100)] private int sleepiness = 40;
         [SerializeField, Range(0, 100)] private int mischief = 20;
         [SerializeField] private CampusCharacterTrait[] traits = Array.Empty<CampusCharacterTrait>();
+        [SerializeField] private CampusCharacterAssignmentData assignments = new CampusCharacterAssignmentData();
 
         public int FloorIndex => Mathf.Max(1, floorIndex);
 
@@ -40,6 +41,7 @@ namespace NtingCampus.Gameplay.Characters
                 mischief,
                 traits,
                 staffDuty);
+            data.SetAssignments(assignments);
             return data;
         }
 

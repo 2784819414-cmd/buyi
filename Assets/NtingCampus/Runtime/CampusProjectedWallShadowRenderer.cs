@@ -35,8 +35,9 @@ namespace NtingCampusMapEditor
         private const float PreviousDefaultAlphaMultiplier = 2.25f;
         private const float PreviousAlphaMultiplier = 1.35f;
         private const float LegacyAlphaMultiplier = 1.0f;
-        private const float WallBottomHalfWidth = 0.330f;
+        private const float WallBottomHalfWidth = CampusWallMeshRenderer.WallBottomHalfWidth;
         private const float PreviousDefaultShadowSourceWidth = 0.410f;
+        private const float PreviousWallBottomDefaultShadowSourceWidth = 0.660f;
         private const float DefaultShadowSourceWidth = WallBottomHalfWidth * 2f;
         private const float LegacyShadowSourceWidth = 0.33f;
         private const float WallCellHalf = 0.5f;
@@ -673,7 +674,8 @@ namespace NtingCampusMapEditor
             maxShadowLength = Mathf.Clamp(maxShadowLength, minShadowLength + 0.01f, 8f);
 
             if (Mathf.Approximately(shadowWidth, LegacyShadowSourceWidth) ||
-                Mathf.Approximately(shadowWidth, PreviousDefaultShadowSourceWidth))
+                Mathf.Approximately(shadowWidth, PreviousDefaultShadowSourceWidth) ||
+                Mathf.Approximately(shadowWidth, PreviousWallBottomDefaultShadowSourceWidth))
             {
                 shadowWidth = DefaultShadowSourceWidth;
             }

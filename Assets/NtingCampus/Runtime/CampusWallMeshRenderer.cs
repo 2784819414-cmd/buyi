@@ -13,10 +13,12 @@ namespace NtingCampusMapEditor
     {
         public const float WallHalfCell = 0.5f;
         public const float WallTopHalfWidth = 0.205f;
-        public const float WallBottomHalfWidth = 0.330f;
         public const float WallTopDepth = -0.015f;
-        public const float WallBaseDepth = 0.46f;
-        public const float HorizontalWallTopYOffset = 0.070f;
+        private const float ReferenceWallBottomHalfWidth = 0.330f;
+        public const float WallBottomHalfWidth = WallHalfCell;
+        private const float WallSlopeScale = (WallBottomHalfWidth - WallTopHalfWidth) / (ReferenceWallBottomHalfWidth - WallTopHalfWidth);
+        public const float WallBaseDepth = WallTopDepth + (0.46f - WallTopDepth) * WallSlopeScale;
+        public const float HorizontalWallTopYOffset = 0.070f * WallSlopeScale;
 
         private const int ReservedLegacySurface = 0;
         private const int WallSouthSurface = 1;
@@ -585,9 +587,27 @@ namespace NtingCampusMapEditor
             }
 
             bool hasHorizontalArm = eastArm || westArm;
+            bool bottomFillsCell = BottomHalfWidth >= HalfCell - 0.0001f;
             float horizontalTopYOffset = hasHorizontalArm ? HorizontalTopYOffset : 0f;
             float centerTopMinY = -TopHalfWidth + horizontalTopYOffset;
             float centerTopMaxY = TopHalfWidth + horizontalTopYOffset;
+            if (bottomFillsCell)
+            {
+                AddFullCellContourPrism(
+                    builder,
+                    northArm,
+                    eastArm,
+                    southArm,
+                    westArm,
+                    northConnected,
+                    eastConnected,
+                    southConnected,
+                    westConnected,
+                    centerTopMinY,
+                    centerTopMaxY);
+                return;
+            }
+
             builder.AddPrism(
                 -TopHalfWidth,
                 centerTopMinY,
@@ -669,7 +689,178 @@ namespace NtingCampusMapEditor
                     !southConnected,
                     true);
             }
+        }
 
+        private const int ContourNorth = 0;
+        private const int ContourEast = 1;
+        private const int ContourSouth = 2;
+        private const int ContourWest = 3;
+
+        private static void AddFullCellContourPrism(
+            WallPrismBuilder builder,
+            bool northArm,
+            bool eastArm,
+            bool southArm,
+            bool westArm,
+            bool northConnected,
+            bool eastConnected,
+            bool southConnected,
+            bool westConnected,
+            float centerTopMinY,
+            float centerTopMaxY)
+        {
+            float[] xs = { -HalfCell, -TopHalfWidth, TopHalfWidth, HalfCell };
+            float[] ys = { -HalfCell, centerTopMinY, centerTopMaxY, HalfCell };
+            bool[,] filled = new bool[3, 3];
+            bool[,,] cornerSides = new bool[4, 4, 4];
+
+            filled[1, 1] = true;
+            if (westArm)
+            {
+                filled[0, 1] = true;
+            }
+
+            if (eastArm)
+            {
+                filled[2, 1] = true;
+            }
+
+            if (southArm)
+            {
+                filled[1, 0] = true;
+            }
+
+            if (northArm)
+            {
+                filled[1, 2] = true;
+            }
+
+            for (int x = 0; x < 3; x++)
+            {
+                for (int y = 0; y < 3; y++)
+                {
+                    if (!filled[x, y])
+                    {
+                        continue;
+                    }
+
+                    builder.AddCapRect(xs[x], ys[y], xs[x + 1], ys[y + 1]);
+
+                    if (!IsContourFilled(filled, x, y + 1) && !(y == 2 && northConnected))
+                    {
+                        builder.AddLocalQuad(
+                            new Vector3(xs[x], HalfCell, BaseDepth),
+                            new Vector3(xs[x + 1], HalfCell, BaseDepth),
+                            new Vector3(xs[x + 1], ys[y + 1], TopDepth),
+                            new Vector3(xs[x], ys[y + 1], TopDepth),
+                            WallNorthSurface);
+                        MarkContourSide(cornerSides, x, y + 1, ContourNorth);
+                        MarkContourSide(cornerSides, x + 1, y + 1, ContourNorth);
+                    }
+
+                    if (!IsContourFilled(filled, x + 1, y) && !(x == 2 && eastConnected))
+                    {
+                        builder.AddLocalQuad(
+                            new Vector3(HalfCell, ys[y + 1], BaseDepth),
+                            new Vector3(HalfCell, ys[y], BaseDepth),
+                            new Vector3(xs[x + 1], ys[y], TopDepth),
+                            new Vector3(xs[x + 1], ys[y + 1], TopDepth),
+                            WallEastSurface);
+                        MarkContourSide(cornerSides, x + 1, y, ContourEast);
+                        MarkContourSide(cornerSides, x + 1, y + 1, ContourEast);
+                    }
+
+                    if (!IsContourFilled(filled, x, y - 1) && !(y == 0 && southConnected))
+                    {
+                        builder.AddLocalQuad(
+                            new Vector3(xs[x + 1], -HalfCell, BaseDepth),
+                            new Vector3(xs[x], -HalfCell, BaseDepth),
+                            new Vector3(xs[x], ys[y], TopDepth),
+                            new Vector3(xs[x + 1], ys[y], TopDepth),
+                            WallSouthSurface);
+                        MarkContourSide(cornerSides, x, y, ContourSouth);
+                        MarkContourSide(cornerSides, x + 1, y, ContourSouth);
+                    }
+
+                    if (!IsContourFilled(filled, x - 1, y) && !(x == 0 && westConnected))
+                    {
+                        builder.AddLocalQuad(
+                            new Vector3(-HalfCell, ys[y], BaseDepth),
+                            new Vector3(-HalfCell, ys[y + 1], BaseDepth),
+                            new Vector3(xs[x], ys[y + 1], TopDepth),
+                            new Vector3(xs[x], ys[y], TopDepth),
+                            WallWestSurface);
+                        MarkContourSide(cornerSides, x, y, ContourWest);
+                        MarkContourSide(cornerSides, x, y + 1, ContourWest);
+                    }
+                }
+            }
+
+            AddContourCornerFaces(builder, xs, ys, cornerSides);
+        }
+
+        private static bool IsContourFilled(bool[,] filled, int x, int y)
+        {
+            return x >= 0 && x < 3 && y >= 0 && y < 3 && filled[x, y];
+        }
+
+        private static void MarkContourSide(bool[,,] cornerSides, int x, int y, int side)
+        {
+            if (x >= 0 && x < 4 && y >= 0 && y < 4)
+            {
+                cornerSides[x, y, side] = true;
+            }
+        }
+
+        private static void AddContourCornerFaces(WallPrismBuilder builder, float[] xs, float[] ys, bool[,,] cornerSides)
+        {
+            for (int x = 0; x < 4; x++)
+            {
+                for (int y = 0; y < 4; y++)
+                {
+                    Vector3 top = new Vector3(xs[x], ys[y], TopDepth);
+
+                    if (cornerSides[x, y, ContourNorth] && cornerSides[x, y, ContourEast])
+                    {
+                        builder.AddLocalQuad(
+                            top,
+                            new Vector3(xs[x], HalfCell, BaseDepth),
+                            new Vector3(HalfCell, HalfCell, BaseDepth),
+                            new Vector3(HalfCell, ys[y], BaseDepth),
+                            WallNorthSurface);
+                    }
+
+                    if (cornerSides[x, y, ContourEast] && cornerSides[x, y, ContourSouth])
+                    {
+                        builder.AddLocalQuad(
+                            top,
+                            new Vector3(HalfCell, ys[y], BaseDepth),
+                            new Vector3(HalfCell, -HalfCell, BaseDepth),
+                            new Vector3(xs[x], -HalfCell, BaseDepth),
+                            WallSouthSurface);
+                    }
+
+                    if (cornerSides[x, y, ContourSouth] && cornerSides[x, y, ContourWest])
+                    {
+                        builder.AddLocalQuad(
+                            top,
+                            new Vector3(xs[x], -HalfCell, BaseDepth),
+                            new Vector3(-HalfCell, -HalfCell, BaseDepth),
+                            new Vector3(-HalfCell, ys[y], BaseDepth),
+                            WallSouthSurface);
+                    }
+
+                    if (cornerSides[x, y, ContourWest] && cornerSides[x, y, ContourNorth])
+                    {
+                        builder.AddLocalQuad(
+                            top,
+                            new Vector3(-HalfCell, ys[y], BaseDepth),
+                            new Vector3(-HalfCell, HalfCell, BaseDepth),
+                            new Vector3(xs[x], HalfCell, BaseDepth),
+                            WallNorthSurface);
+                    }
+                }
+            }
         }
 
         private static Material[] CreateMaterials(CampusWallRenderProfile profile)
@@ -2119,6 +2310,21 @@ namespace NtingCampusMapEditor
                 }
             }
 
+            public void AddCapRect(float minX, float minY, float maxX, float maxY)
+            {
+                AddQuad(
+                    origin + new Vector3(minX, minY, TopDepth),
+                    origin + new Vector3(maxX, minY, TopDepth),
+                    origin + new Vector3(maxX, maxY, TopDepth),
+                    origin + new Vector3(minX, maxY, TopDepth),
+                    CapSurface);
+            }
+
+            public void AddLocalQuad(Vector3 a, Vector3 b, Vector3 c, Vector3 d, int surface)
+            {
+                AddQuad(origin + a, origin + b, origin + c, origin + d, surface);
+            }
+
             public void BuildMesh(string name, Mesh mesh)
             {
                 if (mesh == null)
@@ -2342,20 +2548,35 @@ namespace NtingCampusMapEditor
 
             Transform meshTransform = transform;
             meshColors.Clear();
-            for (int vertexIndex = 0; vertexIndex < meshVertices.Count; vertexIndex++)
+            for (int vertexIndex = 0; vertexIndex < meshVertices.Count;)
             {
                 Vector4 data = meshLightingData[vertexIndex];
                 int surface = Mathf.RoundToInt(data.z);
-                if (CampusWallMeshRenderer.IsWallSurface(surface))
+                int quadEnd = Mathf.Min(vertexIndex + 4, meshVertices.Count);
+                if (!CampusWallMeshRenderer.IsWallSurface(surface) || quadEnd - vertexIndex < 4)
                 {
-                    Vector2 faceNormal = new Vector2(data.x, data.y);
-                    Vector3 worldPosition = meshTransform.TransformPoint(meshVertices[vertexIndex]);
-                    float brightness = lighting.ResolveFaceBrightness(faceNormal, worldPosition);
-                    meshColors.Add(new Color(brightness, brightness, brightness, 1f));
+                    for (; vertexIndex < quadEnd; vertexIndex++)
+                    {
+                        meshColors.Add(Color.white);
+                    }
+
+                    continue;
                 }
-                else
+
+                Vector3 localCenter = Vector3.zero;
+                for (int quadIndex = vertexIndex; quadIndex < quadEnd; quadIndex++)
                 {
-                    meshColors.Add(Color.white);
+                    localCenter += meshVertices[quadIndex];
+                }
+
+                localCenter *= 0.25f;
+                Vector2 faceNormal = new Vector2(data.x, data.y);
+                Vector3 worldCenter = meshTransform.TransformPoint(localCenter);
+                float brightness = lighting.ResolveFaceBrightness(faceNormal, worldCenter);
+                Color color = new Color(brightness, brightness, brightness, 1f);
+                for (; vertexIndex < quadEnd; vertexIndex++)
+                {
+                    meshColors.Add(color);
                 }
             }
 

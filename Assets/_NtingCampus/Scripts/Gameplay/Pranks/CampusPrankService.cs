@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using Nting.Storage;
 using NtingCampus.Gameplay.Characters;
 using NtingCampus.Gameplay.Core;
+using NtingCampus.Gameplay.Economy;
 using NtingCampus.Gameplay.Events;
 using NtingCampus.Gameplay.Inventory;
 using NtingCampus.Gameplay.Rooms;
@@ -54,16 +55,15 @@ namespace NtingCampus.Gameplay.Pranks
         [SerializeField] private CampusRosterService rosterService;
         [SerializeField] private CampusScheduleService scheduleService;
         [SerializeField] private CampusClassroomLoopService classroomLoopService;
+        [SerializeField] private CampusCommerceService commerceService;
         [SerializeField] private CampusGameplayEventHub gameplayEventHub;
         [SerializeField, Min(0.1f)] private float prankCooldownSeconds = 1.25f;
         [SerializeField, Min(1)] private int basePassNoteReward = 5;
-        [SerializeField, Min(1f)] private float canteenClerkStateSeconds = 6f;
 
         [SerializeField] private string currentPrompt = "Move into a classroom during class and press E to pass a note.";
         [SerializeField] private int dailyPassNoteCount;
         [SerializeField] private int dailyCanteenTheftCount;
         [SerializeField] private int dailyDeliveryTheftCount;
-        [SerializeField] private CampusCanteenClerkState currentCanteenClerkState = CampusCanteenClerkState.Unknown;
         [SerializeField] private string activeDeliveryOwnerId = string.Empty;
         [SerializeField] private string activeDeliveryItemName = string.Empty;
         [SerializeField] private CampusDeliveryOrderState activeDeliveryOrderState = CampusDeliveryOrderState.None;
@@ -76,51 +76,16 @@ namespace NtingCampus.Gameplay.Pranks
         [SerializeField] private float lastPrankTime = -999f;
 
         private float nextWorldSyncTime = -999f;
-        private float nextCanteenClerkStateTime = -999f;
         private float nextDeliveryRefreshTime = -999f;
 
         public string CurrentPrompt => currentPrompt;
         public int DailyPassNoteCount => dailyPassNoteCount;
         public int DailyCanteenTheftCount => dailyCanteenTheftCount;
         public int DailyDeliveryTheftCount => dailyDeliveryTheftCount;
-        public CampusCanteenClerkState CurrentCanteenClerkState => currentCanteenClerkState;
+        public CampusCanteenClerkState CurrentCanteenClerkState => ResolveCanteenClerkState(null, null, out _);
         public string ActiveDeliveryOwnerId => activeDeliveryOwnerId;
         public string ActiveDeliveryItemName => activeDeliveryItemName;
         public CampusDeliveryOrderState ActiveDeliveryOrderState => activeDeliveryOrderState;
-
-        public bool TryBuildDeliveryOwnerDirective(CampusCharacterRuntime runtime, out CampusCharacterTaskDirective directive)
-        {
-            directive = null;
-            if (runtime == null ||
-                string.IsNullOrWhiteSpace(activeDeliveryOwnerId) ||
-                !string.Equals(runtime.CharacterId, activeDeliveryOwnerId, StringComparison.OrdinalIgnoreCase))
-            {
-                return false;
-            }
-
-            switch (activeDeliveryOrderState)
-            {
-                case CampusDeliveryOrderState.WaitingPickup:
-                    directive = BuildDeliveryPointDirective(CampusCharacterTaskType.PickupDelivery, "PickupDelivery");
-                    return true;
-                case CampusDeliveryOrderState.Stolen:
-                case CampusDeliveryOrderState.Searching:
-                    directive = BuildDeliveryPointDirective(CampusCharacterTaskType.SearchMissingDelivery, "SearchDelivery");
-                    return true;
-                case CampusDeliveryOrderState.Reported:
-                    directive = new CampusCharacterTaskDirective
-                    {
-                        TaskType = CampusCharacterTaskType.ReportMissingDelivery,
-                        TargetRoomType = CampusRoomType.Office,
-                        PreferredFacilityType = CampusFacilityType.OfficeDesk,
-                        HoldRadius = 0.2f,
-                        DebugLabel = "ReportDelivery"
-                    };
-                    return true;
-                default:
-                    return false;
-            }
-        }
 
         public void Initialize(CampusGameBootstrap targetBootstrap)
         {
@@ -129,6 +94,7 @@ namespace NtingCampus.Gameplay.Pranks
             rosterService = bootstrap != null ? bootstrap.RosterService : null;
             scheduleService = bootstrap != null ? bootstrap.ScheduleService : null;
             classroomLoopService = bootstrap != null ? bootstrap.ClassroomLoopService : null;
+            commerceService = bootstrap != null ? bootstrap.CommerceService : null;
             gameplayEventHub = bootstrap != null ? bootstrap.GameplayEventHub : null;
 
             if (bootstrap != null && bootstrap.TimeController != null)
@@ -140,7 +106,6 @@ namespace NtingCampus.Gameplay.Pranks
             }
 
             SyncPlacedPrankObjects(forceImmediate: true);
-            UpdateCanteenClerkState(true);
             EnsureDeliveryOrder(false);
             RefreshPrompt();
         }
@@ -157,7 +122,6 @@ namespace NtingCampus.Gameplay.Pranks
         private void Update()
         {
             SyncPlacedPrankObjects(forceImmediate: false);
-            UpdateCanteenClerkState(false);
             EnsureDeliveryOrder(false);
             UpdateDeliveryOwnerProgress();
             RefreshPrompt();
@@ -166,7 +130,6 @@ namespace NtingCampus.Gameplay.Pranks
         private void HandleSegmentChanged(CampusTimeSegment _, CampusTimeSegment __)
         {
             EnsureDeliveryOrder(true);
-            UpdateCanteenClerkState(true);
         }
 
         private void HandleDailySettlementStarted(CampusGameDate _)
@@ -359,8 +322,8 @@ namespace NtingCampus.Gameplay.Pranks
             CampusCharacterRuntime actorRuntime = ResolveActorRuntime(actor);
             CampusGameplayRoom canteen = worldService.FindRoomForRuntime(actorRuntime);
             CampusCharacterRuntime clerk = FindCanteenClerk(canteen.RoomId);
-            bool clerkDistracted = IsCanteenClerkDistracted(currentCanteenClerkState);
-            bool detected = clerk != null && RollCanteenDetection(clerkDistracted);
+            CampusCanteenClerkState clerkState = ResolveCanteenClerkState(canteen, actorRuntime, out CampusCanteenServiceStatus serviceStatus);
+            bool detected = clerk != null && RollCanteenDetection(clerkState, serviceStatus);
 
             gameplayEventHub?.PublishPrankAttempted(new CampusPrankAttemptedEvent(
                 CampusPrankType.CanteenFoodTheft,
@@ -400,7 +363,7 @@ namespace NtingCampus.Gameplay.Pranks
             bootstrap.GameState.AddCampusChaos(6);
             bootstrap.GameState.AddCampusOrder(-2);
             bootstrap.GameState.AddDivineInterest(4);
-            WriteLog("[Canteen] Clerk state=" + currentCanteenClerkState + ". " + FormatActorName(actorRuntime) + " stole " + foodSpec.DisplayName + ".");
+            WriteLog("[Canteen] Clerk state=" + clerkState + ". " + FormatActorName(actorRuntime) + " stole " + foodSpec.DisplayName + ".");
             PublishCanteenResolved(actorRuntime, clerk, canteen, true, foodSpec);
             lastPrankTime = Time.time;
             return true;
@@ -652,18 +615,6 @@ namespace NtingCampus.Gameplay.Pranks
             WriteLog("[Delivery] " + owner.Data.GetDisplayName(CampusLanguageState.CurrentLanguage) + " has a secret delivery waiting: " + activeDeliveryItemName + ".");
         }
 
-        private static CampusCharacterTaskDirective BuildDeliveryPointDirective(CampusCharacterTaskType taskType, string debugLabel)
-        {
-            return new CampusCharacterTaskDirective
-            {
-                TaskType = taskType,
-                TargetRoomType = CampusRoomType.Outdoor,
-                PreferredFacilityType = CampusFacilityType.DeliveryDropPoint,
-                HoldRadius = 0.18f,
-                DebugLabel = debugLabel
-            };
-        }
-
         private void UpdateDeliveryOwnerProgress()
         {
             if (activeDeliveryOrderState == CampusDeliveryOrderState.None ||
@@ -803,56 +754,107 @@ namespace NtingCampus.Gameplay.Pranks
             return names[Mathf.Abs(seed) % names.Length];
         }
 
-        private void UpdateCanteenClerkState(bool force)
+        private CampusCanteenClerkState ResolveCanteenClerkState(
+            CampusGameplayRoom canteen,
+            CampusCharacterRuntime actor,
+            out CampusCanteenServiceStatus serviceStatus)
         {
-            if (!force && Time.time < nextCanteenClerkStateTime)
+            serviceStatus = new CampusCanteenServiceStatus();
+            if (canteen == null)
             {
-                return;
+                CampusCharacterRuntime anyClerk = FindCanteenClerk(string.Empty);
+                canteen = anyClerk != null && worldService != null
+                    ? worldService.FindRoomForRuntime(anyClerk)
+                    : null;
             }
 
-            nextCanteenClerkStateTime = Time.time + Mathf.Max(1f, canteenClerkStateSeconds);
-            if (FindCanteenClerk(string.Empty) == null)
+            if (canteen == null || canteen.RoomType != CampusRoomType.Canteen)
             {
-                currentCanteenClerkState = CampusCanteenClerkState.Unknown;
-                return;
+                return CampusCanteenClerkState.Unknown;
             }
 
-            CampusCanteenClerkState[] cycle =
+            if (commerceService == null && bootstrap != null)
             {
-                CampusCanteenClerkState.WatchingCounter,
-                CampusCanteenClerkState.PreparingMalatang,
-                CampusCanteenClerkState.CookingNoodles,
-                CampusCanteenClerkState.FetchingIngredients,
-                CampusCanteenClerkState.BrieflyAway
-            };
-            int step = Mathf.Abs(Mathf.FloorToInt(Time.time / Mathf.Max(1f, canteenClerkStateSeconds)));
-            currentCanteenClerkState = cycle[step % cycle.Length];
+                commerceService = bootstrap.CommerceService;
+            }
+
+            if (commerceService != null &&
+                commerceService.TryGetCanteenServiceStatus(canteen, actor, out serviceStatus))
+            {
+                if (!serviceStatus.HasClerk)
+                {
+                    return CampusCanteenClerkState.Unknown;
+                }
+
+                if (!serviceStatus.ClerkAtServicePosition)
+                {
+                    return serviceStatus.HasActiveTransaction
+                        ? CampusCanteenClerkState.FetchingIngredients
+                        : CampusCanteenClerkState.BrieflyAway;
+                }
+
+                switch (serviceStatus.MostRelevantStep)
+                {
+                    case CampusCommerceStep.OrderingCanteenMeal:
+                    case CampusCommerceStep.ClerkPreparingCanteenMeal:
+                        return IsNoodleMeal(serviceStatus.ActiveItemDisplayName)
+                            ? CampusCanteenClerkState.CookingNoodles
+                            : CampusCanteenClerkState.PreparingMalatang;
+                    default:
+                        return CampusCanteenClerkState.WatchingCounter;
+                }
+            }
+
+            return FindCanteenClerk(canteen.RoomId) != null
+                ? CampusCanteenClerkState.WatchingCounter
+                : CampusCanteenClerkState.Unknown;
         }
 
-        private bool IsCanteenClerkDistracted(CampusCanteenClerkState state)
-        {
-            return state == CampusCanteenClerkState.PreparingMalatang ||
-                   state == CampusCanteenClerkState.CookingNoodles ||
-                   state == CampusCanteenClerkState.FetchingIngredients ||
-                   state == CampusCanteenClerkState.BrieflyAway;
-        }
-
-        private bool RollCanteenDetection(bool clerkDistracted)
+        private bool RollCanteenDetection(
+            CampusCanteenClerkState clerkState,
+            CampusCanteenServiceStatus serviceStatus)
         {
             int alert = bootstrap != null && bootstrap.GameState != null ? bootstrap.GameState.CanteenAlertLevel : 0;
-            float chance = currentCanteenClerkState == CampusCanteenClerkState.WatchingCounter ? 0.72f : 0.18f;
-            if (currentCanteenClerkState == CampusCanteenClerkState.BrieflyAway)
+            float chance;
+            switch (clerkState)
             {
-                chance = 0.06f;
+                case CampusCanteenClerkState.WatchingCounter:
+                    chance = serviceStatus.HasMealWaitingForPickup ? 0.82f : 0.72f;
+                    break;
+                case CampusCanteenClerkState.PreparingMalatang:
+                case CampusCanteenClerkState.CookingNoodles:
+                    chance = 0.24f;
+                    break;
+                case CampusCanteenClerkState.FetchingIngredients:
+                    chance = 0.08f;
+                    break;
+                case CampusCanteenClerkState.BrieflyAway:
+                    chance = 0.05f;
+                    break;
+                default:
+                    chance = 0.18f;
+                    break;
             }
 
-            if (clerkDistracted)
+            if (serviceStatus.HasActiveTransaction &&
+                clerkState != CampusCanteenClerkState.WatchingCounter)
             {
-                chance *= 0.65f;
+                chance *= 0.75f;
+            }
+
+            if (serviceStatus.ClerkAwayFromActor)
+            {
+                chance *= 0.45f;
             }
 
             chance += alert / 100f * 0.35f;
             return UnityEngine.Random.value < Mathf.Clamp01(chance);
+        }
+
+        private static bool IsNoodleMeal(string displayName)
+        {
+            return !string.IsNullOrWhiteSpace(displayName) &&
+                   displayName.IndexOf("noodle", StringComparison.OrdinalIgnoreCase) >= 0;
         }
 
         private bool RollDeliverySuspicion(CampusCharacterRuntime owner)
@@ -1259,7 +1261,7 @@ namespace NtingCampus.Gameplay.Pranks
 
             if (FindCanteenClerk(string.Empty) != null)
             {
-                currentPrompt = "Canteen clerk state: " + currentCanteenClerkState + ".";
+                currentPrompt = "Canteen clerk state: " + CurrentCanteenClerkState + ".";
                 return;
             }
 

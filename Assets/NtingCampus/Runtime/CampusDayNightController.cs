@@ -10,6 +10,7 @@ namespace NtingCampusMapEditor
         private const float DefaultRealSecondsPerGameDay = 1440f;
         private const float DefaultOrbitRadius = 42f;
         private const float DefaultLightZ = 0.5f;
+        private const float SceneReferenceRefreshIntervalSeconds = 1f;
         private const string ControllerName = "Campus Day Night Controller";
 
         [SerializeField] private CampusMapRoot mapRoot;
@@ -27,6 +28,10 @@ namespace NtingCampusMapEditor
         private bool hasInitializedTime;
         private Vector2 cachedCampusCenter;
         private NtingShadowSceneSettings shadowSceneSettings;
+        private float nextSceneReferenceRefreshTime;
+        private int[] cachedSortingLayerIds;
+        private Light2D sortingLayersConfiguredSunLight;
+        private Light2D sortingLayersConfiguredGlobalLight;
 
         public float SunHeight01 { get; private set; }
         public float ShadowLengthFactor { get; private set; }
@@ -148,11 +153,13 @@ namespace NtingCampusMapEditor
             InitializeTimeIfNeeded();
             if (Application.isPlaying)
             {
-                if (!externalTimeDriven)
+                if (externalTimeDriven)
                 {
-                    float secondsPerDay = Mathf.Max(1f, realSecondsPerGameDay);
-                    Day01 = Mathf.Repeat(Day01 + Time.deltaTime / secondsPerDay, 1f);
+                    return;
                 }
+
+                float secondsPerDay = Mathf.Max(1f, realSecondsPerGameDay);
+                Day01 = Mathf.Repeat(Day01 + Time.deltaTime / secondsPerDay, 1f);
             }
             else
             {
@@ -173,8 +180,22 @@ namespace NtingCampusMapEditor
             hasInitializedTime = true;
         }
 
-        private void ResolveSceneReferences()
+        private void ResolveSceneReferences(bool force = false)
         {
+            if (!force &&
+                Application.isPlaying &&
+                mapRoot != null &&
+                sunLight != null &&
+                globalLight != null &&
+                Time.unscaledTime < nextSceneReferenceRefreshTime)
+            {
+                return;
+            }
+
+            nextSceneReferenceRefreshTime = Application.isPlaying
+                ? Time.unscaledTime + SceneReferenceRefreshIntervalSeconds
+                : 0f;
+
             if (mapRoot == null)
             {
                 mapRoot = Object.FindFirstObjectByType<CampusMapRoot>(FindObjectsInactive.Include);
@@ -218,7 +239,7 @@ namespace NtingCampusMapEditor
                 globalLight.gameObject.name = CampusObjectNames.GlobalLight2D;
                 globalLight.lightType = Light2D.LightType.Global;
                 globalLight.blendStyleIndex = 0;
-                globalLight.targetSortingLayers = GetAllSortingLayerIds();
+                EnsureLightTargetSortingLayers(globalLight, ref sortingLayersConfiguredGlobalLight);
                 CampusDynamicShadowUtility.ConfigureLightShadows(globalLight, false, 0.75f, 0.3f, 0.5f);
             }
 
@@ -280,8 +301,8 @@ namespace NtingCampusMapEditor
             sunLight.pointLightOuterAngle = 360f;
             sunLight.pointLightInnerRadius = Mathf.Max(sunLight.pointLightInnerRadius, orbitRadius * 1.15f);
             sunLight.pointLightOuterRadius = Mathf.Max(sunLight.pointLightOuterRadius, orbitRadius * 1.5f);
-            sunLight.targetSortingLayers = GetAllSortingLayerIds();
-            CampusDynamicShadowUtility.ConfigureLightShadows(sunLight, true, 0.45f, 0.75f, 0.85f);
+            EnsureLightTargetSortingLayers(sunLight, ref sortingLayersConfiguredSunLight);
+            ConfigureLightShadowsIfChanged(sunLight, true, 0.45f, 0.75f, 0.85f);
         }
 
         private void UpdateGlobalLight(float sunIntensity, Color color)
@@ -295,8 +316,60 @@ namespace NtingCampusMapEditor
             globalLight.intensity = EvaluateGlobalLightIntensity(sunIntensity);
             globalLight.color = color;
             globalLight.blendStyleIndex = 0;
-            globalLight.targetSortingLayers = GetAllSortingLayerIds();
-            CampusDynamicShadowUtility.ConfigureLightShadows(globalLight, false, 0.75f, 0.3f, 0.5f);
+            EnsureLightTargetSortingLayers(globalLight, ref sortingLayersConfiguredGlobalLight);
+            ConfigureLightShadowsIfChanged(globalLight, false, 0.75f, 0.3f, 0.5f);
+        }
+
+        private int[] GetCachedSortingLayerIds()
+        {
+            if (cachedSortingLayerIds == null || cachedSortingLayerIds.Length == 0)
+            {
+                cachedSortingLayerIds = GetAllSortingLayerIds();
+            }
+
+            return cachedSortingLayerIds;
+        }
+
+        private void EnsureLightTargetSortingLayers(Light2D light, ref Light2D configuredLight)
+        {
+            if (light == null || configuredLight == light)
+            {
+                return;
+            }
+
+            light.targetSortingLayers = GetCachedSortingLayerIds();
+            configuredLight = light;
+        }
+
+        private static void ConfigureLightShadowsIfChanged(
+            Light2D light,
+            bool enabled,
+            float intensity,
+            float softness,
+            float softnessFalloff)
+        {
+            if (light == null)
+            {
+                return;
+            }
+
+            float clampedIntensity = Mathf.Clamp01(intensity);
+            float clampedSoftness = Mathf.Clamp01(softness);
+            float clampedSoftnessFalloff = Mathf.Clamp01(softnessFalloff);
+            if (light.shadowsEnabled == enabled &&
+                Mathf.Approximately(light.shadowIntensity, clampedIntensity) &&
+                Mathf.Approximately(light.shadowSoftness, clampedSoftness) &&
+                Mathf.Approximately(light.shadowSoftnessFalloffIntensity, clampedSoftnessFalloff))
+            {
+                return;
+            }
+
+            CampusDynamicShadowUtility.ConfigureLightShadows(
+                light,
+                enabled,
+                clampedIntensity,
+                clampedSoftness,
+                clampedSoftnessFalloff);
         }
 
         private void UpdateShadowParameters()

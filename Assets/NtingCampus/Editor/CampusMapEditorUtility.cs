@@ -2819,8 +2819,9 @@ namespace NtingCampusMapEditor
                         placed = instance.AddComponent<CampusPlacedObject>();
                     }
 
+                    CampusPlacedObject prefabPlaced = prefab != null ? prefab.GetComponent<CampusPlacedObject>() : null;
                     placed.ObjectId = objectData.ObjectId;
-                    placed.TypeId = objectData.TypeId;
+                    placed.TypeId = ResolveEditorObjectTypeId(objectData.TypeId, prefabPlaced);
                     placed.DisplayNameOverride = objectData.DisplayNameOverride;
                     placed.FloorIndex = objectData.FloorIndex;
                     placed.Cell = objectData.Cell;
@@ -3458,7 +3459,7 @@ namespace NtingCampusMapEditor
                 {
                     ObjectId = placed.ObjectId,
                     ObjectGuid = GetAssetGuid(prefabSource),
-                    TypeId = string.IsNullOrWhiteSpace(placed.TypeId) ? string.Empty : placed.TypeId.Trim(),
+                    TypeId = ResolveEditorObjectTypeId(placed, prefabSource),
                     DisplayNameOverride = placed.DisplayNameOverride,
                     Position = cellCenter,
                     Cell = cell,
@@ -3483,6 +3484,43 @@ namespace NtingCampusMapEditor
                     CustomInteractionAnchors = CampusPlacedObject.CloneInteractionAnchors(placed.CustomInteractionAnchors)
                 });
             }
+        }
+
+        private static string ResolveEditorObjectTypeId(string serializedTypeId, CampusPlacedObject prefabPlaced)
+        {
+            if (!string.IsNullOrWhiteSpace(serializedTypeId))
+            {
+                return serializedTypeId.Trim();
+            }
+
+            return prefabPlaced != null && !string.IsNullOrWhiteSpace(prefabPlaced.TypeId)
+                ? prefabPlaced.TypeId.Trim()
+                : string.Empty;
+        }
+
+        private static string ResolveEditorObjectTypeId(CampusPlacedObject placed, GameObject prefabSource)
+        {
+            if (placed == null)
+            {
+                return string.Empty;
+            }
+
+            if (!string.IsNullOrWhiteSpace(placed.TypeId))
+            {
+                return placed.TypeId.Trim();
+            }
+
+            CampusPlacedObject prefabPlaced = prefabSource != null ? prefabSource.GetComponent<CampusPlacedObject>() : null;
+            if (prefabPlaced != null && !string.IsNullOrWhiteSpace(prefabPlaced.TypeId))
+            {
+                return prefabPlaced.TypeId.Trim();
+            }
+
+            NtingCampus.Gameplay.Rooms.CampusFacilityType inferredType =
+                NtingCampus.Gameplay.Rooms.CampusFacilityTypeResolver.Resolve(placed);
+            return inferredType != NtingCampus.Gameplay.Rooms.CampusFacilityType.Unknown
+                ? inferredType.ToString()
+                : string.Empty;
         }
 
         private static void CaptureStairs(Transform stairsRoot, List<CampusStairData> output)

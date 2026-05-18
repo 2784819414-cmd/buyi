@@ -1,5 +1,6 @@
 ﻿{
     "ObjectId": "Cafeteria_Counter_4x1",
+    "TypeId": "Podium",
     "DisplayNameOverride": "podium",
     "OverrideFootprintSize": true,
     "FootprintSize": {

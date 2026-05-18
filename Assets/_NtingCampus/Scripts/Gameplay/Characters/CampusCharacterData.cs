@@ -32,6 +32,7 @@ namespace NtingCampus.Gameplay.Characters
         [SerializeField] private List<CampusCharacterPossession> possessions = new List<CampusCharacterPossession>();
         [SerializeField] private List<CampusCharacterTrait> traits = new List<CampusCharacterTrait>();
         [SerializeField] private List<CampusCharacterMemoryId> memories = new List<CampusCharacterMemoryId>();
+        [SerializeField] private CampusCharacterAssignmentData assignments = new CampusCharacterAssignmentData();
 
         public string Id => id;
         public string DisplayName => GetDisplayName(CampusLanguageState.CurrentLanguage);
@@ -56,6 +57,7 @@ namespace NtingCampus.Gameplay.Characters
         public IReadOnlyList<CampusCharacterPossession> Possessions => possessions;
         public IReadOnlyList<CampusCharacterTrait> Traits => traits;
         public IReadOnlyList<CampusCharacterMemoryId> Memories => memories;
+        public CampusCharacterAssignmentData Assignments => assignments ?? (assignments = new CampusCharacterAssignmentData());
 
         public void Configure(
             string characterId,
@@ -91,7 +93,46 @@ namespace NtingCampus.Gameplay.Characters
             traits = characterTraits != null ? new List<CampusCharacterTrait>(characterTraits) : new List<CampusCharacterTrait>();
             possessions = new List<CampusCharacterPossession>(4);
             memories = new List<CampusCharacterMemoryId>(5);
+            assignments = new CampusCharacterAssignmentData();
             ResetEcologyFromTraits();
+        }
+
+        public void SetAssignments(CampusCharacterAssignmentData source)
+        {
+            assignments = source != null
+                ? source.Clone()
+                : new CampusCharacterAssignmentData();
+            assignments.Normalize();
+        }
+
+        public void SyncAssignmentsFromProfile(CampusNpcPersonalProfile profile)
+        {
+            if (profile == null)
+            {
+                return;
+            }
+
+            CampusCharacterAssignmentData target = Assignments;
+            target.StudentClassroomId = UseResolvedOrPreserve(profile.StudentClassroomId, target.StudentClassroomId);
+            target.StudentDeskId = UseResolvedOrPreserve(profile.StudentDeskKey, target.StudentDeskId);
+            target.TeacherClassroomId = UseResolvedOrPreserve(profile.TeacherClassroomId, target.TeacherClassroomId);
+            target.TeacherPodiumId = UseResolvedOrPreserve(profile.TeacherPodiumKey, target.TeacherPodiumId);
+            target.OfficeRoomId = UseResolvedOrPreserve(profile.OfficeRoomId, target.OfficeRoomId);
+            target.OfficeDeskId = UseResolvedOrPreserve(profile.OfficeDeskKey, target.OfficeDeskId);
+            target.WorkRoomId = UseResolvedOrPreserve(profile.WorkRoomId, target.WorkRoomId);
+            target.PrimaryWorkstationId = UseResolvedOrPreserve(profile.PrimaryWorkstationKey, target.PrimaryWorkstationId);
+            target.DeliveryRoomId = UseResolvedOrPreserve(profile.DeliveryRoomId, target.DeliveryRoomId);
+            target.DeliveryPointId = UseResolvedOrPreserve(profile.DeliveryPointKey, target.DeliveryPointId);
+            target.Normalize();
+        }
+
+        private static string UseResolvedOrPreserve(string resolved, string current)
+        {
+            return !string.IsNullOrWhiteSpace(resolved)
+                ? resolved.Trim()
+                : string.IsNullOrWhiteSpace(current)
+                    ? string.Empty
+                    : current.Trim();
         }
 
         public void SetCurrentRoom(string roomId)
@@ -519,6 +560,74 @@ namespace NtingCampus.Gameplay.Characters
         private static string NormalizeRelationshipTargetId(string targetId)
         {
             return string.IsNullOrWhiteSpace(targetId) ? string.Empty : targetId.Trim();
+        }
+    }
+
+    [Serializable]
+    public sealed class CampusCharacterAssignmentData
+    {
+        public string StudentClassroomId = string.Empty;
+        public string StudentDeskId = string.Empty;
+        public string TeacherClassroomId = string.Empty;
+        public string TeacherPodiumId = string.Empty;
+        public string OfficeRoomId = string.Empty;
+        public string OfficeDeskId = string.Empty;
+        public string WorkRoomId = string.Empty;
+        public string PrimaryWorkstationId = string.Empty;
+        public string DeliveryRoomId = string.Empty;
+        public string DeliveryPointId = string.Empty;
+
+        public bool HasAny()
+        {
+            Normalize();
+            return !string.IsNullOrEmpty(StudentClassroomId) ||
+                   !string.IsNullOrEmpty(StudentDeskId) ||
+                   !string.IsNullOrEmpty(TeacherClassroomId) ||
+                   !string.IsNullOrEmpty(TeacherPodiumId) ||
+                   !string.IsNullOrEmpty(OfficeRoomId) ||
+                   !string.IsNullOrEmpty(OfficeDeskId) ||
+                   !string.IsNullOrEmpty(WorkRoomId) ||
+                   !string.IsNullOrEmpty(PrimaryWorkstationId) ||
+                   !string.IsNullOrEmpty(DeliveryRoomId) ||
+                   !string.IsNullOrEmpty(DeliveryPointId);
+        }
+
+        public CampusCharacterAssignmentData Clone()
+        {
+            CampusCharacterAssignmentData clone = new CampusCharacterAssignmentData
+            {
+                StudentClassroomId = StudentClassroomId,
+                StudentDeskId = StudentDeskId,
+                TeacherClassroomId = TeacherClassroomId,
+                TeacherPodiumId = TeacherPodiumId,
+                OfficeRoomId = OfficeRoomId,
+                OfficeDeskId = OfficeDeskId,
+                WorkRoomId = WorkRoomId,
+                PrimaryWorkstationId = PrimaryWorkstationId,
+                DeliveryRoomId = DeliveryRoomId,
+                DeliveryPointId = DeliveryPointId
+            };
+            clone.Normalize();
+            return clone;
+        }
+
+        public void Normalize()
+        {
+            StudentClassroomId = NormalizeId(StudentClassroomId);
+            StudentDeskId = NormalizeId(StudentDeskId);
+            TeacherClassroomId = NormalizeId(TeacherClassroomId);
+            TeacherPodiumId = NormalizeId(TeacherPodiumId);
+            OfficeRoomId = NormalizeId(OfficeRoomId);
+            OfficeDeskId = NormalizeId(OfficeDeskId);
+            WorkRoomId = NormalizeId(WorkRoomId);
+            PrimaryWorkstationId = NormalizeId(PrimaryWorkstationId);
+            DeliveryRoomId = NormalizeId(DeliveryRoomId);
+            DeliveryPointId = NormalizeId(DeliveryPointId);
+        }
+
+        private static string NormalizeId(string value)
+        {
+            return string.IsNullOrWhiteSpace(value) ? string.Empty : value.Trim();
         }
     }
 

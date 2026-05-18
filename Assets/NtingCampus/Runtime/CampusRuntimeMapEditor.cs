@@ -308,6 +308,16 @@ namespace NtingCampusMapEditor
                 CampusFacilityType.CanteenCounter,
                 new Color(0.18f, 0.68f, 0.72f, 1f)),
             CampusRuntimeGameplayMarkerPreset.FacilityPoint(
+                "\u5e97\u5458\u540e\u53f0\u7ad9\u4f4d",
+                "Clerk Back Stand",
+                CampusFacilityType.CanteenClerkStandPoint,
+                new Color(0.12f, 0.58f, 0.68f, 1f)),
+            CampusRuntimeGameplayMarkerPreset.FacilityPoint(
+                "\u987e\u5ba2\u53d6\u9910\u70b9",
+                "Customer Pickup",
+                CampusFacilityType.CanteenCustomerPickupPoint,
+                new Color(0.48f, 0.82f, 0.62f, 1f)),
+            CampusRuntimeGameplayMarkerPreset.FacilityPoint(
                 "\u98df\u5802\u6392\u961f\u70b9",
                 "Canteen Queue",
                 CampusFacilityType.CanteenQueuePoint,
@@ -414,6 +424,7 @@ namespace NtingCampusMapEditor
         private GameObject stairPrefab;
         private Camera sceneCamera;
         private bool isOpen;
+        private bool roomMarkerVisualsHidden;
         private bool isReady;
         private bool sceneReferencesDirty = true;
         private bool runtimeSessionInitialized;
@@ -565,6 +576,7 @@ namespace NtingCampusMapEditor
             runtimeSessionInitialized = true;
             isReady = false;
             isOpen = openOnStart;
+            roomMarkerVisualsHidden = false;
             CampusDynamicShadowUtility.ApplyHighestRuntimeShadowQuality();
             LoadRuntimeResources();
             RefreshSceneReferences(false);
@@ -575,6 +587,10 @@ namespace NtingCampusMapEditor
             }
 
             PrepareRuntimeMapPresentationSafe();
+            if (!isOpen)
+            {
+                HideAllRoomMarkerSpriteRenderersOnce();
+            }
 
             EnsureAreaDefinitionsAvailable(true);
             if (string.IsNullOrWhiteSpace(activeImportLabel))
@@ -625,7 +641,7 @@ namespace NtingCampusMapEditor
         {
             if (!IsEditingTextInput() && WasKeyPressed(KeyCode.F10))
             {
-                isOpen = !isOpen;
+                SetEditorOpen(!isOpen);
                 if (isOpen)
                 {
                     MarkSceneReferencesDirty();
@@ -666,7 +682,6 @@ namespace NtingCampusMapEditor
             EnsureStyles();
             if (!isOpen)
             {
-                HideAllRoomMarkerSpriteRenderers();
                 textInputFocused = false;
                 return;
             }
@@ -803,6 +818,7 @@ namespace NtingCampusMapEditor
             selectedObjectIndex = Mathf.Clamp(selectedObjectIndex, 0, Mathf.Max(0, objectPrefabs.Count - 1));
             LoadUserImports();
             ApplySavedObjectSettingsToPalette();
+            NormalizePlacedObjectTypeIdsFromPalette();
             EnsureAreaDefinitionsAvailable(false);
         }
 
@@ -1994,7 +2010,7 @@ namespace NtingCampusMapEditor
                 }
                 else
                 {
-                    isOpen = false;
+                    SetEditorOpen(false);
                 }
             }
 
@@ -3253,6 +3269,7 @@ namespace NtingCampusMapEditor
 
                 output.Add(new CampusRuntimeGameplayFacilitySnapshot
                 {
+                    Id = marker.FacilityId,
                     DisplayName = marker.DisplayName,
                     FacilityType = marker.FacilityType,
                     FloorIndex = 0,
@@ -3511,12 +3528,17 @@ namespace NtingCampusMapEditor
                         continue;
                     }
 
+                    Vector3Int absoluteCell = ToAbsoluteCell(anchorCell, source.Cell);
                     shiftedFacilities.Add(new CampusRuntimeGameplayFacilitySnapshot
                     {
+                        Id = CampusGameplayFacilityMarker.BuildStableFacilityId(
+                            floor.FloorIndex,
+                            source.FacilityType,
+                            absoluteCell),
                         DisplayName = source.DisplayName,
                         FacilityType = source.FacilityType,
                         FloorIndex = floor.FloorIndex,
-                        Cell = ToAbsoluteCell(anchorCell, source.Cell),
+                        Cell = absoluteCell,
                         CountsAsCoreFacility = source.CountsAsCoreFacility
                     });
                 }
@@ -4793,13 +4815,21 @@ namespace NtingCampusMapEditor
 
         private List<CampusRuntimeGameplayActorSnapshot> ResolveGameplayActorsForSave(string targetMapPath)
         {
+            List<CampusRuntimeGameplayActorSnapshot> actors;
             if (cachedGameplayActors.Count > 0)
             {
-                return CloneGameplayActors(cachedGameplayActors);
+                actors = CloneGameplayActors(cachedGameplayActors);
+            }
+            else
+            {
+                CampusRuntimeGameplayOverlaySnapshot existing = ReadGameplayOverlaySnapshot(targetMapPath);
+                actors = existing != null
+                    ? CloneGameplayActors(existing.Actors)
+                    : new List<CampusRuntimeGameplayActorSnapshot>();
             }
 
-            CampusRuntimeGameplayOverlaySnapshot existing = ReadGameplayOverlaySnapshot(targetMapPath);
-            return existing != null ? CloneGameplayActors(existing.Actors) : new List<CampusRuntimeGameplayActorSnapshot>();
+            MergeRuntimeActorAssignments(actors);
+            return actors;
         }
 
         private CampusRuntimeGameplayOverlaySnapshot ReadGameplayOverlaySnapshot(string mapPath)
@@ -4845,6 +4875,21 @@ namespace NtingCampusMapEditor
             snapshot.Rooms = snapshot.Rooms ?? new List<CampusRuntimeGameplayRoomSnapshot>();
             snapshot.Facilities = snapshot.Facilities ?? new List<CampusRuntimeGameplayFacilitySnapshot>();
             snapshot.PrankSpots = snapshot.PrankSpots ?? new List<CampusRuntimeGameplayPrankSpotSnapshot>();
+            for (int i = 0; i < snapshot.Actors.Count; i++)
+            {
+                if (snapshot.Actors[i] != null)
+                {
+                    snapshot.Actors[i].Normalize();
+                }
+            }
+
+            for (int i = 0; i < snapshot.Facilities.Count; i++)
+            {
+                if (snapshot.Facilities[i] != null)
+                {
+                    snapshot.Facilities[i].Normalize();
+                }
+            }
         }
 
         private void CacheGameplayActors(List<CampusRuntimeGameplayActorSnapshot> actors)
@@ -4896,12 +4941,58 @@ namespace NtingCampusMapEditor
                     Mischief = source.Mischief,
                     Traits = source.Traits != null
                         ? (CampusCharacterTrait[])source.Traits.Clone()
-                        : Array.Empty<CampusCharacterTrait>()
+                        : Array.Empty<CampusCharacterTrait>(),
+                    Assignments = source.Assignments != null
+                        ? source.Assignments.Clone()
+                        : new CampusCharacterAssignmentData()
                 };
+                clone.Normalize();
                 clones.Add(clone);
             }
 
             return clones;
+        }
+
+        private static void MergeRuntimeActorAssignments(List<CampusRuntimeGameplayActorSnapshot> actors)
+        {
+            if (actors == null || actors.Count == 0)
+            {
+                return;
+            }
+
+            Dictionary<string, CampusRuntimeGameplayActorSnapshot> actorsById =
+                new Dictionary<string, CampusRuntimeGameplayActorSnapshot>(StringComparer.OrdinalIgnoreCase);
+            for (int i = 0; i < actors.Count; i++)
+            {
+                CampusRuntimeGameplayActorSnapshot actor = actors[i];
+                if (actor == null || string.IsNullOrWhiteSpace(actor.Id))
+                {
+                    continue;
+                }
+
+                actorsById[actor.Id.Trim()] = actor;
+            }
+
+            CampusCharacterRuntime[] runtimes =
+                UnityEngine.Object.FindObjectsByType<CampusCharacterRuntime>(
+                    FindObjectsInactive.Include,
+                    FindObjectsSortMode.None);
+            for (int i = 0; i < runtimes.Length; i++)
+            {
+                CampusCharacterData data = runtimes[i] != null ? runtimes[i].Data : null;
+                if (data == null || string.IsNullOrWhiteSpace(data.Id) || !data.Assignments.HasAny())
+                {
+                    continue;
+                }
+
+                if (!actorsById.TryGetValue(data.Id.Trim(), out CampusRuntimeGameplayActorSnapshot actor))
+                {
+                    continue;
+                }
+
+                actor.Assignments = data.Assignments.Clone();
+                actor.Normalize();
+            }
         }
 
         private void CaptureGameplayRooms(List<CampusRuntimeGameplayRoomSnapshot> output)
@@ -4954,7 +5045,13 @@ namespace NtingCampusMapEditor
                 }
 
                 Vector3Int cell = NormalizeCell(marker.Cell);
-                string key = marker.FloorIndex + "|" + marker.FacilityType + "|" + cell + "|" + marker.DisplayName;
+                string id = CampusGameplayFacilityMarker.NormalizeFacilityId(marker.FacilityId);
+                if (string.IsNullOrEmpty(id))
+                {
+                    id = CampusGameplayFacilityMarker.BuildStableFacilityId(marker.FloorIndex, marker.FacilityType, cell);
+                }
+
+                string key = id;
                 if (!capturedKeys.Add(key))
                 {
                     continue;
@@ -4962,6 +5059,7 @@ namespace NtingCampusMapEditor
 
                 output.Add(new CampusRuntimeGameplayFacilitySnapshot
                 {
+                    Id = id,
                     DisplayName = marker.DisplayName,
                     FacilityType = marker.FacilityType,
                     FloorIndex = Mathf.Max(1, marker.FloorIndex),
@@ -5065,6 +5163,7 @@ namespace NtingCampusMapEditor
                     continue;
                 }
 
+                facility.Normalize();
                 CampusFloorRoot floor = EnsureFloor(Mathf.Max(1, facility.FloorIndex));
                 if (floor == null || floor.Grid == null || floor.PropsRoot == null)
                 {
@@ -5083,6 +5182,7 @@ namespace NtingCampusMapEditor
 
                 CampusGameplayFacilityMarker marker = markerObject.AddComponent<CampusGameplayFacilityMarker>();
                 marker.Configure(
+                    facility.Id,
                     facility.DisplayName,
                     facility.FacilityType,
                     floor.FloorIndex,
@@ -5419,8 +5519,13 @@ namespace NtingCampusMapEditor
             }
 
             objectSnapshot.ObjectId = string.IsNullOrEmpty(placed.ObjectId) ? placed.gameObject.name : placed.ObjectId;
-            objectSnapshot.TypeId = string.IsNullOrWhiteSpace(placed.TypeId) ? string.Empty : placed.TypeId.Trim();
             objectSnapshot.DisplayNameOverride = placed.DisplayNameOverride;
+            objectSnapshot.TypeId = ResolveObjectTypeIdForPlacedObject(placed);
+            if (!string.IsNullOrEmpty(objectSnapshot.TypeId) && string.IsNullOrWhiteSpace(placed.TypeId))
+            {
+                placed.TypeId = objectSnapshot.TypeId;
+            }
+
             objectSnapshot.PaletteIndex = FindPrefabIndexByName(objectSnapshot.ObjectId);
             objectSnapshot.Position = placed.transform.position;
             objectSnapshot.Cell = placed.Cell;
@@ -5453,6 +5558,51 @@ namespace NtingCampusMapEditor
             objectSnapshot.CustomInteractionPromptText = placed.CustomInteractionPromptText;
             objectSnapshot.CustomInteractionAnchors = CampusPlacedObject.CloneInteractionAnchors(placed.CustomInteractionAnchors);
             return objectSnapshot;
+        }
+
+        private static string ResolveObjectTypeIdForPlacedObject(CampusPlacedObject placed)
+        {
+            if (placed == null)
+            {
+                return string.Empty;
+            }
+
+            if (!string.IsNullOrWhiteSpace(placed.TypeId))
+            {
+                return placed.TypeId.Trim();
+            }
+
+            return InferObjectTypeId(
+                placed.ObjectId,
+                placed.DisplayName,
+                placed.IsStorageContainer);
+        }
+
+        private static string ResolveObjectTypeIdForSnapshot(
+            CampusRuntimeObjectSnapshot objectSnapshot,
+            GameObject prefab,
+            string resolvedDisplayName)
+        {
+            if (objectSnapshot == null)
+            {
+                return string.Empty;
+            }
+
+            if (!string.IsNullOrWhiteSpace(objectSnapshot.TypeId))
+            {
+                return objectSnapshot.TypeId.Trim();
+            }
+
+            CampusPlacedObject prefabPlaced = prefab != null ? prefab.GetComponent<CampusPlacedObject>() : null;
+            if (prefabPlaced != null && !string.IsNullOrWhiteSpace(prefabPlaced.TypeId))
+            {
+                return prefabPlaced.TypeId.Trim();
+            }
+
+            return InferObjectTypeId(
+                objectSnapshot.ObjectId,
+                resolvedDisplayName,
+                objectSnapshot.IsStorageContainer);
         }
 
         private static CampusRuntimeObjectSnapshot CloneObjectSnapshot(CampusRuntimeObjectSnapshot source)
@@ -5519,9 +5669,13 @@ namespace NtingCampusMapEditor
                 GameObject instance = Instantiate(prefab, floor.PropsRoot);
                 CampusSceneInstanceUtility.NormalizeSceneInstance(instance);
                 instance.SetActive(true);
+                objectSnapshot.ObjectId = string.IsNullOrWhiteSpace(objectSnapshot.ObjectId)
+                    ? prefab.name
+                    : objectSnapshot.ObjectId.Trim();
                 string displayName = string.IsNullOrWhiteSpace(objectSnapshot.DisplayNameOverride)
                     ? GetObjectDisplayName(prefab)
                     : objectSnapshot.DisplayNameOverride.Trim();
+                objectSnapshot.TypeId = ResolveObjectTypeIdForSnapshot(objectSnapshot, prefab, displayName);
                 instance.name = displayName + "_F" + floor.FloorIndex + "_" + objectSnapshot.Cell.x + "_" + objectSnapshot.Cell.y;
                 CampusPlacedObject placed = instance.GetComponent<CampusPlacedObject>();
                 if (placed == null)
@@ -6756,7 +6910,11 @@ namespace NtingCampusMapEditor
             GUI.Box(bottomToolbarRect, GUIContent.none, panelStyle);
             float x = bottomToolbarRect.x + 14f;
             float y = bottomToolbarRect.y + 14f;
-            DrawToolbarButton(ref x, y, CampusRuntimeEditorTextCatalog.Get(displayLanguage, CampusRuntimeEditorTextId.Close), delegate { isOpen = false; });
+            DrawToolbarButton(ref x, y, CampusRuntimeEditorTextCatalog.Get(displayLanguage, CampusRuntimeEditorTextId.Close), delegate
+            {
+                SetEditorOpen(false);
+                SaveCurrentMapSource(false);
+            });
             DrawToolbarButton(ref x, y, CampusRuntimeEditorTextCatalog.Get(displayLanguage, CampusRuntimeEditorTextId.Help), delegate { showHelpOverlay = !showHelpOverlay; });
             DrawToolbarButton(ref x, y, CampusRuntimeEditorTextCatalog.Get(displayLanguage, CampusRuntimeEditorTextId.Import), ImportLatestJson);
             DrawToolbarButton(ref x, y, CampusRuntimeEditorTextCatalog.Get(displayLanguage, CampusRuntimeEditorTextId.Export), ExportToJson);
@@ -7190,6 +7348,10 @@ namespace NtingCampusMapEditor
                     return new Color(0.62f, 0.56f, 0.46f, 1f);
                 case CampusFacilityType.CanteenCounter:
                     return new Color(0.18f, 0.68f, 0.72f, 1f);
+                case CampusFacilityType.CanteenClerkStandPoint:
+                    return new Color(0.12f, 0.58f, 0.68f, 1f);
+                case CampusFacilityType.CanteenCustomerPickupPoint:
+                    return new Color(0.48f, 0.82f, 0.62f, 1f);
                 case CampusFacilityType.CanteenQueuePoint:
                     return new Color(0.95f, 0.76f, 0.28f, 1f);
                 case CampusFacilityType.CanteenFoodTray:
@@ -7326,6 +7488,39 @@ namespace NtingCampusMapEditor
             }
 
             return false;
+        }
+
+        private void SetEditorOpen(bool open)
+        {
+            if (isOpen == open)
+            {
+                if (!isOpen)
+                {
+                    HideAllRoomMarkerSpriteRenderersOnce();
+                }
+
+                return;
+            }
+
+            isOpen = open;
+            if (isOpen)
+            {
+                roomMarkerVisualsHidden = false;
+                return;
+            }
+
+            HideAllRoomMarkerSpriteRenderersOnce();
+        }
+
+        private void HideAllRoomMarkerSpriteRenderersOnce()
+        {
+            if (roomMarkerVisualsHidden)
+            {
+                return;
+            }
+
+            HideAllRoomMarkerSpriteRenderers();
+            roomMarkerVisualsHidden = true;
         }
 
         private void HideRoomMarkerSpriteRenderers(CampusFloorRoot floor)
@@ -8049,7 +8244,7 @@ namespace NtingCampusMapEditor
 
             Rect scrollRect = new Rect(panelRect.x + 14f, panelRect.y + 98f, panelRect.width - 28f, panelRect.height - 112f);
             float viewWidth = scrollRect.width - 22f;
-            Rect viewRect = new Rect(0f, 0f, viewWidth, Mathf.Max(scrollRect.height + 1f, 1430f));
+            Rect viewRect = new Rect(0f, 0f, viewWidth, Mathf.Max(scrollRect.height + 1f, 1450f));
             objectSettingsScroll = GUI.BeginScrollView(scrollRect, objectSettingsScroll, viewRect);
             float y = 0f;
 
@@ -8924,8 +9119,8 @@ namespace NtingCampusMapEditor
                 return 0;
             }
 
-            string targetObjectTypeKey = ResolveObjectTypeKey(settings.TypeId, settings.ObjectId, prefab.name);
-            if (string.IsNullOrEmpty(targetObjectTypeKey))
+            string targetObjectId = ResolveObjectSyncId(settings, prefab);
+            if (string.IsNullOrEmpty(targetObjectId))
             {
                 return 0;
             }
@@ -8938,7 +9133,7 @@ namespace NtingCampusMapEditor
             for (int objectIndex = 0; objectIndex < objects.Length; objectIndex++)
             {
                 CampusPlacedObject placed = objects[objectIndex];
-                if (!DoesPlacedObjectMatchTypeKey(placed, targetObjectTypeKey))
+                if (!DoesPlacedObjectMatchObjectIdentity(placed, targetObjectId, prefab.name))
                 {
                     continue;
                 }
@@ -9003,6 +9198,74 @@ namespace NtingCampusMapEditor
             }
         }
 
+        private void NormalizePlacedObjectTypeIdsFromPalette()
+        {
+            CampusMapRoot targetRoot = mapRoot != null
+                ? mapRoot
+                : FindFirstObjectByType<CampusMapRoot>(FindObjectsInactive.Include);
+            if (targetRoot == null)
+            {
+                return;
+            }
+
+            CampusPlacedObject[] placedObjects = targetRoot.GetComponentsInChildren<CampusPlacedObject>(true);
+            for (int i = 0; i < placedObjects.Length; i++)
+            {
+                CampusPlacedObject placed = placedObjects[i];
+                if (placed == null || !string.IsNullOrWhiteSpace(placed.TypeId))
+                {
+                    continue;
+                }
+
+                string resolvedTypeId = ResolveObjectTypeIdForPlacedObjectFromPalette(placed);
+                if (!string.IsNullOrWhiteSpace(resolvedTypeId))
+                {
+                    placed.TypeId = resolvedTypeId;
+                }
+            }
+        }
+
+        private string ResolveObjectTypeIdForPlacedObjectFromPalette(CampusPlacedObject placed)
+        {
+            if (placed == null)
+            {
+                return string.Empty;
+            }
+
+            if (!string.IsNullOrWhiteSpace(placed.TypeId))
+            {
+                return placed.TypeId.Trim();
+            }
+
+            string objectId = !string.IsNullOrWhiteSpace(placed.ObjectId)
+                ? placed.ObjectId.Trim()
+                : placed.gameObject != null ? placed.gameObject.name : string.Empty;
+            CampusRuntimeObjectSettings settings = LoadRuntimeObjectSettings(objectId);
+            if (settings != null && !string.IsNullOrWhiteSpace(settings.TypeId))
+            {
+                return settings.TypeId.Trim();
+            }
+
+            int prefabIndex = FindPrefabIndexByName(objectId);
+            if (prefabIndex >= 0 && prefabIndex < objectPrefabs.Count)
+            {
+                GameObject prefab = objectPrefabs[prefabIndex];
+                CampusPlacedObject prefabPlaced = prefab != null ? prefab.GetComponent<CampusPlacedObject>() : null;
+                if (prefabPlaced != null && !string.IsNullOrWhiteSpace(prefabPlaced.TypeId))
+                {
+                    return prefabPlaced.TypeId.Trim();
+                }
+
+                settings = prefab != null ? LoadRuntimeObjectSettings(prefab.name) : null;
+                if (settings != null && !string.IsNullOrWhiteSpace(settings.TypeId))
+                {
+                    return settings.TypeId.Trim();
+                }
+            }
+
+            return ResolveObjectTypeIdForPlacedObject(placed);
+        }
+
         private CampusPlacedObject ApplyRuntimeObjectSettings(GameObject target, CampusRuntimeObjectSettings settings)
         {
             if (target == null || settings == null)
@@ -9021,9 +9284,7 @@ namespace NtingCampusMapEditor
                 placed.ObjectId = !string.IsNullOrWhiteSpace(settings.ObjectId) ? settings.ObjectId : target.name;
             }
 
-            placed.TypeId = string.IsNullOrWhiteSpace(settings.TypeId)
-                ? string.Empty
-                : settings.TypeId.Trim();
+            placed.TypeId = ResolveObjectTypeIdForSettings(target, settings);
             placed.DisplayNameOverride = string.IsNullOrWhiteSpace(settings.DisplayNameOverride)
                 ? string.Empty
                 : settings.DisplayNameOverride.Trim();
@@ -9318,6 +9579,16 @@ namespace NtingCampusMapEditor
                 return nameof(CampusFacilityType.CanteenCounter);
             }
 
+            if (ContainsObjectTypeToken(key, "canteenclerkstand", "canteen_clerk_stand", "canteenbackcounter", "canteen_back_counter", "canteen_staff", "\u5e97\u5458\u7ad9\u4f4d", "\u67dc\u53f0\u540e"))
+            {
+                return nameof(CampusFacilityType.CanteenClerkStandPoint);
+            }
+
+            if (ContainsObjectTypeToken(key, "canteenpickup", "canteen_pickup", "mealpickup", "meal_pickup", "customerpickup", "\u53d6\u9910\u70b9", "\u987e\u5ba2\u53d6\u9910"))
+            {
+                return nameof(CampusFacilityType.CanteenCustomerPickupPoint);
+            }
+
             if (ContainsObjectTypeToken(key, "canteenqueue", "canteen_queue", "mealqueue", "meal_queue", "\u98df\u5802\u6392\u961f"))
             {
                 return nameof(CampusFacilityType.CanteenQueuePoint);
@@ -9452,6 +9723,65 @@ namespace NtingCampusMapEditor
             }
 
             return placed;
+        }
+
+        private static string ResolveObjectTypeIdForSettings(GameObject target, CampusRuntimeObjectSettings settings)
+        {
+            if (settings == null)
+            {
+                return string.Empty;
+            }
+
+            if (!string.IsNullOrWhiteSpace(settings.TypeId))
+            {
+                return settings.TypeId.Trim();
+            }
+
+            return InferObjectTypeId(
+                !string.IsNullOrWhiteSpace(settings.ObjectId) ? settings.ObjectId : target != null ? target.name : string.Empty,
+                settings.DisplayNameOverride,
+                settings.IsStorageContainer);
+        }
+
+        private static string ResolveObjectSyncId(CampusRuntimeObjectSettings settings, GameObject prefab)
+        {
+            string objectId = settings != null && !string.IsNullOrWhiteSpace(settings.ObjectId)
+                ? settings.ObjectId
+                : prefab != null ? prefab.name : string.Empty;
+            return string.IsNullOrWhiteSpace(objectId) ? string.Empty : objectId.Trim();
+        }
+
+        private static bool DoesPlacedObjectMatchObjectIdentity(
+            CampusPlacedObject placed,
+            string targetObjectId,
+            string fallbackPrefabName)
+        {
+            if (placed == null || string.IsNullOrWhiteSpace(targetObjectId))
+            {
+                return false;
+            }
+
+            string placedObjectId = !string.IsNullOrWhiteSpace(placed.ObjectId)
+                ? placed.ObjectId
+                : placed.gameObject != null ? placed.gameObject.name : string.Empty;
+            return ObjectIdentityEquals(placedObjectId, targetObjectId) ||
+                   ObjectIdentityEquals(placedObjectId, fallbackPrefabName);
+        }
+
+        private static bool ObjectIdentityEquals(string left, string right)
+        {
+            if (string.IsNullOrWhiteSpace(left) || string.IsNullOrWhiteSpace(right))
+            {
+                return false;
+            }
+
+            string normalizedLeft = left.Trim();
+            string normalizedRight = right.Trim();
+            return string.Equals(normalizedLeft, normalizedRight, StringComparison.OrdinalIgnoreCase) ||
+                   string.Equals(
+                       CampusObjectNames.GetDisplayName(normalizedLeft),
+                       CampusObjectNames.GetDisplayName(normalizedRight),
+                       StringComparison.OrdinalIgnoreCase);
         }
 
         private bool DoesPlacedObjectMatchTypeKey(CampusPlacedObject placed, string targetObjectTypeKey)
@@ -11233,10 +11563,10 @@ namespace NtingCampusMapEditor
 
             y += 34f;
             GUI.Label(
-                new Rect(0f, y, width, 38f),
-                Tr("\u7528\u4e8e\u7269\u54c1/\u8bbe\u65bd\u5224\u5b9a\u7684\u7a33\u5b9aID\u3002\u4f8b\uff1aStudentDesk\u3001OfficeDesk\u3001CanteenCounter\u3001StoreShelf\u3001Storage\u3002", "Stable ID for object/facility checks. Examples: StudentDesk, OfficeDesk, CanteenCounter, StoreShelf, Storage."),
+                new Rect(0f, y, width, 54f),
+                Tr("\u7528\u4e8e\u7269\u54c1/\u8bbe\u65bd\u5224\u5b9a\u7684\u7a33\u5b9aID\u3002\u4f8b\uff1aStudentDesk\u3001OfficeDesk\u3001CanteenCounter\u3001CanteenClerkStandPoint\u3001CanteenCustomerPickupPoint\u3001StoreShelf\u3001Storage\u3002", "Stable ID for object/facility checks. Examples: StudentDesk, OfficeDesk, CanteenCounter, CanteenClerkStandPoint, CanteenCustomerPickupPoint, StoreShelf, Storage."),
                 mutedStyle);
-            y += 46f;
+            y += 62f;
         }
 
         private void DrawObjectSettingsWallMountControls(ref float y, float width, CampusPlacedObject placed)

@@ -114,8 +114,6 @@ namespace NtingCampus.Gameplay.Inventory
         private float nextSearchAllowedTime;
         private float nextQuestioningAllowedTime;
         private bool subscribedToTime;
-        private readonly Dictionary<string, float> proactiveDirectiveUntilByNpc =
-            new Dictionary<string, float>(StringComparer.OrdinalIgnoreCase);
         private readonly Dictionary<string, float> proactiveActionCooldownByNpc =
             new Dictionary<string, float>(StringComparer.OrdinalIgnoreCase);
 
@@ -377,64 +375,6 @@ namespace NtingCampus.Gameplay.Inventory
 
             message = "Seeded carried contraband: " + ResolveItemName(item) + ".";
             WriteInspectionLog("[InspectionDebug] " + message);
-            return true;
-        }
-
-        public bool TryBuildNpcInspectionDirective(
-            CampusCharacterRuntime npcRuntime,
-            out CampusCharacterTaskDirective directive)
-        {
-            directive = null;
-            ResolveReferences();
-            if (!TryResolveInspectionContext(out CampusCharacterRuntime playerRuntime, out CampusGameplayRoom playerRoom, out _) ||
-                npcRuntime == null ||
-                npcRuntime.Data == null ||
-                npcRuntime.Data.IsPlayerControlled ||
-                string.Equals(npcRuntime.CharacterId, playerRuntime.CharacterId, StringComparison.OrdinalIgnoreCase))
-            {
-                return false;
-            }
-
-            bool authority = IsAuthority(npcRuntime);
-            bool tattletale = npcRuntime.Data.HasTrait(CampusCharacterTrait.Tattletale);
-            bool hasSpecificVigilance = HasNpcSpecificVigilance(npcRuntime);
-            if (!authority && !tattletale && !hasSpecificVigilance)
-            {
-                return false;
-            }
-
-            string npcId = ResolveRuntimeId(npcRuntime);
-            if (!string.IsNullOrWhiteSpace(npcId) &&
-                proactiveDirectiveUntilByNpc.TryGetValue(npcId, out float activeUntil) &&
-                Time.time < activeUntil)
-            {
-                directive = BuildNpcInspectionDirective(npcRuntime, playerRoom, authority);
-                return true;
-            }
-
-            bool hasContraband = TryFindCarriedContraband(out _, out _);
-            int pressure = ResolveNpcProactivePressure(npcRuntime, playerRoom, hasContraband);
-            int threshold = authority ? 45 : tattletale ? 38 : 55;
-            if (pressure < threshold)
-            {
-                return false;
-            }
-
-            float chance = Mathf.Clamp01((pressure - threshold + 20) / 100f);
-            int tick = Mathf.FloorToInt(Time.time / Mathf.Max(1f, evaluationIntervalSeconds));
-            if (PseudoRandom01(npcId, tick + 911) > chance)
-            {
-                return false;
-            }
-
-            proactiveDirectiveUntilByNpc[npcId] = Time.time + Mathf.Lerp(8f, 18f, pressure / 100f);
-            dailyProactiveInspectionCount++;
-            currentInspectionSummary = ResolveRuntimeName(npcRuntime) +
-                                       " started watching " +
-                                       ResolveRuntimeName(playerRuntime) +
-                                       ". Pressure=" + pressure + ".";
-            WriteInspectionLog("[Inspection] " + currentInspectionSummary);
-            directive = BuildNpcInspectionDirective(npcRuntime, playerRoom, authority);
             return true;
         }
 
@@ -868,20 +808,6 @@ namespace NtingCampus.Gameplay.Inventory
 
             StorageContainerModel backpack = StoragePlayerInventoryUtility.GetOrCreateBackpack(memory);
             return TryFindContrabandInContainer(backpack, out item, out container);
-        }
-
-        private CampusCharacterTaskDirective BuildNpcInspectionDirective(
-            CampusCharacterRuntime npcRuntime,
-            CampusGameplayRoom playerRoom,
-            bool authority)
-        {
-            CampusCharacterTaskDirective directive = new CampusCharacterTaskDirective();
-            directive.TaskType = authority ? CampusCharacterTaskType.InvestigateDisturbance : CampusCharacterTaskType.Socialize;
-            directive.TargetRoomType = playerRoom != null ? playerRoom.RoomType : CampusRoomType.CommonActivityZone;
-            directive.PreferredFacilityType = authority ? CampusFacilityType.Door : CampusFacilityType.BulletinBoard;
-            directive.HoldRadius = authority ? 0.18f : 0.28f;
-            directive.DebugLabel = authority ? "ProactiveInspection" : "TattletaleWatch";
-            return directive;
         }
 
         private int ResolveNpcProactivePressure(
@@ -1478,7 +1404,6 @@ namespace NtingCampus.Gameplay.Inventory
             dailyConfiscatedItemCount = 0;
             dailyTattletaleReportCount = 0;
             dailyProactiveInspectionCount = 0;
-            proactiveDirectiveUntilByNpc.Clear();
             proactiveActionCooldownByNpc.Clear();
             currentInspectionSummary = "Inspection counters reset for the new day.";
         }

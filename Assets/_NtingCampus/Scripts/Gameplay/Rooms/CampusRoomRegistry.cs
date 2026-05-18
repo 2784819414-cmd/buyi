@@ -367,11 +367,18 @@ namespace NtingCampus.Gameplay.Rooms
 
                 if (facilityMarker.LinkedPlacedObject != null)
                 {
-                    room.AddFacility(facilityMarker.LinkedPlacedObject, facilityMarker.FacilityType);
+                    room.AddFacility(
+                        facilityMarker.LinkedPlacedObject,
+                        facilityMarker.FacilityType,
+                        facilityMarker.FacilityId);
                 }
                 else
                 {
-                    room.AddExplicitFacility(facilityMarker.DisplayName, facilityMarker.FacilityType, facilityMarker.Cell);
+                    room.AddExplicitFacility(
+                        facilityMarker.FacilityId,
+                        facilityMarker.DisplayName,
+                        facilityMarker.FacilityType,
+                        facilityMarker.Cell);
                 }
             }
 

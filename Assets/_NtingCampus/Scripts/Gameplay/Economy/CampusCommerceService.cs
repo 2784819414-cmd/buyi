@@ -32,6 +32,28 @@ namespace NtingCampus.Gameplay.Economy
         Failed = 11
     }
 
+    internal enum CampusCommerceTargetKind
+    {
+        QueueCanteenMeal = 1,
+        ReceiveCanteenMeal = 2,
+        BrowseStoreShelf = 3,
+        QueueStoreCheckout = 4,
+        PayStoreCheckout = 5
+    }
+
+    public struct CampusCanteenServiceStatus
+    {
+        public bool HasClerk;
+        public bool ClerkAtServicePosition;
+        public bool ClerkAwayFromActor;
+        public bool HasActiveTransaction;
+        public bool HasMealWaitingForPickup;
+        public bool HasQueue;
+        public float ClerkActorDistance;
+        public CampusCommerceStep MostRelevantStep;
+        public string ActiveItemDisplayName;
+    }
+
     [DisallowMultipleComponent]
     public sealed class CampusCommerceService : MonoBehaviour
     {
@@ -63,6 +85,61 @@ namespace NtingCampus.Gameplay.Economy
         public int DailyCanteenMealsServed => dailyCanteenMealsServed;
         public int DailyStorePurchasesCompleted => dailyStorePurchasesCompleted;
 
+        public bool TryGetCanteenServiceStatus(
+            CampusGameplayRoom room,
+            CampusCharacterRuntime actor,
+            out CampusCanteenServiceStatus status)
+        {
+            status = new CampusCanteenServiceStatus();
+            if (room == null)
+            {
+                return false;
+            }
+
+            CampusCharacterRuntime clerk = FindStaffWithDutyInRoom(CampusStaffDuty.CanteenClerk, room);
+            status.HasClerk = clerk != null;
+            if (clerk != null)
+            {
+                status.ClerkAtServicePosition = IsCanteenClerkAtServicePosition(clerk, room, CounterReachDistance);
+                if (actor != null)
+                {
+                    status.ClerkActorDistance = Vector2.Distance(clerk.transform.position, actor.transform.position);
+                    status.ClerkAwayFromActor = status.ClerkActorDistance > 2.2f;
+                }
+            }
+
+            for (int i = 0; i < transactions.Count; i++)
+            {
+                CampusCommerceTransaction transaction = transactions[i];
+                if (transaction == null ||
+                    transaction.IsFinished ||
+                    transaction.NeedType != CampusCommerceNeedType.CanteenMeal ||
+                    !string.Equals(transaction.RoomId, room.RoomId, StringComparison.OrdinalIgnoreCase))
+                {
+                    continue;
+                }
+
+                status.HasActiveTransaction = true;
+                if (transaction.Step == CampusCommerceStep.QueueingCanteenMeal)
+                {
+                    status.HasQueue = true;
+                }
+
+                if (transaction.Step == CampusCommerceStep.ReceivingCanteenMeal)
+                {
+                    status.HasMealWaitingForPickup = true;
+                }
+
+                if (IsMoreRelevantCanteenStep(transaction.Step, status.MostRelevantStep))
+                {
+                    status.MostRelevantStep = transaction.Step;
+                    status.ActiveItemDisplayName = transaction.ItemDisplayName;
+                }
+            }
+
+            return status.HasClerk || status.HasActiveTransaction;
+        }
+
         public void Initialize(CampusGameBootstrap targetBootstrap)
         {
             bootstrap = targetBootstrap != null ? targetBootstrap : CampusGameBootstrap.Instance;
@@ -71,84 +148,6 @@ namespace NtingCampus.Gameplay.Economy
             scheduleService = bootstrap != null ? bootstrap.ScheduleService : null;
             SyncDayState(true);
             nextNeedScanTime = Time.time + 0.8f;
-        }
-
-        public bool TryBuildCommerceDirective(CampusCharacterRuntime runtime, out CampusCharacterTaskDirective directive)
-        {
-            directive = null;
-            if (runtime == null || runtime.Data == null)
-            {
-                return false;
-            }
-
-            CampusCommerceTransaction transaction = FindActiveTransactionForCustomer(runtime.CharacterId);
-            if (transaction == null)
-            {
-                return false;
-            }
-
-            directive = new CampusCharacterTaskDirective
-            {
-                HoldRadius = 0.14f,
-                DebugLabel = transaction.Step.ToString()
-            };
-
-            switch (transaction.Step)
-            {
-                case CampusCommerceStep.QueueingCanteenMeal:
-                    directive.TaskType = CampusCharacterTaskType.QueueCanteenMeal;
-                    directive.TargetRoomType = CampusRoomType.Canteen;
-                    directive.PreferredFacilityType = CampusFacilityType.CanteenQueuePoint;
-                    return true;
-                case CampusCommerceStep.OrderingCanteenMeal:
-                case CampusCommerceStep.ClerkPreparingCanteenMeal:
-                case CampusCommerceStep.ReceivingCanteenMeal:
-                    directive.TaskType = CampusCharacterTaskType.ReceiveCanteenMeal;
-                    directive.TargetRoomType = CampusRoomType.Canteen;
-                    directive.PreferredFacilityType = CampusFacilityType.CanteenCounter;
-                    return true;
-                case CampusCommerceStep.BrowsingStoreShelf:
-                case CampusCommerceStep.SelectingStoreItem:
-                    directive.TaskType = CampusCharacterTaskType.BrowseStoreShelf;
-                    directive.TargetRoomType = CampusRoomType.Store;
-                    directive.PreferredFacilityType = CampusFacilityType.StoreShelf;
-                    return true;
-                case CampusCommerceStep.QueueingStoreCheckout:
-                    directive.TaskType = CampusCharacterTaskType.QueueStoreCheckout;
-                    directive.TargetRoomType = CampusRoomType.Store;
-                    directive.PreferredFacilityType = CampusFacilityType.StoreQueuePoint;
-                    return true;
-                case CampusCommerceStep.PayingStoreCheckout:
-                case CampusCommerceStep.ReceivingStorePurchase:
-                    directive.TaskType = CampusCharacterTaskType.PayStoreCheckout;
-                    directive.TargetRoomType = CampusRoomType.Store;
-                    directive.PreferredFacilityType = CampusFacilityType.StoreCheckout;
-                    return true;
-                default:
-                    return false;
-            }
-        }
-
-        public bool TryResolveCommerceTaskTarget(
-            CampusCharacterRuntime runtime,
-            CampusCharacterTaskType taskType,
-            CampusGameplayRoom room,
-            Vector3 anchor,
-            out Vector3 target)
-        {
-            target = default;
-            if (runtime == null)
-            {
-                return false;
-            }
-
-            if (taskType == CampusCharacterTaskType.WorkStoreCheckout)
-            {
-                return TryResolveFacilityWorldPosition(room, CampusFacilityType.StoreCheckout, out target);
-            }
-
-            CampusCommerceTransaction transaction = FindActiveTransactionForCustomer(runtime.CharacterId);
-            return transaction != null && TryResolveTargetForTransaction(transaction, taskType, room, anchor, out target);
         }
 
         private void Update()
@@ -373,8 +372,8 @@ namespace NtingCampus.Gameplay.Economy
                     if (transaction.QueueIndex == 0 &&
                         clerk != null &&
                         !IsDutyBusy(CampusStaffDuty.CanteenClerk, transaction.RequestId) &&
-                        IsRuntimeNearTaskTarget(customer, transaction, CampusCharacterTaskType.QueueCanteenMeal, room, QueueReachDistance) &&
-                        IsRuntimeNearFacility(clerk, room, CampusFacilityType.CanteenCounter, CounterReachDistance))
+                        IsRuntimeNearTaskTarget(customer, transaction, CampusCommerceTargetKind.QueueCanteenMeal, room, QueueReachDistance) &&
+                        IsCanteenClerkAtServicePosition(clerk, room, CounterReachDistance))
                     {
                         transaction.AssignClerk(clerk.CharacterId);
                         transaction.SetStep(CampusCommerceStep.OrderingCanteenMeal, Time.time);
@@ -396,7 +395,7 @@ namespace NtingCampus.Gameplay.Economy
                     }
                     break;
                 case CampusCommerceStep.ReceivingCanteenMeal:
-                    if (IsRuntimeNearTaskTarget(customer, transaction, CampusCharacterTaskType.ReceiveCanteenMeal, room, CounterReachDistance))
+                    if (IsRuntimeNearTaskTarget(customer, transaction, CampusCommerceTargetKind.ReceiveCanteenMeal, room, CounterReachDistance))
                     {
                         CompleteCanteenTransaction(transaction, customer);
                     }
@@ -417,7 +416,7 @@ namespace NtingCampus.Gameplay.Economy
             switch (transaction.Step)
             {
                 case CampusCommerceStep.BrowsingStoreShelf:
-                    if (IsRuntimeNearTaskTarget(customer, transaction, CampusCharacterTaskType.BrowseStoreShelf, room, ShelfReachDistance))
+                    if (IsRuntimeNearTaskTarget(customer, transaction, CampusCommerceTargetKind.BrowseStoreShelf, room, ShelfReachDistance))
                     {
                         transaction.SetStep(CampusCommerceStep.SelectingStoreItem, Time.time);
                         customer.Data.AddMemory(CampusCharacterMemoryId.SelectedStoreItem);
@@ -436,7 +435,7 @@ namespace NtingCampus.Gameplay.Economy
                     if (transaction.QueueIndex == 0 &&
                         cashier != null &&
                         !IsDutyBusy(CampusStaffDuty.StoreOwner, transaction.RequestId) &&
-                        IsRuntimeNearTaskTarget(customer, transaction, CampusCharacterTaskType.QueueStoreCheckout, room, QueueReachDistance) &&
+                        IsRuntimeNearTaskTarget(customer, transaction, CampusCommerceTargetKind.QueueStoreCheckout, room, QueueReachDistance) &&
                         IsRuntimeNearFacility(cashier, room, CampusFacilityType.StoreCheckout, CounterReachDistance))
                     {
                         transaction.AssignClerk(cashier.CharacterId);
@@ -453,7 +452,7 @@ namespace NtingCampus.Gameplay.Economy
                     }
                     break;
                 case CampusCommerceStep.ReceivingStorePurchase:
-                    if (IsRuntimeNearTaskTarget(customer, transaction, CampusCharacterTaskType.PayStoreCheckout, room, CounterReachDistance))
+                    if (IsRuntimeNearTaskTarget(customer, transaction, CampusCommerceTargetKind.PayStoreCheckout, room, CounterReachDistance))
                     {
                         CompleteStoreTransaction(transaction, customer);
                     }
@@ -523,7 +522,7 @@ namespace NtingCampus.Gameplay.Economy
 
         private bool TryResolveTargetForTransaction(
             CampusCommerceTransaction transaction,
-            CampusCharacterTaskType taskType,
+            CampusCommerceTargetKind targetKind,
             CampusGameplayRoom room,
             Vector3 anchor,
             out Vector3 target)
@@ -534,26 +533,24 @@ namespace NtingCampus.Gameplay.Economy
                 return false;
             }
 
-            switch (taskType)
+            switch (targetKind)
             {
-                case CampusCharacterTaskType.QueueCanteenMeal:
-                    target = ResolveQueueTarget(
+                case CampusCommerceTargetKind.QueueCanteenMeal:
+                    target = ResolveCanteenQueueTarget(
                         room,
-                        CampusFacilityType.CanteenQueuePoint,
-                        CampusFacilityType.CanteenCounter,
                         transaction.QueueIndex,
                         0.62f,
                         anchor);
                     return true;
-                case CampusCharacterTaskType.ReceiveCanteenMeal:
-                    target = ResolveCounterCustomerTarget(room, CampusFacilityType.CanteenCounter, anchor);
+                case CampusCommerceTargetKind.ReceiveCanteenMeal:
+                    target = ResolveCanteenCustomerTarget(room, anchor);
                     return true;
-                case CampusCharacterTaskType.BrowseStoreShelf:
+                case CampusCommerceTargetKind.BrowseStoreShelf:
                     target = TryResolveFacilityWorldPosition(room, CampusFacilityType.StoreShelf, out Vector3 shelf)
                         ? shelf + Vector3.down * 0.45f
                         : anchor;
                     return true;
-                case CampusCharacterTaskType.QueueStoreCheckout:
+                case CampusCommerceTargetKind.QueueStoreCheckout:
                     target = ResolveQueueTarget(
                         room,
                         CampusFacilityType.StoreQueuePoint,
@@ -562,7 +559,7 @@ namespace NtingCampus.Gameplay.Economy
                         0.58f,
                         anchor);
                     return true;
-                case CampusCharacterTaskType.PayStoreCheckout:
+                case CampusCommerceTargetKind.PayStoreCheckout:
                     target = ResolveCounterCustomerTarget(room, CampusFacilityType.StoreCheckout, anchor);
                     return true;
                 default:
@@ -586,6 +583,28 @@ namespace NtingCampus.Gameplay.Economy
             return basePosition + Vector3.down * Mathf.Max(0, queueIndex) * spacing;
         }
 
+        private Vector3 ResolveCanteenQueueTarget(
+            CampusGameplayRoom room,
+            int queueIndex,
+            float spacing,
+            Vector3 fallback)
+        {
+            Vector3 basePosition = TryResolveFacilityWorldPosition(room, CampusFacilityType.CanteenQueuePoint, out Vector3 explicitQueue)
+                ? explicitQueue
+                : ResolveCanteenCustomerTarget(room, fallback);
+            return basePosition + Vector3.down * Mathf.Max(0, queueIndex) * spacing;
+        }
+
+        private Vector3 ResolveCanteenCustomerTarget(CampusGameplayRoom room, Vector3 fallback)
+        {
+            if (TryResolveFacilityWorldPosition(room, CampusFacilityType.CanteenCustomerPickupPoint, out Vector3 pickup))
+            {
+                return pickup;
+            }
+
+            return ResolveCounterCustomerTarget(room, CampusFacilityType.CanteenCounter, fallback);
+        }
+
         private Vector3 ResolveCounterCustomerTarget(CampusGameplayRoom room, CampusFacilityType counterType, Vector3 fallback)
         {
             return TryResolveFacilityWorldPosition(room, counterType, out Vector3 counter)
@@ -593,15 +612,24 @@ namespace NtingCampus.Gameplay.Economy
                 : fallback;
         }
 
+        private bool IsCanteenClerkAtServicePosition(
+            CampusCharacterRuntime runtime,
+            CampusGameplayRoom room,
+            float distance)
+        {
+            return IsRuntimeNearAnyFacility(runtime, room, CampusFacilityType.CanteenClerkStandPoint, distance) ||
+                   IsRuntimeNearFacility(runtime, room, CampusFacilityType.CanteenCounter, distance);
+        }
+
         private bool IsRuntimeNearTaskTarget(
             CampusCharacterRuntime runtime,
             CampusCommerceTransaction transaction,
-            CampusCharacterTaskType taskType,
+            CampusCommerceTargetKind targetKind,
             CampusGameplayRoom room,
             float distance)
         {
             if (runtime == null ||
-                !TryResolveTargetForTransaction(transaction, taskType, room, runtime.transform.position, out Vector3 target))
+                !TryResolveTargetForTransaction(transaction, targetKind, room, runtime.transform.position, out Vector3 target))
             {
                 return false;
             }
@@ -620,6 +648,31 @@ namespace NtingCampus.Gameplay.Economy
                    Vector2.Distance(runtime.transform.position, target) <= distance;
         }
 
+        private bool IsRuntimeNearAnyFacility(
+            CampusCharacterRuntime runtime,
+            CampusGameplayRoom room,
+            CampusFacilityType facilityType,
+            float distance)
+        {
+            if (runtime == null || room == null || room.Facilities == null)
+            {
+                return false;
+            }
+
+            for (int i = 0; i < room.Facilities.Count; i++)
+            {
+                CampusGameplayRoom.FacilityRecord record = room.Facilities[i];
+                if (record != null &&
+                    record.FacilityType == facilityType &&
+                    Vector2.Distance(runtime.transform.position, CellCenter(record.Cell)) <= distance)
+                {
+                    return true;
+                }
+            }
+
+            return false;
+        }
+
         private bool TryResolveFacilityWorldPosition(CampusGameplayRoom room, CampusFacilityType facilityType, out Vector3 position)
         {
             position = default;
@@ -631,6 +684,11 @@ namespace NtingCampus.Gameplay.Economy
 
             position = new Vector3(record.Cell.x + 0.5f, record.Cell.y + 0.5f, 0f);
             return true;
+        }
+
+        private static Vector3 CellCenter(Vector3Int cell)
+        {
+            return new Vector3(cell.x + 0.5f, cell.y + 0.5f, 0f);
         }
 
         private CampusGameplayRoom.FacilityRecord FindFacility(CampusGameplayRoom room, CampusFacilityType facilityType)
@@ -864,6 +922,28 @@ namespace NtingCampus.Gameplay.Economy
         private static float Elapsed(CampusCommerceTransaction transaction)
         {
             return transaction != null ? Time.time - transaction.StepStartedAt : 0f;
+        }
+
+        private static bool IsMoreRelevantCanteenStep(CampusCommerceStep candidate, CampusCommerceStep current)
+        {
+            return CanteenStepPriority(candidate) > CanteenStepPriority(current);
+        }
+
+        private static int CanteenStepPriority(CampusCommerceStep step)
+        {
+            switch (step)
+            {
+                case CampusCommerceStep.ClerkPreparingCanteenMeal:
+                    return 4;
+                case CampusCommerceStep.ReceivingCanteenMeal:
+                    return 3;
+                case CampusCommerceStep.OrderingCanteenMeal:
+                    return 2;
+                case CampusCommerceStep.QueueingCanteenMeal:
+                    return 1;
+                default:
+                    return 0;
+            }
         }
 
         private static bool ContainsId(List<string> values, string id)
