@@ -52,6 +52,10 @@ namespace NtingCampusMapEditor
                     return "Esc";
                 case KeyCode.Tab:
                     return "Tab";
+                case KeyCode.F11:
+                    return "F11";
+                case KeyCode.F12:
+                    return "F12";
                 case KeyCode.LeftShift:
                 case KeyCode.RightShift:
                     return "Shift";
@@ -156,6 +160,8 @@ namespace NtingCampusMapEditor
                 case KeyCode.Backspace: return keyboard.backspaceKey;
                 case KeyCode.Delete: return keyboard.deleteKey;
                 case KeyCode.F9: return keyboard.f9Key;
+                case KeyCode.F11: return keyboard.f11Key;
+                case KeyCode.F12: return keyboard.f12Key;
                 case KeyCode.LeftShift: return keyboard.leftShiftKey;
                 case KeyCode.RightShift: return keyboard.rightShiftKey;
                 case KeyCode.LeftControl: return keyboard.leftCtrlKey;

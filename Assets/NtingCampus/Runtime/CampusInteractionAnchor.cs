@@ -1,4 +1,5 @@
 using System.Reflection;
+using NtingCampus.Gameplay.Core;
 using UnityEngine;
 
 namespace NtingCampusMapEditor
@@ -102,23 +103,7 @@ namespace NtingCampusMapEditor
                 return false;
             }
 
-            if (InteractionTarget is ICampusInteractionActionHandler targetHandler &&
-                targetHandler.TryHandleInteractionAction(this, ActionId, Payload, actor))
-            {
-                return true;
-            }
-
-            ICampusInteractionActionHandler[] handlers = GetComponentsInParent<ICampusInteractionActionHandler>(true);
-            for (int i = 0; i < handlers.Length; i++)
-            {
-                ICampusInteractionActionHandler handler = handlers[i];
-                if (handler != null && handler.TryHandleInteractionAction(this, ActionId, Payload, actor))
-                {
-                    return true;
-                }
-            }
-
-            return false;
+            return CampusGameplayActionService.TryExecuteInteraction(this, actor);
         }
 
         private string ResolvePromptText()

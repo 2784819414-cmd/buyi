@@ -39,8 +39,12 @@ namespace NtingCampus.Gameplay.Sanctions
             {
                 gameplayEventHub.PrankResolved -= HandlePrankResolved;
                 gameplayEventHub.PrankResolved += HandlePrankResolved;
-                gameplayEventHub.PlayerSkipClass -= HandlePlayerSkipClass;
-                gameplayEventHub.PlayerSkipClass += HandlePlayerSkipClass;
+                gameplayEventHub.ActorSkipClass -= HandleActorSkipClass;
+                gameplayEventHub.ActorSkipClass += HandleActorSkipClass;
+                gameplayEventHub.ItemTheftObserved -= HandleItemTheftObserved;
+                gameplayEventHub.ItemTheftObserved += HandleItemTheftObserved;
+                gameplayEventHub.ContrabandFound -= HandleContrabandFound;
+                gameplayEventHub.ContrabandFound += HandleContrabandFound;
             }
         }
 
@@ -49,7 +53,9 @@ namespace NtingCampus.Gameplay.Sanctions
             if (gameplayEventHub != null)
             {
                 gameplayEventHub.PrankResolved -= HandlePrankResolved;
-                gameplayEventHub.PlayerSkipClass -= HandlePlayerSkipClass;
+                gameplayEventHub.ActorSkipClass -= HandleActorSkipClass;
+                gameplayEventHub.ItemTheftObserved -= HandleItemTheftObserved;
+                gameplayEventHub.ContrabandFound -= HandleContrabandFound;
             }
         }
 
@@ -60,34 +66,66 @@ namespace NtingCampus.Gameplay.Sanctions
                 return;
             }
 
-            CampusCharacterRuntime playerRuntime = rosterService != null ? rosterService.FindRuntime(eventData.ActorId) : null;
-            if (playerRuntime == null || playerRuntime.Data == null)
+            CampusCharacterRuntime actorRuntime = rosterService != null ? rosterService.FindRuntime(eventData.ActorId) : null;
+            if (actorRuntime == null || actorRuntime.Data == null)
             {
                 return;
             }
 
-            IssueDetectedRuleBreak(playerRuntime, eventData.RoomId, string.Empty);
+            IssueDetectedRuleBreak(actorRuntime, eventData.RoomId, string.Empty);
         }
 
-        private void HandlePlayerSkipClass(CampusPlayerSkipClassEvent eventData)
+        private void HandleActorSkipClass(CampusActorSkipClassEvent eventData)
         {
             if (!eventData.DetectedByTeacher || bootstrap == null || bootstrap.GameState == null)
             {
                 return;
             }
 
-            CampusCharacterRuntime playerRuntime = rosterService != null ? rosterService.FindRuntime(eventData.ActorId) : null;
-            if (playerRuntime == null || playerRuntime.Data == null)
+            CampusCharacterRuntime actorRuntime = rosterService != null ? rosterService.FindRuntime(eventData.ActorId) : null;
+            if (actorRuntime == null || actorRuntime.Data == null)
             {
                 return;
             }
 
-            IssueDetectedRuleBreak(playerRuntime, eventData.FromRoomId, "[处分] 逃课被老师撞见。");
+            IssueDetectedRuleBreak(actorRuntime, eventData.FromRoomId, "[处分] 逃课被老师撞见。");
         }
 
-        private void IssueDetectedRuleBreak(CampusCharacterRuntime playerRuntime, string roomId, string prefaceLog)
+        private void HandleItemTheftObserved(CampusItemTheftObservedEvent eventData)
         {
-            if (playerRuntime == null || playerRuntime.Data == null || bootstrap == null || bootstrap.GameState == null)
+            if (!eventData.ShouldIssueSanction || bootstrap == null || bootstrap.GameState == null)
+            {
+                return;
+            }
+
+            CampusCharacterRuntime actorRuntime = rosterService != null ? rosterService.FindRuntime(eventData.ActorId) : null;
+            if (actorRuntime == null || actorRuntime.Data == null)
+            {
+                return;
+            }
+
+            IssueDetectedRuleBreak(actorRuntime, eventData.RoomId, "[Sanction] Protected property was taken under observation.");
+        }
+
+        private void HandleContrabandFound(CampusContrabandFoundEvent eventData)
+        {
+            if (!eventData.ShouldIssueSanction || bootstrap == null || bootstrap.GameState == null)
+            {
+                return;
+            }
+
+            CampusCharacterRuntime actorRuntime = rosterService != null ? rosterService.FindRuntime(eventData.ActorId) : null;
+            if (actorRuntime == null || actorRuntime.Data == null)
+            {
+                return;
+            }
+
+            IssueDetectedRuleBreak(actorRuntime, eventData.RoomId, "[Sanction] Contraband was found during inspection.");
+        }
+
+        private void IssueDetectedRuleBreak(CampusCharacterRuntime actorRuntime, string roomId, string prefaceLog)
+        {
+            if (actorRuntime == null || actorRuntime.Data == null || bootstrap == null || bootstrap.GameState == null)
             {
                 return;
             }
@@ -104,38 +142,38 @@ namespace NtingCampus.Gameplay.Sanctions
 
             CampusSanctionLevel level = ResolveLevel(warningCount);
             lastIssuedLevel = level;
-            ApplySanctionState(playerRuntime, level);
+            ApplySanctionState(actorRuntime, level);
 
             gameplayEventHub?.PublishSanctionIssued(new CampusSanctionIssuedEvent(
-                playerRuntime.CharacterId,
+                actorRuntime.CharacterId,
                 roomId,
                 level,
                 warningCount));
 
-            WriteSanctionLog(playerRuntime, level, warningCount);
+            WriteSanctionLog(actorRuntime, level, warningCount);
         }
 
-        private void ApplySanctionState(CampusCharacterRuntime playerRuntime, CampusSanctionLevel level)
+        private void ApplySanctionState(CampusCharacterRuntime actorRuntime, CampusSanctionLevel level)
         {
             switch (level)
             {
                 case CampusSanctionLevel.Warning:
-                    playerRuntime.Data.SetState(CampusCharacterState.Nervous);
+                    actorRuntime.Data.SetState(CampusCharacterState.Nervous);
                     break;
                 case CampusSanctionLevel.Reprimand:
-                    playerRuntime.Data.SetState(CampusCharacterState.Reprimanded);
+                    actorRuntime.Data.SetState(CampusCharacterState.Reprimanded);
                     break;
                 case CampusSanctionLevel.OfficePunishment:
-                    playerRuntime.Data.SetState(CampusCharacterState.Punished);
-                    MovePlayerToOffice(playerRuntime);
+                    actorRuntime.Data.SetState(CampusCharacterState.Punished);
+                    MoveActorToOffice(actorRuntime);
                     break;
                 default:
-                    playerRuntime.Data.SetState(CampusCharacterState.Normal);
+                    actorRuntime.Data.SetState(CampusCharacterState.Normal);
                     break;
             }
         }
 
-        private void MovePlayerToOffice(CampusCharacterRuntime playerRuntime)
+        private void MoveActorToOffice(CampusCharacterRuntime actorRuntime)
         {
             CampusGameplayRoom officeRoom = worldService != null ? worldService.FindFirstUsableRoom(CampusRoomType.Office) : null;
             if (officeRoom == null)
@@ -143,13 +181,13 @@ namespace NtingCampus.Gameplay.Sanctions
                 return;
             }
 
-            playerRuntime.transform.position = officeRoom.WorldCenter + new Vector3(-0.25f, -0.15f, 0f);
-            playerRuntime.Data.SetCurrentRoom(officeRoom.RoomId);
+            actorRuntime.transform.position = officeRoom.WorldCenter + new Vector3(-0.25f, -0.15f, 0f);
+            actorRuntime.Data.SetCurrentRoom(officeRoom.RoomId);
         }
 
-        private void WriteSanctionLog(CampusCharacterRuntime playerRuntime, CampusSanctionLevel level, int warningCount)
+        private void WriteSanctionLog(CampusCharacterRuntime actorRuntime, CampusSanctionLevel level, int warningCount)
         {
-            if (bootstrap == null || bootstrap.EventLog == null || playerRuntime == null || playerRuntime.Data == null)
+            if (bootstrap == null || bootstrap.EventLog == null || actorRuntime == null || actorRuntime.Data == null)
             {
                 return;
             }
@@ -159,19 +197,19 @@ namespace NtingCampus.Gameplay.Sanctions
                 case CampusSanctionLevel.Warning:
                     bootstrap.EventLog.AddLog(CampusCharacterTextCatalog.FormatSanctionIssued(
                         UI.CampusLanguageState.CurrentLanguage,
-                        playerRuntime.Data.GetDisplayName(UI.CampusLanguageState.CurrentLanguage),
+                        actorRuntime.Data.GetDisplayName(UI.CampusLanguageState.CurrentLanguage),
                         level));
                     break;
                 case CampusSanctionLevel.Reprimand:
                     bootstrap.EventLog.AddLog(CampusCharacterTextCatalog.FormatSanctionIssued(
                         UI.CampusLanguageState.CurrentLanguage,
-                        playerRuntime.Data.GetDisplayName(UI.CampusLanguageState.CurrentLanguage),
+                        actorRuntime.Data.GetDisplayName(UI.CampusLanguageState.CurrentLanguage),
                         level));
                     break;
                 case CampusSanctionLevel.OfficePunishment:
                     bootstrap.EventLog.AddLog(CampusCharacterTextCatalog.FormatSanctionIssued(
                         UI.CampusLanguageState.CurrentLanguage,
-                        playerRuntime.Data.GetDisplayName(UI.CampusLanguageState.CurrentLanguage),
+                        actorRuntime.Data.GetDisplayName(UI.CampusLanguageState.CurrentLanguage),
                         level));
                     break;
             }

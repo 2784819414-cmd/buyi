@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using NtingCampus.Gameplay.Characters;
+using NtingCampus.Gameplay.Economy;
 using NtingCampus.Gameplay.Modes;
 using NtingCampus.Gameplay.Pranks;
 using NtingCampus.Gameplay.Sanctions;
@@ -65,6 +66,8 @@ namespace NtingCampus.Gameplay.Core
             CampusGameState gameState = targetBootstrap.GameState;
             CampusModeController targetModeController = targetBootstrap.ModeController;
             CampusRosterService rosterService = targetBootstrap.RosterService;
+            CampusNpcEcologyService npcEcologyService = targetBootstrap.NpcEcologyService;
+            CampusCommerceService commerceService = targetBootstrap.CommerceService;
             CampusPrankService targetPrankService = ResolvePrankService();
             CampusSanctionService targetSanctionService = ResolveSanctionService();
             CampusClassroomLoopService targetClassroomLoopService = ResolveClassroomLoopService(targetBootstrap);
@@ -98,7 +101,7 @@ namespace NtingCampus.Gameplay.Core
                 GUILayout.Space(4f);
                 DrawRosterState(rosterService, displayLanguage);
                 GUILayout.Space(4f);
-                DrawFormalMainlineState(targetPrankService, targetSanctionService, targetClassroomLoopService);
+                DrawFormalMainlineState(targetPrankService, targetSanctionService, targetClassroomLoopService, npcEcologyService, commerceService);
                 GUILayout.Space(4f);
                 GUILayout.Label(CampusGameplayDebugTextCatalog.Get(displayLanguage, CampusGameplayDebugTextId.RecentEventLogs));
                 DrawRecentLogs(eventLog, 10, displayLanguage);
@@ -353,6 +356,7 @@ namespace NtingCampus.Gameplay.Core
 
             GUILayout.Space(4f);
             GUILayout.Label(CampusGameplayDebugTextCatalog.Get(displayLanguage, CampusGameplayDebugTextId.SelectedCharacter));
+            selected.EnsureEcologyInitialized();
             GUILayout.Label(CampusGameplayDebugTextCatalog.FormatLine(displayLanguage, CampusGameplayDebugTextId.Name, selected.GetDisplayName(displayLanguage)));
             GUILayout.Label(CampusGameplayDebugTextCatalog.FormatLine(displayLanguage, CampusGameplayDebugTextId.Role, CampusGameplayDebugTextCatalog.FormatCharacterRole(displayLanguage, selected.Role)));
             GUILayout.Label(CampusGameplayDebugTextCatalog.FormatLine(displayLanguage, CampusGameplayDebugTextId.Duty, FormatDuty(selected, displayLanguage)));
@@ -366,8 +370,15 @@ namespace NtingCampus.Gameplay.Core
             GUILayout.Label(CampusGameplayDebugTextCatalog.FormatLine(displayLanguage, CampusGameplayDebugTextId.Mastery,
                 CampusGameplayDebugTextCatalog.Get(displayLanguage, CampusGameplayDebugTextId.Language) + "=" + selected.MasteryWorldLanguage +
                 ", " + CampusGameplayDebugTextCatalog.Get(displayLanguage, CampusGameplayDebugTextId.Math) + "=" + selected.MasteryMath));
+            GUILayout.Label(CampusGameplayDebugTextCatalog.Get(displayLanguage, "Ecology", "Ecology") + ": " +
+                            CampusGameplayDebugTextCatalog.Get(displayLanguage, "Mood", "Mood") + "=" + selected.Mood +
+                            ", " + CampusGameplayDebugTextCatalog.Get(displayLanguage, "Social", "Social") + "=" + selected.SocialEnergy);
+            GUILayout.Label(CampusGameplayDebugTextCatalog.Get(displayLanguage, "Relationships", "Relationships") + ": " +
+                            FormatRelationships(selected.Relationships, displayLanguage));
             GUILayout.Label(CampusGameplayDebugTextCatalog.FormatLine(displayLanguage, CampusGameplayDebugTextId.Traits, JoinTraits(selected.Traits, displayLanguage)));
             GUILayout.Label(CampusGameplayDebugTextCatalog.FormatLine(displayLanguage, CampusGameplayDebugTextId.Memories, JoinMemories(selected.Memories, displayLanguage)));
+            GUILayout.Label(CampusGameplayDebugTextCatalog.Get(displayLanguage, "Possessions", "Possessions") + ": " +
+                            FormatPossessions(selected.Possessions, displayLanguage));
         }
 
         private static string FormatDuty(CampusCharacterData data, CampusDisplayLanguage displayLanguage)
@@ -388,7 +399,9 @@ namespace NtingCampus.Gameplay.Core
         private static void DrawFormalMainlineState(
             CampusPrankService prankService,
             CampusSanctionService sanctionService,
-            CampusClassroomLoopService classroomLoopService)
+            CampusClassroomLoopService classroomLoopService,
+            CampusNpcEcologyService npcEcologyService,
+            CampusCommerceService commerceService)
         {
             GUILayout.Label("Formal Mainline");
             if (classroomLoopService == null)
@@ -430,6 +443,29 @@ namespace NtingCampus.Gameplay.Core
             {
                 GUILayout.Label("- Last Sanction: " + sanctionService.LastIssuedLevel);
             }
+
+            if (npcEcologyService == null)
+            {
+                GUILayout.Label("- NPC Ecology: none");
+            }
+            else
+            {
+                GUILayout.Label("- NPC Ecology: " + npcEcologyService.CurrentSummary);
+                GUILayout.Label("- Gossip/Ecology Events Today: " + npcEcologyService.GossipHeat + "/" + npcEcologyService.DailyEcologyEventCount);
+            }
+
+            if (commerceService == null)
+            {
+                GUILayout.Label("- Commerce: none");
+            }
+            else
+            {
+                GUILayout.Label("- Commerce: " + commerceService.CurrentSummary);
+                GUILayout.Label("- Meals/Store Purchases Today: " +
+                                commerceService.DailyCanteenMealsServed + "/" +
+                                commerceService.DailyStorePurchasesCompleted);
+                GUILayout.Label("- Active Commerce Transactions: " + CountActiveCommerceTransactions(commerceService.Transactions));
+            }
         }
 
         private static void DrawRecentLogs(CampusEventLog eventLog, int maxVisibleCount, CampusDisplayLanguage displayLanguage)
@@ -463,6 +499,74 @@ namespace NtingCampus.Gameplay.Core
             }
 
             return string.Join(", ", names);
+        }
+
+        private static string FormatRelationships(IReadOnlyList<CampusCharacterRelationship> relationships, CampusDisplayLanguage displayLanguage)
+        {
+            if (relationships == null || relationships.Count == 0)
+            {
+                return CampusGameplayDebugTextCatalog.Get(displayLanguage, CampusGameplayDebugTextId.None);
+            }
+
+            List<string> parts = new List<string>(relationships.Count);
+            for (int i = 0; i < relationships.Count; i++)
+            {
+                CampusCharacterRelationship relationship = relationships[i];
+                if (relationship == null || string.IsNullOrWhiteSpace(relationship.TargetId))
+                {
+                    continue;
+                }
+
+                parts.Add(relationship.TargetId + " T=" + relationship.Trust + " S=" + relationship.Suspicion);
+            }
+
+            return parts.Count > 0
+                ? string.Join(", ", parts)
+                : CampusGameplayDebugTextCatalog.Get(displayLanguage, CampusGameplayDebugTextId.None);
+        }
+
+        private static string FormatPossessions(IReadOnlyList<CampusCharacterPossession> possessions, CampusDisplayLanguage displayLanguage)
+        {
+            if (possessions == null || possessions.Count == 0)
+            {
+                return CampusGameplayDebugTextCatalog.Get(displayLanguage, CampusGameplayDebugTextId.None);
+            }
+
+            List<string> parts = new List<string>(possessions.Count);
+            for (int i = 0; i < possessions.Count; i++)
+            {
+                CampusCharacterPossession possession = possessions[i];
+                if (possession == null || string.IsNullOrWhiteSpace(possession.DisplayName))
+                {
+                    continue;
+                }
+
+                parts.Add(possession.DisplayName);
+            }
+
+            return parts.Count > 0
+                ? string.Join(", ", parts)
+                : CampusGameplayDebugTextCatalog.Get(displayLanguage, CampusGameplayDebugTextId.None);
+        }
+
+        private static int CountActiveCommerceTransactions(IReadOnlyList<CampusCommerceTransaction> transactions)
+        {
+            if (transactions == null)
+            {
+                return 0;
+            }
+
+            int count = 0;
+            for (int i = 0; i < transactions.Count; i++)
+            {
+                CampusCommerceTransaction transaction = transactions[i];
+                if (transaction != null && !transaction.IsFinished)
+                {
+                    count++;
+                }
+            }
+
+            return count;
         }
 
         private static string JoinMemories(IReadOnlyList<CampusCharacterMemoryId> memories, CampusDisplayLanguage displayLanguage)

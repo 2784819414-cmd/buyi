@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using NtingCampus.Gameplay.Inventory;
 using NtingCampusMapEditor;
 using UnityEngine;
 using UnityEngine.EventSystems;
@@ -127,6 +128,11 @@ namespace Nting.Storage
             groundDropSource = groundDropContext;
         }
 
+        public StorageTransferContext CreateTransferContext(StorageTransferReason reason)
+        {
+            return StorageTransferContext.ForActor(groundDropSource, reason);
+        }
+
         public bool TryDropItemToGround(StorageItemModel item, StorageGridUI sourceGrid)
         {
             if (item == null || sourceGrid == null)
@@ -134,19 +140,19 @@ namespace Nting.Storage
                 return false;
             }
 
-            if (!CampusStorageGroundItemUtility.TryDropItemToGround(groundDropSource, item, out string errorMessage))
+            CampusInventoryTransferService service = CampusInventoryTransferService.Resolve();
+            if (!service.TryDropItemToGround(
+                    groundDropSource,
+                    item,
+                    sourceGrid.Container,
+                    CreateTransferContext(StorageTransferReason.DropToGround),
+                    out StorageTransferResult result))
             {
-                ShowStatus(string.IsNullOrWhiteSpace(errorMessage) ? "放到地上失败" : errorMessage, true);
+                ShowStatus(string.IsNullOrWhiteSpace(result.Message) ? "Could not drop item to ground." : result.Message, true);
                 return false;
             }
 
-            if (!sourceGrid.RemoveItem(item))
-            {
-                ShowStatus("物品已生成到地上，但未能从原容器移除。", true);
-                return false;
-            }
-
-            ShowStatus("已放到地上: " + item.DisplayName, false);
+            ShowStatus(result.Message, result.Illegal && result.Observed);
             return true;
         }
 
@@ -350,37 +356,37 @@ namespace Nting.Storage
 
         private bool TryMoveToFirstFit(StorageGridUI sourceGrid, StorageGridUI[] targetGrids, StorageItemModel item)
         {
-            for (int i = 0; i < targetGrids.Length; i++)
+            if (sourceGrid == null || sourceGrid.Container == null || targetGrids == null)
             {
-                StorageGridUI targetGrid = targetGrids[i];
-                if (targetGrid == null || targetGrid == sourceGrid || targetGrid.Container == null)
-                {
-                    continue;
-                }
-
-                if (!targetGrid.FindFirstFit(item, out Vector2Int position))
-                {
-                    continue;
-                }
-
-                if (!targetGrid.PlaceItem(item, position.x, position.y))
-                {
-                    continue;
-                }
-
-                if (sourceGrid.RemoveItem(item))
-                {
-                    RefreshAllGrids();
-                    SelectItem(item);
-                    ShowStatus("已转移：" + item.DisplayName, false);
-                    return true;
-                }
-
-                targetGrid.RemoveItem(item);
-                break;
+                ShowStatus("Target space is blocked.", true);
+                return false;
             }
 
-            ShowStatus("目标空间不足", true);
+            List<StorageContainerModel> targetContainers = new List<StorageContainerModel>(targetGrids.Length);
+            for (int targetIndex = 0; targetIndex < targetGrids.Length; targetIndex++)
+            {
+                StorageGridUI targetGrid = targetGrids[targetIndex];
+                if (targetGrid != null && targetGrid != sourceGrid && targetGrid.Container != null)
+                {
+                    targetContainers.Add(targetGrid.Container);
+                }
+            }
+
+            CampusInventoryTransferService service = CampusInventoryTransferService.Resolve();
+            if (service.TryMoveToFirstFit(
+                    item,
+                    sourceGrid.Container,
+                    targetContainers.ToArray(),
+                    CreateTransferContext(StorageTransferReason.QuickTransfer),
+                    out StorageTransferResult result))
+            {
+                RefreshAllGrids();
+                SelectItem(item);
+                ShowStatus(result.Message, result.Illegal && result.Observed);
+                return true;
+            }
+
+            ShowStatus(string.IsNullOrWhiteSpace(result.Message) ? "Target space is blocked." : result.Message, true);
             RefreshAllGrids();
             SelectItem(item);
             return false;

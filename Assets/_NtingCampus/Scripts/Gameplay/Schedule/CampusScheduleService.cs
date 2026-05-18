@@ -531,6 +531,16 @@ namespace NtingCampus.Gameplay.Schedule
                 return directive;
             }
 
+            if ((data.StaffDuty & CampusStaffDuty.StoreOwner) != 0)
+            {
+                directive.TaskType = CampusCharacterTaskType.WorkStoreCheckout;
+                directive.TargetRoomType = CampusRoomType.Store;
+                directive.PreferredFacilityType = CampusFacilityType.StoreCheckout;
+                directive.HoldRadius = 0.16f;
+                directive.DebugLabel = "StoreCheckout";
+                return directive;
+            }
+
             if ((data.StaffDuty & CampusStaffDuty.DeliveryWatcher) != 0)
             {
                 directive.TaskType = CampusCharacterTaskType.WatchDeliveryPoint;

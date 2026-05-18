@@ -1,4 +1,5 @@
 using System;
+using NtingCampus.Gameplay.Inventory;
 using UnityEngine;
 
 namespace Nting.Storage
@@ -38,9 +39,9 @@ namespace Nting.Storage
                 ? "Used " + itemName + "."
                 : item.UseText;
 
-            if (item.ConsumeOnUse && !TryRemoveItem(item, sourceGrid))
+            if (item.ConsumeOnUse && !TryRemoveItem(item, sourceGrid, out string removeError))
             {
-                statusMessage = "Could not consume " + itemName + ".";
+                statusMessage = string.IsNullOrWhiteSpace(removeError) ? "Could not consume " + itemName + "." : removeError;
                 return false;
             }
 
@@ -48,20 +49,27 @@ namespace Nting.Storage
             return true;
         }
 
-        private static bool TryRemoveItem(StorageItemModel item, StorageGridUI sourceGrid)
+        private static bool TryRemoveItem(StorageItemModel item, StorageGridUI sourceGrid, out string errorMessage)
         {
+            errorMessage = string.Empty;
             if (item == null)
             {
                 return false;
             }
 
-            if (sourceGrid != null && sourceGrid.RemoveItem(item))
+            CampusInventoryTransferService service = CampusInventoryTransferService.Resolve();
+            StorageContainerModel source = sourceGrid != null ? sourceGrid.Container : item.CurrentContainer;
+            StorageTransferContext context = new StorageTransferContext
+            {
+                Reason = StorageTransferReason.UseItem
+            };
+            if (service.TryConsumeItem(item, source, context, out StorageTransferResult result))
             {
                 return true;
             }
 
-            StorageContainerModel container = item.CurrentContainer;
-            return container != null && container.RemoveItem(item);
+            errorMessage = result.Message;
+            return false;
         }
     }
 }

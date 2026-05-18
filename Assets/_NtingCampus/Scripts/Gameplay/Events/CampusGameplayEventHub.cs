@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using Nting.Storage;
 using NtingCampus.Gameplay.Core;
 using NtingCampus.Gameplay.Pranks;
 using NtingCampus.Gameplay.Sanctions;
@@ -112,9 +113,9 @@ namespace NtingCampus.Gameplay.Events
         public float DurationSeconds { get; }
     }
 
-    public readonly struct CampusPlayerSkipClassEvent
+    public readonly struct CampusActorSkipClassEvent
     {
-        public CampusPlayerSkipClassEvent(
+        public CampusActorSkipClassEvent(
             string actorId,
             string fromRoomId,
             string toRoomId,
@@ -141,6 +142,143 @@ namespace NtingCampus.Gameplay.Events
         public string Reason { get; }
     }
 
+    public readonly struct CampusItemTransferredEvent
+    {
+        public CampusItemTransferredEvent(
+            string actorId,
+            string itemInstanceId,
+            string itemDefinitionId,
+            string itemDisplayName,
+            string sourceContainerId,
+            string targetContainerId,
+            string roomId,
+            StorageTransferReason reason,
+            bool illegal,
+            bool observed)
+        {
+            ActorId = actorId ?? string.Empty;
+            ItemInstanceId = itemInstanceId ?? string.Empty;
+            ItemDefinitionId = itemDefinitionId ?? string.Empty;
+            ItemDisplayName = itemDisplayName ?? string.Empty;
+            SourceContainerId = sourceContainerId ?? string.Empty;
+            TargetContainerId = targetContainerId ?? string.Empty;
+            RoomId = roomId ?? string.Empty;
+            Reason = reason;
+            Illegal = illegal;
+            Observed = observed;
+        }
+
+        public string ActorId { get; }
+        public string ItemInstanceId { get; }
+        public string ItemDefinitionId { get; }
+        public string ItemDisplayName { get; }
+        public string SourceContainerId { get; }
+        public string TargetContainerId { get; }
+        public string RoomId { get; }
+        public StorageTransferReason Reason { get; }
+        public bool Illegal { get; }
+        public bool Observed { get; }
+    }
+
+    public readonly struct CampusItemTheftObservedEvent
+    {
+        public CampusItemTheftObservedEvent(
+            string actorId,
+            string witnessId,
+            string ownerId,
+            string itemInstanceId,
+            string itemDefinitionId,
+            string itemDisplayName,
+            string sourceContainerId,
+            string targetContainerId,
+            string roomId,
+            int suspicionAmount,
+            bool shouldIssueSanction)
+        {
+            ActorId = actorId ?? string.Empty;
+            WitnessId = witnessId ?? string.Empty;
+            OwnerId = ownerId ?? string.Empty;
+            ItemInstanceId = itemInstanceId ?? string.Empty;
+            ItemDefinitionId = itemDefinitionId ?? string.Empty;
+            ItemDisplayName = itemDisplayName ?? string.Empty;
+            SourceContainerId = sourceContainerId ?? string.Empty;
+            TargetContainerId = targetContainerId ?? string.Empty;
+            RoomId = roomId ?? string.Empty;
+            SuspicionAmount = suspicionAmount;
+            ShouldIssueSanction = shouldIssueSanction;
+        }
+
+        public string ActorId { get; }
+        public string WitnessId { get; }
+        public string OwnerId { get; }
+        public string ItemInstanceId { get; }
+        public string ItemDefinitionId { get; }
+        public string ItemDisplayName { get; }
+        public string SourceContainerId { get; }
+        public string TargetContainerId { get; }
+        public string RoomId { get; }
+        public int SuspicionAmount { get; }
+        public bool ShouldIssueSanction { get; }
+    }
+
+    public readonly struct CampusInventoryQuestionedEvent
+    {
+        public CampusInventoryQuestionedEvent(
+            string actorId,
+            string inspectorId,
+            string roomId,
+            int inspectionPressure,
+            bool foundContraband)
+        {
+            ActorId = actorId ?? string.Empty;
+            InspectorId = inspectorId ?? string.Empty;
+            RoomId = roomId ?? string.Empty;
+            InspectionPressure = inspectionPressure;
+            FoundContraband = foundContraband;
+        }
+
+        public string ActorId { get; }
+        public string InspectorId { get; }
+        public string RoomId { get; }
+        public int InspectionPressure { get; }
+        public bool FoundContraband { get; }
+    }
+
+    public readonly struct CampusContrabandFoundEvent
+    {
+        public CampusContrabandFoundEvent(
+            string actorId,
+            string inspectorId,
+            string roomId,
+            string itemInstanceId,
+            string itemDefinitionId,
+            string itemDisplayName,
+            string containerId,
+            int inspectionPressure,
+            bool shouldIssueSanction)
+        {
+            ActorId = actorId ?? string.Empty;
+            InspectorId = inspectorId ?? string.Empty;
+            RoomId = roomId ?? string.Empty;
+            ItemInstanceId = itemInstanceId ?? string.Empty;
+            ItemDefinitionId = itemDefinitionId ?? string.Empty;
+            ItemDisplayName = itemDisplayName ?? string.Empty;
+            ContainerId = containerId ?? string.Empty;
+            InspectionPressure = inspectionPressure;
+            ShouldIssueSanction = shouldIssueSanction;
+        }
+
+        public string ActorId { get; }
+        public string InspectorId { get; }
+        public string RoomId { get; }
+        public string ItemInstanceId { get; }
+        public string ItemDefinitionId { get; }
+        public string ItemDisplayName { get; }
+        public string ContainerId { get; }
+        public int InspectionPressure { get; }
+        public bool ShouldIssueSanction { get; }
+    }
+
     [DisallowMultipleComponent]
     public sealed class CampusGameplayEventHub : MonoBehaviour
     {
@@ -155,7 +293,11 @@ namespace NtingCampus.Gameplay.Events
         public event System.Action<CampusSanctionIssuedEvent> SanctionIssued;
         public event System.Action<CampusStudentDozedOffEvent> StudentDozedOff;
         public event System.Action<CampusTeacherDistractedEvent> TeacherDistracted;
-        public event System.Action<CampusPlayerSkipClassEvent> PlayerSkipClass;
+        public event System.Action<CampusActorSkipClassEvent> ActorSkipClass;
+        public event System.Action<CampusItemTransferredEvent> ItemTransferred;
+        public event System.Action<CampusItemTheftObservedEvent> ItemTheftObserved;
+        public event System.Action<CampusInventoryQuestionedEvent> InventoryQuestioned;
+        public event System.Action<CampusContrabandFoundEvent> ContrabandFound;
 
         public void Initialize(CampusGameBootstrap targetBootstrap)
         {
@@ -208,11 +350,40 @@ namespace NtingCampus.Gameplay.Events
             TeacherDistracted?.Invoke(eventData);
         }
 
-        public void PublishPlayerSkipClass(CampusPlayerSkipClassEvent eventData)
+        public void PublishActorSkipClass(CampusActorSkipClassEvent eventData)
         {
             string suffix = eventData.DetectedByTeacher ? "detected" : "escaped";
             Record("classroom.skip_class." + suffix);
-            PlayerSkipClass?.Invoke(eventData);
+            ActorSkipClass?.Invoke(eventData);
+        }
+
+        public void PublishItemTransferred(CampusItemTransferredEvent eventData)
+        {
+            if (eventData.Illegal)
+            {
+                string suffix = eventData.Observed ? "observed" : "quiet";
+                Record("item.transfer." + Normalize(eventData.Reason) + "." + suffix);
+            }
+
+            ItemTransferred?.Invoke(eventData);
+        }
+
+        public void PublishItemTheftObserved(CampusItemTheftObservedEvent eventData)
+        {
+            Record("item.theft.observed");
+            ItemTheftObserved?.Invoke(eventData);
+        }
+
+        public void PublishInventoryQuestioned(CampusInventoryQuestionedEvent eventData)
+        {
+            Record(eventData.FoundContraband ? "inventory.questioned.hit" : "inventory.questioned.clear");
+            InventoryQuestioned?.Invoke(eventData);
+        }
+
+        public void PublishContrabandFound(CampusContrabandFoundEvent eventData)
+        {
+            Record("inventory.contraband.found");
+            ContrabandFound?.Invoke(eventData);
         }
 
         private static string Normalize(CampusPrankType prankType)
@@ -223,6 +394,11 @@ namespace NtingCampus.Gameplay.Events
         private static string Normalize(CampusSanctionLevel sanctionLevel)
         {
             return sanctionLevel.ToString().ToLowerInvariant();
+        }
+
+        private static string Normalize(StorageTransferReason reason)
+        {
+            return reason.ToString().ToLowerInvariant();
         }
     }
 }

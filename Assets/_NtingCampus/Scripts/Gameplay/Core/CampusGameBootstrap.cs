@@ -1,5 +1,7 @@
 using NtingCampus.Gameplay.Characters;
+using NtingCampus.Gameplay.Economy;
 using NtingCampus.Gameplay.Events;
+using NtingCampus.Gameplay.Inventory;
 using NtingCampus.Gameplay.Modes;
 using NtingCampus.Gameplay.Pranks;
 using NtingCampus.Gameplay.Rooms;
@@ -21,11 +23,18 @@ namespace NtingCampus.Gameplay.Core
         [SerializeField] private bool showDebugPanel = true;
         [SerializeField] private CampusTimeController timeController;
         [SerializeField] private CampusModeController modeController;
+        [SerializeField] private CampusGameplayActionService actionService;
         [SerializeField] private CampusWorldService worldService;
         [SerializeField] private CampusRosterService rosterService;
+        [SerializeField] private CampusNpcEcologyService npcEcologyService;
+        [SerializeField] private CampusCommerceService commerceService;
         [SerializeField] private CampusScheduleService scheduleService;
         [SerializeField] private CampusClassroomLoopService classroomLoopService;
         [SerializeField] private CampusGameplayEventHub gameplayEventHub;
+        [SerializeField] private CampusInventoryTransferService inventoryTransferService;
+        [SerializeField] private CampusInspectionService inspectionService;
+        [SerializeField] private CampusInspectionDebugPanel inspectionDebugPanel;
+        [SerializeField] private CampusEcologyOverviewPanel ecologyOverviewPanel;
         [SerializeField] private CampusPrankService prankService;
         [SerializeField] private CampusSanctionService sanctionService;
         [SerializeField] private CampusPlayerInventoryController playerInventoryController;
@@ -42,11 +51,16 @@ namespace NtingCampus.Gameplay.Core
         public CampusEventLog EventLog => eventLog;
         public CampusTimeController TimeController => timeController;
         public CampusModeController ModeController => modeController;
+        public CampusGameplayActionService ActionService => actionService;
         public CampusWorldService WorldService => worldService;
         public CampusRosterService RosterService => rosterService;
+        public CampusNpcEcologyService NpcEcologyService => npcEcologyService;
+        public CampusCommerceService CommerceService => commerceService;
         public CampusScheduleService ScheduleService => scheduleService;
         public CampusClassroomLoopService ClassroomLoopService => classroomLoopService;
         public CampusGameplayEventHub GameplayEventHub => gameplayEventHub;
+        public CampusInventoryTransferService InventoryTransferService => inventoryTransferService;
+        public CampusInspectionService InspectionService => inspectionService;
         public CampusPrankService PrankService => prankService;
         public CampusSanctionService SanctionService => sanctionService;
         public CampusPlayerInventoryController PlayerInventoryController => playerInventoryController;
@@ -63,10 +77,17 @@ namespace NtingCampus.Gameplay.Core
             CampusGameBootstrap bootstrap = bootstrapObject.AddComponent<CampusGameBootstrap>();
             bootstrap.EnsureTimeController();
             bootstrap.EnsureModeController();
+            bootstrap.EnsureActionService();
             bootstrap.EnsureWorldService();
             bootstrap.EnsureRosterService();
+            bootstrap.EnsureNpcEcologyService();
+            bootstrap.EnsureCommerceService();
             bootstrap.EnsureScheduleService();
             bootstrap.EnsureGameplayEventHub();
+            bootstrap.EnsureInventoryTransferService();
+            bootstrap.EnsureInspectionService();
+            bootstrap.EnsureInspectionDebugPanel();
+            bootstrap.EnsureEcologyOverviewPanel();
             bootstrap.EnsureClassroomLoopService();
             bootstrap.EnsureSanctionService();
             bootstrap.EnsurePrankService();
@@ -97,6 +118,9 @@ namespace NtingCampus.Gameplay.Core
             timeController = EnsureTimeController();
             timeController.InitializeTimeSystem(this, true);
 
+            actionService = EnsureActionService();
+            actionService.Initialize(this);
+
             worldService = EnsureWorldService();
             worldService.Initialize(this);
 
@@ -111,6 +135,24 @@ namespace NtingCampus.Gameplay.Core
 
             gameplayEventHub = EnsureGameplayEventHub();
             gameplayEventHub.Initialize(this);
+
+            inventoryTransferService = EnsureInventoryTransferService();
+            inventoryTransferService.Initialize(this);
+
+            inspectionService = EnsureInspectionService();
+            inspectionService.Initialize(this);
+
+            inspectionDebugPanel = EnsureInspectionDebugPanel();
+            inspectionDebugPanel.Initialize(this);
+
+            ecologyOverviewPanel = EnsureEcologyOverviewPanel();
+            ecologyOverviewPanel.Bind(this);
+
+            npcEcologyService = EnsureNpcEcologyService();
+            npcEcologyService.Initialize(this);
+
+            commerceService = EnsureCommerceService();
+            commerceService.Initialize(this);
 
             classroomLoopService = EnsureClassroomLoopService();
             classroomLoopService.Initialize(this);
@@ -147,6 +189,10 @@ namespace NtingCampus.Gameplay.Core
             EnsureSettingsOverlay();
             EnsureLaunchSelectionApplier();
             EnsurePlayerInventoryController();
+            EnsureInventoryTransferService();
+            EnsureInspectionService();
+            EnsureInspectionDebugPanel();
+            EnsureEcologyOverviewPanel();
         }
 
         private void OnDestroy()
@@ -261,6 +307,22 @@ namespace NtingCampus.Gameplay.Core
             return modeController;
         }
 
+        private CampusGameplayActionService EnsureActionService()
+        {
+            if (actionService != null)
+            {
+                return actionService;
+            }
+
+            actionService = GetComponent<CampusGameplayActionService>();
+            if (actionService == null)
+            {
+                actionService = gameObject.AddComponent<CampusGameplayActionService>();
+            }
+
+            return actionService;
+        }
+
         private CampusWorldService EnsureWorldService()
         {
             if (worldService != null)
@@ -293,6 +355,38 @@ namespace NtingCampus.Gameplay.Core
             return rosterService;
         }
 
+        private CampusNpcEcologyService EnsureNpcEcologyService()
+        {
+            if (npcEcologyService != null)
+            {
+                return npcEcologyService;
+            }
+
+            npcEcologyService = GetComponent<CampusNpcEcologyService>();
+            if (npcEcologyService == null)
+            {
+                npcEcologyService = gameObject.AddComponent<CampusNpcEcologyService>();
+            }
+
+            return npcEcologyService;
+        }
+
+        private CampusCommerceService EnsureCommerceService()
+        {
+            if (commerceService != null)
+            {
+                return commerceService;
+            }
+
+            commerceService = GetComponent<CampusCommerceService>();
+            if (commerceService == null)
+            {
+                commerceService = gameObject.AddComponent<CampusCommerceService>();
+            }
+
+            return commerceService;
+        }
+
         private CampusScheduleService EnsureScheduleService()
         {
             if (scheduleService != null)
@@ -323,6 +417,70 @@ namespace NtingCampus.Gameplay.Core
             }
 
             return gameplayEventHub;
+        }
+
+        private CampusInventoryTransferService EnsureInventoryTransferService()
+        {
+            if (inventoryTransferService != null)
+            {
+                return inventoryTransferService;
+            }
+
+            inventoryTransferService = GetComponent<CampusInventoryTransferService>();
+            if (inventoryTransferService == null)
+            {
+                inventoryTransferService = gameObject.AddComponent<CampusInventoryTransferService>();
+            }
+
+            return inventoryTransferService;
+        }
+
+        private CampusInspectionService EnsureInspectionService()
+        {
+            if (inspectionService != null)
+            {
+                return inspectionService;
+            }
+
+            inspectionService = GetComponent<CampusInspectionService>();
+            if (inspectionService == null)
+            {
+                inspectionService = gameObject.AddComponent<CampusInspectionService>();
+            }
+
+            return inspectionService;
+        }
+
+        private CampusInspectionDebugPanel EnsureInspectionDebugPanel()
+        {
+            if (inspectionDebugPanel != null)
+            {
+                return inspectionDebugPanel;
+            }
+
+            inspectionDebugPanel = GetComponent<CampusInspectionDebugPanel>();
+            if (inspectionDebugPanel == null)
+            {
+                inspectionDebugPanel = gameObject.AddComponent<CampusInspectionDebugPanel>();
+            }
+
+            return inspectionDebugPanel;
+        }
+
+        private CampusEcologyOverviewPanel EnsureEcologyOverviewPanel()
+        {
+            if (ecologyOverviewPanel != null)
+            {
+                return ecologyOverviewPanel;
+            }
+
+            ecologyOverviewPanel = GetComponent<CampusEcologyOverviewPanel>();
+            if (ecologyOverviewPanel == null)
+            {
+                ecologyOverviewPanel = gameObject.AddComponent<CampusEcologyOverviewPanel>();
+            }
+
+            return ecologyOverviewPanel;
         }
 
         private CampusPrankService EnsurePrankService()

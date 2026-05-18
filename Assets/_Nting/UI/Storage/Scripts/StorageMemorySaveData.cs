@@ -18,6 +18,13 @@ namespace Nting.Storage
         public int Columns;
         public int Rows;
         public float MaxWeight;
+        public StorageContainerAccessPolicy AccessPolicy;
+        public string OwnerId;
+        public string OwnerRole;
+        public string RoomId;
+        public bool AllowTakingContents = true;
+        public bool IsPlayerCarried;
+        public int SuspicionRisk;
         public List<StorageItemSaveData> Items = new List<StorageItemSaveData>();
     }
 
@@ -39,5 +46,13 @@ namespace Nting.Storage
         public string UseActionId;
         public bool ConsumeOnUse;
         public string UseText;
+        public StorageItemLegalState LegalState;
+        public string OwnerId;
+        public string SourceContainerId;
+        public string SourceRoomId;
+        public string SourceLocation;
+        public bool AllowTaking = true;
+        public bool StolenDuringSession;
+        public int SuspicionRisk;
     }
 }

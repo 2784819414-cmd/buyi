@@ -22,6 +22,10 @@ namespace NtingCampus.Gameplay.Rooms
         Recruitment = 17,
         CanteenCounter = 18,
         CanteenFoodTray = 19,
-        DeliveryDropPoint = 20
+        DeliveryDropPoint = 20,
+        CanteenQueuePoint = 21,
+        StoreShelf = 22,
+        StoreCheckout = 23,
+        StoreQueuePoint = 24
     }
 }

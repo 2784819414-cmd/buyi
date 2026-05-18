@@ -1,4 +1,7 @@
 using Nting.Storage;
+using NtingCampus.Gameplay.Core;
+using NtingCampus.Gameplay.Inventory;
+using NtingCampus.Gameplay.Rooms;
 using UnityEngine;
 using UnityEngine.Tilemaps;
 
@@ -85,6 +88,7 @@ namespace NtingCampusMapEditor
                 storageSize.x,
                 storageSize.y,
                 ResolveObjectStorageMaxWeight());
+            ConfigureObjectStorageContainer(container);
 
             StorageWindowUI window = FindFirstObjectByType<StorageWindowUI>();
             if (window == null)
@@ -96,6 +100,63 @@ namespace NtingCampusMapEditor
             window.SetGroundDropContext(gameObject);
             window.OpenPlayerStorage(hands, pockets, backpack, true, container, false);
             return true;
+        }
+
+        private void ConfigureObjectStorageContainer(StorageContainerModel container)
+        {
+            if (container == null)
+            {
+                return;
+            }
+
+            CampusPlacedObject placedObject = GetComponent<CampusPlacedObject>();
+            CampusGameplayRoom room = ResolveGameplayRoom(placedObject);
+            container.AccessPolicy = StorageContainerAccessPolicy.ProtectedPublic;
+            container.OwnerId = placedObject != null && !string.IsNullOrWhiteSpace(placedObject.ObjectId)
+                ? placedObject.ObjectId
+                : gameObject.name;
+            container.OwnerRole = "Campus";
+            container.RoomId = room != null ? room.RoomId : string.Empty;
+            container.AllowTakingContents = false;
+            container.IsPlayerCarried = false;
+            container.SuspicionRisk = ResolveStorageSuspicionRisk(room);
+        }
+
+        private CampusGameplayRoom ResolveGameplayRoom(CampusPlacedObject placedObject)
+        {
+            CampusGameBootstrap bootstrap = CampusGameBootstrap.Instance;
+            CampusWorldService worldService = bootstrap != null ? bootstrap.WorldService : null;
+            if (worldService == null)
+            {
+                return null;
+            }
+
+            int floorIndex = placedObject != null ? placedObject.FloorIndex : 1;
+            return worldService.FindRoomForPosition(floorIndex, transform.position);
+        }
+
+        private static int ResolveStorageSuspicionRisk(CampusGameplayRoom room)
+        {
+            if (room == null)
+            {
+                return 2;
+            }
+
+            switch (room.RoomType)
+            {
+                case CampusRoomType.Office:
+                    return 12;
+                case CampusRoomType.Canteen:
+                    return 8;
+                case CampusRoomType.Store:
+                    return 8;
+                case CampusRoomType.Classroom:
+                    return 5;
+                case CampusRoomType.Dormitory:
+                    return 4;
+                default:
+                    return 3;
+            }
         }
 
         private Vector2Int ResolveObjectStorageSize()
@@ -262,14 +323,136 @@ namespace NtingCampusMapEditor
     }
 
     [DisallowMultipleComponent]
-    public sealed class CampusDroppedStorageItem : MonoBehaviour
+    public sealed class CampusDroppedStorageItem : MonoBehaviour, ICampusInteractable, ICampusInteractionActionHandler, ICampusInteractionPromptProvider
     {
         public string DefinitionId;
         public string InstanceId;
         public string DisplayName;
+        public int Width = 1;
+        public int Height = 1;
         public float Weight;
         [TextArea]
         public string Description;
+        public Color ThemeColor = new Color(0.38f, 0.49f, 0.56f, 1f);
+        public bool IsUsable;
+        public string UseActionId;
+        public bool ConsumeOnUse = true;
+        public string UseText;
+        public StorageItemLegalState LegalState;
+        public string OwnerId;
+        public string SourceContainerId;
+        public string SourceRoomId;
+        public string SourceLocation;
+        public bool StolenDuringSession;
+        public int SuspicionRisk;
+
+        public void Interact(GameObject actor)
+        {
+            TryPickup(actor, out _);
+        }
+
+        public bool TryHandleInteractionAction(CampusInteractionAnchor anchor, string actionId, string payload, GameObject actor)
+        {
+            string normalized = CampusInteractionActionIds.Normalize(actionId);
+            if (!string.IsNullOrWhiteSpace(normalized) &&
+                !CampusInteractionActionIds.Equals(normalized, CampusInteractionActionIds.PickupStorageItem) &&
+                !CampusInteractionActionIds.Equals(normalized, CampusInteractionActionIds.InteractTarget))
+            {
+                return false;
+            }
+
+            return TryPickup(actor, out _);
+        }
+
+        public bool TryGetInteractionPrompt(GameObject actor, out CampusInteractionPromptData prompt)
+        {
+            string itemName = string.IsNullOrWhiteSpace(DisplayName) ? DefinitionId : DisplayName;
+            prompt = CampusInteractionPromptData.Create("拾取 " + itemName);
+            prompt.Anchor = transform;
+            prompt.WorldOffset = new Vector3(0f, 0.38f, 0f);
+            prompt.Priority = 140;
+            prompt.IsAvailable = true;
+            return true;
+        }
+
+        private bool TryPickup(GameObject actor, out string errorMessage)
+        {
+            errorMessage = string.Empty;
+            StorageMemory memory = StorageMemory.GetOrCreate();
+            StoragePlayerInventoryUtility.EnsureRegistry(memory);
+            StorageItemModel item = BuildStorageItem(memory);
+            if (item == null)
+            {
+                errorMessage = "Could not rebuild dropped item.";
+                return false;
+            }
+
+            StorageTransferContext context = StorageTransferContext.ForActor(actor, StorageTransferReason.Pickup);
+            context.AllowProtectedTake = true;
+            context.SourceLocation = SourceLocation;
+            context.OwnerId = OwnerId;
+            CampusInventoryTransferService service = CampusInventoryTransferService.Resolve();
+            if (!service.TryPlaceInCarriedStorage(memory, item, context, out StorageTransferResult result))
+            {
+                errorMessage = result.Message;
+                WritePickupLog(result.Message, true);
+                return false;
+            }
+
+            WritePickupLog(result.Message, false);
+            Destroy(gameObject);
+            return true;
+        }
+
+        private StorageItemModel BuildStorageItem(StorageMemory memory)
+        {
+            StorageItemModel item = null;
+            if (memory != null &&
+                memory.ItemRegistry != null &&
+                !string.IsNullOrWhiteSpace(DefinitionId))
+            {
+                item = memory.ItemRegistry.CreateItem(DefinitionId, InstanceId);
+            }
+
+            if (item == null)
+            {
+                item = new StorageItemModel
+                {
+                    Id = string.IsNullOrWhiteSpace(InstanceId) ? DefinitionId : InstanceId,
+                    InstanceId = string.IsNullOrWhiteSpace(InstanceId) ? DefinitionId : InstanceId,
+                    DefinitionId = DefinitionId
+                };
+            }
+
+            item.DisplayName = string.IsNullOrWhiteSpace(DisplayName) ? DefinitionId : DisplayName;
+            item.Width = Mathf.Max(1, Width);
+            item.Height = Mathf.Max(1, Height);
+            item.Weight = Weight;
+            item.Description = Description;
+            item.ThemeColor = ThemeColor;
+            item.IsUsable = IsUsable;
+            item.UseActionId = UseActionId;
+            item.ConsumeOnUse = ConsumeOnUse;
+            item.UseText = UseText;
+            item.LegalState = LegalState == StorageItemLegalState.Unknown ? StorageItemLegalState.Personal : LegalState;
+            item.OwnerId = OwnerId;
+            item.SourceContainerId = SourceContainerId;
+            item.SourceRoomId = SourceRoomId;
+            item.SourceLocation = SourceLocation;
+            item.StolenDuringSession = StolenDuringSession;
+            item.SuspicionRisk = SuspicionRisk;
+            item.AllowTaking = !item.IsStolenEvidence;
+            return item;
+        }
+
+        private static void WritePickupLog(string message, bool warning)
+        {
+            CampusGameBootstrap bootstrap = CampusGameBootstrap.Instance;
+            if (bootstrap != null && bootstrap.EventLog != null && !string.IsNullOrWhiteSpace(message))
+            {
+                bootstrap.EventLog.AddLog((warning ? "[Pickup] " : "[Pickup] ") + message);
+            }
+        }
     }
 
     public static class CampusStorageGroundItemUtility
@@ -328,8 +511,26 @@ namespace NtingCampusMapEditor
             droppedItem.DefinitionId = item.DefinitionId;
             droppedItem.InstanceId = item.InstanceId;
             droppedItem.DisplayName = item.DisplayName;
+            droppedItem.Width = item.CurrentWidth;
+            droppedItem.Height = item.CurrentHeight;
             droppedItem.Weight = item.Weight;
             droppedItem.Description = item.Description;
+            droppedItem.ThemeColor = item.ThemeColor;
+            droppedItem.IsUsable = item.IsUsable;
+            droppedItem.UseActionId = item.UseActionId;
+            droppedItem.ConsumeOnUse = item.ConsumeOnUse;
+            droppedItem.UseText = item.UseText;
+            droppedItem.LegalState = item.LegalState;
+            droppedItem.OwnerId = item.OwnerId;
+            droppedItem.SourceContainerId = item.SourceContainerId;
+            droppedItem.SourceRoomId = item.SourceRoomId;
+            droppedItem.SourceLocation = item.SourceLocation;
+            droppedItem.StolenDuringSession = item.StolenDuringSession;
+            droppedItem.SuspicionRisk = item.SuspicionRisk;
+
+            CircleCollider2D interactionCollider = worldItem.AddComponent<CircleCollider2D>();
+            interactionCollider.isTrigger = true;
+            interactionCollider.radius = 0.24f;
 
             CampusPlacedObject placed = worldItem.AddComponent<CampusPlacedObject>();
             placed.FloorIndex = floor.FloorIndex;
@@ -346,7 +547,7 @@ namespace NtingCampusMapEditor
             placed.SortingOrderOffset = 0;
             placed.BlocksMovement = false;
             placed.BlocksSight = false;
-            placed.IsInteractable = false;
+            placed.IsInteractable = true;
             placed.IsStorageContainer = false;
             placed.UseCustomInteractionAnchor = false;
             placed.ApplyPlacementRotation(0);

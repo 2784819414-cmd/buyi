@@ -78,9 +78,9 @@ namespace NtingCampus.Gameplay.Characters
         {
             return id switch
             {
-                CampusCharacterMemoryId.TalkedToPlayer => Get(language, "和玩家交谈过", "Talked to player"),
+                CampusCharacterMemoryId.TalkedToActor => Get(language, "和角色交谈过", "Talked to an actor"),
                 CampusCharacterMemoryId.PassedNoteToday => Get(language, "今天传过纸条", "Passed a note today"),
-                CampusCharacterMemoryId.ReceivedNoteFromPlayer => Get(language, "收到玩家传来的纸条", "Received a note from player"),
+                CampusCharacterMemoryId.ReceivedNoteFromActor => Get(language, "收到其他角色传来的纸条", "Received a note from another actor"),
                 CampusCharacterMemoryId.CaughtNotePassing => Get(language, "撞见了传纸条", "Caught note passing"),
                 CampusCharacterMemoryId.SawRestlessClassroom => Get(language, "注意到教室骚动", "Saw a restless classroom"),
                 CampusCharacterMemoryId.DozedOffInClass => Get(language, "上课时睡着", "Dozed off in class"),
@@ -94,6 +94,14 @@ namespace NtingCampus.Gameplay.Characters
                 CampusCharacterMemoryId.LostDelivery => Get(language, "外卖丢了", "Lost a delivery"),
                 CampusCharacterMemoryId.PickedUpDelivery => Get(language, "\u53d6\u5230\u4e86\u5916\u5356", "Picked up a delivery"),
                 CampusCharacterMemoryId.ReportedLostDelivery => Get(language, "\u62a5\u544a\u5916\u5356\u4e22\u5931", "Reported a lost delivery"),
+                CampusCharacterMemoryId.WitnessedActorPrank => Get(language, "目击角色惹事", "Witnessed actor mischief"),
+                CampusCharacterMemoryId.DistrustsActor => Get(language, "开始不信任某个角色", "Started distrusting an actor"),
+                CampusCharacterMemoryId.ImpressedByActor => Get(language, "觉得某个角色很会找事", "Impressed by an actor's nerve"),
+                CampusCharacterMemoryId.WarnedAboutActor => Get(language, "提醒过别人注意某个角色", "Warned others about an actor"),
+                CampusCharacterMemoryId.ReceivedCanteenMeal => Get(language, "在食堂拿到餐食", "Received a canteen meal"),
+                CampusCharacterMemoryId.SelectedStoreItem => Get(language, "从货架上拿了商品", "Selected an item from a shelf"),
+                CampusCharacterMemoryId.PaidAtStoreCheckout => Get(language, "在收银台结账", "Paid at the checkout"),
+                CampusCharacterMemoryId.ReceivedStorePurchase => Get(language, "拿到已结账商品", "Received a purchased item"),
                 _ => CampusGameplayDebugTextCatalog.Get(language, CampusGameplayDebugTextId.None)
             };
         }

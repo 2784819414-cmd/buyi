@@ -20,6 +20,7 @@ namespace NtingCampusMapEditor
         public const string InteractTarget = "campus.interact.target";
         public const string PrankExecute = "campus.prank.execute";
         public const string NpcTalk = "campus.npc.talk";
+        public const string PickupStorageItem = "campus.storage.pickup";
 
         public static bool Equals(string actionId, string expected)
         {

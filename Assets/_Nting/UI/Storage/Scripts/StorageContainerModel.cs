@@ -13,6 +13,13 @@ namespace Nting.Storage
         public int Rows = 1;
         public float MaxWeight = 10f;
         public List<StorageItemModel> Items = new List<StorageItemModel>();
+        public StorageContainerAccessPolicy AccessPolicy = StorageContainerAccessPolicy.Open;
+        public string OwnerId;
+        public string OwnerRole;
+        public string RoomId;
+        public bool AllowTakingContents = true;
+        public bool IsPlayerCarried;
+        public int SuspicionRisk;
 
         public float CurrentWeight
         {

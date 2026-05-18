@@ -168,9 +168,33 @@ namespace NtingCampus.Gameplay.Rooms
             });
             rules.Add(new FacilityRule
             {
+                FacilityType = nameof(CampusFacilityType.CanteenQueuePoint),
+                DisplayNames = new[] { "canteen queue", "meal queue", "\u98df\u5802\u6392\u961f\u70b9", "\u6253\u996d\u961f\u5217" },
+                Contains = new[] { "canteen_queue", "mealqueue", "food_queue", "\u98df\u5802\u6392\u961f", "\u6253\u996d\u961f" }
+            });
+            rules.Add(new FacilityRule
+            {
                 FacilityType = nameof(CampusFacilityType.CanteenFoodTray),
                 DisplayNames = new[] { "canteen food tray", "fried chicken tray", "\u98df\u5802\u83dc\u76d8", "\u70b8\u9e21\u76d8" },
                 Contains = new[] { "canteen_food", "foodtray", "friedchicken", "burger", "oden", "\u70b8\u9e21", "\u6c49\u5821", "\u5173\u4e1c\u716e" }
+            });
+            rules.Add(new FacilityRule
+            {
+                FacilityType = nameof(CampusFacilityType.StoreShelf),
+                DisplayNames = new[] { "store shelf", "shop shelf", "snack shelf", "\u8d85\u5e02\u8d27\u67b6", "\u5c0f\u5356\u90e8\u8d27\u67b6" },
+                Contains = new[] { "store_shelf", "shopshelf", "snackshelf", "goods_shelf", "\u8d27\u67b6", "\u96f6\u98df\u67b6" }
+            });
+            rules.Add(new FacilityRule
+            {
+                FacilityType = nameof(CampusFacilityType.StoreCheckout),
+                DisplayNames = new[] { "store checkout", "cash register", "checkout counter", "\u8d85\u5e02\u6536\u94f6\u53f0", "\u6536\u94f6\u53f0" },
+                Contains = new[] { "store_checkout", "checkout", "cashregister", "cashier", "\u6536\u94f6", "\u6536\u94f6\u53f0" }
+            });
+            rules.Add(new FacilityRule
+            {
+                FacilityType = nameof(CampusFacilityType.StoreQueuePoint),
+                DisplayNames = new[] { "store queue", "checkout queue", "\u8d85\u5e02\u6392\u961f\u70b9", "\u6536\u94f6\u961f\u5217" },
+                Contains = new[] { "store_queue", "checkout_queue", "cashier_queue", "\u8d85\u5e02\u6392\u961f", "\u6536\u94f6\u961f" }
             });
             rules.Add(new FacilityRule
             {

@@ -24,6 +24,14 @@ namespace Nting.Storage
         public string UseActionId;
         public bool ConsumeOnUse = true;
         public string UseText;
+        public StorageItemLegalState LegalState = StorageItemLegalState.Personal;
+        public string OwnerId;
+        public string SourceContainerId;
+        public string SourceRoomId;
+        public string SourceLocation;
+        public bool AllowTaking = true;
+        public bool StolenDuringSession;
+        public int SuspicionRisk;
 
         [NonSerialized]
         public StorageContainerModel CurrentContainer;
@@ -33,6 +41,10 @@ namespace Nting.Storage
         public int CurrentWidth => Mathf.Max(1, Width);
 
         public int CurrentHeight => Mathf.Max(1, Height);
+
+        public bool IsStolenEvidence => LegalState == StorageItemLegalState.Stolen ||
+                                        LegalState == StorageItemLegalState.Suspicious ||
+                                        StolenDuringSession;
 
         public void Rotate()
         {

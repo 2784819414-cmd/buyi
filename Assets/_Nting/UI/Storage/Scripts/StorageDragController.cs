@@ -1,5 +1,6 @@
 using UnityEngine;
 using UnityEngine.EventSystems;
+using NtingCampus.Gameplay.Inventory;
 
 namespace Nting.Storage
 {
@@ -194,28 +195,22 @@ namespace Nting.Storage
                 return false;
             }
 
-            if (targetGrid == sourceGrid)
+            CampusInventoryTransferService service = CampusInventoryTransferService.Resolve();
+            StorageTransferContext context = Window.CreateTransferContext(StorageTransferReason.Move);
+            bool moved = service.TryMoveItem(
+                item,
+                sourceGrid != null ? sourceGrid.Container : null,
+                targetGrid.Container,
+                cell.x,
+                cell.y,
+                context,
+                out StorageTransferResult result);
+            if (!moved && !string.IsNullOrWhiteSpace(result.Message))
             {
-                return targetGrid.PlaceItem(item, cell.x, cell.y);
+                Window.ShowStatus(result.Message, true);
             }
 
-            if (!targetGrid.PlaceItem(item, cell.x, cell.y))
-            {
-                return false;
-            }
-
-            if (sourceGrid != null && sourceGrid.RemoveItem(item))
-            {
-                return true;
-            }
-
-            targetGrid.RemoveItem(item);
-            if (sourceGrid != null)
-            {
-                sourceGrid.PlaceItem(item, sourceX, sourceY);
-            }
-
-            return false;
+            return moved;
         }
 
         private Vector2 GetDraggedItemTopLeftScreenPoint()

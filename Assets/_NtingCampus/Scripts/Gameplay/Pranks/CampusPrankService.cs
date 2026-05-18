@@ -4,6 +4,7 @@ using Nting.Storage;
 using NtingCampus.Gameplay.Characters;
 using NtingCampus.Gameplay.Core;
 using NtingCampus.Gameplay.Events;
+using NtingCampus.Gameplay.Inventory;
 using NtingCampus.Gameplay.Rooms;
 using NtingCampus.Gameplay.Schedule;
 using NtingCampus.Gameplay.UI;
@@ -204,20 +205,17 @@ namespace NtingCampus.Gameplay.Pranks
 
             if (IsPayload(payload, PassNotePayload))
             {
-                unavailableReason = ResolvePassNoteUnavailableReason(actor);
-                return string.IsNullOrEmpty(unavailableReason);
+                return CanExecuteKnownPayload(ResolvePassNoteUnavailableReason(actor), out unavailableReason);
             }
 
             if (TryResolveCanteenFood(payload, out _))
             {
-                unavailableReason = ResolveCanteenFoodUnavailableReason(actor);
-                return string.IsNullOrEmpty(unavailableReason);
+                return CanExecuteKnownPayload(ResolveCanteenFoodUnavailableReason(actor), out unavailableReason);
             }
 
             if (IsPayload(payload, CampusPrankPayloadIds.StealDelivery))
             {
-                unavailableReason = ResolveDeliveryUnavailableReason(actor);
-                return string.IsNullOrEmpty(unavailableReason);
+                return CanExecuteKnownPayload(ResolveDeliveryUnavailableReason(actor), out unavailableReason);
             }
 
             unavailableReason = definition.UnsupportedReason;
@@ -276,10 +274,10 @@ namespace NtingCampus.Gameplay.Pranks
                 return false;
             }
 
-            CampusCharacterRuntime playerRuntime = ResolveActorRuntime(actor);
-            CampusGameplayRoom classroom = worldService != null && playerRuntime != null ? worldService.FindRoomForRuntime(playerRuntime) : null;
+            CampusCharacterRuntime actorRuntime = ResolveActorRuntime(actor);
+            CampusGameplayRoom classroom = worldService != null && actorRuntime != null ? worldService.FindRoomForRuntime(actorRuntime) : null;
 
-            CampusCharacterRuntime targetStudent = FindTargetStudent(playerRuntime, classroom.RoomId);
+            CampusCharacterRuntime targetStudent = FindTargetStudent(actorRuntime, classroom.RoomId);
             if (targetStudent == null || targetStudent.Data == null)
             {
                 WriteLog("[Prank] No nearby student is available to receive the note.");
@@ -289,7 +287,7 @@ namespace NtingCampus.Gameplay.Pranks
             CampusCharacterRuntime teacherRuntime = FindTeacherInRoom(classroom.RoomId);
             gameplayEventHub?.PublishPrankAttempted(new CampusPrankAttemptedEvent(
                 CampusPrankType.PassNote,
-                playerRuntime.CharacterId,
+                actorRuntime.CharacterId,
                 targetStudent.CharacterId,
                 classroom.RoomId,
                 true));
@@ -299,8 +297,8 @@ namespace NtingCampus.Gameplay.Pranks
             bool detected = teacherRuntime != null && RollTeacherDetection(classroom.RoomId);
             bool succeeded = !detected;
 
-            playerRuntime.Data.AddMemory(CampusCharacterMemoryId.PassedNoteToday);
-            targetStudent.Data.AddMemory(CampusCharacterMemoryId.ReceivedNoteFromPlayer);
+            actorRuntime.Data.AddMemory(CampusCharacterMemoryId.PassedNoteToday);
+            targetStudent.Data.AddMemory(CampusCharacterMemoryId.ReceivedNoteFromActor);
             if (teacherRuntime != null && teacherRuntime.Data != null)
             {
                 teacherRuntime.Data.AddMemory(detected
@@ -315,9 +313,10 @@ namespace NtingCampus.Gameplay.Pranks
                 bootstrap.GameState.AddDivineInterest(5);
                 bootstrap.GameState.AddTeacherAlertness(1);
                 bootstrap.GameState.UnlockShrineRoom();
+                string actorName = actorRuntime.Data.GetDisplayName(CampusLanguageState.CurrentLanguage);
                 WriteLog(teacherDistracted
-                    ? "[Prank] The teacher is distracted. You passed the note cleanly. Divine Power +" + reward + "."
-                    : "[Prank] You passed the note cleanly. Divine Power +" + reward + ".");
+                    ? "[Prank] The teacher is distracted. " + actorName + " passed the note cleanly. Divine Power +" + reward + "."
+                    : "[Prank] " + actorName + " passed the note cleanly. Divine Power +" + reward + ".");
             }
             else
             {
@@ -330,7 +329,7 @@ namespace NtingCampus.Gameplay.Pranks
 
             gameplayEventHub?.PublishPrankResolved(new CampusPrankResolvedEvent(
                 CampusPrankType.PassNote,
-                playerRuntime.CharacterId,
+                actorRuntime.CharacterId,
                 targetStudent.CharacterId,
                 classroom.RoomId,
                 succeeded,
@@ -357,23 +356,23 @@ namespace NtingCampus.Gameplay.Pranks
                 return false;
             }
 
-            CampusCharacterRuntime playerRuntime = ResolveActorRuntime(actor);
-            CampusGameplayRoom canteen = worldService.FindRoomForRuntime(playerRuntime);
+            CampusCharacterRuntime actorRuntime = ResolveActorRuntime(actor);
+            CampusGameplayRoom canteen = worldService.FindRoomForRuntime(actorRuntime);
             CampusCharacterRuntime clerk = FindCanteenClerk(canteen.RoomId);
             bool clerkDistracted = IsCanteenClerkDistracted(currentCanteenClerkState);
             bool detected = clerk != null && RollCanteenDetection(clerkDistracted);
 
             gameplayEventHub?.PublishPrankAttempted(new CampusPrankAttemptedEvent(
                 CampusPrankType.CanteenFoodTheft,
-                playerRuntime.CharacterId,
+                actorRuntime.CharacterId,
                 clerk != null ? clerk.CharacterId : string.Empty,
                 canteen.RoomId,
                 scheduleService != null && scheduleService.IsClassSessionNow()));
 
             if (detected)
             {
-                playerRuntime.Data.SetState(CampusCharacterState.Nervous);
-                playerRuntime.Data.AddMemory(CampusCharacterMemoryId.CanteenTheftSuspected);
+                actorRuntime.Data.SetState(CampusCharacterState.Nervous);
+                actorRuntime.Data.AddMemory(CampusCharacterMemoryId.CanteenTheftSuspected);
                 if (clerk != null && clerk.Data != null)
                 {
                     clerk.Data.SetState(CampusCharacterState.Nervous);
@@ -382,27 +381,27 @@ namespace NtingCampus.Gameplay.Pranks
                 AddSuspicion(foodSpec.SuspicionRisk + 18, "canteen clerk saw the attempt");
                 AddCanteenAlert(7);
                 bootstrap.GameState.AddCampusChaos(3);
-                WriteLog("[Canteen] The clerk turns back too early. You do not get the " + foodSpec.DisplayName + ".");
-                PublishCanteenResolved(playerRuntime, clerk, canteen, false, foodSpec);
+                WriteLog("[Canteen] The clerk turns back too early. " + FormatActorName(actorRuntime) + " does not get the " + foodSpec.DisplayName + ".");
+                PublishCanteenResolved(actorRuntime, clerk, canteen, false, foodSpec);
                 lastPrankTime = Time.time;
                 return false;
             }
 
-            if (!TryGiveStolenItem(foodSpec, out string itemError))
+            if (!TryGiveStolenItem(actor, foodSpec, out string itemError))
             {
                 WriteLog("[Canteen] " + itemError);
                 return false;
             }
 
-            playerRuntime.Data.AddMemory(CampusCharacterMemoryId.StoleCanteenFood);
+            actorRuntime.Data.AddMemory(CampusCharacterMemoryId.StoleCanteenFood);
             dailyCanteenTheftCount++;
             AddSuspicion(foodSpec.SuspicionRisk, "stolen canteen food");
             AddCanteenAlert(3);
             bootstrap.GameState.AddCampusChaos(6);
             bootstrap.GameState.AddCampusOrder(-2);
             bootstrap.GameState.AddDivineInterest(4);
-            WriteLog("[Canteen] Clerk state=" + currentCanteenClerkState + ". You stole " + foodSpec.DisplayName + ".");
-            PublishCanteenResolved(playerRuntime, clerk, canteen, true, foodSpec);
+            WriteLog("[Canteen] Clerk state=" + currentCanteenClerkState + ". " + FormatActorName(actorRuntime) + " stole " + foodSpec.DisplayName + ".");
+            PublishCanteenResolved(actorRuntime, clerk, canteen, true, foodSpec);
             lastPrankTime = Time.time;
             return true;
         }
@@ -422,19 +421,19 @@ namespace NtingCampus.Gameplay.Pranks
                 return false;
             }
 
-            CampusCharacterRuntime playerRuntime = ResolveActorRuntime(actor);
-            CampusGameplayRoom outdoorRoom = worldService.FindRoomForRuntime(playerRuntime);
+            CampusCharacterRuntime actorRuntime = ResolveActorRuntime(actor);
+            CampusGameplayRoom outdoorRoom = worldService.FindRoomForRuntime(actorRuntime);
             CampusCharacterRuntime owner = rosterService.FindRuntime(activeDeliveryOwnerId);
             CampusTheftItemSpec deliverySpec = CampusTheftItemSpec.CreateDelivery(activeDeliveryItemName, activeDeliveryOwnerId);
             bool detected = RollDeliverySuspicion(owner);
 
-            if (!TryGiveStolenItem(deliverySpec, out string itemError))
+            if (!TryGiveStolenItem(actor, deliverySpec, out string itemError))
             {
                 WriteLog("[Delivery] " + itemError);
                 return false;
             }
 
-            playerRuntime.Data.AddMemory(CampusCharacterMemoryId.DeliveryStolen);
+            actorRuntime.Data.AddMemory(CampusCharacterMemoryId.DeliveryStolen);
             if (owner != null && owner.Data != null)
             {
                 if (detected)
@@ -459,13 +458,13 @@ namespace NtingCampus.Gameplay.Pranks
 
             gameplayEventHub?.PublishPrankAttempted(new CampusPrankAttemptedEvent(
                 CampusPrankType.DeliveryTheft,
-                playerRuntime.CharacterId,
+                actorRuntime.CharacterId,
                 owner != null ? owner.CharacterId : activeDeliveryOwnerId,
                 outdoorRoom != null ? outdoorRoom.RoomId : string.Empty,
                 scheduleService != null && scheduleService.IsClassSessionNow()));
             gameplayEventHub?.PublishPrankResolved(new CampusPrankResolvedEvent(
                 CampusPrankType.DeliveryTheft,
-                playerRuntime.CharacterId,
+                actorRuntime.CharacterId,
                 owner != null ? owner.CharacterId : activeDeliveryOwnerId,
                 outdoorRoom != null ? outdoorRoom.RoomId : string.Empty,
                 true,
@@ -473,18 +472,18 @@ namespace NtingCampus.Gameplay.Pranks
                 0));
 
             WriteLog(detected
-                ? "[Delivery] You took " + activeDeliveryItemName + ". The owner is likely to report it."
-                : "[Delivery] You took " + activeDeliveryItemName + " before the owner arrived.");
+                ? "[Delivery] " + FormatActorName(actorRuntime) + " took " + activeDeliveryItemName + ". The owner is likely to report it."
+                : "[Delivery] " + FormatActorName(actorRuntime) + " took " + activeDeliveryItemName + " before the owner arrived.");
             lastPrankTime = Time.time;
             return true;
         }
 
         private string ResolvePassNoteUnavailableReason(GameObject actor)
         {
-            CampusCharacterRuntime playerRuntime = ResolveActorRuntime(actor);
-            if (playerRuntime == null || playerRuntime.Data == null)
+            CampusCharacterRuntime actorRuntime = ResolveActorRuntime(actor);
+            if (actorRuntime == null || actorRuntime.Data == null)
             {
-                return "No formal player runtime is available.";
+                return "No formal actor runtime is available.";
             }
 
             if (scheduleService == null || !scheduleService.IsClassSessionNow())
@@ -492,10 +491,10 @@ namespace NtingCampus.Gameplay.Pranks
                 return "Passing notes only counts during class sessions.";
             }
 
-            CampusGameplayRoom classroom = worldService != null ? worldService.FindRoomForRuntime(playerRuntime) : null;
+            CampusGameplayRoom classroom = worldService != null ? worldService.FindRoomForRuntime(actorRuntime) : null;
             if (classroom == null || classroom.RoomType != CampusRoomType.Classroom)
             {
-                return "You need to be inside a formal classroom.";
+                return "Actor needs to be inside a formal classroom.";
             }
 
             return string.Empty;
@@ -503,10 +502,10 @@ namespace NtingCampus.Gameplay.Pranks
 
         private string ResolveCanteenFoodUnavailableReason(GameObject actor)
         {
-            CampusCharacterRuntime playerRuntime = ResolveActorRuntime(actor);
-            if (playerRuntime == null || playerRuntime.Data == null)
+            CampusCharacterRuntime actorRuntime = ResolveActorRuntime(actor);
+            if (actorRuntime == null || actorRuntime.Data == null)
             {
-                return "No formal player runtime is available.";
+                return "No formal actor runtime is available.";
             }
 
             if (!IsEveningStudyOrNightErrand())
@@ -514,10 +513,10 @@ namespace NtingCampus.Gameplay.Pranks
                 return "Canteen theft is tuned for evening study or night errand windows.";
             }
 
-            CampusGameplayRoom canteen = worldService != null ? worldService.FindRoomForRuntime(playerRuntime) : null;
+            CampusGameplayRoom canteen = worldService != null ? worldService.FindRoomForRuntime(actorRuntime) : null;
             if (canteen == null || canteen.RoomType != CampusRoomType.Canteen)
             {
-                return "You need to be in a declared Canteen room.";
+                return "Actor needs to be in a declared Canteen room.";
             }
 
             if (FindCanteenClerk(canteen.RoomId) == null)
@@ -530,10 +529,10 @@ namespace NtingCampus.Gameplay.Pranks
 
         private string ResolveDeliveryUnavailableReason(GameObject actor)
         {
-            CampusCharacterRuntime playerRuntime = ResolveActorRuntime(actor);
-            if (playerRuntime == null || playerRuntime.Data == null)
+            CampusCharacterRuntime actorRuntime = ResolveActorRuntime(actor);
+            if (actorRuntime == null || actorRuntime.Data == null)
             {
-                return "No formal player runtime is available.";
+                return "No formal actor runtime is available.";
             }
 
             EnsureDeliveryOrder(false);
@@ -543,10 +542,10 @@ namespace NtingCampus.Gameplay.Pranks
                 return "No student delivery order is waiting at a declared outdoor delivery point.";
             }
 
-            CampusGameplayRoom room = worldService != null ? worldService.FindRoomForRuntime(playerRuntime) : null;
+            CampusGameplayRoom room = worldService != null ? worldService.FindRoomForRuntime(actorRuntime) : null;
             if (room == null || room.RoomType != CampusRoomType.Outdoor)
             {
-                return "You need to be in a declared Outdoor delivery area.";
+                return "Actor needs to be in a declared Outdoor delivery area.";
             }
 
             if (!HasDeliveryDropPoint(room))
@@ -1008,7 +1007,7 @@ namespace NtingCampus.Gameplay.Pranks
         }
 
         private void PublishCanteenResolved(
-            CampusCharacterRuntime playerRuntime,
+            CampusCharacterRuntime actorRuntime,
             CampusCharacterRuntime clerk,
             CampusGameplayRoom canteen,
             bool succeeded,
@@ -1016,7 +1015,7 @@ namespace NtingCampus.Gameplay.Pranks
         {
             gameplayEventHub?.PublishPrankResolved(new CampusPrankResolvedEvent(
                 CampusPrankType.CanteenFoodTheft,
-                playerRuntime != null ? playerRuntime.CharacterId : string.Empty,
+                actorRuntime != null ? actorRuntime.CharacterId : string.Empty,
                 clerk != null ? clerk.CharacterId : string.Empty,
                 canteen != null ? canteen.RoomId : string.Empty,
                 succeeded,
@@ -1024,7 +1023,7 @@ namespace NtingCampus.Gameplay.Pranks
                 succeeded ? foodSpec.DivinePowerReward : 0));
         }
 
-        private bool TryGiveStolenItem(CampusTheftItemSpec spec, out string errorMessage)
+        private bool TryGiveStolenItem(GameObject actor, CampusTheftItemSpec spec, out string errorMessage)
         {
             errorMessage = string.Empty;
             StorageMemory memory = StorageMemory.GetOrCreate();
@@ -1044,8 +1043,37 @@ namespace NtingCampus.Gameplay.Pranks
             item.UseActionId = StorageItemUseUtility.ConsumeFoodActionId;
             item.ConsumeOnUse = true;
             item.UseText = "Ate " + spec.DisplayName + ".";
+            item.OwnerId = ResolveTheftOwnerId(spec);
+            item.SourceLocation = spec.SourceLocation;
+            item.SuspicionRisk = spec.SuspicionRisk;
+            item.AllowTaking = false;
 
-            return StoragePlayerInventoryUtility.TryPlaceInCarriedStorage(memory, item, out errorMessage);
+            StorageTransferContext context = StorageTransferContext.ForActor(actor, StorageTransferReason.PrankTheft);
+            context.ForceIllegal = true;
+            context.SuppressNpcDetection = true;
+            context.SuppressSuspicion = true;
+            context.SourceLocation = spec.SourceLocation;
+            context.OwnerId = item.OwnerId;
+            context.SuspicionRiskOverride = spec.SuspicionRisk;
+            CampusInventoryTransferService service = CampusInventoryTransferService.Resolve();
+            if (service.TryPlaceInCarriedStorage(memory, item, context, out StorageTransferResult result))
+            {
+                return true;
+            }
+
+            errorMessage = result.Message;
+            return false;
+        }
+
+        private static string ResolveTheftOwnerId(CampusTheftItemSpec spec)
+        {
+            if (!string.IsNullOrWhiteSpace(spec.SourceLocation) &&
+                spec.SourceLocation.StartsWith("delivery:", StringComparison.OrdinalIgnoreCase))
+            {
+                return spec.SourceLocation.Substring("delivery:".Length).Trim();
+            }
+
+            return string.IsNullOrWhiteSpace(spec.SourceLocation) ? "campus" : spec.SourceLocation.Trim();
         }
 
         private static void EnsureRuntimeItemDefinition(StorageItemRegistry registry, CampusTheftItemSpec spec)
@@ -1109,7 +1137,7 @@ namespace NtingCampus.Gameplay.Pranks
 
         private bool PassesCooldown(string actionName)
         {
-            if (Time.time - lastPrankTime >= prankCooldownSeconds)
+            if (IsPrankCooldownReady())
             {
                 return true;
             }
@@ -1118,7 +1146,29 @@ namespace NtingCampus.Gameplay.Pranks
             return false;
         }
 
-        private CampusCharacterRuntime FindTargetStudent(CampusCharacterRuntime playerRuntime, string roomId)
+        private bool CanExecuteKnownPayload(string resolvedUnavailableReason, out string unavailableReason)
+        {
+            unavailableReason = resolvedUnavailableReason;
+            if (!string.IsNullOrEmpty(unavailableReason))
+            {
+                return false;
+            }
+
+            if (!IsPrankCooldownReady())
+            {
+                unavailableReason = "Prank action is cooling down.";
+                return false;
+            }
+
+            return true;
+        }
+
+        private bool IsPrankCooldownReady()
+        {
+            return Time.time - lastPrankTime >= prankCooldownSeconds;
+        }
+
+        private CampusCharacterRuntime FindTargetStudent(CampusCharacterRuntime actorRuntime, string roomId)
         {
             if (rosterService == null)
             {
@@ -1127,7 +1177,7 @@ namespace NtingCampus.Gameplay.Pranks
 
             foreach (CampusCharacterRuntime runtime in rosterService.EnumerateByRole(CampusCharacterRole.Student))
             {
-                if (runtime == null || runtime == playerRuntime || runtime.Data == null)
+                if (runtime == null || runtime == actorRuntime || runtime.Data == null)
                 {
                     continue;
                 }
@@ -1333,6 +1383,16 @@ namespace NtingCampus.Gameplay.Pranks
             }
 
             return rosterService != null ? rosterService.PlayerRuntime : null;
+        }
+
+        private static string FormatActorName(CampusCharacterRuntime actorRuntime)
+        {
+            if (actorRuntime == null || actorRuntime.Data == null)
+            {
+                return "Actor";
+            }
+
+            return actorRuntime.Data.GetDisplayName(CampusLanguageState.CurrentLanguage);
         }
 
         private static bool IsPayload(string actual, string expected)

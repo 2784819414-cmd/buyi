@@ -18,6 +18,12 @@ namespace NtingCampus.Gameplay.Schedule
         WatchDeliveryPoint = 13,
         PickupDelivery = 14,
         SearchMissingDelivery = 15,
-        ReportMissingDelivery = 16
+        ReportMissingDelivery = 16,
+        QueueCanteenMeal = 17,
+        ReceiveCanteenMeal = 18,
+        BrowseStoreShelf = 19,
+        QueueStoreCheckout = 20,
+        PayStoreCheckout = 21,
+        WorkStoreCheckout = 22
     }
 }

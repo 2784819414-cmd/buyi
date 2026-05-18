@@ -1,3 +1,4 @@
+using NtingCampus.Gameplay.Inventory;
 using UnityEngine;
 
 namespace Nting.Storage
@@ -38,10 +39,15 @@ namespace Nting.Storage
                 return new StorageContainerModel[2];
             }
 
+            StorageContainerModel leftHand = memory.GetOrCreateContainer(LeftHandContainerId, "\u5de6\u624b", 2, 2, 3f);
+            StorageContainerModel rightHand = memory.GetOrCreateContainer(RightHandContainerId, "\u53f3\u624b", 2, 2, 3f);
+            ConfigurePlayerCarriedContainer(leftHand);
+            ConfigurePlayerCarriedContainer(rightHand);
+
             return new[]
             {
-                memory.GetOrCreateContainer(LeftHandContainerId, "\u5de6\u624b", 2, 2, 3f),
-                memory.GetOrCreateContainer(RightHandContainerId, "\u53f3\u624b", 2, 2, 3f)
+                leftHand,
+                rightHand
             };
         }
 
@@ -52,20 +58,31 @@ namespace Nting.Storage
                 return new StorageContainerModel[4];
             }
 
+            StorageContainerModel leftChest = memory.GetOrCreateContainer(LeftChestPocketContainerId, "\u5de6\u80f8\u888b", 2, 3, 1.5f);
+            StorageContainerModel rightChest = memory.GetOrCreateContainer(RightChestPocketContainerId, "\u53f3\u80f8\u888b", 2, 3, 1.5f);
+            StorageContainerModel leftPants = memory.GetOrCreateContainer(LeftPantsPocketContainerId, "\u5de6\u88e4\u888b", 2, 3, 2f);
+            StorageContainerModel rightPants = memory.GetOrCreateContainer(RightPantsPocketContainerId, "\u53f3\u88e4\u888b", 2, 3, 2f);
+            ConfigurePlayerCarriedContainer(leftChest);
+            ConfigurePlayerCarriedContainer(rightChest);
+            ConfigurePlayerCarriedContainer(leftPants);
+            ConfigurePlayerCarriedContainer(rightPants);
+
             return new[]
             {
-                memory.GetOrCreateContainer(LeftChestPocketContainerId, "\u5de6\u80f8\u888b", 2, 3, 1.5f),
-                memory.GetOrCreateContainer(RightChestPocketContainerId, "\u53f3\u80f8\u888b", 2, 3, 1.5f),
-                memory.GetOrCreateContainer(LeftPantsPocketContainerId, "\u5de6\u88e4\u888b", 2, 3, 2f),
-                memory.GetOrCreateContainer(RightPantsPocketContainerId, "\u53f3\u88e4\u888b", 2, 3, 2f)
+                leftChest,
+                rightChest,
+                leftPants,
+                rightPants
             };
         }
 
         public static StorageContainerModel GetOrCreateBackpack(StorageMemory memory)
         {
-            return memory != null
+            StorageContainerModel backpack = memory != null
                 ? memory.GetOrCreateContainer(BackpackContainerId, "\u5b66\u751f\u4e66\u5305", 5, 6, 20f)
                 : null;
+            ConfigurePlayerCarriedContainer(backpack);
+            return backpack;
         }
 
         public static void EnsureStarterItems(StorageMemory memory)
@@ -103,24 +120,17 @@ namespace Nting.Storage
                 return false;
             }
 
-            GetOrCreateHandContainers(memory);
-            StorageContainerModel backpack = GetOrCreateBackpack(memory);
-            StorageContainerModel[] pockets = GetOrCreatePocketContainers(memory);
-
-            if (TryPlaceInContainer(backpack, item))
+            CampusInventoryTransferService service = CampusInventoryTransferService.Resolve();
+            StorageTransferContext context = new StorageTransferContext
+            {
+                Reason = StorageTransferReason.Pickup
+            };
+            if (service.TryPlaceInCarriedStorage(memory, item, context, out StorageTransferResult result))
             {
                 return true;
             }
 
-            for (int i = 0; i < pockets.Length; i++)
-            {
-                if (TryPlaceInContainer(pockets[i], item))
-                {
-                    return true;
-                }
-            }
-
-            errorMessage = "No backpack or pocket space for " + item.DisplayName + ".";
+            errorMessage = result.Message;
             return false;
         }
 
@@ -135,15 +145,18 @@ namespace Nting.Storage
             return grid != null && grid.Container != null && IsHandContainerId(grid.Container.Id);
         }
 
-        private static bool TryPlaceInContainer(StorageContainerModel container, StorageItemModel item)
+        private static void ConfigurePlayerCarriedContainer(StorageContainerModel container)
         {
-            if (container == null || item == null)
+            if (container == null)
             {
-                return false;
+                return;
             }
 
-            return container.FindFirstFit(item, out Vector2Int position) &&
-                   container.PlaceItem(item, position.x, position.y);
+            container.AccessPolicy = StorageContainerAccessPolicy.PlayerCarried;
+            container.OwnerId = "player";
+            container.OwnerRole = "Player";
+            container.AllowTakingContents = true;
+            container.IsPlayerCarried = true;
         }
 
         private static void TrySeedItem(StorageMemory memory, string containerId, string definitionId, string instanceId, int x, int y)

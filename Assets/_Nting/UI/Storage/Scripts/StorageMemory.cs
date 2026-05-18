@@ -61,6 +61,14 @@ namespace Nting.Storage
             return !string.IsNullOrWhiteSpace(containerId) && containers.ContainsKey(containerId);
         }
 
+        public bool TryGetContainer(string containerId, out StorageContainerModel container)
+        {
+            container = null;
+            return !string.IsNullOrWhiteSpace(containerId) &&
+                   containers.TryGetValue(containerId, out container) &&
+                   container != null;
+        }
+
         public StorageContainerModel GetOrCreateContainer(string id, string displayName, int columns, int rows, float maxWeight)
         {
             if (string.IsNullOrWhiteSpace(id))
@@ -180,7 +188,14 @@ namespace Nting.Storage
                     DisplayName = container.DisplayName,
                     Columns = container.Columns,
                     Rows = container.Rows,
-                    MaxWeight = container.MaxWeight
+                    MaxWeight = container.MaxWeight,
+                    AccessPolicy = container.AccessPolicy,
+                    OwnerId = container.OwnerId,
+                    OwnerRole = container.OwnerRole,
+                    RoomId = container.RoomId,
+                    AllowTakingContents = container.AllowTakingContents,
+                    IsPlayerCarried = container.IsPlayerCarried,
+                    SuspicionRisk = container.SuspicionRisk
                 };
 
                 for (int i = 0; i < container.Items.Count; i++)
@@ -207,7 +222,15 @@ namespace Nting.Storage
                         IsUsable = item.IsUsable,
                         UseActionId = item.UseActionId,
                         ConsumeOnUse = item.ConsumeOnUse,
-                        UseText = item.UseText
+                        UseText = item.UseText,
+                        LegalState = item.LegalState,
+                        OwnerId = item.OwnerId,
+                        SourceContainerId = item.SourceContainerId,
+                        SourceRoomId = item.SourceRoomId,
+                        SourceLocation = item.SourceLocation,
+                        AllowTaking = item.AllowTaking,
+                        StolenDuringSession = item.StolenDuringSession,
+                        SuspicionRisk = item.SuspicionRisk
                     });
                 }
 
@@ -239,6 +262,13 @@ namespace Nting.Storage
                     containerData.Columns,
                     containerData.Rows,
                     containerData.MaxWeight);
+                container.AccessPolicy = containerData.AccessPolicy;
+                container.OwnerId = containerData.OwnerId;
+                container.OwnerRole = containerData.OwnerRole;
+                container.RoomId = containerData.RoomId;
+                container.AllowTakingContents = containerData.AllowTakingContents;
+                container.IsPlayerCarried = containerData.IsPlayerCarried;
+                container.SuspicionRisk = containerData.SuspicionRisk;
 
                 container.Items.Clear();
                 if (containerData.Items == null)
@@ -329,6 +359,20 @@ namespace Nting.Storage
             item.UseActionId = itemData.UseActionId;
             item.ConsumeOnUse = itemData.ConsumeOnUse;
             item.UseText = itemData.UseText;
+            StorageItemLegalState savedLegalState = itemData.LegalState;
+            item.LegalState = savedLegalState;
+            if (item.LegalState == StorageItemLegalState.Unknown)
+            {
+                item.LegalState = StorageItemLegalState.Personal;
+            }
+
+            item.OwnerId = itemData.OwnerId;
+            item.SourceContainerId = itemData.SourceContainerId;
+            item.SourceRoomId = itemData.SourceRoomId;
+            item.SourceLocation = itemData.SourceLocation;
+            item.AllowTaking = savedLegalState == StorageItemLegalState.Unknown || itemData.AllowTaking;
+            item.StolenDuringSession = itemData.StolenDuringSession;
+            item.SuspicionRisk = itemData.SuspicionRisk;
             return item;
         }
     }

@@ -41,7 +41,9 @@ namespace Nting.Storage
                 IsUsable = IsUsable,
                 UseActionId = UseActionId,
                 ConsumeOnUse = ConsumeOnUse,
-                UseText = UseText
+                UseText = UseText,
+                LegalState = StorageItemLegalState.Personal,
+                AllowTaking = true
             };
         }
     }

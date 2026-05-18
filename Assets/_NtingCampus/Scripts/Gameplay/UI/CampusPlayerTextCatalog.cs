@@ -357,12 +357,17 @@ namespace NtingCampus.Gameplay.UI
                 ? resolved
                 : new TextEntry(id.ToString(), id.ToString());
 
+            return Get(language, entry.Chinese, entry.English);
+        }
+
+        public static string Get(CampusDisplayLanguage language, string chinese, string english)
+        {
             return language switch
             {
-                CampusDisplayLanguage.Chinese => entry.Chinese,
-                CampusDisplayLanguage.English => entry.English,
-                CampusDisplayLanguage.Bilingual => entry.Chinese + " / " + entry.English,
-                _ => entry.Chinese
+                CampusDisplayLanguage.Chinese => chinese,
+                CampusDisplayLanguage.English => english,
+                CampusDisplayLanguage.Bilingual => chinese + " / " + english,
+                _ => chinese
             };
         }
 

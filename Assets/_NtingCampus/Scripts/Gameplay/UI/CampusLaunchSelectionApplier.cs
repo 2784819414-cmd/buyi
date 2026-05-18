@@ -180,9 +180,12 @@ namespace NtingCampus.Gameplay.UI
 
             bootstrap.WorldService?.Initialize(bootstrap);
             bootstrap.RosterService?.RebuildRosterFromScene();
+            bootstrap.ActionService?.Initialize(bootstrap);
             bootstrap.ModeController?.InitializeModes(bootstrap, false);
             bootstrap.ScheduleService?.Initialize(bootstrap);
             bootstrap.GameplayEventHub?.Initialize(bootstrap);
+            bootstrap.NpcEcologyService?.Initialize(bootstrap);
+            bootstrap.CommerceService?.Initialize(bootstrap);
             bootstrap.ClassroomLoopService?.Initialize(bootstrap);
             bootstrap.SanctionService?.Initialize(bootstrap);
             bootstrap.PrankService?.Initialize(bootstrap);
