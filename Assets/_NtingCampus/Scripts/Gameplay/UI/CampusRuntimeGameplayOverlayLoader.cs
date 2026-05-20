@@ -1,7 +1,6 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Text;
 using NtingCampus.Gameplay.Characters;
 using NtingCampus.Gameplay.Core;
 using NtingCampus.Gameplay.Pranks;
@@ -14,7 +13,6 @@ namespace NtingCampus.Gameplay.UI
     [DisallowMultipleComponent]
     public sealed class CampusRuntimeGameplayOverlayLoader : MonoBehaviour
     {
-        private const string OverlaySchema = "NtingCampusGameplayOverlay.v1";
         private const string OverlayRootName = "RuntimeGameplayOverlay";
 
         [SerializeField] private CampusGameBootstrap bootstrap;
@@ -61,22 +59,24 @@ namespace NtingCampus.Gameplay.UI
 
             PurgeSceneAuthoredActors();
 
-            string overlayPath = BuildOverlayPath(mapPath);
+            string overlayPath = CampusRuntimeGameplayOverlayStore.GetPathForMapPath(mapPath);
             if (!File.Exists(overlayPath))
             {
-                WriteLog("[System] No gameplay overlay found for " + Path.GetFileName(mapPath) + ".");
+                WriteLog(CampusPlayerUiTextCatalog.Format(
+                    CampusPlayerUiTextId.GameplayOverlayMissing,
+                    Path.GetFileName(mapPath)));
                 return;
             }
 
-            string json = File.ReadAllText(overlayPath, Encoding.UTF8);
-            CampusRuntimeGameplayOverlaySnapshot snapshot =
-                JsonUtility.FromJson<CampusRuntimeGameplayOverlaySnapshot>(json);
-            if (snapshot == null || !string.Equals(snapshot.Schema, OverlaySchema, StringComparison.Ordinal))
+            CampusRuntimeGameplayOverlaySnapshot snapshot;
+            string readError;
+            if (!CampusRuntimeGameplayOverlayStore.TryReadSnapshot(mapPath, out snapshot, out readError))
             {
-                throw new InvalidOperationException("Gameplay overlay schema is invalid: " + overlayPath);
+                throw new InvalidOperationException(string.IsNullOrWhiteSpace(readError)
+                    ? "Gameplay overlay JSON is invalid: " + overlayPath
+                    : readError);
             }
 
-            NormalizeSnapshot(snapshot);
             HideRuntimeRoomMarkerVisuals();
             Transform host = EnsureGeneratedOverlayRoot();
             SpawnRooms(snapshot, host);
@@ -85,14 +85,11 @@ namespace NtingCampus.Gameplay.UI
             SpawnActors(snapshot, host);
             int actorCount = snapshot.Actors != null ? snapshot.Actors.Count : 0;
             int facilityCount = snapshot.Facilities != null ? snapshot.Facilities.Count : 0;
-            WriteLog(
-                "[System] Gameplay overlay applied: " +
-                Path.GetFileName(overlayPath) +
-                ". Actors=" +
-                actorCount +
-                ", Facilities=" +
-                facilityCount +
-                ".");
+            WriteLog(CampusPlayerUiTextCatalog.Format(
+                CampusPlayerUiTextId.GameplayOverlayApplied,
+                Path.GetFileName(overlayPath),
+                actorCount,
+                facilityCount));
         }
 
         public bool ShouldIncludeActorRuntime(CampusCharacterRuntime runtime)
@@ -315,7 +312,7 @@ namespace NtingCampus.Gameplay.UI
 
         private GameObject ResolvePlayerHost(CampusRuntimeGameplayActorSnapshot actor)
         {
-            CampusPlayerCharacter existingPlayer = FindFirstObjectByType<CampusPlayerCharacter>(FindObjectsInactive.Include);
+            CampusPlayerCharacter existingPlayer = CampusPlayerCharacter.FindCurrent();
             if (existingPlayer != null)
             {
                 return existingPlayer.gameObject;
@@ -389,10 +386,10 @@ namespace NtingCampus.Gameplay.UI
                     playerCharacter = actorObject.AddComponent<CampusPlayerCharacter>();
                 }
 
-                CampusNpcAgent npcAgent = actorObject.GetComponent<CampusNpcAgent>();
-                if (npcAgent != null)
+                CampusNpcActor npcActor = actorObject.GetComponent<CampusNpcActor>();
+                if (npcActor != null)
                 {
-                    Destroy(npcAgent);
+                    Destroy(npcActor);
                 }
 
                 CampusTestPlayerController testController = actorObject.GetComponent<CampusTestPlayerController>();
@@ -408,13 +405,13 @@ namespace NtingCampus.Gameplay.UI
                 return;
             }
 
-            CampusNpcAgent agent = actorObject.GetComponent<CampusNpcAgent>();
-            if (agent == null)
+            CampusNpcActor actorComponent = actorObject.GetComponent<CampusNpcActor>();
+            if (actorComponent == null)
             {
-                agent = actorObject.AddComponent<CampusNpcAgent>();
+                actorComponent = actorObject.AddComponent<CampusNpcActor>();
             }
 
-            agent.Initialize(runtime, bootstrap, bootstrap != null ? bootstrap.WorldService : null);
+            actorComponent.Initialize(runtime, bootstrap, bootstrap != null ? bootstrap.WorldService : null);
         }
 
         private void PositionActor(GameObject actorObject, CampusRuntimeGameplayActorSnapshot actor)
@@ -562,13 +559,6 @@ namespace NtingCampus.Gameplay.UI
             return mapRoot;
         }
 
-        private static string BuildOverlayPath(string mapPath)
-        {
-            string directory = Path.GetDirectoryName(mapPath) ?? string.Empty;
-            string fileName = Path.GetFileNameWithoutExtension(mapPath);
-            return Path.Combine(directory, fileName + ".gameplay.json");
-        }
-
         private static Vector3 ResolveWorldPosition(CampusFloorRoot floor, Vector3Int cell)
         {
             if (floor != null && floor.Grid != null)
@@ -579,34 +569,6 @@ namespace NtingCampus.Gameplay.UI
             }
 
             return new Vector3(cell.x + 0.5f, cell.y + 0.5f, 0f);
-        }
-
-        private static void NormalizeSnapshot(CampusRuntimeGameplayOverlaySnapshot snapshot)
-        {
-            if (snapshot == null)
-            {
-                return;
-            }
-
-            snapshot.Actors = snapshot.Actors ?? new List<CampusRuntimeGameplayActorSnapshot>();
-            snapshot.Rooms = snapshot.Rooms ?? new List<CampusRuntimeGameplayRoomSnapshot>();
-            snapshot.Facilities = snapshot.Facilities ?? new List<CampusRuntimeGameplayFacilitySnapshot>();
-            snapshot.PrankSpots = snapshot.PrankSpots ?? new List<CampusRuntimeGameplayPrankSpotSnapshot>();
-            for (int i = 0; i < snapshot.Actors.Count; i++)
-            {
-                if (snapshot.Actors[i] != null)
-                {
-                    snapshot.Actors[i].Normalize();
-                }
-            }
-
-            for (int i = 0; i < snapshot.Facilities.Count; i++)
-            {
-                if (snapshot.Facilities[i] != null)
-                {
-                    snapshot.Facilities[i].Normalize();
-                }
-            }
         }
 
         private void WriteLog(string message)
@@ -620,90 +582,4 @@ namespace NtingCampus.Gameplay.UI
         }
     }
 
-    [Serializable]
-    public sealed class CampusRuntimeGameplayOverlaySnapshot
-    {
-        public string Schema = "NtingCampusGameplayOverlay.v1";
-        public string MapName = string.Empty;
-        public List<CampusRuntimeGameplayActorSnapshot> Actors = new List<CampusRuntimeGameplayActorSnapshot>();
-        public List<CampusRuntimeGameplayRoomSnapshot> Rooms = new List<CampusRuntimeGameplayRoomSnapshot>();
-        public List<CampusRuntimeGameplayFacilitySnapshot> Facilities = new List<CampusRuntimeGameplayFacilitySnapshot>();
-        public List<CampusRuntimeGameplayPrankSpotSnapshot> PrankSpots = new List<CampusRuntimeGameplayPrankSpotSnapshot>();
-    }
-
-    [Serializable]
-    public sealed class CampusRuntimeGameplayRoomSnapshot
-    {
-        public string Id = string.Empty;
-        public string DisplayName = string.Empty;
-        public CampusRoomType RoomType = CampusRoomType.Unknown;
-        public int FloorIndex = 1;
-        public Vector3Int AnchorCell;
-        public Vector2Int Size = Vector2Int.one;
-        public bool UsableForGameplay = true;
-    }
-
-    [Serializable]
-    public sealed class CampusRuntimeGameplayActorSnapshot
-    {
-        public string Id = string.Empty;
-        public string DisplayName = string.Empty;
-        public CampusLocalizedText LocalizedDisplayName;
-        public CampusCharacterRole Role = CampusCharacterRole.Student;
-        public CampusTeacherDuty TeacherDuty = CampusTeacherDuty.None;
-        public CampusStaffDuty StaffDuty = CampusStaffDuty.None;
-        public string ClassId = "class_1";
-        public CampusCharacterState InitialState = CampusCharacterState.Normal;
-        public bool IsPlayerControlled;
-        public int FloorIndex = 1;
-        public Vector3Int Cell;
-        public int Sleepiness = 40;
-        public int Mischief = 20;
-        public CampusCharacterTrait[] Traits = Array.Empty<CampusCharacterTrait>();
-        public CampusCharacterAssignmentData Assignments = new CampusCharacterAssignmentData();
-
-        public void Normalize()
-        {
-            Id = string.IsNullOrWhiteSpace(Id) ? string.Empty : Id.Trim();
-            ClassId = string.IsNullOrWhiteSpace(ClassId) ? string.Empty : ClassId.Trim();
-            Assignments = Assignments ?? new CampusCharacterAssignmentData();
-            Assignments.Normalize();
-            Traits = Traits ?? Array.Empty<CampusCharacterTrait>();
-        }
-    }
-
-    [Serializable]
-    public sealed class CampusRuntimeGameplayFacilitySnapshot
-    {
-        public string Id = string.Empty;
-        public string DisplayName = string.Empty;
-        public CampusFacilityType FacilityType = CampusFacilityType.Unknown;
-        public int FloorIndex = 1;
-        public Vector3Int Cell;
-        public bool CountsAsCoreFacility = true;
-
-        public void Normalize()
-        {
-            FloorIndex = Mathf.Max(1, FloorIndex);
-            Id = CampusGameplayFacilityMarker.NormalizeFacilityId(Id);
-            if (string.IsNullOrEmpty(Id))
-            {
-                Id = CampusGameplayFacilityMarker.BuildStableFacilityId(FloorIndex, FacilityType, Cell);
-            }
-        }
-    }
-
-    [Serializable]
-    public sealed class CampusRuntimeGameplayPrankSpotSnapshot
-    {
-        public string DisplayName = string.Empty;
-        public string Payload = CampusPrankPayloadIds.PassNote;
-        public CampusRoomType RequiredRoomType = CampusRoomType.Unknown;
-        public CampusPrankSpotVisualKind VisualKind = CampusPrankSpotVisualKind.Envelope;
-        public int FloorIndex = 1;
-        public Vector3Int Cell;
-        public float InteractionRadius = 0.95f;
-        public Color AccentColor = new Color(0.96f, 0.79f, 0.22f, 1f);
-        public string UnsupportedReason = "This formal prank is not implemented yet.";
-    }
 }

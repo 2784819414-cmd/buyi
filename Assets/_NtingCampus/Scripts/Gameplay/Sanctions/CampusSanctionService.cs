@@ -3,6 +3,7 @@ using NtingCampus.Gameplay.Core;
 using NtingCampus.Gameplay.Events;
 using NtingCampus.Gameplay.Rooms;
 using NtingCampus.Gameplay.Schedule;
+using NtingCampus.Gameplay.UI;
 using UnityEngine;
 
 namespace NtingCampus.Gameplay.Sanctions
@@ -88,7 +89,12 @@ namespace NtingCampus.Gameplay.Sanctions
                 return;
             }
 
-            IssueDetectedRuleBreak(actorRuntime, eventData.FromRoomId, "[处分] 逃课被老师撞见。");
+            IssueDetectedRuleBreak(
+                actorRuntime,
+                eventData.FromRoomId,
+                CampusCharacterTextCatalog.FormatSanctionReason(
+                    CampusLanguageState.CurrentLanguage,
+                    CampusSanctionReasonId.SkippingClassObserved));
         }
 
         private void HandleItemTheftObserved(CampusItemTheftObservedEvent eventData)
@@ -104,7 +110,12 @@ namespace NtingCampus.Gameplay.Sanctions
                 return;
             }
 
-            IssueDetectedRuleBreak(actorRuntime, eventData.RoomId, "[Sanction] Protected property was taken under observation.");
+            IssueDetectedRuleBreak(
+                actorRuntime,
+                eventData.RoomId,
+                CampusCharacterTextCatalog.FormatSanctionReason(
+                    CampusLanguageState.CurrentLanguage,
+                    CampusSanctionReasonId.ProtectedPropertyObserved));
         }
 
         private void HandleContrabandFound(CampusContrabandFoundEvent eventData)
@@ -120,7 +131,12 @@ namespace NtingCampus.Gameplay.Sanctions
                 return;
             }
 
-            IssueDetectedRuleBreak(actorRuntime, eventData.RoomId, "[Sanction] Contraband was found during inspection.");
+            IssueDetectedRuleBreak(
+                actorRuntime,
+                eventData.RoomId,
+                CampusCharacterTextCatalog.FormatSanctionReason(
+                    CampusLanguageState.CurrentLanguage,
+                    CampusSanctionReasonId.ContrabandFound));
         }
 
         private void IssueDetectedRuleBreak(CampusCharacterRuntime actorRuntime, string roomId, string prefaceLog)

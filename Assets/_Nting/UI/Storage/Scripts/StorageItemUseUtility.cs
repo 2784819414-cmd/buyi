@@ -1,5 +1,3 @@
-using System;
-using NtingCampus.Gameplay.Inventory;
 using UnityEngine;
 
 namespace Nting.Storage
@@ -10,66 +8,33 @@ namespace Nting.Storage
 
         public static bool CanUse(StorageItemModel item)
         {
-            return item != null && item.IsUsable && !string.IsNullOrWhiteSpace(item.UseActionId);
+            return item != null &&
+                   item.IsUsable &&
+                   StorageItemUseActionRegistry.TryGet(item.UseActionId, out _);
         }
 
         public static bool TryUse(StorageItemModel item, StorageGridUI sourceGrid, out string statusMessage)
         {
             statusMessage = string.Empty;
-            if (!CanUse(item))
+            if (item == null || !item.IsUsable)
             {
-                statusMessage = "This item cannot be used.";
+                statusMessage = StorageTextCatalog.Get(StorageTextId.ItemCannotBeUsed);
                 return false;
             }
 
-            if (!StoragePlayerInventoryUtility.IsHandContainerId(item.CurrentContainerId))
+            if (!StorageItemUseActionRegistry.TryGet(item.UseActionId, out IStorageItemUseAction action))
             {
-                statusMessage = "Move it into a hand slot first.";
+                statusMessage = StorageTextCatalog.Format(StorageTextId.UnsupportedUseAction, item.UseActionId);
                 return false;
             }
 
-            if (!string.Equals(item.UseActionId, ConsumeFoodActionId, StringComparison.OrdinalIgnoreCase))
+            bool used = action.TryUse(item, sourceGrid, out statusMessage);
+            if (used && !string.IsNullOrWhiteSpace(statusMessage))
             {
-                statusMessage = "Unsupported item use action: " + item.UseActionId + ".";
-                return false;
+                Debug.Log("[Storage] " + statusMessage);
             }
 
-            string itemName = string.IsNullOrWhiteSpace(item.DisplayName) ? item.DefinitionId : item.DisplayName;
-            statusMessage = string.IsNullOrWhiteSpace(item.UseText)
-                ? "Used " + itemName + "."
-                : item.UseText;
-
-            if (item.ConsumeOnUse && !TryRemoveItem(item, sourceGrid, out string removeError))
-            {
-                statusMessage = string.IsNullOrWhiteSpace(removeError) ? "Could not consume " + itemName + "." : removeError;
-                return false;
-            }
-
-            Debug.Log("[Storage] " + statusMessage);
-            return true;
-        }
-
-        private static bool TryRemoveItem(StorageItemModel item, StorageGridUI sourceGrid, out string errorMessage)
-        {
-            errorMessage = string.Empty;
-            if (item == null)
-            {
-                return false;
-            }
-
-            CampusInventoryTransferService service = CampusInventoryTransferService.Resolve();
-            StorageContainerModel source = sourceGrid != null ? sourceGrid.Container : item.CurrentContainer;
-            StorageTransferContext context = new StorageTransferContext
-            {
-                Reason = StorageTransferReason.UseItem
-            };
-            if (service.TryConsumeItem(item, source, context, out StorageTransferResult result))
-            {
-                return true;
-            }
-
-            errorMessage = result.Message;
-            return false;
+            return used;
         }
     }
 }

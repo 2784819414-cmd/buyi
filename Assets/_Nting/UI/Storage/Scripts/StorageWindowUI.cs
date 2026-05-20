@@ -1,5 +1,4 @@
 using System.Collections.Generic;
-using NtingCampus.Gameplay.Inventory;
 using NtingCampusMapEditor;
 using UnityEngine;
 using UnityEngine.EventSystems;
@@ -38,6 +37,16 @@ namespace Nting.Storage
         public Button BackpackTabButton;
         public Button UseItemButton;
 
+        private Text windowEyebrowText;
+        private Text windowTitleText;
+        private Text windowHintText;
+        private Text noBackpackTitleText;
+        private Text noBackpackMetaText;
+        private Text itemInfoLabelText;
+        private Text statusLabelText;
+        private readonly Text[] handTitleTexts = new Text[2];
+        private readonly Text[] pocketTitleTexts = new Text[4];
+
         private const float DefaultGridCellSize = 52f;
         private const float MinimumGridCellSize = 28f;
 
@@ -59,6 +68,8 @@ namespace Nting.Storage
         private GameObject visibleRoot;
         private bool built;
         private GameObject groundDropSource;
+        private GameObject transferActor;
+        private IStorageTransferHandler transferHandler = StorageDefaultTransferHandler.Instance;
 
         public bool IsOpen => visibleRoot != null && visibleRoot.activeSelf;
 
@@ -93,9 +104,10 @@ namespace Nting.Storage
             DragLayer.gameObject.SetActive(true);
             CanvasGroup.alpha = 1f;
             SuppressMapEditorOverlay();
+            RefreshLocalizedText();
             RefreshPages();
             SelectItem(null);
-            ShowStatus("拖拽物品 / 右键旋转 / 双击转移 / 拖出容器可放到地上 / Esc关闭", false);
+            ShowStatus(StorageTextCatalog.Get(StorageTextId.WindowHint), false);
         }
 
         public void OpenPlayerStorage(
@@ -118,9 +130,10 @@ namespace Nting.Storage
             DragLayer.gameObject.SetActive(true);
             CanvasGroup.alpha = 1f;
             SuppressMapEditorOverlay();
+            RefreshLocalizedText();
             RefreshPages();
             SelectItem(null);
-            ShowStatus("Drag items / right click rotate / double click transfer / use from hand slots / Esc closes", false);
+            ShowStatus(StorageTextCatalog.Get(StorageTextId.PlayerWindowHint), false);
         }
 
         public void SetGroundDropContext(GameObject groundDropContext)
@@ -128,9 +141,47 @@ namespace Nting.Storage
             groundDropSource = groundDropContext;
         }
 
+        public void SetActorContext(GameObject actorContext)
+        {
+            transferActor = actorContext;
+        }
+
+        public void SetTransferHandler(IStorageTransferHandler handler)
+        {
+            transferHandler = handler ?? StorageDefaultTransferHandler.Instance;
+        }
+
         public StorageTransferContext CreateTransferContext(StorageTransferReason reason)
         {
-            return StorageTransferContext.ForActor(groundDropSource, reason);
+            return StorageTransferContext.ForActor(transferActor != null ? transferActor : groundDropSource, reason);
+        }
+
+        public bool TryMoveItem(
+            StorageItemModel item,
+            StorageGridUI sourceGrid,
+            StorageGridUI targetGrid,
+            int x,
+            int y)
+        {
+            if (item == null || targetGrid == null)
+            {
+                return false;
+            }
+
+            bool moved = TransferHandler.TryMoveItem(
+                item,
+                sourceGrid != null ? sourceGrid.Container : null,
+                targetGrid.Container,
+                x,
+                y,
+                CreateTransferContext(StorageTransferReason.Move),
+                out StorageTransferResult result);
+            if (!moved && !string.IsNullOrWhiteSpace(result.Message))
+            {
+                ShowStatus(result.Message, true);
+            }
+
+            return moved;
         }
 
         public bool TryDropItemToGround(StorageItemModel item, StorageGridUI sourceGrid)
@@ -140,15 +191,14 @@ namespace Nting.Storage
                 return false;
             }
 
-            CampusInventoryTransferService service = CampusInventoryTransferService.Resolve();
-            if (!service.TryDropItemToGround(
+            if (!TransferHandler.TryDropItemToGround(
                     groundDropSource,
                     item,
                     sourceGrid.Container,
                     CreateTransferContext(StorageTransferReason.DropToGround),
                     out StorageTransferResult result))
             {
-                ShowStatus(string.IsNullOrWhiteSpace(result.Message) ? "Could not drop item to ground." : result.Message, true);
+                ShowStatus(string.IsNullOrWhiteSpace(result.Message) ? StorageTextCatalog.Get(StorageTextId.CouldNotDropToGround) : result.Message, true);
                 return false;
             }
 
@@ -190,7 +240,7 @@ namespace Nting.Storage
         {
             if (!backpackEquipped)
             {
-                ShowStatus("未装备背包", true);
+                ShowStatus(StorageTextCatalog.Get(StorageTextId.NoBackpack), true);
                 return;
             }
 
@@ -255,15 +305,13 @@ namespace Nting.Storage
 
             if (item == null)
             {
-                SelectedItemNameText.text = "No item selected";
-                SelectedItemMetaText.text = "Click an item to inspect it.";
+                SelectedItemNameText.text = StorageTextCatalog.Get(StorageTextId.NoItemSelected);
+                SelectedItemMetaText.text = StorageTextCatalog.Get(StorageTextId.InspectItemHint);
                 return;
             }
 
-            SelectedItemNameText.text = item.DisplayName;
-            SelectedItemMetaText.text = item.CurrentWidth + "x" + item.CurrentHeight + "  " +
-                                        item.Weight.ToString("0.#") + "kg  " + item.Description +
-                                        (item.IsUsable ? "  [usable from hand]" : string.Empty);
+            SelectedItemNameText.text = item.GetDisplayName();
+            SelectedItemMetaText.text = BuildSelectedItemMeta(item);
         }
 
         public void ShowStatus(string message, bool warning)
@@ -304,12 +352,12 @@ namespace Nting.Storage
             {
                 RefreshAllGrids();
                 SelectItem(item, view.OwnerGrid);
-                ShowStatus("已旋转：" + item.DisplayName, false);
+                ShowStatus(StorageTextCatalog.Format(StorageTextId.Rotated, item.GetDisplayName()), false);
                 return true;
             }
 
             item.Rotate();
-            ShowStatus("旋转后空间不足", true);
+            ShowStatus(StorageTextCatalog.Get(StorageTextId.RotationBlocked), true);
             RefreshAllGrids();
             SelectItem(item, view.OwnerGrid);
             return false;
@@ -341,7 +389,7 @@ namespace Nting.Storage
                 {
                     if (!backpackEquipped || BackpackGrid == null)
                     {
-                        ShowStatus("未装备背包", true);
+                        ShowStatus(StorageTextCatalog.Get(StorageTextId.NoBackpack), true);
                         return false;
                     }
 
@@ -358,7 +406,7 @@ namespace Nting.Storage
         {
             if (sourceGrid == null || sourceGrid.Container == null || targetGrids == null)
             {
-                ShowStatus("Target space is blocked.", true);
+                ShowStatus(StorageTextCatalog.Get(StorageTextId.TargetBlocked), true);
                 return false;
             }
 
@@ -372,8 +420,7 @@ namespace Nting.Storage
                 }
             }
 
-            CampusInventoryTransferService service = CampusInventoryTransferService.Resolve();
-            if (service.TryMoveToFirstFit(
+            if (TransferHandler.TryMoveToFirstFit(
                     item,
                     sourceGrid.Container,
                     targetContainers.ToArray(),
@@ -386,10 +433,51 @@ namespace Nting.Storage
                 return true;
             }
 
-            ShowStatus(string.IsNullOrWhiteSpace(result.Message) ? "Target space is blocked." : result.Message, true);
+            ShowStatus(string.IsNullOrWhiteSpace(result.Message) ? StorageTextCatalog.Get(StorageTextId.TargetBlocked) : result.Message, true);
             RefreshAllGrids();
             SelectItem(item);
             return false;
+        }
+
+        private IStorageTransferHandler TransferHandler => transferHandler ?? StorageDefaultTransferHandler.Instance;
+
+        private static string BuildSelectedItemMeta(StorageItemModel item)
+        {
+            if (item == null)
+            {
+                return string.Empty;
+            }
+
+            string description = item.GetDescription();
+            string meta = item.CurrentWidth + "x" + item.CurrentHeight + "  " +
+                          item.Weight.ToString("0.#") + "kg";
+            if (!string.IsNullOrWhiteSpace(description))
+            {
+                meta += "  " + description;
+            }
+
+            if (item.IsUsable)
+            {
+                meta += "  [" + StorageTextCatalog.Get(StorageTextId.UsableFromHand) + "]";
+            }
+
+            if (item.IsStolenEvidence)
+            {
+                meta += "  [" + StorageTextCatalog.Get(StorageTextId.Stolen);
+                if (!string.IsNullOrWhiteSpace(item.SourceLocation))
+                {
+                    meta += " " + StorageTextCatalog.Get(StorageTextId.From) + " " + item.SourceLocation;
+                }
+
+                if (item.SuspicionRisk > 0)
+                {
+                    meta += ", " + StorageTextCatalog.Get(StorageTextId.Risk) + " " + item.SuspicionRisk;
+                }
+
+                meta += "]";
+            }
+
+            return meta;
         }
 
         private static void ConfigureGridCellSize(StorageGridUI grid, StorageContainerModel model, float maxWidth, float maxHeight, float defaultCellSize)
@@ -431,6 +519,38 @@ namespace Nting.Storage
             backing.gameObject.SetActive(gridSize.x > 0f && gridSize.y > 0f);
         }
 
+        private void RefreshLocalizedText()
+        {
+            SetText(windowEyebrowText, StorageTextCatalog.Get(StorageTextId.WindowEyebrow));
+            SetText(windowTitleText, StorageTextCatalog.Get(StorageTextId.WindowTitle));
+            SetText(windowHintText, StorageTextCatalog.Get(StorageTextId.WindowHint));
+            SetText(noBackpackTitleText, StorageTextCatalog.Get(StorageTextId.NoBackpack));
+            SetText(noBackpackMetaText, StorageTextCatalog.Get(StorageTextId.NoBackpackPage));
+            SetText(itemInfoLabelText, StorageTextCatalog.Get(StorageTextId.ItemInfo));
+            SetText(statusLabelText, StorageTextCatalog.Get(StorageTextId.Status));
+            SetText(PocketTabLabel, StorageTextCatalog.Get(StorageTextId.PocketTab));
+            if (UseItemButton != null)
+            {
+                SetText(UseItemButton.GetComponentInChildren<Text>(), StorageTextCatalog.Get(StorageTextId.Use));
+            }
+
+            SetText(handTitleTexts[0], StorageTextCatalog.Get(StorageTextId.LeftHand));
+            SetText(handTitleTexts[1], StorageTextCatalog.Get(StorageTextId.RightHand));
+            SetText(pocketTitleTexts[0], StorageTextCatalog.Get(StorageTextId.LeftChestPocket));
+            SetText(pocketTitleTexts[1], StorageTextCatalog.Get(StorageTextId.RightChestPocket));
+            SetText(pocketTitleTexts[2], StorageTextCatalog.Get(StorageTextId.LeftPantsPocket));
+            SetText(pocketTitleTexts[3], StorageTextCatalog.Get(StorageTextId.RightPantsPocket));
+            RefreshHeaders();
+        }
+
+        private static void SetText(Text target, string value)
+        {
+            if (target != null)
+            {
+                target.text = value;
+            }
+        }
+
         private void RefreshPages()
         {
             if (pocketPage != null)
@@ -467,7 +587,9 @@ namespace Nting.Storage
 
             if (BackpackTabLabel != null)
             {
-                BackpackTabLabel.text = backpackEquipped ? "背包" : "背包 / 未装备";
+                BackpackTabLabel.text = backpackEquipped
+                    ? StorageTextCatalog.Get(StorageTextId.BackpackTab)
+                    : StorageTextCatalog.Get(StorageTextId.BackpackUnavailableTab);
             }
 
             RefreshAllGrids();
@@ -477,7 +599,9 @@ namespace Nting.Storage
         {
             if (LeftTitleText != null)
             {
-                LeftTitleText.text = showingBackpack ? "\u624b\u6301 / \u5b66\u751f\u4e66\u5305" : "\u624b\u6301 / \u8863\u670d\u53e3\u888b";
+                LeftTitleText.text = showingBackpack
+                    ? StorageTextCatalog.Get(StorageTextId.HandAndBackpack)
+                    : StorageTextCatalog.Get(StorageTextId.HandAndPockets);
             }
 
             if (LeftMetaText != null)
@@ -486,17 +610,19 @@ namespace Nting.Storage
                 {
                     LeftMetaText.text = backpackEquipped && backpack != null
                         ? backpack.Columns + "x" + backpack.Rows + "  " + backpack.CurrentWeight.ToString("0.#") + "/" + backpack.MaxWeight.ToString("0.#") + "kg"
-                        : "未装备背包";
+                        : StorageTextCatalog.Get(StorageTextId.NoBackpack);
                 }
                 else
                 {
-                    LeftMetaText.text = "2 hands + 4 pockets";
+                    LeftMetaText.text = StorageTextCatalog.Get(StorageTextId.HandsAndPocketsMeta);
                 }
             }
 
             if (RightTitleText != null)
             {
-                RightTitleText.text = externalContainer != null ? externalContainer.DisplayName : "外部容器";
+                RightTitleText.text = externalContainer != null
+                    ? externalContainer.GetDisplayName()
+                    : StorageTextCatalog.Get(StorageTextId.ExternalContainer);
             }
 
             if (RightMetaText != null)
@@ -601,14 +727,14 @@ namespace Nting.Storage
             tagText.rectTransform.offsetMin = Vector2.zero;
             tagText.rectTransform.offsetMax = Vector2.zero;
 
-            Text label = StorageUIUtility.CreateText("WindowLabel", header, "ITEM STORAGE", 12, TextAnchor.MiddleLeft, StoragePalette.Paper);
-            StorageUIUtility.SetTopLeft(label.rectTransform, 72f, 10f, 240f, 18f);
+            windowEyebrowText = StorageUIUtility.CreateText("WindowLabel", header, StorageTextCatalog.Get(StorageTextId.WindowEyebrow), 12, TextAnchor.MiddleLeft, StoragePalette.Paper);
+            StorageUIUtility.SetTopLeft(windowEyebrowText.rectTransform, 72f, 10f, 240f, 18f);
 
-            Text title = StorageUIUtility.CreateText("TitleText", header, "储物空间", 30, TextAnchor.MiddleLeft, StoragePalette.TextPrimary);
-            StorageUIUtility.SetTopLeft(title.rectTransform, 70f, 29f, 300f, 38f);
+            windowTitleText = StorageUIUtility.CreateText("TitleText", header, StorageTextCatalog.Get(StorageTextId.WindowTitle), 30, TextAnchor.MiddleLeft, StoragePalette.TextPrimary);
+            StorageUIUtility.SetTopLeft(windowTitleText.rectTransform, 70f, 29f, 300f, 38f);
 
-            Text hint = StorageUIUtility.CreateText("HintText", header, "拖拽物品 · 右键旋转 · 双击转移 · 拖出容器可放到地上 · Esc关闭", 15, TextAnchor.MiddleLeft, StoragePalette.TextSecondary);
-            StorageUIUtility.SetTopLeft(hint.rectTransform, 410f, 42f, 650f, 24f);
+            windowHintText = StorageUIUtility.CreateText("HintText", header, StorageTextCatalog.Get(StorageTextId.WindowHint), 15, TextAnchor.MiddleLeft, StoragePalette.TextSecondary);
+            StorageUIUtility.SetTopLeft(windowHintText.rectTransform, 410f, 42f, 650f, 24f);
 
             Button close = StorageUIUtility.CreateButton("CloseButton", header, "×", Close,
                 StoragePalette.ButtonNormal, StoragePalette.PanelBorder);
@@ -644,9 +770,9 @@ namespace Nting.Storage
 
         private void CreateLeftPanel(RectTransform panel)
         {
-            CreatePanelHeader(panel, "LeftTitleStrip", "衣服口袋");
+            CreatePanelHeader(panel, "LeftTitleStrip");
 
-            LeftTitleText = StorageUIUtility.CreateText("LeftTitle", panel, "衣服口袋", 22, TextAnchor.MiddleLeft, StoragePalette.TextPrimary);
+            LeftTitleText = StorageUIUtility.CreateText("LeftTitle", panel, StorageTextCatalog.Get(StorageTextId.HandAndPockets), 22, TextAnchor.MiddleLeft, StoragePalette.TextPrimary);
             StorageUIUtility.SetTopLeft(LeftTitleText.rectTransform, 22f, 12f, 240f, 34f);
 
             LeftMetaText = StorageUIUtility.CreateText("LeftMeta", panel, "4 × 2x3", 14, TextAnchor.MiddleRight, StoragePalette.TextSecondary);
@@ -657,20 +783,20 @@ namespace Nting.Storage
             tabs.anchoredPosition = new Vector2(22f, -58f);
             tabs.sizeDelta = new Vector2(260f, 36f);
 
-            PocketTabButton = StorageUIUtility.CreateButton("PocketTab", tabs, "口袋", ShowPocketPage,
+            PocketTabButton = StorageUIUtility.CreateButton("PocketTab", tabs, StorageTextCatalog.Get(StorageTextId.PocketTab), ShowPocketPage,
                 StoragePalette.TabSelected, StoragePalette.SlotHoverBorder);
             PocketTabButton.GetComponent<RectTransform>().sizeDelta = new Vector2(86f, 34f);
             PocketTabLabel = PocketTabButton.GetComponentInChildren<Text>();
 
-            BackpackTabButton = StorageUIUtility.CreateButton("BackpackTab", tabs, "背包", ShowBackpackPage,
+            BackpackTabButton = StorageUIUtility.CreateButton("BackpackTab", tabs, StorageTextCatalog.Get(StorageTextId.BackpackTab), ShowBackpackPage,
                 StoragePalette.TabNormal, StoragePalette.PanelBorder);
             RectTransform backpackTabRect = BackpackTabButton.GetComponent<RectTransform>();
             backpackTabRect.anchoredPosition = new Vector2(94f, 0f);
             backpackTabRect.sizeDelta = new Vector2(132f, 34f);
             BackpackTabLabel = BackpackTabButton.GetComponentInChildren<Text>();
 
-            CreateHandGrid(panel, 0, "\u5de6\u624b", new Vector2(22f, -98f));
-            CreateHandGrid(panel, 1, "\u53f3\u624b", new Vector2(338f, -98f));
+            CreateHandGrid(panel, 0, StorageTextCatalog.Get(StorageTextId.LeftHand), new Vector2(22f, -98f));
+            CreateHandGrid(panel, 1, StorageTextCatalog.Get(StorageTextId.RightHand), new Vector2(338f, -98f));
 
             pocketPage = StorageUIUtility.CreateRectObject("PocketPage", panel).gameObject;
             RectTransform pocketRect = pocketPage.GetComponent<RectTransform>();
@@ -678,10 +804,10 @@ namespace Nting.Storage
             pocketRect.anchoredPosition = Vector2.zero;
             pocketRect.sizeDelta = panel.sizeDelta;
 
-            CreatePocketGrid(pocketRect, 0, "\u5de6\u80f8\u888b", new Vector2(22f, -230f));
-            CreatePocketGrid(pocketRect, 1, "\u53f3\u80f8\u888b", new Vector2(338f, -230f));
-            CreatePocketGrid(pocketRect, 2, "\u5de6\u88e4\u888b", new Vector2(22f, -388f));
-            CreatePocketGrid(pocketRect, 3, "\u53f3\u88e4\u888b", new Vector2(338f, -388f));
+            CreatePocketGrid(pocketRect, 0, StorageTextCatalog.Get(StorageTextId.LeftChestPocket), new Vector2(22f, -230f));
+            CreatePocketGrid(pocketRect, 1, StorageTextCatalog.Get(StorageTextId.RightChestPocket), new Vector2(338f, -230f));
+            CreatePocketGrid(pocketRect, 2, StorageTextCatalog.Get(StorageTextId.LeftPantsPocket), new Vector2(22f, -388f));
+            CreatePocketGrid(pocketRect, 3, StorageTextCatalog.Get(StorageTextId.RightPantsPocket), new Vector2(338f, -388f));
 
             backpackPage = StorageUIUtility.CreateRectObject("BackpackPage", panel).gameObject;
             RectTransform backpackPageRect = backpackPage.GetComponent<RectTransform>();
@@ -695,17 +821,17 @@ namespace Nting.Storage
             RectTransform hintPanel = CreateBox(backpackPageRect, "NoBackpackHint", new Vector2(180f, -280f), new Vector2(300f, 100f),
                 StoragePalette.PanelRaised, StoragePalette.PanelBorder, 1f, 3f, false);
             noBackpackHint = hintPanel.gameObject;
-            Text hint = StorageUIUtility.CreateText("HintText", hintPanel, "未装备背包", 22, TextAnchor.MiddleCenter, StoragePalette.TextMuted);
-            StorageUIUtility.SetTopLeft(hint.rectTransform, 20f, 24f, 260f, 34f);
-            Text hintMeta = StorageUIUtility.CreateText("HintMeta", hintPanel, "该页签暂不可用", 14, TextAnchor.MiddleCenter, StoragePalette.TextMuted);
-            StorageUIUtility.SetTopLeft(hintMeta.rectTransform, 20f, 61f, 260f, 24f);
+            noBackpackTitleText = StorageUIUtility.CreateText("HintText", hintPanel, StorageTextCatalog.Get(StorageTextId.NoBackpack), 22, TextAnchor.MiddleCenter, StoragePalette.TextMuted);
+            StorageUIUtility.SetTopLeft(noBackpackTitleText.rectTransform, 20f, 24f, 260f, 34f);
+            noBackpackMetaText = StorageUIUtility.CreateText("HintMeta", hintPanel, StorageTextCatalog.Get(StorageTextId.NoBackpackPage), 14, TextAnchor.MiddleCenter, StoragePalette.TextMuted);
+            StorageUIUtility.SetTopLeft(noBackpackMetaText.rectTransform, 20f, 61f, 260f, 24f);
         }
 
         private void CreateRightPanel(RectTransform panel)
         {
-            CreatePanelHeader(panel, "RightTitleStrip", "测试箱");
+            CreatePanelHeader(panel, "RightTitleStrip");
 
-            RightTitleText = StorageUIUtility.CreateText("RightTitle", panel, "测试箱", 22, TextAnchor.MiddleLeft, StoragePalette.TextPrimary);
+            RightTitleText = StorageUIUtility.CreateText("RightTitle", panel, StorageTextCatalog.Get(StorageTextId.ExternalContainer), 22, TextAnchor.MiddleLeft, StoragePalette.TextPrimary);
             StorageUIUtility.SetTopLeft(RightTitleText.rectTransform, 22f, 12f, 260f, 34f);
 
             RightMetaText = StorageUIUtility.CreateText("RightMeta", panel, "4x4  0/12kg", 14, TextAnchor.MiddleRight, StoragePalette.TextSecondary);
@@ -721,23 +847,23 @@ namespace Nting.Storage
             RectTransform footer = CreateBox(parent, "Footer", new Vector2(28f, -698f), new Vector2(1444f, 94f),
                 StoragePalette.Panel, StoragePalette.PanelBorder, 14f, 1f, false);
 
-            Text dossier = StorageUIUtility.CreateText("InfoLabel", footer, "物品信息", 12, TextAnchor.MiddleLeft, StoragePalette.PaperDim);
-            StorageUIUtility.SetTopLeft(dossier.rectTransform, 22f, 12f, 160f, 18f);
+            itemInfoLabelText = StorageUIUtility.CreateText("InfoLabel", footer, StorageTextCatalog.Get(StorageTextId.ItemInfo), 12, TextAnchor.MiddleLeft, StoragePalette.PaperDim);
+            StorageUIUtility.SetTopLeft(itemInfoLabelText.rectTransform, 22f, 12f, 160f, 18f);
 
-            SelectedItemNameText = StorageUIUtility.CreateText("SelectedItemName", footer, "未选中物品", 18, TextAnchor.MiddleLeft, StoragePalette.TextPrimary);
+            SelectedItemNameText = StorageUIUtility.CreateText("SelectedItemName", footer, StorageTextCatalog.Get(StorageTextId.NoItemSelected), 18, TextAnchor.MiddleLeft, StoragePalette.TextPrimary);
             StorageUIUtility.SetTopLeft(SelectedItemNameText.rectTransform, 22f, 28f, 520f, 28f);
 
-            SelectedItemMetaText = StorageUIUtility.CreateText("SelectedItemMeta", footer, "点击物品查看详情", 14, TextAnchor.MiddleLeft, StoragePalette.TextSecondary);
+            SelectedItemMetaText = StorageUIUtility.CreateText("SelectedItemMeta", footer, StorageTextCatalog.Get(StorageTextId.InspectItemHint), 14, TextAnchor.MiddleLeft, StoragePalette.TextSecondary);
             StorageUIUtility.SetTopLeft(SelectedItemMetaText.rectTransform, 22f, 55f, 900f, 24f);
 
-            UseItemButton = StorageUIUtility.CreateButton("UseItemButton", footer, "\u4f7f\u7528", () => TryUseSelectedItem(),
+            UseItemButton = StorageUIUtility.CreateButton("UseItemButton", footer, StorageTextCatalog.Get(StorageTextId.Use), () => TryUseSelectedItem(),
                 StoragePalette.TabNormal, Color.clear);
             RectTransform useRect = UseItemButton.GetComponent<RectTransform>();
             StorageUIUtility.SetTopLeft(useRect, 930f, 31f, 100f, 36f);
             RefreshUseButton();
 
-            Text statusLabel = StorageUIUtility.CreateText("StatusLabel", footer, "操作提示", 12, TextAnchor.MiddleRight, StoragePalette.PaperDim);
-            StorageUIUtility.SetTopLeft(statusLabel.rectTransform, 1040f, 12f, 380f, 18f);
+            statusLabelText = StorageUIUtility.CreateText("StatusLabel", footer, StorageTextCatalog.Get(StorageTextId.Status), 12, TextAnchor.MiddleRight, StoragePalette.PaperDim);
+            StorageUIUtility.SetTopLeft(statusLabelText.rectTransform, 1040f, 12f, 380f, 18f);
 
             StatusText = StorageUIUtility.CreateText("StatusHint", footer, string.Empty, 15, TextAnchor.MiddleRight, StoragePalette.TextSecondary);
             StorageUIUtility.SetTopLeft(StatusText.rectTransform, 1040f, 35f, 380f, 44f);
@@ -771,6 +897,10 @@ namespace Nting.Storage
                 new Color(StoragePalette.PanelHeader.r, StoragePalette.PanelHeader.g, StoragePalette.PanelHeader.b, 0.72f), Color.clear, 8f, 0f, false);
             Text label = StorageUIUtility.CreateText("HandTitle", strip, title, 15, TextAnchor.MiddleLeft, StoragePalette.TextPrimary);
             StorageUIUtility.SetTopLeft(label.rectTransform, 12f, 2f, 90f, 22f);
+            if (index >= 0 && index < handTitleTexts.Length)
+            {
+                handTitleTexts[index] = label;
+            }
 
             HandGrids[index] = CreateGrid(panel, "Grid", new Vector2(99f, -28f), 42f, 4f);
         }
@@ -783,6 +913,10 @@ namespace Nting.Storage
                 new Color(StoragePalette.PanelHeader.r, StoragePalette.PanelHeader.g, StoragePalette.PanelHeader.b, 0.72f), Color.clear, 8f, 0f, false);
             Text label = StorageUIUtility.CreateText("PocketTitle", strip, title, 15, TextAnchor.MiddleLeft, StoragePalette.TextPrimary);
             StorageUIUtility.SetTopLeft(label.rectTransform, 12f, 2f, 90f, 22f);
+            if (index >= 0 && index < pocketTitleTexts.Length)
+            {
+                pocketTitleTexts[index] = label;
+            }
 
             PocketGrids[index] = CreateGrid(panel, "Grid", new Vector2(105f, -28f), 36f, 4f);
         }
@@ -801,7 +935,7 @@ namespace Nting.Storage
             return grid;
         }
 
-        private void CreatePanelHeader(RectTransform panel, string name, string title)
+        private void CreatePanelHeader(RectTransform panel, string name)
         {
             CreateBox(panel, name, new Vector2(16f, -12f), new Vector2(panel.sizeDelta.x - 32f, 42f),
                 StoragePalette.PanelHeader, Color.clear, 10f, 0f, false);

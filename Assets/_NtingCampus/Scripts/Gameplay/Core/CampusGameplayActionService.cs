@@ -1,4 +1,6 @@
-using NtingCampus.Gameplay.Pranks;
+using Nting.Storage;
+using NtingCampus.Gameplay.Characters;
+using NtingCampus.Gameplay.Inventory;
 using NtingCampusMapEditor;
 using UnityEngine;
 
@@ -34,39 +36,23 @@ namespace NtingCampus.Gameplay.Core
     public sealed class CampusGameplayActionService : MonoBehaviour
     {
         [SerializeField] private CampusGameBootstrap bootstrap;
-        [SerializeField] private CampusPrankService prankService;
 
         public void Initialize(CampusGameBootstrap targetBootstrap)
         {
             bootstrap = targetBootstrap != null ? targetBootstrap : CampusGameBootstrap.Instance;
-            prankService = bootstrap != null ? bootstrap.PrankService : null;
         }
 
         public bool TryExecute(CampusGameplayActionRequest request)
         {
-            if (string.IsNullOrWhiteSpace(request.ActionId))
-            {
-                return TryExecuteTargetFallback(request);
-            }
-
-            if (CampusInteractionActionIds.Equals(request.ActionId, CampusInteractionActionIds.PrankExecute) &&
-                TryExecutePrank(request))
-            {
-                return true;
-            }
-
-            return TryExecuteLocalHandler(request);
+            return CampusInteractionActionExecutor.TryExecute(request, TryExecuteGlobalAction);
         }
 
         public static bool TryExecuteShared(CampusGameplayActionRequest request)
         {
             CampusGameplayActionService service = ResolveService();
-            if (service != null && service.TryExecute(request))
-            {
-                return true;
-            }
-
-            return TryExecuteStaticFallback(request);
+            return service != null
+                ? service.TryExecute(request)
+                : CampusInteractionActionExecutor.TryExecute(request, TryExecuteStaticGlobalAction);
         }
 
         public static bool TryExecuteInteraction(CampusInteractionAnchor anchor, GameObject actor)
@@ -86,74 +72,121 @@ namespace NtingCampus.Gameplay.Core
                 "interaction_anchor"));
         }
 
-        private bool TryExecutePrank(CampusGameplayActionRequest request)
+        public static bool TryExecuteCharacterAction(
+            CampusCharacterRuntime actor,
+            CampusCharacterAction action,
+            out StorageTransferResult result)
         {
-            if (prankService == null)
-            {
-                prankService = bootstrap != null ? bootstrap.PrankService : null;
-            }
-
-            if (prankService == null)
-            {
-                prankService = FindFirstObjectByType<CampusPrankService>(FindObjectsInactive.Include);
-            }
-
-            return prankService != null && prankService.TryExecutePayload(request.Payload, request.Actor);
+            return CampusCharacterActionExecutor.TryExecute(actor, action, out result);
         }
 
-        private static bool TryExecuteStaticFallback(CampusGameplayActionRequest request)
+        public static bool TryPressInteract(CampusCharacterRuntime actor, CampusInteractionTarget target)
         {
-            if (CampusInteractionActionIds.Equals(request.ActionId, CampusInteractionActionIds.PrankExecute))
-            {
-                CampusPrankService prankService = CampusGameBootstrap.Instance != null
-                    ? CampusGameBootstrap.Instance.PrankService
-                    : Object.FindFirstObjectByType<CampusPrankService>(FindObjectsInactive.Include);
-                if (prankService != null && prankService.TryExecutePayload(request.Payload, request.Actor))
-                {
-                    return true;
-                }
-            }
-
-            return TryExecuteLocalHandler(request) || TryExecuteTargetFallback(request);
+            return CampusCharacterActionExecutor.TryPressInteract(actor, target);
         }
 
-        private static bool TryExecuteLocalHandler(CampusGameplayActionRequest request)
+        public static bool TryPressInteract(CampusCharacterRuntime actor, Object target)
         {
-            if (request.DirectTarget is ICampusInteractionActionHandler directHandler &&
-                directHandler.TryHandleInteractionAction(request.Anchor, request.ActionId, request.Payload, request.Actor))
-            {
-                return true;
-            }
+            return CampusCharacterActionExecutor.TryPressInteract(actor, target);
+        }
 
-            if (request.Anchor == null)
-            {
-                return false;
-            }
+        public static bool TryPickUpDroppedItem(
+            CampusCharacterRuntime actor,
+            CampusDroppedStorageItem droppedItem,
+            out StorageTransferResult result)
+        {
+            return CampusCharacterActionExecutor.TryPickUpDroppedItem(actor, droppedItem, out result);
+        }
 
-            ICampusInteractionActionHandler[] handlers =
-                request.Anchor.GetComponentsInParent<ICampusInteractionActionHandler>(true);
-            for (int i = 0; i < handlers.Length; i++)
-            {
-                ICampusInteractionActionHandler handler = handlers[i];
-                if (handler != null &&
-                    handler.TryHandleInteractionAction(request.Anchor, request.ActionId, request.Payload, request.Actor))
-                {
-                    return true;
-                }
-            }
+        public static bool TryTransferItem(
+            CampusCharacterRuntime actor,
+            StorageItemModel item,
+            StorageContainerModel source,
+            StorageContainerModel target,
+            int x,
+            int y,
+            out StorageTransferResult result)
+        {
+            return CampusInventoryActionExecutor.TryTransferItem(actor, item, source, target, x, y, out result);
+        }
 
+        public static bool TryTransferItem(
+            CampusCharacterRuntime actor,
+            StorageItemModel item,
+            StorageContainerModel source,
+            StorageContainerModel target,
+            int x,
+            int y,
+            StorageTransferContext context,
+            out StorageTransferResult result)
+        {
+            return CampusInventoryActionExecutor.TryTransferItem(actor, item, source, target, x, y, context, out result);
+        }
+
+        public static bool TryTransferItemToFirstFit(
+            CampusCharacterRuntime actor,
+            StorageItemModel item,
+            StorageContainerModel source,
+            StorageContainerModel[] targets,
+            out StorageTransferResult result)
+        {
+            return CampusInventoryActionExecutor.TryTransferItemToFirstFit(actor, item, source, targets, out result);
+        }
+
+        public static bool TryTransferItemToFirstFit(
+            CampusCharacterRuntime actor,
+            StorageItemModel item,
+            StorageContainerModel source,
+            StorageContainerModel[] targets,
+            StorageTransferContext context,
+            out StorageTransferResult result)
+        {
+            return CampusInventoryActionExecutor.TryTransferItemToFirstFit(actor, item, source, targets, context, out result);
+        }
+
+        public static bool TryDropItemToGround(
+            CampusCharacterRuntime actor,
+            StorageItemModel item,
+            StorageContainerModel source,
+            GameObject groundDropContext,
+            out StorageTransferResult result)
+        {
+            return CampusInventoryActionExecutor.TryDropItemToGround(actor, item, source, groundDropContext, out result);
+        }
+
+        public static bool TryDropItemToGround(
+            CampusCharacterRuntime actor,
+            StorageItemModel item,
+            StorageContainerModel source,
+            GameObject groundDropContext,
+            StorageTransferContext context,
+            out StorageTransferResult result)
+        {
+            return CampusInventoryActionExecutor.TryDropItemToGround(actor, item, source, groundDropContext, context, out result);
+        }
+
+        public static bool TryOpenInventoryView(
+            CampusCharacterRuntime actor,
+            StorageContainerModel externalContainer,
+            GameObject groundDropContext,
+            bool includeBackpack,
+            out string message)
+        {
+            return CampusInventoryActionExecutor.TryOpenInventoryView(
+                actor,
+                externalContainer,
+                groundDropContext,
+                includeBackpack,
+                out message);
+        }
+
+        private bool TryExecuteGlobalAction(CampusGameplayActionRequest request)
+        {
             return false;
         }
 
-        private static bool TryExecuteTargetFallback(CampusGameplayActionRequest request)
+        private static bool TryExecuteStaticGlobalAction(CampusGameplayActionRequest request)
         {
-            if (request.DirectTarget is ICampusInteractable interactable &&
-                !ReferenceEquals(interactable, request.Anchor))
-            {
-                interactable.Interact(request.Actor);
-                return true;
-            }
-
             return false;
         }
 
@@ -165,7 +198,7 @@ namespace NtingCampus.Gameplay.Core
                 return bootstrap.ActionService;
             }
 
-            return Object.FindFirstObjectByType<CampusGameplayActionService>(FindObjectsInactive.Include);
+            return FindFirstObjectByType<CampusGameplayActionService>(FindObjectsInactive.Include);
         }
     }
 }

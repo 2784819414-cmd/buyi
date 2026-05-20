@@ -127,7 +127,7 @@ namespace NtingCampus.Gameplay.Core
                 GUILayout.Space(4f);
                 DrawRosterState(rosterService, displayLanguage);
                 GUILayout.Space(4f);
-                DrawFormalMainlineState(targetPrankService, targetSanctionService, targetClassroomLoopService, npcEcologyService, commerceService);
+                DrawFormalMainlineState(targetPrankService, targetSanctionService, targetClassroomLoopService, npcEcologyService, commerceService, displayLanguage);
                 GUILayout.Space(4f);
                 GUILayout.Label(CampusGameplayDebugTextCatalog.Get(displayLanguage, CampusGameplayDebugTextId.RecentEventLogs));
                 DrawRecentLogs(eventLog, 10, displayLanguage);
@@ -265,7 +265,9 @@ namespace NtingCampus.Gameplay.Core
             GUILayout.Label(CampusGameplayDebugTextCatalog.FormatLine(displayLanguage, CampusGameplayDebugTextId.TeacherAlertness, gameState.TeacherAlertness));
             GUILayout.Label(CampusGameplayDebugTextCatalog.FormatLine(displayLanguage, CampusGameplayDebugTextId.DivineInterest, gameState.DivineInterest));
             GUILayout.Label(CampusGameplayDebugTextCatalog.FormatLine(displayLanguage, CampusGameplayDebugTextId.Suspicion, gameState.PlayerSuspicion));
-            GUILayout.Label(CampusGameplayDebugTextCatalog.FormatLine(displayLanguage, CampusGameplayDebugTextId.AlertLevel, "Canteen=" + gameState.CanteenAlertLevel + ", Delivery=" + gameState.DeliveryAlertLevel));
+            GUILayout.Label(CampusGameplayDebugTextCatalog.FormatLine(displayLanguage, CampusGameplayDebugTextId.AlertLevel,
+                CampusGameplayDebugTextCatalog.Get(displayLanguage, CampusGameplayDebugTextId.Canteen) + "=" + gameState.CanteenAlertLevel +
+                ", " + CampusGameplayDebugTextCatalog.Get(displayLanguage, CampusGameplayDebugTextId.Delivery) + "=" + gameState.DeliveryAlertLevel));
             GUILayout.Label(CampusGameplayDebugTextCatalog.FormatLine(displayLanguage, CampusGameplayDebugTextId.DailyWarnings, gameState.DailyWarningCount));
             GUILayout.Label(CampusGameplayDebugTextCatalog.FormatLine(displayLanguage, CampusGameplayDebugTextId.ShrineRoom, CampusGameplayDebugTextCatalog.FormatLockState(displayLanguage, gameState.ShrineRoomUnlocked)));
             GUILayout.Label(CampusGameplayDebugTextCatalog.FormatLine(displayLanguage, CampusGameplayDebugTextId.LandExpansion, CampusGameplayDebugTextCatalog.FormatLockState(displayLanguage, gameState.LandExpansionUnlocked)));
@@ -396,14 +398,14 @@ namespace NtingCampus.Gameplay.Core
             GUILayout.Label(CampusGameplayDebugTextCatalog.FormatLine(displayLanguage, CampusGameplayDebugTextId.Mastery,
                 CampusGameplayDebugTextCatalog.Get(displayLanguage, CampusGameplayDebugTextId.Language) + "=" + selected.MasteryWorldLanguage +
                 ", " + CampusGameplayDebugTextCatalog.Get(displayLanguage, CampusGameplayDebugTextId.Math) + "=" + selected.MasteryMath));
-            GUILayout.Label(CampusGameplayDebugTextCatalog.Get(displayLanguage, "Ecology", "Ecology") + ": " +
-                            CampusGameplayDebugTextCatalog.Get(displayLanguage, "Mood", "Mood") + "=" + selected.Mood +
-                            ", " + CampusGameplayDebugTextCatalog.Get(displayLanguage, "Social", "Social") + "=" + selected.SocialEnergy);
-            GUILayout.Label(CampusGameplayDebugTextCatalog.Get(displayLanguage, "Relationships", "Relationships") + ": " +
+            GUILayout.Label(CampusGameplayDebugTextCatalog.Get(displayLanguage, CampusGameplayDebugTextId.Ecology) + ": " +
+                            CampusGameplayDebugTextCatalog.Get(displayLanguage, CampusGameplayDebugTextId.Mood) + "=" + selected.Mood +
+                            ", " + CampusGameplayDebugTextCatalog.Get(displayLanguage, CampusGameplayDebugTextId.Social) + "=" + selected.SocialEnergy);
+            GUILayout.Label(CampusGameplayDebugTextCatalog.Get(displayLanguage, CampusGameplayDebugTextId.Relationships) + ": " +
                             FormatRelationships(selected.Relationships, displayLanguage));
             GUILayout.Label(CampusGameplayDebugTextCatalog.FormatLine(displayLanguage, CampusGameplayDebugTextId.Traits, JoinTraits(selected.Traits, displayLanguage)));
             GUILayout.Label(CampusGameplayDebugTextCatalog.FormatLine(displayLanguage, CampusGameplayDebugTextId.Memories, JoinMemories(selected.Memories, displayLanguage)));
-            GUILayout.Label(CampusGameplayDebugTextCatalog.Get(displayLanguage, "Possessions", "Possessions") + ": " +
+            GUILayout.Label(CampusGameplayDebugTextCatalog.Get(displayLanguage, CampusGameplayDebugTextId.Possessions) + ": " +
                             FormatPossessions(selected.Possessions, displayLanguage));
         }
 
@@ -427,23 +429,24 @@ namespace NtingCampus.Gameplay.Core
             CampusSanctionService sanctionService,
             CampusClassroomLoopService classroomLoopService,
             CampusNpcEcologyService npcEcologyService,
-            CampusCommerceService commerceService)
+            CampusCommerceService commerceService,
+            CampusDisplayLanguage displayLanguage)
         {
-            GUILayout.Label("Formal Mainline");
+            GUILayout.Label(CampusGameplayDebugTextCatalog.Get(displayLanguage, CampusGameplayDebugTextId.FormalMainline));
             if (classroomLoopService == null)
             {
-                GUILayout.Label("- ClassroomLoopService: none");
+                GUILayout.Label("- " + CampusGameplayDebugTextCatalog.Get(displayLanguage, CampusGameplayDebugTextId.ClassroomLoopServiceMissing));
             }
             else
             {
-                GUILayout.Label("- Classroom Loop: " + classroomLoopService.CurrentPrompt);
-                GUILayout.Label("- Active Classroom: " + (string.IsNullOrWhiteSpace(classroomLoopService.ActiveClassroomId) ? "-" : classroomLoopService.ActiveClassroomId));
-                GUILayout.Label("- Distracted Teacher: " + (string.IsNullOrWhiteSpace(classroomLoopService.DistractedTeacherId) ? "-" : classroomLoopService.DistractedTeacherId));
-                GUILayout.Label("- Doze/Sneak/Caught Today: " +
+                GUILayout.Label("- " + CampusGameplayDebugTextCatalog.Get(displayLanguage, CampusGameplayDebugTextId.ClassroomLoop) + ": " + classroomLoopService.CurrentPrompt);
+                GUILayout.Label("- " + CampusGameplayDebugTextCatalog.Get(displayLanguage, CampusGameplayDebugTextId.ActiveClassroom) + ": " + (string.IsNullOrWhiteSpace(classroomLoopService.ActiveClassroomId) ? "-" : classroomLoopService.ActiveClassroomId));
+                GUILayout.Label("- " + CampusGameplayDebugTextCatalog.Get(displayLanguage, CampusGameplayDebugTextId.DistractedTeacher) + ": " + (string.IsNullOrWhiteSpace(classroomLoopService.DistractedTeacherId) ? "-" : classroomLoopService.DistractedTeacherId));
+                GUILayout.Label("- " + CampusGameplayDebugTextCatalog.Get(displayLanguage, CampusGameplayDebugTextId.DozeSneakCaughtToday) + ": " +
                                 classroomLoopService.DailyDozeEventCount + "/" +
                                 classroomLoopService.DailySneakOutCount + "/" +
                                 classroomLoopService.DailyCaughtSkippingCount);
-                if (GUILayout.Button("Force Sleepy Distraction"))
+                if (GUILayout.Button(CampusGameplayDebugTextCatalog.Get(displayLanguage, CampusGameplayDebugTextId.ForceSleepyDistraction)))
                 {
                     classroomLoopService.TryForceSleepyDistraction();
                 }
@@ -451,46 +454,49 @@ namespace NtingCampus.Gameplay.Core
 
             if (prankService == null)
             {
-                GUILayout.Label("- PrankService: none");
+                GUILayout.Label("- " + CampusGameplayDebugTextCatalog.Get(displayLanguage, CampusGameplayDebugTextId.PrankServiceMissing));
             }
             else
             {
-                GUILayout.Label("- Prompt: " + prankService.CurrentPrompt);
-                GUILayout.Label("- Daily Pass Note Count: " + prankService.DailyPassNoteCount);
-                GUILayout.Label("- Canteen Theft Count: " + prankService.DailyCanteenTheftCount + " / Clerk=" + prankService.CurrentCanteenClerkState);
-                GUILayout.Label("- Delivery Theft Count: " + prankService.DailyDeliveryTheftCount + " / Order=" + prankService.ActiveDeliveryOrderState + " " + prankService.ActiveDeliveryItemName);
+                GUILayout.Label("- " + CampusGameplayDebugTextCatalog.Get(displayLanguage, CampusGameplayDebugTextId.Prompt) + ": " + prankService.CurrentPrompt);
+                GUILayout.Label("- " + CampusGameplayDebugTextCatalog.Get(displayLanguage, CampusGameplayDebugTextId.DailyPassNoteCount) + ": " + prankService.DailyPassNoteCount);
+                GUILayout.Label("- " + CampusGameplayDebugTextCatalog.Get(displayLanguage, CampusGameplayDebugTextId.CanteenTheftCount) + ": " + prankService.DailyCanteenTheftCount + " / " + CampusGameplayDebugTextCatalog.Get(displayLanguage, CampusGameplayDebugTextId.Clerk) + "=" + prankService.CurrentCanteenClerkState);
+                GUILayout.Label("- " + CampusGameplayDebugTextCatalog.Get(displayLanguage, CampusGameplayDebugTextId.DeliveryTheftCount) + ": " + prankService.DailyDeliveryTheftCount + " / " + CampusGameplayDebugTextCatalog.Get(displayLanguage, CampusGameplayDebugTextId.Order) + "=" + prankService.ActiveDeliveryOrderState + " " + prankService.ActiveDeliveryItemName);
             }
 
             if (sanctionService == null)
             {
-                GUILayout.Label("- SanctionService: none");
+                GUILayout.Label("- " + CampusGameplayDebugTextCatalog.Get(displayLanguage, CampusGameplayDebugTextId.SanctionServiceMissing));
             }
             else
             {
-                GUILayout.Label("- Last Sanction: " + sanctionService.LastIssuedLevel);
+                GUILayout.Label("- " + CampusGameplayDebugTextCatalog.Get(displayLanguage, CampusGameplayDebugTextId.LastSanction) + ": " + sanctionService.LastIssuedLevel);
             }
 
             if (npcEcologyService == null)
             {
-                GUILayout.Label("- NPC Ecology: none");
+                GUILayout.Label("- " + CampusGameplayDebugTextCatalog.Get(displayLanguage, CampusGameplayDebugTextId.NpcEcologyMissing));
             }
             else
             {
-                GUILayout.Label("- NPC Ecology: " + npcEcologyService.CurrentSummary);
-                GUILayout.Label("- Gossip/Ecology Events Today: " + npcEcologyService.GossipHeat + "/" + npcEcologyService.DailyEcologyEventCount);
+                GUILayout.Label("- " + CampusGameplayDebugTextCatalog.Get(displayLanguage, CampusGameplayDebugTextId.NpcEcology) + ": " + npcEcologyService.CurrentSummary);
+                GUILayout.Label("- " + CampusGameplayDebugTextCatalog.Get(displayLanguage, CampusGameplayDebugTextId.GossipEcologyEventsToday) + ": " + npcEcologyService.GossipHeat + "/" + npcEcologyService.DailyEcologyEventCount);
             }
 
             if (commerceService == null)
             {
-                GUILayout.Label("- Commerce: none");
+                GUILayout.Label("- " + CampusGameplayDebugTextCatalog.Get(displayLanguage, CampusGameplayDebugTextId.CommerceMissing));
             }
             else
             {
-                GUILayout.Label("- Commerce: " + commerceService.CurrentSummary);
-                GUILayout.Label("- Meals/Store Purchases Today: " +
+                GUILayout.Label("- " + CampusGameplayDebugTextCatalog.Get(displayLanguage, CampusGameplayDebugTextId.Commerce) + ": " + commerceService.CurrentSummary);
+                GUILayout.Label("- " + CampusGameplayDebugTextCatalog.Get(displayLanguage, CampusGameplayDebugTextId.MealsStorePurchasesToday) + ": " +
                                 commerceService.DailyCanteenMealsServed + "/" +
                                 commerceService.DailyStorePurchasesCompleted);
-                GUILayout.Label("- Active Commerce Transactions: " + CountActiveCommerceTransactions(commerceService.Transactions));
+                GUILayout.Label("- " + CampusGameplayDebugTextCatalog.Get(displayLanguage, CampusGameplayDebugTextId.StoreShelvesUnpaidThefts) + ": " +
+                                commerceService.KnownStoreShelfCount + "/" +
+                                commerceService.UnpaidStoreItemCount + "/" +
+                                commerceService.DailyStoreTheftCount);
             }
         }
 
@@ -573,26 +579,6 @@ namespace NtingCampus.Gameplay.Core
             return parts.Count > 0
                 ? string.Join(", ", parts)
                 : CampusGameplayDebugTextCatalog.Get(displayLanguage, CampusGameplayDebugTextId.None);
-        }
-
-        private static int CountActiveCommerceTransactions(IReadOnlyList<CampusCommerceTransaction> transactions)
-        {
-            if (transactions == null)
-            {
-                return 0;
-            }
-
-            int count = 0;
-            for (int i = 0; i < transactions.Count; i++)
-            {
-                CampusCommerceTransaction transaction = transactions[i];
-                if (transaction != null && !transaction.IsFinished)
-                {
-                    count++;
-                }
-            }
-
-            return count;
         }
 
         private static string JoinMemories(IReadOnlyList<CampusCharacterMemoryId> memories, CampusDisplayLanguage displayLanguage)

@@ -2713,9 +2713,9 @@ MonoBehaviour:
   enableSunObjectShadows: 1
   excludeSunLightFromPointShadows: 1
   autoRegisterPlacedObjects: 1
-  maxPointLights: 48
-  maxPointLightShadowsPerCaster: 4
-  objectShadowSampleCount: 128
+  maxPointLights: 16
+  maxPointLightShadowsPerCaster: 2
+  objectShadowSampleCount: 64
   pointShadowMaxLengthWorld: 0.62
   pointShadowAlpha: 0.4
   pointShadowIntensityScale: 0.4
@@ -2755,9 +2755,9 @@ MonoBehaviour:
   enableSunShadows: 1
   excludeSunLightFromPointShadows: 1
   autoRegisterPlacedObjects: 1
-  maxPointLights: 128
-  maxPointLightShadowsPerCaster: 4
-  objectShadowSampleCount: 256
+  maxPointLights: 16
+  maxPointLightShadowsPerCaster: 2
+  objectShadowSampleCount: 64
   pointShadowMaxLengthWorld: 0.62
   pointShadowAlpha: 0.4
   pointShadowIntensityScale: 0.4
@@ -2802,8 +2802,8 @@ MonoBehaviour:
   - Hour: 0
     Color: {r: 0.58431375, g: 0.64705884, b: 0.91764706, a: 1}
   baseShadowColor: {r: 0.14509805, g: 0.19607843, b: 0.2901961, a: 1}
-  scanInterval: 0.04
-  minScanInterval: 0.0167
+  scanInterval: 0.25
+  minScanInterval: 0.25
   shadowSortingOrderOffset: 2
 --- !u!4 &2081335403
 Transform:

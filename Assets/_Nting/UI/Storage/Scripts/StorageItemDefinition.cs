@@ -1,4 +1,5 @@
 using UnityEngine;
+using NtingCampus.Gameplay.UI;
 
 namespace Nting.Storage
 {
@@ -7,44 +8,46 @@ namespace Nting.Storage
     {
         public string Id;
         public string DisplayName;
+        public CampusLocalizedText LocalizedDisplayName;
         public int Width = 1;
         public int Height = 1;
         public float Weight;
         [TextArea]
         public string Description;
+        public CampusLocalizedText LocalizedDescription;
         public Color ThemeColor = new Color(0.38f, 0.49f, 0.56f, 1f);
         public Sprite Icon;
         public bool IsUsable;
         public string UseActionId;
         public bool ConsumeOnUse = true;
         public string UseText;
+        public CampusLocalizedText LocalizedUseText;
+
+        public string ResolveId()
+        {
+            return string.IsNullOrWhiteSpace(Id) ? name : Id.Trim();
+        }
 
         public StorageItemModel CreateItem(string instanceId = null)
         {
-            string resolvedDefinitionId = string.IsNullOrWhiteSpace(Id) ? name : Id;
-            string resolvedInstanceId = string.IsNullOrWhiteSpace(instanceId)
-                ? resolvedDefinitionId + "_" + System.Guid.NewGuid().ToString("N")
-                : instanceId;
+            StorageItemModel item = new StorageItemModel();
+            item.ApplyDefinition(this, instanceId);
+            return item;
+        }
 
-            return new StorageItemModel
-            {
-                Id = resolvedInstanceId,
-                DefinitionId = resolvedDefinitionId,
-                InstanceId = resolvedInstanceId,
-                DisplayName = string.IsNullOrWhiteSpace(DisplayName) ? resolvedDefinitionId : DisplayName,
-                Width = Mathf.Max(1, Width),
-                Height = Mathf.Max(1, Height),
-                Weight = Weight,
-                Description = Description,
-                ThemeColor = ThemeColor,
-                Icon = Icon,
-                IsUsable = IsUsable,
-                UseActionId = UseActionId,
-                ConsumeOnUse = ConsumeOnUse,
-                UseText = UseText,
-                LegalState = StorageItemLegalState.Personal,
-                AllowTaking = true
-            };
+        public string ResolveDisplayName(CampusDisplayLanguage language)
+        {
+            return LocalizedDisplayName.Get(language, DisplayName, ResolveId());
+        }
+
+        public string ResolveDescription(CampusDisplayLanguage language)
+        {
+            return LocalizedDescription.Get(language, Description);
+        }
+
+        public string ResolveUseText(CampusDisplayLanguage language)
+        {
+            return LocalizedUseText.Get(language, UseText);
         }
     }
 }

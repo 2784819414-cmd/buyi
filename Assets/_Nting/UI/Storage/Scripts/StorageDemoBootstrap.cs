@@ -1,5 +1,6 @@
 using UnityEngine;
 using UnityEngine.UI;
+using NtingCampus.Gameplay.UI;
 
 namespace Nting.Storage
 {
@@ -84,7 +85,16 @@ namespace Nting.Storage
             hands = StoragePlayerInventoryUtility.GetOrCreateHandContainers(memory);
             pockets = StoragePlayerInventoryUtility.GetOrCreatePocketContainers(memory);
             backpack = StoragePlayerInventoryUtility.GetOrCreateBackpack(memory);
-            testBox = memory.GetOrCreateContainer("test_box", "测试箱", 4, 4, 12f);
+            CampusLocalizedText testBoxName = new CampusLocalizedText(
+                StorageTextCatalog.Get(CampusDisplayLanguage.Chinese, StorageTextId.TestBox),
+                StorageTextCatalog.Get(CampusDisplayLanguage.English, StorageTextId.TestBox));
+            testBox = memory.GetOrCreateContainer(
+                "test_box",
+                testBoxName.ResolvePrimary("test_box"),
+                testBoxName,
+                4,
+                4,
+                12f);
 
             if (!memory.IsSessionFlagSet(DemoSeedFlag))
             {

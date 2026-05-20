@@ -24,6 +24,7 @@ namespace NtingCampusMapEditor
         [SerializeField] private Rigidbody2D body;
         [SerializeField] private CapsuleCollider2D solidCollider;
         [SerializeField] private SortingGroup sortingGroup;
+        [SerializeField] private CampusCharacterFacingState facingState;
 
         private NtingShadowCasterProfile shadowCasterProfile;
         private Vector2 moveInput;
@@ -136,6 +137,13 @@ namespace NtingCampusMapEditor
                 needsConfigure = true;
             }
 
+            facingState = facingState != null ? facingState : GetComponent<CampusCharacterFacingState>();
+            if (facingState == null)
+            {
+                facingState = gameObject.AddComponent<CampusCharacterFacingState>();
+                needsConfigure = true;
+            }
+
             if (!needsConfigure)
             {
                 return;
@@ -156,6 +164,11 @@ namespace NtingCampusMapEditor
         public void SetMovementInput(Vector2 input)
         {
             moveInput = movementEnabled && input.sqrMagnitude > 0.0001f ? input.normalized : Vector2.zero;
+            if (moveInput.sqrMagnitude > 0.0001f)
+            {
+                facingState = facingState != null ? facingState : GetComponent<CampusCharacterFacingState>();
+                facingState?.SetMovementDirection(moveInput);
+            }
         }
 
         public void StopMovement()

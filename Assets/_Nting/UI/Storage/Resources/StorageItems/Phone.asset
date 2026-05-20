@@ -14,9 +14,20 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   Id: phone
   DisplayName: 手机
+  LocalizedDisplayName:
+    chinese: 手机
+    english: Phone
   Width: 1
   Height: 2
   Weight: 0.2
   Description: 屏幕有裂痕的旧手机。
+  LocalizedDescription:
+    chinese: 屏幕有裂痕的旧手机。
+    english: An old phone with a cracked screen.
+  UseAction: 0
+  UseText: 
+  LocalizedUseText:
+    chinese: 
+    english: 
   ThemeColor: {r: 0.25, g: 0.38, b: 0.47, a: 1}
-  Icon: {fileID: 0}
+  Icon: {fileID: 21300000, guid: 8f7c2e83b9fd4a54a8b0e6a79f2b7a12, type: 3}

@@ -88,6 +88,24 @@ namespace NtingCampus.Gameplay.Rooms
                 {
                     issues.Add(new ValidationIssue(Severity.Warning, room.RoomId, "Room type is still Unknown."));
                 }
+                else if (!room.HasExplicitRoomType)
+                {
+                    issues.Add(new ValidationIssue(
+                        Severity.Warning,
+                        room.RoomId,
+                        CampusRoomValidationTextCatalog.Format(
+                            CampusRoomValidationTextId.LegacyRoomTypeInference,
+                            room.RoomType)));
+                }
+
+                if (room.RoomTypeSource == CampusRoomTypeSource.Unknown)
+                {
+                    issues.Add(new ValidationIssue(
+                        Severity.Warning,
+                        room.RoomId,
+                        CampusRoomValidationTextCatalog.Get(
+                            CampusRoomValidationTextId.UnknownRoomTypeSource)));
+                }
 
                 foreach (CampusFacilityType requiredFacility in GetRequiredFacilities(room.RoomType))
                 {

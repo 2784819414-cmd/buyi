@@ -36,7 +36,9 @@ namespace NtingCampusMapEditor
                     return UnavailableText;
                 }
 
-                return string.IsNullOrWhiteSpace(PromptText) ? "\u4ea4\u4e92" : PromptText;
+                return string.IsNullOrWhiteSpace(PromptText)
+                    ? CampusInteractionTextCatalog.Get(CampusInteractionTextId.Interact)
+                    : PromptText;
             }
         }
     }

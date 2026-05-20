@@ -145,7 +145,7 @@ namespace NtingCampus.Gameplay.Modes
 
             if (playerRuntime == null)
             {
-                CampusPlayerCharacter playerCharacter = FindFirstObjectByType<CampusPlayerCharacter>(FindObjectsInactive.Include);
+                CampusPlayerCharacter playerCharacter = CampusPlayerCharacter.FindCurrent();
                 if (playerCharacter != null)
                 {
                     playerRuntime = playerCharacter.CharacterRuntime;
@@ -213,8 +213,8 @@ namespace NtingCampus.Gameplay.Modes
             if (writeLog && bootstrap.EventLog != null)
             {
                 bootstrap.EventLog.AddLog(mode == CampusGameMode.StudentBody
-                    ? "[System] Switched to student body mode."
-                    : "[System] Switched to god view mode.");
+                    ? CampusCoreTextCatalog.Get(CampusCoreTextId.SwitchedStudentBodyMode)
+                    : CampusCoreTextCatalog.Get(CampusCoreTextId.SwitchedGodViewMode));
             }
         }
 

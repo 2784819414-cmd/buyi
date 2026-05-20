@@ -1,6 +1,5 @@
 using UnityEngine;
 using UnityEngine.EventSystems;
-using NtingCampus.Gameplay.Inventory;
 
 namespace Nting.Storage
 {
@@ -91,12 +90,12 @@ namespace Nting.Storage
                 item.Y = sourceY;
                 if (currentTargetGrid != null)
                 {
-                    Window.ShowStatus("目标空间不足", true);
+                    Window.ShowStatus(StorageTextCatalog.Get(StorageTextId.TargetSpaceInsufficient), true);
                 }
             }
             else if (placedInGrid)
             {
-                Window.ShowStatus("已移动: " + item.DisplayName, false);
+                Window.ShowStatus(StorageTextCatalog.Format(StorageTextId.MovedItem, item.GetDisplayName()), false);
             }
 
             CleanupDraggedView();
@@ -195,21 +194,12 @@ namespace Nting.Storage
                 return false;
             }
 
-            CampusInventoryTransferService service = CampusInventoryTransferService.Resolve();
-            StorageTransferContext context = Window.CreateTransferContext(StorageTransferReason.Move);
-            bool moved = service.TryMoveItem(
+            bool moved = Window.TryMoveItem(
                 item,
-                sourceGrid != null ? sourceGrid.Container : null,
-                targetGrid.Container,
+                sourceGrid,
+                targetGrid,
                 cell.x,
-                cell.y,
-                context,
-                out StorageTransferResult result);
-            if (!moved && !string.IsNullOrWhiteSpace(result.Message))
-            {
-                Window.ShowStatus(result.Message, true);
-            }
-
+                cell.y);
             return moved;
         }
 

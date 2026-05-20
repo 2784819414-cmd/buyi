@@ -124,7 +124,9 @@ namespace NtingCampus.Gameplay.UI
             {
                 if (bootstrap != null && bootstrap.EventLog != null)
                 {
-                    bootstrap.EventLog.AddLog("[System] Startup load failed: " + exception.Message);
+                    bootstrap.EventLog.AddLog(CampusPlayerUiTextCatalog.Format(
+                        CampusPlayerUiTextId.StartupLoadFailed,
+                        exception.Message));
                 }
 
                 Debug.LogWarning("[CampusLaunchSelectionApplier] " + exception);
@@ -180,11 +182,13 @@ namespace NtingCampus.Gameplay.UI
 
             bootstrap.WorldService?.Initialize(bootstrap);
             bootstrap.RosterService?.RebuildRosterFromScene();
+            bootstrap.WorldService?.ValidateEcology(bootstrap.RosterService, true);
             bootstrap.ActionService?.Initialize(bootstrap);
             bootstrap.ModeController?.InitializeModes(bootstrap, false);
             bootstrap.ScheduleService?.Initialize(bootstrap);
             bootstrap.GameplayEventHub?.Initialize(bootstrap);
             bootstrap.NpcEcologyService?.Initialize(bootstrap);
+            bootstrap.CanteenService?.Initialize(bootstrap);
             bootstrap.CommerceService?.Initialize(bootstrap);
             bootstrap.ClassroomLoopService?.Initialize(bootstrap);
             bootstrap.SanctionService?.Initialize(bootstrap);
@@ -199,13 +203,16 @@ namespace NtingCampus.Gameplay.UI
             }
 
             string mapLabel = string.IsNullOrWhiteSpace(CampusLaunchConfigStore.SelectedMapPath)
-                ? "Scene Default"
+                ? CampusPlayerUiTextCatalog.Get(CampusPlayerUiTextId.SceneDefault)
                 : Path.GetFileName(CampusLaunchConfigStore.SelectedMapPath);
             string saveLabel = string.IsNullOrWhiteSpace(CampusLaunchConfigStore.SelectedSavePath)
-                ? "No Save"
+                ? CampusPlayerUiTextCatalog.Get(CampusPlayerUiTextId.NoSave)
                 : Path.GetFileName(CampusLaunchConfigStore.SelectedSavePath);
 
-            bootstrap.EventLog.AddLog("[System] Startup selection applied. Map=" + mapLabel + ", Save=" + saveLabel + ".");
+            bootstrap.EventLog.AddLog(CampusPlayerUiTextCatalog.Format(
+                CampusPlayerUiTextId.StartupSelectionApplied,
+                mapLabel,
+                saveLabel));
         }
 
         private static void InvokePrivate(object target, string methodName, params object[] arguments)

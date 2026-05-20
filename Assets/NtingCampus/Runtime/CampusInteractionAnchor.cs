@@ -1,5 +1,6 @@
 using System.Reflection;
 using NtingCampus.Gameplay.Core;
+using NtingCampus.Gameplay.UI;
 using UnityEngine;
 
 namespace NtingCampusMapEditor
@@ -8,23 +9,24 @@ namespace NtingCampusMapEditor
     [RequireComponent(typeof(Collider2D))]
     public sealed class CampusInteractionAnchor : MonoBehaviour, ICampusInteractable, ICampusInteractionPromptProvider, ICampusInteractionAvailability
     {
-        private const string DefaultPromptText = "\u4ea4\u4e92";
-
         public MonoBehaviour InteractionTarget;
         public string ActionId;
         public string Payload;
         public Transform PromptAnchor;
-        public string PromptText = DefaultPromptText;
+        public string PromptText = string.Empty;
+        public CampusLocalizedText LocalizedPromptText;
         public string KeyOverride;
         public Sprite Icon;
         public Color AccentColor = new Color(0.95f, 0.82f, 0.38f, 1f);
         public int Priority = 100;
         public bool IsAvailable = true;
         public string UnavailableText;
+        public CampusLocalizedText LocalizedUnavailableText;
         public bool HideWhenUnavailable;
         public bool UseTargetDoorStatePrompt;
         public bool LogInteraction = true;
         public string InteractionLogMessage;
+        public CampusLocalizedText LocalizedInteractionLogMessage;
 
         private void Reset()
         {
@@ -38,6 +40,28 @@ namespace NtingCampusMapEditor
 
         public bool TryGetInteractionPrompt(GameObject actor, out CampusInteractionPromptData prompt)
         {
+            if (InteractionTarget is ICampusInteractionPromptProvider targetPromptProvider &&
+                !ReferenceEquals(targetPromptProvider, this) &&
+                targetPromptProvider.TryGetInteractionPrompt(actor, out prompt))
+            {
+                if (prompt.Anchor == null)
+                {
+                    prompt.Anchor = PromptAnchor != null ? PromptAnchor : transform;
+                }
+
+                if (string.IsNullOrWhiteSpace(prompt.KeyText))
+                {
+                    prompt.KeyText = KeyOverride;
+                }
+
+                if (prompt.Icon == null)
+                {
+                    prompt.Icon = Icon;
+                }
+
+                return true;
+            }
+
             prompt = CampusInteractionPromptData.Create(ResolvePromptText());
             prompt.KeyText = KeyOverride;
             prompt.Icon = Icon;
@@ -46,13 +70,13 @@ namespace NtingCampusMapEditor
             prompt.AccentColor = AccentColor;
             prompt.Priority = Priority;
             prompt.IsAvailable = IsAvailable;
-            prompt.UnavailableText = UnavailableText;
+            prompt.UnavailableText = ResolveUnavailableText();
             return IsAvailable || !HideWhenUnavailable;
         }
 
         public bool CanInteract(GameObject actor, out string unavailableReason)
         {
-            unavailableReason = UnavailableText;
+            unavailableReason = ResolveUnavailableText();
             if (!IsAvailable)
             {
                 return false;
@@ -90,7 +114,9 @@ namespace NtingCampusMapEditor
                 return;
             }
 
-            string message = !string.IsNullOrWhiteSpace(InteractionLogMessage)
+            string message = LocalizedInteractionLogMessage.HasAnyText
+                ? LocalizedInteractionLogMessage.Current(InteractionLogMessage)
+                : !string.IsNullOrWhiteSpace(InteractionLogMessage)
                 ? InteractionLogMessage
                 : ResolvePromptText();
             Debug.Log(message, this);
@@ -112,10 +138,31 @@ namespace NtingCampusMapEditor
                 InteractionTarget is Component targetComponent &&
                 TryReadIsOpen(targetComponent, out bool isOpen))
             {
-                return isOpen ? "\u5173\u95e8" : "\u5f00\u95e8";
+                return CampusInteractionTextCatalog.Get(isOpen
+                    ? CampusInteractionTextId.CloseDoor
+                    : CampusInteractionTextId.OpenDoor);
             }
 
-            return string.IsNullOrWhiteSpace(PromptText) ? DefaultPromptText : PromptText;
+            if (LocalizedPromptText.HasAnyText)
+            {
+                return LocalizedPromptText.Current(PromptText);
+            }
+
+            return IsLegacyDefaultPrompt(PromptText)
+                ? CampusInteractionTextCatalog.Get(CampusInteractionTextId.Interact)
+                : PromptText.Trim();
+        }
+
+        private string ResolveUnavailableText()
+        {
+            return LocalizedUnavailableText.HasAnyText
+                ? LocalizedUnavailableText.Current(UnavailableText)
+                : UnavailableText;
+        }
+
+        private static bool IsLegacyDefaultPrompt(string value)
+        {
+            return string.IsNullOrWhiteSpace(value) || value.Trim() == "\u4ea4\u4e92";
         }
 
         private void ConfigureCollider()

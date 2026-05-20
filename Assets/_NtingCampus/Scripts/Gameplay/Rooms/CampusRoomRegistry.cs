@@ -16,6 +16,9 @@ namespace NtingCampus.Gameplay.Rooms
         private readonly Dictionary<string, CampusGameplayRoom> roomsById =
             new Dictionary<string, CampusGameplayRoom>(StringComparer.OrdinalIgnoreCase);
 
+        private readonly Dictionary<int, Dictionary<Vector3Int, RoomCellIndexEntry>> roomsByCellByFloor =
+            new Dictionary<int, Dictionary<Vector3Int, RoomCellIndexEntry>>();
+
         private readonly List<CampusRoomValidator.ValidationIssue> validationIssues =
             new List<CampusRoomValidator.ValidationIssue>();
 
@@ -27,6 +30,7 @@ namespace NtingCampus.Gameplay.Rooms
             mapRoot = ResolveMapRoot();
             rooms.Clear();
             roomsById.Clear();
+            roomsByCellByFloor.Clear();
             validationIssues.Clear();
 
             if (mapRoot == null)
@@ -47,6 +51,7 @@ namespace NtingCampus.Gameplay.Rooms
             }
 
             BuildRoomsFromGameplayMarkers();
+            BuildRoomCellIndex();
             AssignFacilities(mapRoot);
             validationIssues.AddRange(CampusRoomValidator.Validate(rooms));
             ApplyValidationState();
@@ -61,26 +66,18 @@ namespace NtingCampus.Gameplay.Rooms
 
         public CampusGameplayRoom FindRoomByCell(int floorIndex, Vector3Int cell)
         {
-            CampusGameplayRoom bestRoom = null;
-            int bestArea = int.MaxValue;
-            for (int i = 0; i < rooms.Count; i++)
+            if (roomsByCellByFloor.Count == 0 && rooms.Count > 0)
             {
-                CampusGameplayRoom room = rooms[i];
-                if (room == null || room.FloorIndex != floorIndex || !room.ContainsCell(cell))
-                {
-                    continue;
-                }
-
-                BoundsInt bounds = room.MarkerBounds;
-                int area = Mathf.Max(1, bounds.size.x * bounds.size.y);
-                if (bestRoom == null || area < bestArea)
-                {
-                    bestRoom = room;
-                    bestArea = area;
-                }
+                BuildRoomCellIndex();
             }
 
-            return bestRoom;
+            cell.z = 0;
+            if (!roomsByCellByFloor.TryGetValue(floorIndex, out Dictionary<Vector3Int, RoomCellIndexEntry> floorCells))
+            {
+                return null;
+            }
+
+            return floorCells.TryGetValue(cell, out RoomCellIndexEntry entry) ? entry.Room : null;
         }
 
         private CampusMapRoot ResolveMapRoot()
@@ -187,6 +184,50 @@ namespace NtingCampus.Gameplay.Rooms
             }
 
             return false;
+        }
+
+        private void BuildRoomCellIndex()
+        {
+            roomsByCellByFloor.Clear();
+            for (int i = 0; i < rooms.Count; i++)
+            {
+                CampusGameplayRoom room = rooms[i];
+                if (room == null)
+                {
+                    continue;
+                }
+
+                BoundsInt bounds = room.MarkerBounds;
+                if (bounds.size.x <= 0 || bounds.size.y <= 0)
+                {
+                    continue;
+                }
+
+                int area = Mathf.Max(1, bounds.size.x * bounds.size.y);
+                Dictionary<Vector3Int, RoomCellIndexEntry> floorCells = GetOrCreateFloorCellIndex(room.FloorIndex);
+                for (int y = bounds.yMin; y < bounds.yMax; y++)
+                {
+                    for (int x = bounds.xMin; x < bounds.xMax; x++)
+                    {
+                        Vector3Int cell = new Vector3Int(x, y, 0);
+                        if (!floorCells.TryGetValue(cell, out RoomCellIndexEntry existing) || area < existing.Area)
+                        {
+                            floorCells[cell] = new RoomCellIndexEntry(room, area);
+                        }
+                    }
+                }
+            }
+        }
+
+        private Dictionary<Vector3Int, RoomCellIndexEntry> GetOrCreateFloorCellIndex(int floorIndex)
+        {
+            if (!roomsByCellByFloor.TryGetValue(floorIndex, out Dictionary<Vector3Int, RoomCellIndexEntry> floorCells))
+            {
+                floorCells = new Dictionary<Vector3Int, RoomCellIndexEntry>();
+                roomsByCellByFloor[floorIndex] = floorCells;
+            }
+
+            return floorCells;
         }
 
         private static bool BoundsOverlap2D(BoundsInt a, BoundsInt b)
@@ -369,7 +410,7 @@ namespace NtingCampus.Gameplay.Rooms
                 {
                     room.AddFacility(
                         facilityMarker.LinkedPlacedObject,
-                        facilityMarker.FacilityType,
+                        CampusFacilityTypeResolution.ExplicitMarker(facilityMarker.FacilityType),
                         facilityMarker.FacilityId);
                 }
                 else
@@ -410,7 +451,8 @@ namespace NtingCampus.Gameplay.Rooms
                         continue;
                     }
 
-                    room.AddFacility(placedObject, InferFacilityType(placedObject));
+                    CampusFacilityTypeResolution resolution = ResolveFacilityType(placedObject);
+                    room.AddFacility(placedObject, resolution);
                 }
             }
         }
@@ -600,9 +642,21 @@ namespace NtingCampus.Gameplay.Rooms
             return CampusRoomType.Unknown;
         }
 
-        private static CampusFacilityType InferFacilityType(CampusPlacedObject placedObject)
+        private static CampusFacilityTypeResolution ResolveFacilityType(CampusPlacedObject placedObject)
         {
-            return CampusFacilityTypeResolver.Resolve(placedObject);
+            return CampusFacilityTypeResolver.ResolveDetailed(placedObject);
+        }
+
+        private readonly struct RoomCellIndexEntry
+        {
+            public RoomCellIndexEntry(CampusGameplayRoom room, int area)
+            {
+                Room = room;
+                Area = area;
+            }
+
+            public CampusGameplayRoom Room { get; }
+            public int Area { get; }
         }
     }
 }

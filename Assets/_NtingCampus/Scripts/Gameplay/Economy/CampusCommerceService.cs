@@ -1,153 +1,252 @@
 using System;
 using System.Collections.Generic;
+using Nting.Storage;
+using NtingCampus.Gameplay.Canteen;
 using NtingCampus.Gameplay.Characters;
 using NtingCampus.Gameplay.Core;
+using NtingCampus.Gameplay.Events;
+using NtingCampus.Gameplay.Inventory;
 using NtingCampus.Gameplay.Rooms;
 using NtingCampus.Gameplay.Schedule;
-using NtingCampus.Gameplay.UI;
+using NtingCampusMapEditor;
 using UnityEngine;
 
 namespace NtingCampus.Gameplay.Economy
 {
-    public enum CampusCommerceNeedType
-    {
-        None = 0,
-        CanteenMeal = 1,
-        StorePurchase = 2
-    }
-
-    public enum CampusCommerceStep
-    {
-        None = 0,
-        QueueingCanteenMeal = 1,
-        OrderingCanteenMeal = 2,
-        ClerkPreparingCanteenMeal = 3,
-        ReceivingCanteenMeal = 4,
-        BrowsingStoreShelf = 5,
-        SelectingStoreItem = 6,
-        QueueingStoreCheckout = 7,
-        PayingStoreCheckout = 8,
-        ReceivingStorePurchase = 9,
-        Completed = 10,
-        Failed = 11
-    }
-
-    internal enum CampusCommerceTargetKind
-    {
-        QueueCanteenMeal = 1,
-        ReceiveCanteenMeal = 2,
-        BrowseStoreShelf = 3,
-        QueueStoreCheckout = 4,
-        PayStoreCheckout = 5
-    }
-
-    public struct CampusCanteenServiceStatus
-    {
-        public bool HasClerk;
-        public bool ClerkAtServicePosition;
-        public bool ClerkAwayFromActor;
-        public bool HasActiveTransaction;
-        public bool HasMealWaitingForPickup;
-        public bool HasQueue;
-        public float ClerkActorDistance;
-        public CampusCommerceStep MostRelevantStep;
-        public string ActiveItemDisplayName;
-    }
-
     [DisallowMultipleComponent]
     public sealed class CampusCommerceService : MonoBehaviour
     {
-        private const float NeedScanSeconds = 1.6f;
-        private const float TransactionRetentionSeconds = 55f;
-        private const float CounterReachDistance = 0.86f;
-        private const float QueueReachDistance = 0.72f;
-        private const float ShelfReachDistance = 0.78f;
-        private const float CanteenOrderSeconds = 1.1f;
-        private const float CanteenPrepareSeconds = 2.2f;
-        private const float StoreSelectSeconds = 1.4f;
-        private const float StorePaySeconds = 1.2f;
-
         [SerializeField] private CampusGameBootstrap bootstrap;
         [SerializeField] private CampusRosterService rosterService;
         [SerializeField] private CampusWorldService worldService;
         [SerializeField] private CampusScheduleService scheduleService;
-        [SerializeField] private List<CampusCommerceTransaction> transactions = new List<CampusCommerceTransaction>();
-        [SerializeField] private List<string> mealCustomerIdsToday = new List<string>();
-        [SerializeField] private List<string> storeCustomerIdsToday = new List<string>();
-        [SerializeField] private string currentSummary = "Commerce service waiting for concrete needs.";
-        [SerializeField, Min(0)] private int dailyCanteenMealsServed;
+        [SerializeField] private CampusGameplayEventHub gameplayEventHub;
+        [SerializeField] private List<CampusStoreCatalogEntry> catalog = CampusStoreCatalogEntry.CreateDefaultCatalog();
+        [SerializeField] private bool logValidationIssues = true;
+        [SerializeField, Min(1)] private int defaultShelfTargetItemCount = 6;
+        [SerializeField, Min(0)] private int defaultStoreSuspicionRisk = 10;
+        [SerializeField, Min(0.25f)] private float shelfRestockIntervalSeconds = 2.5f;
+        [SerializeField, Min(0.25f)] private float theftAuditIntervalSeconds = 1.1f;
+        [SerializeField] private List<string> checkedOutActorIdsToday = new List<string>();
+        [SerializeField] private string currentSummary = string.Empty;
         [SerializeField, Min(0)] private int dailyStorePurchasesCompleted;
+        [SerializeField, Min(0)] private int dailyStoreTheftCount;
+        [SerializeField, Min(0)] private int unpaidStoreItemCount;
+        [SerializeField, Min(0)] private int knownStoreShelfCount;
+        [SerializeField, Min(0)] private int lastRestockedItemCount;
         [SerializeField] private int observedDay = -1;
-        [SerializeField] private float nextNeedScanTime;
+        [SerializeField] private float nextShelfRestockTime;
+        [SerializeField] private float nextTheftAuditTime;
 
-        public IReadOnlyList<CampusCommerceTransaction> Transactions => transactions;
+        private readonly HashSet<string> warningKeys = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+        private readonly List<CampusEcologyValidator.ValidationIssue> validationIssues =
+            new List<CampusEcologyValidator.ValidationIssue>();
+
+        private CampusStoreFacts facts;
+        private CampusStoreStockService stock;
+        private CampusStoreAuditService audit;
+        private CampusStoreActions actions;
+        private bool usingRuntimeFallbackCatalog;
+        private bool hasValidatedSetup;
+
         public string CurrentSummary => currentSummary;
-        public int DailyCanteenMealsServed => dailyCanteenMealsServed;
-        public int DailyStorePurchasesCompleted => dailyStorePurchasesCompleted;
-
-        public bool TryGetCanteenServiceStatus(
-            CampusGameplayRoom room,
-            CampusCharacterRuntime actor,
-            out CampusCanteenServiceStatus status)
+        public IReadOnlyList<CampusStoreCatalogEntry> Catalog => catalog;
+        public bool IsUsingRuntimeFallbackCatalog => usingRuntimeFallbackCatalog;
+        public IReadOnlyList<CampusEcologyValidator.ValidationIssue> ValidationIssues => validationIssues;
+        public int DailyCanteenMealsServed
         {
-            status = new CampusCanteenServiceStatus();
-            if (room == null)
+            get
             {
-                return false;
+                CampusCanteenService canteen = CampusCanteenService.Resolve(false);
+                return canteen != null ? canteen.DailyMealsServed : 0;
+            }
+        }
+        public int DailyStorePurchasesCompleted => dailyStorePurchasesCompleted;
+        public int DailyStoreTheftCount => dailyStoreTheftCount;
+        public int UnpaidStoreItemCount => unpaidStoreItemCount;
+        public int KnownStoreShelfCount => knownStoreShelfCount;
+        public int LastRestockedItemCount => lastRestockedItemCount;
+
+        public static CampusCommerceService Resolve(bool createIfMissing = true)
+        {
+            CampusGameBootstrap bootstrap = CampusGameBootstrap.Instance;
+            if (bootstrap != null && bootstrap.CommerceService != null)
+            {
+                return bootstrap.CommerceService;
             }
 
-            CampusCharacterRuntime clerk = FindStaffWithDutyInRoom(CampusStaffDuty.CanteenClerk, room);
-            status.HasClerk = clerk != null;
-            if (clerk != null)
+            CampusCommerceService existing =
+                FindFirstObjectByType<CampusCommerceService>(FindObjectsInactive.Include);
+            if (existing != null)
             {
-                status.ClerkAtServicePosition = IsCanteenClerkAtServicePosition(clerk, room, CounterReachDistance);
-                if (actor != null)
-                {
-                    status.ClerkActorDistance = Vector2.Distance(clerk.transform.position, actor.transform.position);
-                    status.ClerkAwayFromActor = status.ClerkActorDistance > 2.2f;
-                }
+                existing.Initialize(bootstrap);
+                return existing;
             }
 
-            for (int i = 0; i < transactions.Count; i++)
+            if (!createIfMissing)
             {
-                CampusCommerceTransaction transaction = transactions[i];
-                if (transaction == null ||
-                    transaction.IsFinished ||
-                    transaction.NeedType != CampusCommerceNeedType.CanteenMeal ||
-                    !string.Equals(transaction.RoomId, room.RoomId, StringComparison.OrdinalIgnoreCase))
-                {
-                    continue;
-                }
-
-                status.HasActiveTransaction = true;
-                if (transaction.Step == CampusCommerceStep.QueueingCanteenMeal)
-                {
-                    status.HasQueue = true;
-                }
-
-                if (transaction.Step == CampusCommerceStep.ReceivingCanteenMeal)
-                {
-                    status.HasMealWaitingForPickup = true;
-                }
-
-                if (IsMoreRelevantCanteenStep(transaction.Step, status.MostRelevantStep))
-                {
-                    status.MostRelevantStep = transaction.Step;
-                    status.ActiveItemDisplayName = transaction.ItemDisplayName;
-                }
+                return null;
             }
 
-            return status.HasClerk || status.HasActiveTransaction;
+            GameObject host = bootstrap != null ? bootstrap.gameObject : new GameObject("CampusCommerceService");
+            CampusCommerceService service = host.AddComponent<CampusCommerceService>();
+            service.Initialize(bootstrap);
+            return service;
         }
 
         public void Initialize(CampusGameBootstrap targetBootstrap)
         {
-            bootstrap = targetBootstrap != null ? targetBootstrap : CampusGameBootstrap.Instance;
-            rosterService = bootstrap != null ? bootstrap.RosterService : null;
-            worldService = bootstrap != null ? bootstrap.WorldService : null;
-            scheduleService = bootstrap != null ? bootstrap.ScheduleService : null;
-            SyncDayState(true);
-            nextNeedScanTime = Time.time + 0.8f;
+            CampusGameBootstrap resolvedBootstrap =
+                targetBootstrap != null ? targetBootstrap : CampusGameBootstrap.Instance;
+            bool bootstrapChanged = bootstrap != resolvedBootstrap;
+            bootstrap = resolvedBootstrap;
+            ResolveReferences();
+            EnsureCatalog();
+            SyncDay(true);
+            if (!hasValidatedSetup || bootstrapChanged)
+            {
+                ValidateSetup(logValidationIssues);
+            }
+
+            nextShelfRestockTime = Time.time + 0.3f;
+            nextTheftAuditTime = Time.time + 0.7f;
+            UpdateSummary();
+        }
+
+        public string ResolveShelfContainerId(CampusPlacedObject shelf)
+        {
+            ResolveReferences();
+            return stock != null ? stock.ResolveShelfContainerId(shelf) : "store_shelf_missing";
+        }
+
+        public bool TryPrepareShelfStorage(
+            CampusPlacedObject shelf,
+            StorageContainerModel container,
+            out string message)
+        {
+            ResolveReferences();
+            EnsureCatalog();
+            if (stock == null)
+            {
+                message = CampusCommerceTextCatalog.Get(CampusCommerceTextId.MissingShelfOrContainer);
+                return false;
+            }
+
+            bool prepared = stock.TryPrepareShelfStorage(shelf, container, out int added, out message);
+            if (added > 0)
+            {
+                lastRestockedItemCount += added;
+            }
+
+            return prepared;
+        }
+
+        public bool TryCheckout(GameObject actor, CampusPlacedObject checkout, out string message)
+        {
+            return TryCheckout(ResolveActorRuntime(actor), checkout, out message);
+        }
+
+        public bool TryCheckout(CampusCharacterRuntime actor, CampusPlacedObject checkout, out string message)
+        {
+            ResolveReferences();
+            if (actions != null)
+            {
+                return actions.TryCheckout(actor, checkout, out message);
+            }
+
+            message = CampusCommerceTextCatalog.Get(CampusCommerceTextId.MissingActorOrCheckout);
+            return false;
+        }
+
+        public bool TryTakeOneItemFromShelf(
+            CampusCharacterRuntime actor,
+            CampusPlacedObject shelf,
+            out string message)
+        {
+            ResolveReferences();
+            if (actions != null)
+            {
+                return actions.TryTakeOneItemFromShelf(actor, shelf, out message);
+            }
+
+            message = CampusCommerceTextCatalog.Get(CampusCommerceTextId.MissingActorOrShelf);
+            return false;
+        }
+
+        public bool TryFindShelfBrowseTarget(
+            CampusCharacterRuntime actor,
+            string preferredCategoryId,
+            out CampusPlacedObject shelf,
+            out string roomId,
+            out Vector3 targetPosition)
+        {
+            shelf = null;
+            roomId = string.Empty;
+            targetPosition = Vector3.zero;
+            return facts != null &&
+                   facts.TryFindShelfBrowseTarget(
+                       actor,
+                       preferredCategoryId,
+                       out shelf,
+                       out roomId,
+                       out targetPosition);
+        }
+
+        public bool TryFindCheckoutTarget(
+            CampusCharacterRuntime actor,
+            out CampusPlacedObject checkout,
+            out string roomId,
+            out Vector3 targetPosition)
+        {
+            checkout = null;
+            roomId = string.Empty;
+            targetPosition = Vector3.zero;
+            return facts != null &&
+                   facts.TryFindCheckoutTarget(actor, out checkout, out roomId, out targetPosition);
+        }
+
+        public bool ActorHasUnpaidStoreItems(CampusCharacterRuntime actor)
+        {
+            ResolveReferences();
+            return audit != null && audit.ActorHasUnpaidStoreItems(actor);
+        }
+
+        public bool HasCheckedOutStoreToday(CampusCharacterRuntime actor)
+        {
+            return actor != null && ContainsId(checkedOutActorIdsToday, actor.CharacterId);
+        }
+
+        public bool IsStoreOpenNow()
+        {
+            return facts != null && facts.IsStoreOpenNow();
+        }
+
+        public bool IsUnpaidStoreItem(StorageItemModel item)
+        {
+            ResolveReferences();
+            return audit != null && audit.IsUnpaidStoreItem(item);
+        }
+
+        public IReadOnlyList<CampusEcologyValidator.ValidationIssue> ValidateSetup(bool logIssues)
+        {
+            ResolveReferences();
+            EnsureCatalog();
+            validationIssues.Clear();
+
+            List<CampusEcologyValidator.ValidationIssue> issues =
+                CampusStoreValidator.Validate(worldService, catalog, usingRuntimeFallbackCatalog);
+            for (int i = 0; i < issues.Count; i++)
+            {
+                validationIssues.Add(issues[i]);
+            }
+
+            if (logIssues)
+            {
+                CampusStoreValidator.LogIssues(validationIssues);
+            }
+
+            hasValidatedSetup = true;
+            return validationIssues;
         }
 
         private void Update()
@@ -158,11 +257,26 @@ namespace NtingCampus.Gameplay.Economy
             }
 
             ResolveReferences();
-            SyncDayState(false);
-            ScanStudentNeedsIfNeeded();
-            RefreshQueueIndexes();
-            ProcessTransactions();
-            TrimFinishedTransactions();
+            EnsureCatalog();
+            SyncDay(false);
+            RestockShelvesIfDue();
+            AuditUnpaidItemsIfDue();
+            UpdateSummary();
+        }
+
+        private void OnValidate()
+        {
+            defaultShelfTargetItemCount = Mathf.Max(1, defaultShelfTargetItemCount);
+            defaultStoreSuspicionRisk = Mathf.Max(0, defaultStoreSuspicionRisk);
+            shelfRestockIntervalSeconds = Mathf.Max(0.25f, shelfRestockIntervalSeconds);
+            theftAuditIntervalSeconds = Mathf.Max(0.25f, theftAuditIntervalSeconds);
+            if (catalog != null)
+            {
+                for (int i = 0; i < catalog.Count; i++)
+                {
+                    catalog[i]?.Normalize();
+                }
+            }
         }
 
         private void ResolveReferences()
@@ -180,9 +294,69 @@ namespace NtingCampus.Gameplay.Economy
             rosterService = rosterService != null ? rosterService : bootstrap.RosterService;
             worldService = worldService != null ? worldService : bootstrap.WorldService;
             scheduleService = scheduleService != null ? scheduleService : bootstrap.ScheduleService;
+            gameplayEventHub = gameplayEventHub != null ? gameplayEventHub : bootstrap.GameplayEventHub;
+
+            if (facts == null)
+            {
+                facts = new CampusStoreFacts();
+            }
+
+            facts.SetContext(
+                rosterService,
+                worldService,
+                scheduleService,
+                RememberWarning,
+                ResolveShelfContainerId);
+
+            if (stock == null)
+            {
+                stock = new CampusStoreStockService(
+                    facts,
+                    ResolveCatalog,
+                    () => defaultShelfTargetItemCount,
+                    () => defaultStoreSuspicionRisk,
+                    RememberWarning);
+            }
+
+            if (audit == null)
+            {
+                audit = new CampusStoreAuditService(
+                    stock,
+                    () => defaultStoreSuspicionRisk,
+                    WriteLog);
+            }
+
+            audit.SetContext(rosterService, worldService, gameplayEventHub);
+
+            if (actions == null)
+            {
+                actions = new CampusStoreActions(
+                    facts,
+                    GetOrCreateShelfContainer,
+                    CountUnpaidItems,
+                    AddCheckedOutActor,
+                    AddDailyStorePurchases,
+                    CurrentDay,
+                    WriteLog);
+            }
         }
 
-        private void SyncDayState(bool force)
+        private void EnsureCatalog()
+        {
+            if (catalog == null || catalog.Count == 0)
+            {
+                catalog = CampusStoreCatalogEntry.CreateDefaultCatalog();
+                usingRuntimeFallbackCatalog = true;
+            }
+        }
+
+        private IReadOnlyList<CampusStoreCatalogEntry> ResolveCatalog()
+        {
+            EnsureCatalog();
+            return catalog;
+        }
+
+        private void SyncDay(bool force)
         {
             int day = bootstrap != null && bootstrap.GameState != null ? bootstrap.GameState.Day : 0;
             if (!force && observedDay == day)
@@ -191,727 +365,87 @@ namespace NtingCampus.Gameplay.Economy
             }
 
             observedDay = day;
-            mealCustomerIdsToday.Clear();
-            storeCustomerIdsToday.Clear();
-            dailyCanteenMealsServed = 0;
+            checkedOutActorIdsToday.Clear();
             dailyStorePurchasesCompleted = 0;
-            transactions.RemoveAll(transaction => transaction == null || transaction.IsFinished);
+            dailyStoreTheftCount = 0;
         }
 
-        private void ScanStudentNeedsIfNeeded()
+        private void RestockShelvesIfDue()
         {
-            if (Time.time < nextNeedScanTime || rosterService == null || worldService == null || scheduleService == null)
+            if (Time.time < nextShelfRestockTime || stock == null)
             {
                 return;
             }
 
-            nextNeedScanTime = Time.time + NeedScanSeconds;
-            int createdCount = 0;
-            foreach (CampusCharacterRuntime runtime in rosterService.EnumerateByRole(CampusCharacterRole.Student))
-            {
-                if (createdCount >= 2)
-                {
-                    return;
-                }
-
-                if (!CanCreateNeedFor(runtime))
-                {
-                    continue;
-                }
-
-                CampusCharacterData data = runtime.Data;
-                if (IsMealWindowNow() &&
-                    !ContainsId(mealCustomerIdsToday, runtime.CharacterId) &&
-                    TryCreateCanteenMealRequest(runtime))
-                {
-                    mealCustomerIdsToday.Add(runtime.CharacterId);
-                    createdCount++;
-                    continue;
-                }
-
-                if (IsStoreWindowNow() &&
-                    !ContainsId(storeCustomerIdsToday, runtime.CharacterId) &&
-                    ShouldVisitStore(data) &&
-                    TryCreateStorePurchaseRequest(runtime))
-                {
-                    storeCustomerIdsToday.Add(runtime.CharacterId);
-                    createdCount++;
-                }
-            }
+            nextShelfRestockTime = Time.time + shelfRestockIntervalSeconds;
+            CampusStoreStockRefreshResult result = stock.RestockShelves(worldService);
+            knownStoreShelfCount = result.KnownShelfCount;
+            lastRestockedItemCount = result.RestockedItemCount;
         }
 
-        private bool CanCreateNeedFor(CampusCharacterRuntime runtime)
+        private void AuditUnpaidItemsIfDue()
         {
-            CampusCharacterData data = runtime != null ? runtime.Data : null;
-            return data != null &&
-                   !data.IsPlayerControlled &&
-                   data.State != CampusCharacterState.Punished &&
-                   data.State != CampusCharacterState.Sleeping &&
-                   FindActiveTransactionForCustomer(runtime.CharacterId) == null;
-        }
-
-        private bool TryCreateCanteenMealRequest(CampusCharacterRuntime customer)
-        {
-            CampusGameplayRoom room = FindServiceRoom(CampusRoomType.Canteen);
-            if (room == null ||
-                !HasFacility(room, CampusFacilityType.CanteenCounter) ||
-                FindStaffWithDuty(CampusStaffDuty.CanteenClerk) == null)
-            {
-                return false;
-            }
-
-            string itemId = "canteen_meal_" + SelectStableIndex(customer, 3);
-            string itemName = ResolveCanteenMealName(itemId);
-            CampusCommerceTransaction transaction = CampusCommerceTransaction.Create(
-                Guid.NewGuid().ToString("N"),
-                CampusCommerceNeedType.CanteenMeal,
-                CampusCommerceStep.QueueingCanteenMeal,
-                customer.CharacterId,
-                room.RoomId,
-                itemId,
-                itemName,
-                0,
-                Time.time);
-            transactions.Add(transaction);
-            WriteLog("[Canteen] " + FormatName(customer) + " walks to the meal queue for " + itemName + ".");
-            return true;
-        }
-
-        private bool TryCreateStorePurchaseRequest(CampusCharacterRuntime customer)
-        {
-            CampusGameplayRoom room = FindServiceRoom(CampusRoomType.Store);
-            if (room == null ||
-                !HasFacility(room, CampusFacilityType.StoreShelf) ||
-                !HasFacility(room, CampusFacilityType.StoreCheckout) ||
-                FindStaffWithDuty(CampusStaffDuty.StoreOwner) == null)
-            {
-                return false;
-            }
-
-            string itemId = "store_item_" + SelectStableIndex(customer, 4);
-            string itemName = ResolveStoreItemName(itemId);
-            int price = ResolveStoreItemPrice(itemId);
-            CampusCommerceTransaction transaction = CampusCommerceTransaction.Create(
-                Guid.NewGuid().ToString("N"),
-                CampusCommerceNeedType.StorePurchase,
-                CampusCommerceStep.BrowsingStoreShelf,
-                customer.CharacterId,
-                room.RoomId,
-                itemId,
-                itemName,
-                price,
-                Time.time);
-            transactions.Add(transaction);
-            WriteLog("[Store] " + FormatName(customer) + " goes to the shelf for " + itemName + ".");
-            return true;
-        }
-
-        private void RefreshQueueIndexes()
-        {
-            int canteenIndex = 0;
-            int storeIndex = 0;
-            for (int i = 0; i < transactions.Count; i++)
-            {
-                CampusCommerceTransaction transaction = transactions[i];
-                if (transaction == null || transaction.IsFinished)
-                {
-                    continue;
-                }
-
-                if (transaction.Step == CampusCommerceStep.QueueingCanteenMeal)
-                {
-                    transaction.SetQueueIndex(canteenIndex++);
-                }
-                else if (transaction.Step == CampusCommerceStep.QueueingStoreCheckout)
-                {
-                    transaction.SetQueueIndex(storeIndex++);
-                }
-                else
-                {
-                    transaction.SetQueueIndex(0);
-                }
-            }
-        }
-
-        private void ProcessTransactions()
-        {
-            for (int i = 0; i < transactions.Count; i++)
-            {
-                CampusCommerceTransaction transaction = transactions[i];
-                if (transaction == null || transaction.IsFinished)
-                {
-                    continue;
-                }
-
-                switch (transaction.NeedType)
-                {
-                    case CampusCommerceNeedType.CanteenMeal:
-                        ProcessCanteenTransaction(transaction);
-                        break;
-                    case CampusCommerceNeedType.StorePurchase:
-                        ProcessStoreTransaction(transaction);
-                        break;
-                }
-            }
-        }
-
-        private void ProcessCanteenTransaction(CampusCommerceTransaction transaction)
-        {
-            CampusCharacterRuntime customer = rosterService != null ? rosterService.FindRuntime(transaction.CustomerId) : null;
-            CampusGameplayRoom room = worldService != null ? worldService.FindRoomById(transaction.RoomId) : null;
-            if (customer == null || customer.Data == null || room == null)
-            {
-                Fail(transaction, "customer or canteen disappeared");
-                return;
-            }
-
-            CampusCharacterRuntime clerk = FindStaffWithDutyInRoom(CampusStaffDuty.CanteenClerk, room);
-            switch (transaction.Step)
-            {
-                case CampusCommerceStep.QueueingCanteenMeal:
-                    if (transaction.QueueIndex == 0 &&
-                        clerk != null &&
-                        !IsDutyBusy(CampusStaffDuty.CanteenClerk, transaction.RequestId) &&
-                        IsRuntimeNearTaskTarget(customer, transaction, CampusCommerceTargetKind.QueueCanteenMeal, room, QueueReachDistance) &&
-                        IsCanteenClerkAtServicePosition(clerk, room, CounterReachDistance))
-                    {
-                        transaction.AssignClerk(clerk.CharacterId);
-                        transaction.SetStep(CampusCommerceStep.OrderingCanteenMeal, Time.time);
-                        WriteLog("[Canteen] " + FormatName(clerk) + " takes " + FormatName(customer) + "'s order: " + transaction.ItemDisplayName + ".");
-                    }
-                    break;
-                case CampusCommerceStep.OrderingCanteenMeal:
-                    if (Elapsed(transaction) >= CanteenOrderSeconds)
-                    {
-                        transaction.SetStep(CampusCommerceStep.ClerkPreparingCanteenMeal, Time.time);
-                        WriteLog("[Canteen] " + ResolveClerkName(transaction) + " starts preparing " + transaction.ItemDisplayName + ".");
-                    }
-                    break;
-                case CampusCommerceStep.ClerkPreparingCanteenMeal:
-                    if (Elapsed(transaction) >= CanteenPrepareSeconds)
-                    {
-                        transaction.SetStep(CampusCommerceStep.ReceivingCanteenMeal, Time.time);
-                        WriteLog("[Canteen] " + ResolveClerkName(transaction) + " puts " + transaction.ItemDisplayName + " on the counter.");
-                    }
-                    break;
-                case CampusCommerceStep.ReceivingCanteenMeal:
-                    if (IsRuntimeNearTaskTarget(customer, transaction, CampusCommerceTargetKind.ReceiveCanteenMeal, room, CounterReachDistance))
-                    {
-                        CompleteCanteenTransaction(transaction, customer);
-                    }
-                    break;
-            }
-        }
-
-        private void ProcessStoreTransaction(CampusCommerceTransaction transaction)
-        {
-            CampusCharacterRuntime customer = rosterService != null ? rosterService.FindRuntime(transaction.CustomerId) : null;
-            CampusGameplayRoom room = worldService != null ? worldService.FindRoomById(transaction.RoomId) : null;
-            if (customer == null || customer.Data == null || room == null)
-            {
-                Fail(transaction, "customer or store disappeared");
-                return;
-            }
-
-            switch (transaction.Step)
-            {
-                case CampusCommerceStep.BrowsingStoreShelf:
-                    if (IsRuntimeNearTaskTarget(customer, transaction, CampusCommerceTargetKind.BrowseStoreShelf, room, ShelfReachDistance))
-                    {
-                        transaction.SetStep(CampusCommerceStep.SelectingStoreItem, Time.time);
-                        customer.Data.AddMemory(CampusCharacterMemoryId.SelectedStoreItem);
-                        WriteLog("[Store] " + FormatName(customer) + " takes " + transaction.ItemDisplayName + " from the shelf.");
-                    }
-                    break;
-                case CampusCommerceStep.SelectingStoreItem:
-                    if (Elapsed(transaction) >= StoreSelectSeconds)
-                    {
-                        transaction.SetStep(CampusCommerceStep.QueueingStoreCheckout, Time.time);
-                        WriteLog("[Store] " + FormatName(customer) + " carries " + transaction.ItemDisplayName + " to the checkout line.");
-                    }
-                    break;
-                case CampusCommerceStep.QueueingStoreCheckout:
-                    CampusCharacterRuntime cashier = FindStaffWithDutyInRoom(CampusStaffDuty.StoreOwner, room);
-                    if (transaction.QueueIndex == 0 &&
-                        cashier != null &&
-                        !IsDutyBusy(CampusStaffDuty.StoreOwner, transaction.RequestId) &&
-                        IsRuntimeNearTaskTarget(customer, transaction, CampusCommerceTargetKind.QueueStoreCheckout, room, QueueReachDistance) &&
-                        IsRuntimeNearFacility(cashier, room, CampusFacilityType.StoreCheckout, CounterReachDistance))
-                    {
-                        transaction.AssignClerk(cashier.CharacterId);
-                        transaction.SetStep(CampusCommerceStep.PayingStoreCheckout, Time.time);
-                        customer.Data.AddMemory(CampusCharacterMemoryId.PaidAtStoreCheckout);
-                        WriteLog("[Store] " + FormatName(cashier) + " scans " + transaction.ItemDisplayName + " for " + FormatName(customer) + ". Price=" + transaction.Price + ".");
-                    }
-                    break;
-                case CampusCommerceStep.PayingStoreCheckout:
-                    if (Elapsed(transaction) >= StorePaySeconds)
-                    {
-                        transaction.SetStep(CampusCommerceStep.ReceivingStorePurchase, Time.time);
-                        WriteLog("[Store] " + ResolveClerkName(transaction) + " takes payment and bags " + transaction.ItemDisplayName + ".");
-                    }
-                    break;
-                case CampusCommerceStep.ReceivingStorePurchase:
-                    if (IsRuntimeNearTaskTarget(customer, transaction, CampusCommerceTargetKind.PayStoreCheckout, room, CounterReachDistance))
-                    {
-                        CompleteStoreTransaction(transaction, customer);
-                    }
-                    break;
-            }
-        }
-
-        private void CompleteCanteenTransaction(CampusCommerceTransaction transaction, CampusCharacterRuntime customer)
-        {
-            customer.Data.AddPossession(transaction.ItemId, transaction.ItemDisplayName, "Canteen counter", CurrentDay());
-            customer.Data.AddMemory(CampusCharacterMemoryId.ReceivedCanteenMeal);
-            transaction.SetStep(CampusCommerceStep.Completed, Time.time);
-            dailyCanteenMealsServed++;
-            WriteLog("[Canteen] " + FormatName(customer) + " receives " + transaction.ItemDisplayName + " and leaves the line.");
-        }
-
-        private void CompleteStoreTransaction(CampusCommerceTransaction transaction, CampusCharacterRuntime customer)
-        {
-            customer.Data.AddPossession(transaction.ItemId, transaction.ItemDisplayName, "Store checkout", CurrentDay());
-            customer.Data.AddMemory(CampusCharacterMemoryId.ReceivedStorePurchase);
-            transaction.SetStep(CampusCommerceStep.Completed, Time.time);
-            dailyStorePurchasesCompleted++;
-            WriteLog("[Store] " + FormatName(customer) + " receives " + transaction.ItemDisplayName + " after checkout.");
-        }
-
-        private void Fail(CampusCommerceTransaction transaction, string reason)
-        {
-            if (transaction == null)
+            if (Time.time < nextTheftAuditTime || audit == null)
             {
                 return;
             }
 
-            transaction.SetStep(CampusCommerceStep.Failed, Time.time);
-            WriteLog("[Commerce] " + transaction.CustomerId + " transaction failed: " + reason + ".");
+            nextTheftAuditTime = Time.time + theftAuditIntervalSeconds;
+            CampusStoreAuditResult result = audit.AuditUnpaidItems();
+            unpaidStoreItemCount = result.UnpaidItemCount;
+            AddDailyStoreThefts(result.TheftCount);
         }
 
-        private bool IsDutyBusy(CampusStaffDuty duty, string allowedRequestId)
+        private StorageContainerModel GetOrCreateShelfContainer(CampusPlacedObject shelf)
         {
-            for (int i = 0; i < transactions.Count; i++)
-            {
-                CampusCommerceTransaction transaction = transactions[i];
-                if (transaction == null ||
-                    transaction.IsFinished ||
-                    string.Equals(transaction.RequestId, allowedRequestId, StringComparison.OrdinalIgnoreCase))
-                {
-                    continue;
-                }
-
-                if (duty == CampusStaffDuty.CanteenClerk &&
-                    (transaction.Step == CampusCommerceStep.OrderingCanteenMeal ||
-                     transaction.Step == CampusCommerceStep.ClerkPreparingCanteenMeal ||
-                     transaction.Step == CampusCommerceStep.ReceivingCanteenMeal))
-                {
-                    return true;
-                }
-
-                if (duty == CampusStaffDuty.StoreOwner &&
-                    (transaction.Step == CampusCommerceStep.PayingStoreCheckout ||
-                     transaction.Step == CampusCommerceStep.ReceivingStorePurchase))
-                {
-                    return true;
-                }
-            }
-
-            return false;
-        }
-
-        private bool TryResolveTargetForTransaction(
-            CampusCommerceTransaction transaction,
-            CampusCommerceTargetKind targetKind,
-            CampusGameplayRoom room,
-            Vector3 anchor,
-            out Vector3 target)
-        {
-            target = anchor;
-            if (transaction == null || room == null)
-            {
-                return false;
-            }
-
-            switch (targetKind)
-            {
-                case CampusCommerceTargetKind.QueueCanteenMeal:
-                    target = ResolveCanteenQueueTarget(
-                        room,
-                        transaction.QueueIndex,
-                        0.62f,
-                        anchor);
-                    return true;
-                case CampusCommerceTargetKind.ReceiveCanteenMeal:
-                    target = ResolveCanteenCustomerTarget(room, anchor);
-                    return true;
-                case CampusCommerceTargetKind.BrowseStoreShelf:
-                    target = TryResolveFacilityWorldPosition(room, CampusFacilityType.StoreShelf, out Vector3 shelf)
-                        ? shelf + Vector3.down * 0.45f
-                        : anchor;
-                    return true;
-                case CampusCommerceTargetKind.QueueStoreCheckout:
-                    target = ResolveQueueTarget(
-                        room,
-                        CampusFacilityType.StoreQueuePoint,
-                        CampusFacilityType.StoreCheckout,
-                        transaction.QueueIndex,
-                        0.58f,
-                        anchor);
-                    return true;
-                case CampusCommerceTargetKind.PayStoreCheckout:
-                    target = ResolveCounterCustomerTarget(room, CampusFacilityType.StoreCheckout, anchor);
-                    return true;
-                default:
-                    return false;
-            }
-        }
-
-        private Vector3 ResolveQueueTarget(
-            CampusGameplayRoom room,
-            CampusFacilityType queueType,
-            CampusFacilityType fallbackType,
-            int queueIndex,
-            float spacing,
-            Vector3 fallback)
-        {
-            Vector3 basePosition = TryResolveFacilityWorldPosition(room, queueType, out Vector3 explicitQueue)
-                ? explicitQueue
-                : TryResolveFacilityWorldPosition(room, fallbackType, out Vector3 fallbackFacility)
-                    ? fallbackFacility + Vector3.down * 0.75f
-                    : fallback;
-            return basePosition + Vector3.down * Mathf.Max(0, queueIndex) * spacing;
-        }
-
-        private Vector3 ResolveCanteenQueueTarget(
-            CampusGameplayRoom room,
-            int queueIndex,
-            float spacing,
-            Vector3 fallback)
-        {
-            Vector3 basePosition = TryResolveFacilityWorldPosition(room, CampusFacilityType.CanteenQueuePoint, out Vector3 explicitQueue)
-                ? explicitQueue
-                : ResolveCanteenCustomerTarget(room, fallback);
-            return basePosition + Vector3.down * Mathf.Max(0, queueIndex) * spacing;
-        }
-
-        private Vector3 ResolveCanteenCustomerTarget(CampusGameplayRoom room, Vector3 fallback)
-        {
-            if (TryResolveFacilityWorldPosition(room, CampusFacilityType.CanteenCustomerPickupPoint, out Vector3 pickup))
-            {
-                return pickup;
-            }
-
-            return ResolveCounterCustomerTarget(room, CampusFacilityType.CanteenCounter, fallback);
-        }
-
-        private Vector3 ResolveCounterCustomerTarget(CampusGameplayRoom room, CampusFacilityType counterType, Vector3 fallback)
-        {
-            return TryResolveFacilityWorldPosition(room, counterType, out Vector3 counter)
-                ? counter + Vector3.down * 0.55f
-                : fallback;
-        }
-
-        private bool IsCanteenClerkAtServicePosition(
-            CampusCharacterRuntime runtime,
-            CampusGameplayRoom room,
-            float distance)
-        {
-            return IsRuntimeNearAnyFacility(runtime, room, CampusFacilityType.CanteenClerkStandPoint, distance) ||
-                   IsRuntimeNearFacility(runtime, room, CampusFacilityType.CanteenCounter, distance);
-        }
-
-        private bool IsRuntimeNearTaskTarget(
-            CampusCharacterRuntime runtime,
-            CampusCommerceTransaction transaction,
-            CampusCommerceTargetKind targetKind,
-            CampusGameplayRoom room,
-            float distance)
-        {
-            if (runtime == null ||
-                !TryResolveTargetForTransaction(transaction, targetKind, room, runtime.transform.position, out Vector3 target))
-            {
-                return false;
-            }
-
-            return Vector2.Distance(runtime.transform.position, target) <= distance;
-        }
-
-        private bool IsRuntimeNearFacility(
-            CampusCharacterRuntime runtime,
-            CampusGameplayRoom room,
-            CampusFacilityType facilityType,
-            float distance)
-        {
-            return runtime != null &&
-                   TryResolveFacilityWorldPosition(room, facilityType, out Vector3 target) &&
-                   Vector2.Distance(runtime.transform.position, target) <= distance;
-        }
-
-        private bool IsRuntimeNearAnyFacility(
-            CampusCharacterRuntime runtime,
-            CampusGameplayRoom room,
-            CampusFacilityType facilityType,
-            float distance)
-        {
-            if (runtime == null || room == null || room.Facilities == null)
-            {
-                return false;
-            }
-
-            for (int i = 0; i < room.Facilities.Count; i++)
-            {
-                CampusGameplayRoom.FacilityRecord record = room.Facilities[i];
-                if (record != null &&
-                    record.FacilityType == facilityType &&
-                    Vector2.Distance(runtime.transform.position, CellCenter(record.Cell)) <= distance)
-                {
-                    return true;
-                }
-            }
-
-            return false;
-        }
-
-        private bool TryResolveFacilityWorldPosition(CampusGameplayRoom room, CampusFacilityType facilityType, out Vector3 position)
-        {
-            position = default;
-            CampusGameplayRoom.FacilityRecord record = FindFacility(room, facilityType);
-            if (record == null)
-            {
-                return false;
-            }
-
-            position = new Vector3(record.Cell.x + 0.5f, record.Cell.y + 0.5f, 0f);
-            return true;
-        }
-
-        private static Vector3 CellCenter(Vector3Int cell)
-        {
-            return new Vector3(cell.x + 0.5f, cell.y + 0.5f, 0f);
-        }
-
-        private CampusGameplayRoom.FacilityRecord FindFacility(CampusGameplayRoom room, CampusFacilityType facilityType)
-        {
-            if (room == null || room.Facilities == null)
+            if (stock == null)
             {
                 return null;
             }
 
-            for (int i = 0; i < room.Facilities.Count; i++)
+            StorageContainerModel container = stock.GetOrCreateShelfContainer(shelf, out int added);
+            if (added > 0)
             {
-                CampusGameplayRoom.FacilityRecord record = room.Facilities[i];
-                if (record != null && record.FacilityType == facilityType)
-                {
-                    return record;
-                }
+                lastRestockedItemCount += added;
             }
 
-            return null;
+            return container;
         }
 
-        private bool HasFacility(CampusGameplayRoom room, CampusFacilityType facilityType)
+        private int CountUnpaidItems(
+            CampusCharacterInventory inventory,
+            CampusGameplayRoom storeRoom,
+            List<StorageItemModel> destination)
         {
-            return room != null && room.GetFacilityCount(facilityType) > 0;
+            return audit != null
+                ? audit.CountUnpaidItems(inventory, storeRoom, destination)
+                : 0;
         }
 
-        private CampusGameplayRoom FindServiceRoom(CampusRoomType roomType)
+        private void AddCheckedOutActor(CampusCharacterRuntime actor)
         {
-            return worldService != null ? worldService.FindFirstUsableRoom(roomType) ?? worldService.FindFirstRoom(roomType) : null;
+            if (actor == null || string.IsNullOrWhiteSpace(actor.CharacterId) || ContainsId(checkedOutActorIdsToday, actor.CharacterId))
+            {
+                return;
+            }
+
+            checkedOutActorIdsToday.Add(actor.CharacterId.Trim());
         }
 
-        private CampusCharacterRuntime FindStaffWithDuty(CampusStaffDuty duty)
+        private void AddDailyStorePurchases(int count)
         {
-            if (rosterService == null)
+            if (count > 0)
             {
-                return null;
-            }
-
-            foreach (CampusCharacterRuntime runtime in rosterService.EnumerateByRole(CampusCharacterRole.Staff))
-            {
-                if (runtime != null && runtime.Data != null && (runtime.Data.StaffDuty & duty) != 0)
-                {
-                    return runtime;
-                }
-            }
-
-            return null;
-        }
-
-        private CampusCharacterRuntime FindStaffWithDutyInRoom(CampusStaffDuty duty, CampusGameplayRoom room)
-        {
-            if (rosterService == null || worldService == null || room == null)
-            {
-                return null;
-            }
-
-            foreach (CampusCharacterRuntime runtime in rosterService.EnumerateByRole(CampusCharacterRole.Staff))
-            {
-                if (runtime == null || runtime.Data == null || (runtime.Data.StaffDuty & duty) == 0)
-                {
-                    continue;
-                }
-
-                CampusGameplayRoom staffRoom = worldService.FindRoomForRuntime(runtime);
-                if (staffRoom != null && string.Equals(staffRoom.RoomId, room.RoomId, StringComparison.OrdinalIgnoreCase))
-                {
-                    return runtime;
-                }
-            }
-
-            return null;
-        }
-
-        private CampusCommerceTransaction FindActiveTransactionForCustomer(string customerId)
-        {
-            if (string.IsNullOrWhiteSpace(customerId))
-            {
-                return null;
-            }
-
-            for (int i = 0; i < transactions.Count; i++)
-            {
-                CampusCommerceTransaction transaction = transactions[i];
-                if (transaction != null &&
-                    !transaction.IsFinished &&
-                    string.Equals(transaction.CustomerId, customerId, StringComparison.OrdinalIgnoreCase))
-                {
-                    return transaction;
-                }
-            }
-
-            return null;
-        }
-
-        private void TrimFinishedTransactions()
-        {
-            float now = Time.time;
-            for (int i = transactions.Count - 1; i >= 0; i--)
-            {
-                CampusCommerceTransaction transaction = transactions[i];
-                if (transaction == null ||
-                    (transaction.IsFinished && now - transaction.StepStartedAt >= TransactionRetentionSeconds))
-                {
-                    transactions.RemoveAt(i);
-                }
+                dailyStorePurchasesCompleted += count;
             }
         }
 
-        private bool IsMealWindowNow()
+        private void AddDailyStoreThefts(int count)
         {
-            CampusTimeSegment segment = scheduleService != null && scheduleService.TimeController != null
-                ? scheduleService.TimeController.CurrentSegment
-                : CampusTimeSegment.WakeUp;
-            return segment == CampusTimeSegment.LunchBreak ||
-                   segment == CampusTimeSegment.DinnerBreak;
-        }
-
-        private bool IsStoreWindowNow()
-        {
-            CampusTimeSegment segment = scheduleService != null && scheduleService.TimeController != null
-                ? scheduleService.TimeController.CurrentSegment
-                : CampusTimeSegment.WakeUp;
-            switch (segment)
+            if (count > 0)
             {
-                case CampusTimeSegment.MorningBreak1:
-                case CampusTimeSegment.MorningExerciseBreak:
-                case CampusTimeSegment.MorningBreak2:
-                case CampusTimeSegment.AfternoonBreak1:
-                case CampusTimeSegment.AfternoonBreak2:
-                case CampusTimeSegment.AfternoonBreak3:
-                case CampusTimeSegment.DinnerBreak:
-                case CampusTimeSegment.EveningBreak1:
-                case CampusTimeSegment.EveningBreak2:
-                case CampusTimeSegment.NightFree:
-                    return true;
-                default:
-                    return false;
+                dailyStoreTheftCount += count;
             }
-        }
-
-        private bool ShouldVisitStore(CampusCharacterData data)
-        {
-            if (data == null)
-            {
-                return false;
-            }
-
-            int chancePercent = 18 + Mathf.Clamp(data.Mischief / 6, 0, 12);
-            if (data.HasTrait(CampusCharacterTrait.Troublemaker))
-            {
-                chancePercent += 12;
-            }
-
-            if (data.HasTrait(CampusCharacterTrait.GoodStudent))
-            {
-                chancePercent -= 8;
-            }
-
-            int bucket = Mathf.FloorToInt(Time.time / NeedScanSeconds);
-            return PseudoRandom01(StableHash(data.Id) + bucket * 31, 271) <= Mathf.Clamp01(chancePercent / 100f);
-        }
-
-        private int SelectStableIndex(CampusCharacterRuntime runtime, int count)
-        {
-            int safeCount = Mathf.Max(1, count);
-            int seed = StableHash(runtime != null ? runtime.CharacterId : string.Empty) + CurrentDay() * 97;
-            return Mathf.Abs(seed) % safeCount;
-        }
-
-        private static string ResolveCanteenMealName(string itemId)
-        {
-            switch (itemId)
-            {
-                case "canteen_meal_0":
-                    return "rice plate";
-                case "canteen_meal_1":
-                    return "noodle bowl";
-                default:
-                    return "malatang bowl";
-            }
-        }
-
-        private static string ResolveStoreItemName(string itemId)
-        {
-            switch (itemId)
-            {
-                case "store_item_0":
-                    return "mineral water";
-                case "store_item_1":
-                    return "notebook";
-                case "store_item_2":
-                    return "spicy chips";
-                default:
-                    return "pencil pack";
-            }
-        }
-
-        private static int ResolveStoreItemPrice(string itemId)
-        {
-            switch (itemId)
-            {
-                case "store_item_0":
-                    return 3;
-                case "store_item_1":
-                    return 6;
-                case "store_item_2":
-                    return 5;
-                default:
-                    return 4;
-            }
-        }
-
-        private string ResolveClerkName(CampusCommerceTransaction transaction)
-        {
-            CampusCharacterRuntime clerk = rosterService != null ? rosterService.FindRuntime(transaction.ClerkId) : null;
-            return FormatName(clerk);
-        }
-
-        private static string FormatName(CampusCharacterRuntime runtime)
-        {
-            return runtime != null && runtime.Data != null
-                ? runtime.Data.GetDisplayName(CampusLanguageState.CurrentLanguage)
-                : "Actor";
         }
 
         private int CurrentDay()
@@ -919,43 +453,64 @@ namespace NtingCampus.Gameplay.Economy
             return bootstrap != null && bootstrap.GameState != null ? bootstrap.GameState.Day : 0;
         }
 
-        private static float Elapsed(CampusCommerceTransaction transaction)
+        private void UpdateSummary()
         {
-            return transaction != null ? Time.time - transaction.StepStartedAt : 0f;
+            currentSummary = CampusCommerceTextCatalog.Format(
+                CampusCommerceTextId.Summary,
+                knownStoreShelfCount,
+                lastRestockedItemCount,
+                unpaidStoreItemCount,
+                dailyStorePurchasesCompleted,
+                dailyStoreTheftCount);
         }
 
-        private static bool IsMoreRelevantCanteenStep(CampusCommerceStep candidate, CampusCommerceStep current)
+        private void RememberWarning(string key, string message)
         {
-            return CanteenStepPriority(candidate) > CanteenStepPriority(current);
-        }
-
-        private static int CanteenStepPriority(CampusCommerceStep step)
-        {
-            switch (step)
+            if (string.IsNullOrWhiteSpace(key) || warningKeys.Contains(key))
             {
-                case CampusCommerceStep.ClerkPreparingCanteenMeal:
-                    return 4;
-                case CampusCommerceStep.ReceivingCanteenMeal:
-                    return 3;
-                case CampusCommerceStep.OrderingCanteenMeal:
-                    return 2;
-                case CampusCommerceStep.QueueingCanteenMeal:
-                    return 1;
-                default:
-                    return 0;
+                return;
+            }
+
+            warningKeys.Add(key);
+            Debug.LogWarning("[Store] " + message, this);
+        }
+
+        private void WriteLog(string message)
+        {
+            if (bootstrap != null && bootstrap.EventLog != null && !string.IsNullOrWhiteSpace(message))
+            {
+                bootstrap.EventLog.AddLog(message);
             }
         }
 
-        private static bool ContainsId(List<string> values, string id)
+        private static CampusCharacterRuntime ResolveActorRuntime(GameObject actor)
         {
-            if (values == null || string.IsNullOrWhiteSpace(id))
+            if (actor != null)
+            {
+                CampusCharacterRuntime runtime = actor.GetComponentInParent<CampusCharacterRuntime>();
+                if (runtime != null)
+                {
+                    return runtime;
+                }
+            }
+
+            CampusGameBootstrap bootstrap = CampusGameBootstrap.Instance;
+            return bootstrap != null && bootstrap.RosterService != null
+                ? bootstrap.RosterService.PlayerRuntime
+                : null;
+        }
+
+        private static bool ContainsId(List<string> ids, string id)
+        {
+            if (ids == null || string.IsNullOrWhiteSpace(id))
             {
                 return false;
             }
 
-            for (int i = 0; i < values.Count; i++)
+            string normalized = id.Trim();
+            for (int i = 0; i < ids.Count; i++)
             {
-                if (string.Equals(values[i], id, StringComparison.OrdinalIgnoreCase))
+                if (string.Equals(ids[i], normalized, StringComparison.OrdinalIgnoreCase))
                 {
                     return true;
                 }
@@ -964,116 +519,6 @@ namespace NtingCampus.Gameplay.Economy
             return false;
         }
 
-        private void WriteLog(string message)
-        {
-            currentSummary = message;
-            if (bootstrap != null && bootstrap.EventLog != null)
-            {
-                bootstrap.EventLog.AddLog(message);
-            }
-        }
-
-        private static int StableHash(string value)
-        {
-            unchecked
-            {
-                int hash = 23;
-                if (!string.IsNullOrEmpty(value))
-                {
-                    for (int i = 0; i < value.Length; i++)
-                    {
-                        hash = hash * 31 + value[i];
-                    }
-                }
-
-                return hash == int.MinValue ? int.MaxValue : hash;
-            }
-        }
-
-        private static float PseudoRandom01(int seed, int salt)
-        {
-            unchecked
-            {
-                int value = seed;
-                value ^= salt * 374761393;
-                value = (value << 13) ^ value;
-                int mixed = value * (value * value * 15731 + 789221) + 1376312589;
-                return (mixed & 0x7fffffff) / 2147483647f;
-            }
-        }
     }
 
-    [Serializable]
-    public sealed class CampusCommerceTransaction
-    {
-        [SerializeField] private string requestId = string.Empty;
-        [SerializeField] private CampusCommerceNeedType needType;
-        [SerializeField] private CampusCommerceStep step;
-        [SerializeField] private string customerId = string.Empty;
-        [SerializeField] private string clerkId = string.Empty;
-        [SerializeField] private string roomId = string.Empty;
-        [SerializeField] private string itemId = string.Empty;
-        [SerializeField] private string itemDisplayName = string.Empty;
-        [SerializeField, Min(0)] private int price;
-        [SerializeField, Min(0)] private int queueIndex;
-        [SerializeField] private float createdAt;
-        [SerializeField] private float stepStartedAt;
-
-        public string RequestId => requestId;
-        public CampusCommerceNeedType NeedType => needType;
-        public CampusCommerceStep Step => step;
-        public string CustomerId => customerId;
-        public string ClerkId => clerkId;
-        public string RoomId => roomId;
-        public string ItemId => itemId;
-        public string ItemDisplayName => itemDisplayName;
-        public int Price => price;
-        public int QueueIndex => queueIndex;
-        public float CreatedAt => createdAt;
-        public float StepStartedAt => stepStartedAt;
-        public bool IsFinished => step == CampusCommerceStep.Completed || step == CampusCommerceStep.Failed;
-
-        public static CampusCommerceTransaction Create(
-            string id,
-            CampusCommerceNeedType transactionNeedType,
-            CampusCommerceStep initialStep,
-            string transactionCustomerId,
-            string transactionRoomId,
-            string transactionItemId,
-            string transactionItemDisplayName,
-            int transactionPrice,
-            float now)
-        {
-            CampusCommerceTransaction transaction = new CampusCommerceTransaction();
-            transaction.requestId = string.IsNullOrWhiteSpace(id) ? Guid.NewGuid().ToString("N") : id.Trim();
-            transaction.needType = transactionNeedType;
-            transaction.step = initialStep;
-            transaction.customerId = string.IsNullOrWhiteSpace(transactionCustomerId) ? string.Empty : transactionCustomerId.Trim();
-            transaction.roomId = string.IsNullOrWhiteSpace(transactionRoomId) ? string.Empty : transactionRoomId.Trim();
-            transaction.itemId = string.IsNullOrWhiteSpace(transactionItemId) ? string.Empty : transactionItemId.Trim();
-            transaction.itemDisplayName = string.IsNullOrWhiteSpace(transactionItemDisplayName)
-                ? transaction.itemId
-                : transactionItemDisplayName.Trim();
-            transaction.price = Mathf.Max(0, transactionPrice);
-            transaction.createdAt = now;
-            transaction.stepStartedAt = now;
-            return transaction;
-        }
-
-        public void SetStep(CampusCommerceStep nextStep, float now)
-        {
-            step = nextStep;
-            stepStartedAt = now;
-        }
-
-        public void AssignClerk(string transactionClerkId)
-        {
-            clerkId = string.IsNullOrWhiteSpace(transactionClerkId) ? string.Empty : transactionClerkId.Trim();
-        }
-
-        public void SetQueueIndex(int value)
-        {
-            queueIndex = Mathf.Max(0, value);
-        }
-    }
 }

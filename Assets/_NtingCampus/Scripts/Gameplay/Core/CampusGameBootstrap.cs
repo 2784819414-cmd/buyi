@@ -1,4 +1,5 @@
 using NtingCampus.Gameplay.Characters;
+using NtingCampus.Gameplay.Canteen;
 using NtingCampus.Gameplay.Economy;
 using NtingCampus.Gameplay.Events;
 using NtingCampus.Gameplay.Inventory;
@@ -27,6 +28,7 @@ namespace NtingCampus.Gameplay.Core
         [SerializeField] private CampusWorldService worldService;
         [SerializeField] private CampusRosterService rosterService;
         [SerializeField] private CampusNpcEcologyService npcEcologyService;
+        [SerializeField] private CampusCanteenService canteenService;
         [SerializeField] private CampusCommerceService commerceService;
         [SerializeField] private CampusScheduleService scheduleService;
         [SerializeField] private CampusClassroomLoopService classroomLoopService;
@@ -55,6 +57,7 @@ namespace NtingCampus.Gameplay.Core
         public CampusWorldService WorldService => worldService;
         public CampusRosterService RosterService => rosterService;
         public CampusNpcEcologyService NpcEcologyService => npcEcologyService;
+        public CampusCanteenService CanteenService => canteenService;
         public CampusCommerceService CommerceService => commerceService;
         public CampusScheduleService ScheduleService => scheduleService;
         public CampusClassroomLoopService ClassroomLoopService => classroomLoopService;
@@ -81,6 +84,7 @@ namespace NtingCampus.Gameplay.Core
             bootstrap.EnsureWorldService();
             bootstrap.EnsureRosterService();
             bootstrap.EnsureNpcEcologyService();
+            bootstrap.EnsureCanteenService();
             bootstrap.EnsureCommerceService();
             bootstrap.EnsureScheduleService();
             bootstrap.EnsureGameplayEventHub();
@@ -127,6 +131,8 @@ namespace NtingCampus.Gameplay.Core
             rosterService = EnsureRosterService();
             rosterService.Initialize(this);
 
+            worldService.ValidateEcology(rosterService, true);
+
             modeController = EnsureModeController();
             modeController.InitializeModes(this, false);
 
@@ -151,6 +157,9 @@ namespace NtingCampus.Gameplay.Core
             npcEcologyService = EnsureNpcEcologyService();
             npcEcologyService.Initialize(this);
 
+            canteenService = EnsureCanteenService();
+            canteenService.Initialize(this);
+
             commerceService = EnsureCommerceService();
             commerceService.Initialize(this);
 
@@ -167,12 +176,14 @@ namespace NtingCampus.Gameplay.Core
             playerInventoryController.Initialize(this);
 
             isInitialized = true;
-            eventLog.AddLog("[System] " + timeController.CurrentDateText +
-                            " gameplay bootstrap initialized. Money=" + resourceState.Money +
-                            ", DivinePower=" + resourceState.DivinePower +
-                            ", Day=" + gameState.Day +
-                            ", Order=" + gameState.CampusOrder +
-                            ", Chaos=" + gameState.CampusChaos + ".");
+            eventLog.AddLog(CampusCoreTextCatalog.Format(
+                CampusCoreTextId.GameplayBootstrapInitialized,
+                timeController.CurrentDateText,
+                resourceState.Money,
+                resourceState.DivinePower,
+                gameState.Day,
+                gameState.CampusOrder,
+                gameState.CampusChaos));
         }
 
         private void Awake()
@@ -366,6 +377,22 @@ namespace NtingCampus.Gameplay.Core
             }
 
             return npcEcologyService;
+        }
+
+        private CampusCanteenService EnsureCanteenService()
+        {
+            if (canteenService != null)
+            {
+                return canteenService;
+            }
+
+            canteenService = GetComponent<CampusCanteenService>();
+            if (canteenService == null)
+            {
+                canteenService = gameObject.AddComponent<CampusCanteenService>();
+            }
+
+            return canteenService;
         }
 
         private CampusCommerceService EnsureCommerceService()

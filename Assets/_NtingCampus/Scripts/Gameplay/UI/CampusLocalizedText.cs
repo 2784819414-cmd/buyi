@@ -15,6 +15,17 @@ namespace NtingCampus.Gameplay.UI
             english = string.IsNullOrWhiteSpace(englishText) ? string.Empty : englishText.Trim();
         }
 
+        public bool HasAnyText => !string.IsNullOrWhiteSpace(chinese) || !string.IsNullOrWhiteSpace(english);
+
+        public string Chinese => chinese;
+
+        public string English => english;
+
+        public string Current(params string[] fallbacks)
+        {
+            return Get(CampusLanguageState.CurrentLanguage, fallbacks);
+        }
+
         public string Get(CampusDisplayLanguage language, params string[] fallbacks)
         {
             string resolved = language switch

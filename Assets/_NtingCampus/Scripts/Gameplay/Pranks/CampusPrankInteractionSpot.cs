@@ -1,4 +1,3 @@
-using NtingCampus.Gameplay.Characters;
 using NtingCampus.Gameplay.Core;
 using NtingCampus.Gameplay.Rooms;
 using NtingCampusMapEditor;
@@ -19,7 +18,7 @@ namespace NtingCampus.Gameplay.Pranks
     [DisallowMultipleComponent]
     [RequireComponent(typeof(CircleCollider2D))]
     [RequireComponent(typeof(CampusInteractionAnchor))]
-    public sealed class CampusPrankInteractionSpot : MonoBehaviour, ICampusInteractionActionHandler, ICampusInteractionAvailability
+    public sealed class CampusPrankInteractionSpot : MonoBehaviour, ICampusInteractionAvailability
     {
         private const string VisualRootName = "VisualRoot";
         private const string BaseRendererName = "Base";
@@ -94,44 +93,19 @@ namespace NtingCampus.Gameplay.Pranks
 
             if (prankService == null)
             {
-                unavailableReason = "Formal prank service is missing.";
+                unavailableReason = CampusPrankTextCatalog.Get(CampusPrankTextId.MissingPrankService);
                 return false;
             }
 
-            if (!prankService.SupportsPayload(prankPayload))
+            if (prankService.CanExecutePayload(prankPayload, actor, out unavailableReason))
             {
-                unavailableReason = unsupportedReason;
-                return false;
+                return true;
             }
 
-            if (requiredRoomType != CampusRoomType.Unknown)
-            {
-                CampusGameplayRoom actorRoom = ResolveActorRoom(actor);
-                if (actorRoom == null || actorRoom.RoomType != requiredRoomType)
-                {
-                    unavailableReason = "Need to be in " + requiredRoomType + ".";
-                    return false;
-                }
-            }
-
-            unavailableReason = string.Empty;
-            return true;
-        }
-
-        public bool TryHandleInteractionAction(CampusInteractionAnchor anchor, string actionId, string payload, GameObject actor)
-        {
-            if (!CampusInteractionActionIds.Equals(actionId, CampusInteractionActionIds.PrankExecute))
-            {
-                return false;
-            }
-
-            if (!string.Equals(payload, prankPayload, System.StringComparison.OrdinalIgnoreCase))
-            {
-                return false;
-            }
-
-            ResolveServices();
-            return prankService != null && prankService.TryHandleInteractionAction(anchor, actionId, payload, actor);
+            unavailableReason = string.IsNullOrWhiteSpace(unavailableReason)
+                ? unsupportedReason
+                : unavailableReason;
+            return false;
         }
 
         private void EnsureSetup()
@@ -195,37 +169,6 @@ namespace NtingCampus.Gameplay.Pranks
             {
                 prankService = FindFirstObjectByType<CampusPrankService>(FindObjectsInactive.Include);
             }
-        }
-
-        private CampusGameplayRoom ResolveActorRoom(GameObject actor)
-        {
-            if (bootstrap == null || bootstrap.WorldService == null)
-            {
-                ResolveServices();
-            }
-
-            CampusWorldService worldService = bootstrap != null ? bootstrap.WorldService : null;
-            if (worldService == null)
-            {
-                return null;
-            }
-
-            CampusCharacterRuntime runtime = actor != null ? actor.GetComponent<CampusCharacterRuntime>() : null;
-            if (runtime == null && actor != null)
-            {
-                CampusPlayerCharacter playerCharacter = actor.GetComponent<CampusPlayerCharacter>();
-                if (playerCharacter != null)
-                {
-                    runtime = playerCharacter.CharacterRuntime;
-                }
-            }
-
-            if (runtime == null && bootstrap != null && bootstrap.RosterService != null)
-            {
-                runtime = bootstrap.RosterService.PlayerRuntime;
-            }
-
-            return runtime != null ? worldService.FindRoomForRuntime(runtime) : null;
         }
 
         private void EnsureVisuals()

@@ -4,13 +4,13 @@ using UnityEngine;
 namespace NtingCampus.Gameplay.Characters
 {
     [DisallowMultipleComponent]
-    public sealed class CampusNpcInteractable : MonoBehaviour, ICampusInteractable, ICampusInteractionActionHandler, ICampusInteractionAvailability
+    public sealed class CampusNpcInteractable : MonoBehaviour, ICampusInteractable, ICampusInteractionActionHandler, ICampusInteractionAvailability, ICampusInteractionPromptProvider
     {
-        [SerializeField] private CampusNpcAgent agent;
+        private ICampusNpcTalkSource talkSource;
 
-        public void Bind(CampusNpcAgent targetAgent)
+        public void Bind(ICampusNpcTalkSource targetTalkSource)
         {
-            agent = targetAgent;
+            talkSource = targetTalkSource;
         }
 
         public void Interact(GameObject actor)
@@ -33,12 +33,23 @@ namespace NtingCampus.Gameplay.Characters
         public bool CanInteract(GameObject actor, out string unavailableReason)
         {
             unavailableReason = string.Empty;
-            return agent != null && agent.enabled;
+            return talkSource != null && talkSource.IsTalkAvailable;
+        }
+
+        public bool TryGetInteractionPrompt(GameObject actor, out CampusInteractionPromptData prompt)
+        {
+            string promptText = talkSource != null ? talkSource.ResolveInteractionPrompt(actor) : string.Empty;
+            prompt = CampusInteractionPromptData.Create(string.IsNullOrWhiteSpace(promptText) ? "Talk" : promptText);
+            prompt.Anchor = transform;
+            prompt.WorldOffset = new Vector3(0f, 0.84f, 0f);
+            prompt.Priority = 55;
+            prompt.IsAvailable = talkSource != null && talkSource.IsTalkAvailable;
+            return true;
         }
 
         private bool TryTalk(GameObject actor)
         {
-            return agent != null && agent.TryTalk(actor, out _);
+            return talkSource != null && talkSource.TryTalk(actor, out _);
         }
     }
 }

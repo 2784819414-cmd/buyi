@@ -75,7 +75,11 @@ namespace NtingCampus.Gameplay.Core
                        minUiScale,
                        maxUiScale))
             {
-                GUILayout.BeginArea(PanelRect, "Ecology Overview (" + CampusInteractionInput.GetKeyLabel(toggleKey) + ")", GUI.skin.window);
+                GUILayout.BeginArea(
+                    PanelRect,
+                    CampusEcologyOverviewTextCatalog.Get(CampusEcologyOverviewTextId.WindowTitle) +
+                    " (" + CampusInteractionInput.GetKeyLabel(toggleKey) + ")",
+                    GUI.skin.window);
                 scrollPosition = GUILayout.BeginScrollView(scrollPosition, false, true);
                 DrawOverview(targetBootstrap);
                 GUILayout.EndScrollView();
@@ -94,70 +98,79 @@ namespace NtingCampus.Gameplay.Core
                 ? inspectionService.BuildDebugSnapshot()
                 : default;
 
-            GUILayout.Label("World State");
-            DrawLine("Order / Chaos", gameState != null ? gameState.CampusOrder + " / " + gameState.CampusChaos : "-");
-            DrawLine("Teacher Alert / Player Suspicion",
+            GUILayout.Label(CampusEcologyOverviewTextCatalog.Get(CampusEcologyOverviewTextId.WorldState));
+            DrawLine(CampusEcologyOverviewTextId.OrderChaos, gameState != null ? gameState.CampusOrder + " / " + gameState.CampusChaos : "-");
+            DrawLine(CampusEcologyOverviewTextId.TeacherAlertPlayerSuspicion,
                 gameState != null ? gameState.TeacherAlertness + " / " + gameState.PlayerSuspicion : "-");
-            DrawLine("Daily Warnings", gameState != null ? gameState.DailyWarningCount.ToString() : "-");
+            DrawLine(CampusEcologyOverviewTextId.DailyWarnings, gameState != null ? gameState.DailyWarningCount.ToString() : "-");
 
             GUILayout.Space(6f);
-            GUILayout.Label("Player Risk");
-            DrawLine("Room", inspectionSnapshot.IsAvailable ? inspectionSnapshot.RoomId + " / " + inspectionSnapshot.RoomType : "-");
-            DrawLine("Carried Contraband",
+            GUILayout.Label(CampusEcologyOverviewTextCatalog.Get(CampusEcologyOverviewTextId.PlayerRisk));
+            DrawLine(CampusEcologyOverviewTextId.Room, inspectionSnapshot.IsAvailable ? inspectionSnapshot.RoomId + " / " + inspectionSnapshot.RoomType : "-");
+            DrawLine(CampusEcologyOverviewTextId.CarriedContraband,
                 inspectionSnapshot.HasContraband
-                    ? inspectionSnapshot.ContrabandItemName + " in " + inspectionSnapshot.ContrabandContainerId
-                    : "none");
-            DrawLine("Confiscated Evidence", inspectionSnapshot.ConfiscatedItemCount.ToString());
-            DrawLine("Highest Nearby Vigilance",
+                    ? CampusEcologyOverviewTextCatalog.Format(
+                        CampusEcologyOverviewTextId.InContainer,
+                        inspectionSnapshot.ContrabandItemName,
+                        inspectionSnapshot.ContrabandContainerId)
+                    : CampusEcologyOverviewTextCatalog.Get(CampusEcologyOverviewTextId.None));
+            DrawLine(CampusEcologyOverviewTextId.ConfiscatedEvidence, inspectionSnapshot.ConfiscatedItemCount.ToString());
+            DrawLine(CampusEcologyOverviewTextId.HighestNearbyVigilance,
                 FormatActor(inspectionSnapshot.HighestVigilanceNpcName, inspectionSnapshot.HighestVigilanceNpcId) +
                 " / " + inspectionSnapshot.HighestVigilancePressure);
 
             GUILayout.Space(6f);
-            GUILayout.Label("Inspection Ecology");
+            GUILayout.Label(CampusEcologyOverviewTextCatalog.Get(CampusEcologyOverviewTextId.InspectionEcology));
             if (inspectionService == null)
             {
-                DrawLine("Inspection", "none");
+                DrawLine(
+                    CampusEcologyOverviewTextId.Inspection,
+                    CampusEcologyOverviewTextCatalog.Get(CampusEcologyOverviewTextId.None));
             }
             else
             {
-                DrawLine("Today Q/S/Found/Confiscated",
+                DrawLine(CampusEcologyOverviewTextId.TodayQuestionSearchFoundConfiscated,
                     inspectionService.DailyQuestioningCount + "/" +
                     inspectionService.DailySearchCount + "/" +
                     inspectionService.DailyContrabandFoundCount + "/" +
                     inspectionService.DailyConfiscatedItemCount);
-                DrawLine("Reports / Proactive Patrols",
+                DrawLine(CampusEcologyOverviewTextId.ReportsProactivePatrols,
                     inspectionService.DailyTattletaleReportCount + "/" +
                     inspectionService.DailyProactiveInspectionCount);
-                DrawLine("Highest Risk Area", FormatHighestRiskArea(inspectionService.AreaPressureRules));
-                DrawLine("Current", inspectionService.CurrentInspectionSummary);
+                DrawLine(CampusEcologyOverviewTextId.HighestRiskArea, FormatHighestRiskArea(inspectionService.AreaPressureRules));
+                DrawLine(CampusEcologyOverviewTextId.Current, inspectionService.CurrentInspectionSummary);
             }
 
             GUILayout.Space(6f);
-            GUILayout.Label("NPC Ecology");
+            GUILayout.Label(CampusEcologyOverviewTextCatalog.Get(CampusEcologyOverviewTextId.NpcEcology));
             if (npcEcologyService == null)
             {
-                DrawLine("NPC Ecology", "none");
+                DrawLine(
+                    CampusEcologyOverviewTextId.NpcEcology,
+                    CampusEcologyOverviewTextCatalog.Get(CampusEcologyOverviewTextId.None));
             }
             else
             {
-                DrawLine("Gossip / Events Today", npcEcologyService.GossipHeat + " / " + npcEcologyService.DailyEcologyEventCount);
-                DrawLine("Most Suspicious NPC", ResolveMostSuspiciousNpc(rosterService));
-                DrawLine("Current", npcEcologyService.CurrentSummary);
+                DrawLine(CampusEcologyOverviewTextId.GossipEventsToday, npcEcologyService.GossipHeat + " / " + npcEcologyService.DailyEcologyEventCount);
+                DrawLine(CampusEcologyOverviewTextId.MostSuspiciousNpc, ResolveMostSuspiciousNpc(rosterService));
+                DrawLine(CampusEcologyOverviewTextId.Current, npcEcologyService.CurrentSummary);
             }
 
             GUILayout.Space(6f);
-            GUILayout.Label("Theft Loops");
+            GUILayout.Label(CampusEcologyOverviewTextCatalog.Get(CampusEcologyOverviewTextId.TheftLoops));
             if (prankService == null)
             {
-                DrawLine("Prank Service", "none");
+                DrawLine(
+                    CampusEcologyOverviewTextId.PrankService,
+                    CampusEcologyOverviewTextCatalog.Get(CampusEcologyOverviewTextId.None));
             }
             else
             {
-                DrawLine("Pass Notes / Canteen Theft / Delivery Theft",
+                DrawLine(CampusEcologyOverviewTextId.PassNotesCanteenDelivery,
                     prankService.DailyPassNoteCount + " / " +
                     prankService.DailyCanteenTheftCount + " / " +
                     prankService.DailyDeliveryTheftCount);
-                DrawLine("Delivery", prankService.ActiveDeliveryOrderState + " " + prankService.ActiveDeliveryItemName);
+                DrawLine(CampusEcologyOverviewTextId.Delivery, prankService.ActiveDeliveryOrderState + " " + prankService.ActiveDeliveryItemName);
             }
         }
 
@@ -178,9 +191,9 @@ namespace NtingCampus.Gameplay.Core
             return bootstrap;
         }
 
-        private static void DrawLine(string label, string value)
+        private static void DrawLine(CampusEcologyOverviewTextId label, string value)
         {
-            GUILayout.Label(label + ": " + (string.IsNullOrWhiteSpace(value) ? "-" : value));
+            GUILayout.Label(CampusEcologyOverviewTextCatalog.FormatLine(label, value));
         }
 
         private static string FormatHighestRiskArea(IReadOnlyList<CampusAreaInspectionPressureRule> rules)
@@ -216,7 +229,11 @@ namespace NtingCampus.Gameplay.Core
             string label = !string.IsNullOrWhiteSpace(bestRule.RoomId)
                 ? bestRule.RoomId
                 : bestRule.RoomType.ToString();
-            return label + " S=" + bestRule.SearchPressure.Value + " Q=" + bestRule.QuestioningPressure.Value;
+            return label + " " +
+                   CampusEcologyOverviewTextCatalog.Get(CampusEcologyOverviewTextId.SearchShort) +
+                   "=" + bestRule.SearchPressure.Value + " " +
+                   CampusEcologyOverviewTextCatalog.Get(CampusEcologyOverviewTextId.QuestionShort) +
+                   "=" + bestRule.QuestioningPressure.Value;
         }
 
         private static string ResolveMostSuspiciousNpc(CampusRosterService rosterService)

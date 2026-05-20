@@ -28,6 +28,8 @@ namespace NtingCampus.Gameplay.Rooms
         StoreCheckout = 23,
         StoreQueuePoint = 24,
         CanteenClerkStandPoint = 25,
-        CanteenCustomerPickupPoint = 26
+        CanteenCustomerPickupPoint = 26,
+        CanteenServingWindow = 27,
+        CanteenFoodBox = 28
     }
 }

@@ -50,41 +50,28 @@ namespace NtingCampus.Gameplay.UI
 
         public void OpenBackpack()
         {
-            StorageMemory memory = StorageMemory.GetOrCreate();
-            StoragePlayerInventoryUtility.EnsureRegistry(memory);
-            StorageContainerModel[] hands = StoragePlayerInventoryUtility.GetOrCreateHandContainers(memory);
-            StorageContainerModel[] pockets = StoragePlayerInventoryUtility.GetOrCreatePocketContainers(memory);
-            StorageContainerModel backpack = StoragePlayerInventoryUtility.GetOrCreateBackpack(memory);
-            StoragePlayerInventoryUtility.EnsureStarterItems(memory);
-
-            StorageWindowUI window = EnsureWindow();
-            window.SetGroundDropContext(ResolvePlayerObject());
-            window.OpenPlayerStorage(hands, pockets, backpack, backpackEquipped, null, true);
+            CampusCharacterRuntime runtime = ResolvePlayerRuntime();
+            CampusCharacterActionExecutor.TryExecute(
+                runtime,
+                CampusCharacterAction.OpenInventoryView(null, ResolvePlayerObject(runtime), backpackEquipped),
+                out _);
         }
 
-        private StorageWindowUI EnsureWindow()
+        private CampusCharacterRuntime ResolvePlayerRuntime()
         {
-            StorageWindowUI window = FindFirstObjectByType<StorageWindowUI>(FindObjectsInactive.Include);
-            if (window != null)
-            {
-                return window;
-            }
-
-            GameObject windowObject = new GameObject("Canvas_Storage", typeof(RectTransform), typeof(StorageWindowUI));
-            return windowObject.GetComponent<StorageWindowUI>();
-        }
-
-        private GameObject ResolvePlayerObject()
-        {
-            CampusCharacterRuntime runtime = bootstrap != null && bootstrap.RosterService != null
+            return bootstrap != null && bootstrap.RosterService != null
                 ? bootstrap.RosterService.PlayerRuntime
                 : null;
+        }
+
+        private GameObject ResolvePlayerObject(CampusCharacterRuntime runtime)
+        {
             if (runtime != null)
             {
                 return runtime.gameObject;
             }
 
-            CampusPlayerCharacter playerCharacter = FindFirstObjectByType<CampusPlayerCharacter>(FindObjectsInactive.Include);
+            CampusPlayerCharacter playerCharacter = CampusPlayerCharacter.FindCurrent();
             if (playerCharacter != null)
             {
                 return playerCharacter.gameObject;

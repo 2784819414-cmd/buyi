@@ -1,5 +1,7 @@
 using System;
 using System.Collections.Generic;
+using NtingCampus.Gameplay.Rooms;
+using NtingCampus.Gameplay.UI;
 using UnityEngine;
 
 namespace NtingCampusMapEditor
@@ -13,6 +15,7 @@ namespace NtingCampusMapEditor
         public Vector3 LocalPosition = Vector3.zero;
         public float Radius = 0.65f;
         public string PromptText = "\u4ea4\u4e92";
+        public CampusLocalizedText LocalizedPromptText;
         public string ActionId;
         public string Payload;
         public string TargetComponentType;
@@ -20,6 +23,7 @@ namespace NtingCampusMapEditor
         public bool UseTargetDoorStatePrompt;
         public bool LogInteraction = true;
         public string InteractionLogMessage;
+        public CampusLocalizedText LocalizedInteractionLogMessage;
 
         public CampusPlacedObjectInteractionAnchor Clone()
         {
@@ -31,13 +35,15 @@ namespace NtingCampusMapEditor
                 LocalPosition = LocalPosition,
                 Radius = CampusPlacedObject.NormalizeInteractionAnchorRadius(Radius),
                 PromptText = PromptText,
+                LocalizedPromptText = LocalizedPromptText,
                 ActionId = ActionId,
                 Payload = Payload,
                 TargetComponentType = TargetComponentType,
                 Priority = Priority,
                 UseTargetDoorStatePrompt = UseTargetDoorStatePrompt,
                 LogInteraction = LogInteraction,
-                InteractionLogMessage = InteractionLogMessage
+                InteractionLogMessage = InteractionLogMessage,
+                LocalizedInteractionLogMessage = LocalizedInteractionLogMessage
             };
         }
     }
@@ -56,7 +62,9 @@ namespace NtingCampusMapEditor
         private const string WallMountedMaterialNamePrefix = "WallMountedPlateMaterial_";
         private const float WallMountedThickness = 0.04f;
         private const float WallMountedSurfaceGap = 0.001f;
-        private const int WallMountedSortingOrderOffset = 1;
+        public const int StackableFacilitySortingOrderOffset = 1;
+        public const int DroppedStorageItemSortingOrderOffset = StackableFacilitySortingOrderOffset + 1;
+        private const int WallMountedSortingOrderOffset = StackableFacilitySortingOrderOffset;
         public const float DefaultInteractionAnchorRadius = 0.65f;
         public const float MinInteractionAnchorRadius = 0.3f;
         public const float MaxInteractionAnchorRadius = 8f;
@@ -67,6 +75,7 @@ namespace NtingCampusMapEditor
         public string ObjectId;
         public string TypeId;
         public string DisplayNameOverride;
+        public CampusLocalizedText LocalizedDisplayNameOverride;
         public Vector3Int Cell;
         public Vector2Int FootprintSize = Vector2Int.one;
         public bool OverrideFootprintSize;
@@ -99,6 +108,7 @@ namespace NtingCampusMapEditor
         public Vector3 CustomInteractionAnchorLocalPosition = Vector3.zero;
         public float CustomInteractionAnchorRadius = DefaultInteractionAnchorRadius;
         public string CustomInteractionPromptText = CustomInteractionPromptFallback;
+        public CampusLocalizedText LocalizedCustomInteractionPromptText;
         public List<CampusPlacedObjectInteractionAnchor> CustomInteractionAnchors = new List<CampusPlacedObjectInteractionAnchor>();
 
         private Sprite runtimeDefaultSprite;
@@ -132,15 +142,27 @@ namespace NtingCampusMapEditor
         {
             get
             {
-                if (!string.IsNullOrWhiteSpace(DisplayNameOverride))
-                {
-                    return DisplayNameOverride.Trim();
-                }
-
-                return !string.IsNullOrWhiteSpace(ObjectId)
-                    ? CampusObjectNames.GetDisplayName(ObjectId)
-                    : CampusObjectNames.GetDisplayName(gameObject.name);
+                return GetDisplayName(CampusLanguageState.CurrentLanguage);
             }
+        }
+
+        public string GetDisplayName(CampusDisplayLanguage language)
+        {
+            if (!string.IsNullOrWhiteSpace(DisplayNameOverride))
+            {
+                return LocalizedDisplayNameOverride.HasAnyText
+                    ? LocalizedDisplayNameOverride.Get(language, DisplayNameOverride)
+                    : DisplayNameOverride.Trim();
+            }
+
+            if (LocalizedDisplayNameOverride.HasAnyText)
+            {
+                return LocalizedDisplayNameOverride.Get(language);
+            }
+
+            return !string.IsNullOrWhiteSpace(ObjectId)
+                ? CampusObjectNames.GetDisplayName(ObjectId)
+                : CampusObjectNames.GetDisplayName(gameObject.name);
         }
 
         private void Awake()
@@ -275,6 +297,12 @@ namespace NtingCampusMapEditor
                 return;
             }
 
+            if (IsCanteenCounterObject())
+            {
+                RemoveCanteenCounterInteractionState();
+                return;
+            }
+
             CampusInteractionAnchorDefaults.EnsureDefaultAnchors(this);
             EnsureUnifiedInteractionHandler();
             ApplyCustomInteractionAnchorState();
@@ -296,7 +324,8 @@ namespace NtingCampusMapEditor
                     Enabled = true,
                     LocalPosition = CustomInteractionAnchorLocalPosition,
                     Radius = NormalizeInteractionAnchorRadius(CustomInteractionAnchorRadius),
-                    PromptText = string.IsNullOrWhiteSpace(CustomInteractionPromptText) ? CustomInteractionPromptFallback : CustomInteractionPromptText,
+                    PromptText = ResolveCustomInteractionPromptText(),
+                    LocalizedPromptText = LocalizedCustomInteractionPromptText,
                     Priority = 120,
                     LogInteraction = true
                 });
@@ -314,9 +343,8 @@ namespace NtingCampusMapEditor
                 {
                     editablePrimary.LocalPosition = CustomInteractionAnchorLocalPosition;
                     editablePrimary.Radius = NormalizeInteractionAnchorRadius(CustomInteractionAnchorRadius);
-                    editablePrimary.PromptText = string.IsNullOrWhiteSpace(CustomInteractionPromptText)
-                        ? CustomInteractionPromptFallback
-                        : CustomInteractionPromptText;
+                    editablePrimary.PromptText = ResolveCustomInteractionPromptText();
+                    editablePrimary.LocalizedPromptText = LocalizedCustomInteractionPromptText;
                 }
             }
 
@@ -341,7 +369,7 @@ namespace NtingCampusMapEditor
 
                 if (string.IsNullOrWhiteSpace(data.PromptText))
                 {
-                    data.PromptText = CustomInteractionPromptFallback;
+                    data.PromptText = CampusInteractionTextCatalog.Get(CampusInteractionTextId.Interact);
                 }
 
                 data.Radius = NormalizeInteractionAnchorRadius(data.Radius);
@@ -353,7 +381,10 @@ namespace NtingCampusMapEditor
             {
                 CustomInteractionAnchorLocalPosition = primary.LocalPosition;
                 CustomInteractionAnchorRadius = NormalizeInteractionAnchorRadius(primary.Radius);
-                CustomInteractionPromptText = string.IsNullOrWhiteSpace(primary.PromptText) ? CustomInteractionPromptFallback : primary.PromptText;
+                CustomInteractionPromptText = string.IsNullOrWhiteSpace(primary.PromptText)
+                    ? CampusInteractionTextCatalog.Get(CampusInteractionTextId.Interact)
+                    : primary.PromptText;
+                LocalizedCustomInteractionPromptText = primary.LocalizedPromptText;
             }
         }
 
@@ -434,9 +465,9 @@ namespace NtingCampusMapEditor
                 anchor = anchorTransform.gameObject.AddComponent<CampusInteractionAnchor>();
             }
 
-            string prompt = string.IsNullOrWhiteSpace(data.PromptText)
-                ? CustomInteractionPromptFallback
-                : data.PromptText.Trim();
+            string prompt = data.LocalizedPromptText.HasAnyText
+                ? data.LocalizedPromptText.Current(data.PromptText)
+                : ResolvePromptText(data.PromptText);
             MonoBehaviour target = ResolveCustomInteractionTarget(data.TargetComponentType);
             string actionId = ResolveCustomInteractionAction(data, target);
             anchor.InteractionTarget = target;
@@ -444,6 +475,7 @@ namespace NtingCampusMapEditor
             anchor.Payload = data.Payload;
             anchor.PromptAnchor = anchorTransform;
             anchor.PromptText = prompt;
+            anchor.LocalizedPromptText = data.LocalizedPromptText;
             anchor.KeyOverride = string.Empty;
             anchor.Icon = null;
             anchor.AccentColor = new Color(0.95f, 0.82f, 0.38f, 1f);
@@ -454,6 +486,7 @@ namespace NtingCampusMapEditor
             anchor.UseTargetDoorStatePrompt = data.UseTargetDoorStatePrompt;
             anchor.LogInteraction = data.LogInteraction && CampusInteractionActionIds.Equals(actionId, CampusInteractionActionIds.Log);
             anchor.InteractionLogMessage = prompt + " " + DisplayName;
+            anchor.LocalizedInteractionLogMessage = data.LocalizedInteractionLogMessage;
             if (!string.IsNullOrWhiteSpace(data.InteractionLogMessage))
             {
                 anchor.InteractionLogMessage = data.InteractionLogMessage.Trim();
@@ -1127,6 +1160,8 @@ namespace NtingCampusMapEditor
 
             handler.IsAvailable = true;
             handler.HideWhenUnavailable = false;
+            ConfigureCanteenInteractionHandler(handler);
+            ConfigureStoreInteractionHandler(handler);
             if (IsStorageContainer)
             {
                 if (string.IsNullOrWhiteSpace(handler.DefaultActionId))
@@ -1136,14 +1171,127 @@ namespace NtingCampusMapEditor
 
                 if (string.IsNullOrWhiteSpace(handler.PromptText) || handler.PromptText == CustomInteractionPromptFallback)
                 {
-                    handler.PromptText = "\u6253\u5f00 " + DisplayName;
+                    handler.PromptText = CampusInteractionTextCatalog.Format(CampusInteractionTextId.OpenObject, DisplayName);
                 }
             }
         }
 
         private bool ShouldUseUnifiedInteractionHandler()
         {
-            return IsInteractable || UseCustomInteractionAnchor || IsStorageContainer;
+            return IsInteractable || UseCustomInteractionAnchor || IsStorageContainer || IsCanteenInteractionObject() || IsStoreInteractionObject();
+        }
+
+        private void RemoveCanteenCounterInteractionState()
+        {
+            CampusSimpleInteractable handler = GetComponent<CampusSimpleInteractable>();
+            if (handler != null)
+            {
+                DestroyUnityObject(handler);
+            }
+
+            Transform anchorRoot = transform.Find(CustomInteractionAnchorRootName);
+            if (anchorRoot != null)
+            {
+                DestroyUnityObject(anchorRoot.gameObject);
+            }
+        }
+
+        private void ConfigureCanteenInteractionHandler(CampusSimpleInteractable handler)
+        {
+            if (handler == null || !IsCanteenInteractionObject())
+            {
+                return;
+            }
+
+            CampusFacilityType facilityType = CampusFacilityTypeResolver.Resolve(this);
+            if (facilityType == CampusFacilityType.CanteenFoodBox ||
+                facilityType == CampusFacilityType.CanteenFoodTray)
+            {
+                handler.DefaultActionId = CampusInteractionActionIds.InteractTarget;
+                if (string.IsNullOrWhiteSpace(handler.PromptText) || handler.PromptText == CustomInteractionPromptFallback)
+                {
+                    handler.PromptText = CampusInteractionTextCatalog.Get(CampusInteractionTextId.OpenFoodBox);
+                }
+
+                return;
+            }
+
+            if (facilityType == CampusFacilityType.CanteenServingWindow)
+            {
+                handler.DefaultActionId = CampusInteractionActionIds.InteractTarget;
+                if (string.IsNullOrWhiteSpace(handler.PromptText) || handler.PromptText == CustomInteractionPromptFallback)
+                {
+                    handler.PromptText = CampusInteractionTextCatalog.Get(CampusInteractionTextId.ServingWindow);
+                }
+
+                return;
+            }
+        }
+
+        private bool IsCanteenInteractionObject()
+        {
+            CampusFacilityType facilityType = CampusFacilityTypeResolver.Resolve(this);
+            return facilityType == CampusFacilityType.CanteenServingWindow ||
+                   facilityType == CampusFacilityType.CanteenFoodBox ||
+                   facilityType == CampusFacilityType.CanteenFoodTray;
+        }
+
+        private void ConfigureStoreInteractionHandler(CampusSimpleInteractable handler)
+        {
+            if (handler == null || !IsStoreInteractionObject())
+            {
+                return;
+            }
+
+            CampusFacilityType facilityType = CampusFacilityTypeResolver.Resolve(this);
+            if (facilityType == CampusFacilityType.StoreShelf)
+            {
+                handler.DefaultActionId = CampusInteractionActionIds.OpenStorage;
+                if (string.IsNullOrWhiteSpace(handler.PromptText) || handler.PromptText == CustomInteractionPromptFallback)
+                {
+                    handler.PromptText = CampusInteractionTextCatalog.Get(CampusInteractionTextId.OpenShelf);
+                }
+
+                return;
+            }
+
+            if (facilityType == CampusFacilityType.StoreCheckout)
+            {
+                handler.DefaultActionId = CampusInteractionActionIds.InteractTarget;
+                if (string.IsNullOrWhiteSpace(handler.PromptText) || handler.PromptText == CustomInteractionPromptFallback)
+                {
+                    handler.PromptText = CampusInteractionTextCatalog.Get(CampusInteractionTextId.Checkout);
+                }
+            }
+        }
+
+        private string ResolveCustomInteractionPromptText()
+        {
+            if (LocalizedCustomInteractionPromptText.HasAnyText)
+            {
+                return LocalizedCustomInteractionPromptText.Current(CustomInteractionPromptText);
+            }
+
+            return ResolvePromptText(CustomInteractionPromptText);
+        }
+
+        private static string ResolvePromptText(string promptText)
+        {
+            return string.IsNullOrWhiteSpace(promptText) || promptText.Trim() == CustomInteractionPromptFallback
+                ? CampusInteractionTextCatalog.Get(CampusInteractionTextId.Interact)
+                : promptText.Trim();
+        }
+
+        private bool IsStoreInteractionObject()
+        {
+            CampusFacilityType facilityType = CampusFacilityTypeResolver.Resolve(this);
+            return facilityType == CampusFacilityType.StoreShelf ||
+                   facilityType == CampusFacilityType.StoreCheckout;
+        }
+
+        private bool IsCanteenCounterObject()
+        {
+            return CampusFacilityTypeResolver.Resolve(this) == CampusFacilityType.CanteenCounter;
         }
 
         private bool CanEditSceneHierarchy()

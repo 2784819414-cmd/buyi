@@ -1,4 +1,5 @@
 using System;
+using NtingCampus.Gameplay.UI;
 using NtingCampusMapEditor;
 using UnityEngine;
 
@@ -7,6 +8,8 @@ namespace NtingCampus.Gameplay.Core
     [DisallowMultipleComponent]
     public sealed class CampusTimeController : MonoBehaviour
     {
+        private const int MaxSegmentTransitionsPerAdvance = 128;
+
         [SerializeField] private CampusGameBootstrap bootstrap;
         [SerializeField] private CampusGameDate initialDate = CampusGameDate.DefaultStartDate;
         [SerializeField] private CampusTimeSegment initialSegment = CampusTimeSegment.MorningClass1;
@@ -26,9 +29,9 @@ namespace NtingCampus.Gameplay.Core
         public event Action<CampusGameDate> GameDateChanged;
 
         public CampusGameDate CurrentDate => currentDate;
-        public string CurrentDateText => currentDate.ToDisplayString();
+        public string CurrentDateText => currentDate.ToDisplayString(CampusLanguageState.CurrentLanguage);
         public CampusTimeSegment CurrentSegment => currentSegment;
-        public string CurrentSegmentName => CampusTimeSchedule.GetChineseName(currentSegment);
+        public string CurrentSegmentName => CampusTimeSchedule.GetDisplayName(CampusLanguageState.CurrentLanguage, currentSegment);
         public string CurrentTimeLabel => CampusTimeSchedule.GetTimeLabel(currentSegment);
         public string CurrentClockText => CampusTimeSchedule.GetClockText(currentSegment, segmentElapsedMinutes);
         public float CurrentGameHour => ResolveCurrentGameHour();
@@ -49,7 +52,6 @@ namespace NtingCampus.Gameplay.Core
             currentSegment = initialSegment;
             segmentElapsedMinutes = 0f;
             isInitialized = true;
-            SyncGameStateDay(false);
             SyncDayNightClock();
 
             if (writeInitialSegmentLog)
@@ -84,7 +86,7 @@ namespace NtingCampus.Gameplay.Core
 
             int guard = 0;
             float remainingMinutes = minutes;
-            while (remainingMinutes > 0f && guard < 128)
+            while (remainingMinutes > 0f && guard < MaxSegmentTransitionsPerAdvance)
             {
                 guard++;
                 float duration = Mathf.Max(0.01f, SegmentDurationMinutes);
@@ -108,24 +110,11 @@ namespace NtingCampus.Gameplay.Core
             if (currentSegment == segment)
             {
                 segmentElapsedMinutes = 0f;
+                SyncDayNightClock();
                 return;
             }
 
-            CampusTimeSegment previousSegment = currentSegment;
-            currentSegment = segment;
-            segmentElapsedMinutes = 0f;
-            SyncDayNightClock();
-            SegmentChanged?.Invoke(previousSegment, currentSegment);
-
-            if (currentSegment == CampusTimeSegment.PreWakeSettlement)
-            {
-                DailySettlementStarted?.Invoke(currentDate);
-            }
-
-            if (writeLog)
-            {
-                WriteSegmentLog(currentSegment);
-            }
+            EnterSegment(currentSegment, segment, writeLog);
         }
 
         private void Awake()
@@ -255,13 +244,16 @@ namespace NtingCampus.Gameplay.Core
             CampusTimeSegment previousSegment = currentSegment;
             CampusTimeSegment nextSegment = CampusTimeSchedule.GetNextSegment(currentSegment);
 
-            if (currentSegment == CampusTimeSegment.PreWakeSettlement)
+            if (previousSegment == CampusTimeSegment.PreWakeSettlement)
             {
-                currentDate.AddDays(1);
-                SyncGameStateDay(true);
-                GameDateChanged?.Invoke(currentDate);
+                AdvanceToNextSchoolDay();
             }
 
+            EnterSegment(previousSegment, nextSegment, true);
+        }
+
+        private void EnterSegment(CampusTimeSegment previousSegment, CampusTimeSegment nextSegment, bool writeLog)
+        {
             currentSegment = nextSegment;
             segmentElapsedMinutes = 0f;
             SyncDayNightClock();
@@ -272,7 +264,10 @@ namespace NtingCampus.Gameplay.Core
                 DailySettlementStarted?.Invoke(currentDate);
             }
 
-            WriteSegmentLog(currentSegment);
+            if (writeLog)
+            {
+                WriteSegmentLog(currentSegment);
+            }
         }
 
         private void WriteSegmentLog(CampusTimeSegment segment)
@@ -283,24 +278,19 @@ namespace NtingCampus.Gameplay.Core
                 return;
             }
 
-            eventLog.AddLog(CampusTimeSchedule.GetSegmentLogMessage(segment, CurrentDateText));
+            eventLog.AddLog(CampusTimeSchedule.GetSegmentLogMessage(CampusLanguageState.CurrentLanguage, segment, CurrentDateText));
         }
 
-        private void SyncGameStateDay(bool newDayStarted)
+        private void AdvanceToNextSchoolDay()
         {
-            CampusGameState gameState = bootstrap != null ? bootstrap.GameState : null;
-            if (gameState == null)
+            // Calendar date and gameplay day count advance together at the school-day boundary.
+            currentDate.AddDays(1);
+            if (bootstrap != null && bootstrap.GameState != null)
             {
-                return;
+                bootstrap.GameState.AdvanceToNextDay();
             }
 
-            if (newDayStarted)
-            {
-                gameState.AdvanceToNextDay();
-                return;
-            }
-
-            gameState.SetDay(currentDate.Day);
+            GameDateChanged?.Invoke(currentDate);
         }
     }
 }

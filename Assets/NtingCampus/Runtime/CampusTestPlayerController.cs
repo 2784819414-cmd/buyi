@@ -20,6 +20,7 @@ namespace NtingCampusMapEditor
         public KeyCode InteractKey = KeyCode.E;
         public float InteractionForwardOffset = 0.28f;
         public float InteractionRadius = 0.82f;
+        public float InteractionRefreshIntervalSeconds = 0.1f;
         public LayerMask InteractionMask = Physics2D.AllLayers;
 
         private CampusCharacterBodyController bodyController;
@@ -69,11 +70,14 @@ namespace NtingCampusMapEditor
             ConfigureInteractionController();
             interactionController.enabled = true;
             interactionController.SetFacingDirection(facingDirection);
-            interactionController.RefreshTarget();
-            if (CampusInteractionInput.WasKeyPressed(InteractKey))
+            bool interactPressed = CampusInteractionInput.WasKeyPressed(InteractKey);
+            if (interactPressed)
             {
                 interactionController.TryInteractCurrent();
+                return;
             }
+
+            interactionController.RefreshTargetIfNeeded();
         }
 
         private void EnterDisabledState()
@@ -159,6 +163,7 @@ namespace NtingCampusMapEditor
             interactionController.InteractKey = InteractKey;
             interactionController.PollInput = false;
             interactionController.RefreshEveryFrame = false;
+            interactionController.RefreshIntervalSeconds = InteractionRefreshIntervalSeconds;
 
             CampusInteractionSensor sensor = interactionController.GetOrCreateSensor();
             sensor.ScanOrigin = transform;

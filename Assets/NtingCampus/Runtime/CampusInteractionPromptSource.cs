@@ -1,3 +1,4 @@
+using NtingCampus.Gameplay.UI;
 using UnityEngine;
 
 namespace NtingCampusMapEditor
@@ -5,7 +6,8 @@ namespace NtingCampusMapEditor
     [DisallowMultipleComponent]
     public class CampusInteractionPromptSource : MonoBehaviour, ICampusInteractionPromptProvider, ICampusInteractionAvailability
     {
-        public string PromptText = "\u4ea4\u4e92";
+        public string PromptText = string.Empty;
+        public CampusLocalizedText LocalizedPromptText;
         public string KeyOverride;
         public Sprite Icon;
         public Transform Anchor;
@@ -14,6 +16,7 @@ namespace NtingCampusMapEditor
         public int Priority;
         public bool IsAvailable = true;
         public string UnavailableText;
+        public CampusLocalizedText LocalizedUnavailableText;
         public bool HideWhenUnavailable;
 
         public virtual bool TryGetInteractionPrompt(GameObject actor, out CampusInteractionPromptData prompt)
@@ -26,30 +29,55 @@ namespace NtingCampusMapEditor
             prompt.AccentColor = AccentColor;
             prompt.Priority = Priority;
             prompt.IsAvailable = IsAvailable;
-            prompt.UnavailableText = UnavailableText;
+            prompt.UnavailableText = ResolveUnavailableText();
             return IsAvailable || !HideWhenUnavailable;
         }
 
         public virtual bool CanInteract(GameObject actor, out string unavailableReason)
         {
-            unavailableReason = UnavailableText;
+            unavailableReason = ResolveUnavailableText();
             return IsAvailable;
         }
 
         protected virtual string ResolvePromptText(GameObject actor)
         {
-            if (!string.IsNullOrWhiteSpace(PromptText))
+            string configuredPrompt = ResolveConfiguredPromptText();
+            if (!string.IsNullOrWhiteSpace(configuredPrompt))
             {
-                return PromptText;
+                return configuredPrompt;
             }
 
             CampusPlacedObject placedObject = GetComponentInParent<CampusPlacedObject>();
             if (placedObject != null && !string.IsNullOrWhiteSpace(placedObject.ObjectId))
             {
-                return "\u4ea4\u4e92 " + placedObject.DisplayName;
+                return CampusInteractionTextCatalog.Format(CampusInteractionTextId.InteractWith, placedObject.DisplayName);
             }
 
-            return "\u4ea4\u4e92 " + CampusObjectNames.GetDisplayName(gameObject.name);
+            return CampusInteractionTextCatalog.Format(
+                CampusInteractionTextId.InteractWith,
+                CampusObjectNames.GetDisplayName(gameObject.name));
+        }
+
+        protected string ResolveConfiguredPromptText()
+        {
+            if (LocalizedPromptText.HasAnyText)
+            {
+                return LocalizedPromptText.Current(PromptText);
+            }
+
+            return IsLegacyDefaultPrompt(PromptText) ? string.Empty : PromptText;
+        }
+
+        protected string ResolveUnavailableText()
+        {
+            return LocalizedUnavailableText.HasAnyText
+                ? LocalizedUnavailableText.Current(UnavailableText)
+                : UnavailableText;
+        }
+
+        protected static bool IsLegacyDefaultPrompt(string value)
+        {
+            return string.IsNullOrWhiteSpace(value) || value.Trim() == "\u4ea4\u4e92";
         }
     }
 }

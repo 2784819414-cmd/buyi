@@ -15,6 +15,9 @@ namespace Nting.Storage
         private StorageBoxGraphic accentBar;
         private StorageBoxGraphic topRule;
         private StorageBoxGraphic sizePlate;
+        private StorageBoxGraphic theftBadge;
+        private Text theftBadgeText;
+        private Image iconImage;
         private StorageItemModel item;
         private StorageGridUI ownerGrid;
         private StorageWindowUI window;
@@ -61,6 +64,11 @@ namespace Nting.Storage
             {
                 NameText.text = string.Empty;
                 SizeText.text = string.Empty;
+                iconImage.gameObject.SetActive(false);
+                if (theftBadge != null)
+                {
+                    theftBadge.gameObject.SetActive(false);
+                }
                 return;
             }
 
@@ -78,10 +86,27 @@ namespace Nting.Storage
             topRule.SetStyle(new Color(1f, 1f, 1f, hovered || dragging ? 0.14f : 0.06f), Color.clear, 0f, 4f);
             sizePlate.SetStyle(StoragePalette.ItemPlate, Color.clear, 0f, 5f);
 
-            NameText.text = item.DisplayName;
+            bool hasIcon = item.Icon != null;
+            iconImage.gameObject.SetActive(hasIcon);
+            if (hasIcon)
+            {
+                iconImage.sprite = item.Icon;
+                iconImage.color = Color.white;
+            }
+
+            NameText.text = hasIcon ? string.Empty : item.GetDisplayName();
             SizeText.text = item.CurrentWidth + "x" + item.CurrentHeight;
             NameText.color = StoragePalette.TextPrimary;
             SizeText.color = StoragePalette.TextSecondary;
+
+            bool stolen = item.IsStolenEvidence;
+            theftBadge.gameObject.SetActive(stolen);
+            if (stolen)
+            {
+                theftBadge.SetStyle(new Color(0.58f, 0.12f, 0.1f, 0.94f), new Color(1f, 0.78f, 0.65f, 0.7f), 0.8f, 4f);
+                theftBadgeText.text = "!";
+                theftBadgeText.color = Color.white;
+            }
         }
 
         public void SetRaycastEnabled(bool enabled)
@@ -195,7 +220,10 @@ namespace Nting.Storage
 
             accentBar = EnsureFixedChildBox(accentBar, "AccentBar", new Vector2(0f, 0f), new Vector2(0f, 1f), new Vector2(0f, 0.5f), new Vector2(5f, 0f), new Vector2(6f, -10f));
             topRule = EnsureStretchChildBox(topRule, "TopRule", new Vector2(9f, -9f), new Vector2(-9f, 5f));
+            iconImage = EnsureIconImage(iconImage, "IconImage");
             sizePlate = EnsureFixedChildBox(sizePlate, "SizePlate", new Vector2(1f, 1f), new Vector2(1f, 1f), new Vector2(1f, 1f), new Vector2(-5f, -5f), new Vector2(38f, 18f));
+            theftBadge = EnsureFixedChildBox(theftBadge, "TheftBadge", new Vector2(1f, 1f), new Vector2(1f, 1f), new Vector2(1f, 1f), new Vector2(-8f, -8f), new Vector2(20f, 20f));
+            theftBadgeText = EnsureBadgeText(theftBadgeText, theftBadge.transform);
 
             if (NameText == null)
             {
@@ -220,6 +248,59 @@ namespace Nting.Storage
             Text text = StorageUIUtility.CreateText(objectName, transform, string.Empty, size, alignment, color);
             text.horizontalOverflow = HorizontalWrapMode.Wrap;
             text.verticalOverflow = VerticalWrapMode.Truncate;
+            return text;
+        }
+
+        private Image EnsureIconImage(Image image, string objectName)
+        {
+            if (image == null)
+            {
+                Transform child = transform.Find(objectName);
+                if (child != null)
+                {
+                    image = child.GetComponent<Image>();
+                }
+            }
+
+            if (image == null)
+            {
+                GameObject imageObject = new GameObject(objectName, typeof(RectTransform), typeof(CanvasRenderer), typeof(Image));
+                imageObject.transform.SetParent(transform, false);
+                image = imageObject.GetComponent<Image>();
+            }
+
+            RectTransform rect = image.rectTransform;
+            rect.anchorMin = Vector2.zero;
+            rect.anchorMax = Vector2.one;
+            rect.offsetMin = new Vector2(12f, 10f);
+            rect.offsetMax = new Vector2(-12f, -10f);
+            image.raycastTarget = false;
+            image.preserveAspect = true;
+            image.gameObject.SetActive(false);
+            return image;
+        }
+
+        private Text EnsureBadgeText(Text text, Transform parent)
+        {
+            if (text == null && parent != null)
+            {
+                Transform child = parent.Find("Text");
+                if (child != null)
+                {
+                    text = child.GetComponent<Text>();
+                }
+            }
+
+            if (text == null)
+            {
+                text = StorageUIUtility.CreateText("Text", parent, string.Empty, 13, TextAnchor.MiddleCenter, Color.white);
+            }
+
+            text.raycastTarget = false;
+            text.horizontalOverflow = HorizontalWrapMode.Overflow;
+            text.verticalOverflow = VerticalWrapMode.Overflow;
+            text.rectTransform.offsetMin = Vector2.zero;
+            text.rectTransform.offsetMax = Vector2.zero;
             return text;
         }
 

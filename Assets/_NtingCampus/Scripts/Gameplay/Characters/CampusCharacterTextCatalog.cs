@@ -36,6 +36,13 @@ namespace NtingCampus.Gameplay.Characters
         StudentDefaultAmbient = 28
     }
 
+    public enum CampusSanctionReasonId
+    {
+        SkippingClassObserved = 0,
+        ProtectedPropertyObserved = 1,
+        ContrabandFound = 2
+    }
+
     public static class CampusCharacterTextCatalog
     {
         public static string GetDialogue(CampusDisplayLanguage language, CampusCharacterDialogueId id)
@@ -43,7 +50,7 @@ namespace NtingCampus.Gameplay.Characters
             return id switch
             {
                 CampusCharacterDialogueId.TeacherTeachClassInteractive => Get(language, "回到座位上。课还没结束。", "Back to your seat. Class is not over."),
-                CampusCharacterDialogueId.TeacherInvestigateInteractive => Get(language, "这里的事我已经在查了。", "I am already investigating what happened here."),
+                CampusCharacterDialogueId.TeacherInvestigateInteractive => Get(language, "我会处理这里的秩序。", "I am handling order here."),
                 CampusCharacterDialogueId.TeacherPatrolInteractive => Get(language, "走廊保持畅通，别停留。", "Keep the corridor clear and keep moving."),
                 CampusCharacterDialogueId.TeacherDefaultInteractive => Get(language, "把时间用在正事上，我看着呢。", "Use your time properly. I am watching."),
                 CampusCharacterDialogueId.StudentAttendClassGoodInteractive => Get(language, "我得跟上这节课。", "I need to keep up with this lesson."),
@@ -65,7 +72,7 @@ namespace NtingCampus.Gameplay.Characters
                 CampusCharacterDialogueId.StudentWanderAmbient => Get(language, "休息时间根本不够。", "Break is not long enough."),
                 CampusCharacterDialogueId.StudentCheckBulletinAmbient => Get(language, "总有人贴点新东西。", "Someone always posts something interesting."),
                 CampusCharacterDialogueId.StudentSocializeTroublemakerAmbient => Get(language, "这房间得添点火花。", "This room needs a spark."),
-                CampusCharacterDialogueId.StudentSocializeDefaultAmbient => Get(language, "刚才那边发生什么了？", "What happened back there?"),
+                CampusCharacterDialogueId.StudentSocializeDefaultAmbient => Get(language, "课间一下子就过去了。", "Breaks go by too fast."),
                 CampusCharacterDialogueId.TeacherInvestigateAmbient => Get(language, "别再窃窃私语了。", "No more whispers."),
                 CampusCharacterDialogueId.StudentAvoidDisturbanceAmbient => Get(language, "别把我扯进去。", "Do not drag me into it."),
                 CampusCharacterDialogueId.TeacherDefaultAmbient => Get(language, "安静，挺好。", "Quiet room, good."),
@@ -126,6 +133,16 @@ namespace NtingCampus.Gameplay.Characters
             };
         }
 
+        public static string FormatNpcSpeechLog(CampusDisplayLanguage language, string displayName, string line)
+        {
+            return language switch
+            {
+                CampusDisplayLanguage.English => "[NPC] " + displayName + ": " + line,
+                CampusDisplayLanguage.Bilingual => "[NPC] " + displayName + ": " + line,
+                _ => "[NPC] " + displayName + "：" + line
+            };
+        }
+
         public static string FormatSceneRosterReady(CampusDisplayLanguage language, int studentCount, int teacherCount)
         {
             return language switch
@@ -170,6 +187,17 @@ namespace NtingCampus.Gameplay.Characters
         public static string FormatDailyWarnings(CampusDisplayLanguage language, int warningCount)
         {
             return Get(language, "[处分] 当日警告数 = " + warningCount + "。", "[Sanction] Daily warnings = " + warningCount + ".");
+        }
+
+        public static string FormatSanctionReason(CampusDisplayLanguage language, CampusSanctionReasonId id)
+        {
+            return id switch
+            {
+                CampusSanctionReasonId.SkippingClassObserved => Get(language, "[处分] 逃课被老师撞见。", "[Sanction] Skipping class was seen by a teacher."),
+                CampusSanctionReasonId.ProtectedPropertyObserved => Get(language, "[处分] 有人在目击下拿走受保护物品。", "[Sanction] Protected property was taken under observation."),
+                CampusSanctionReasonId.ContrabandFound => Get(language, "[处分] 检查时发现违禁物。", "[Sanction] Contraband was found during inspection."),
+                _ => string.Empty
+            };
         }
 
         private static string Get(CampusDisplayLanguage language, string chinese, string english)

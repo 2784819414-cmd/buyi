@@ -13,6 +13,7 @@ namespace NtingCampus.Gameplay.Characters
         public float StopDistance = 0.14f;
         public float HoldSeconds;
         public bool UsesNavigation = true;
+        [NonSerialized] internal CampusNpcActionOpportunity ActionOpportunity;
 
         public static CampusNpcIntent Idle(string label)
         {
@@ -67,8 +68,14 @@ namespace NtingCampus.Gameplay.Characters
 
             return Kind == other.Kind &&
                    string.Equals(RoomId ?? string.Empty, other.RoomId ?? string.Empty, StringComparison.OrdinalIgnoreCase) &&
+                   string.Equals(ResolveActionId(ActionOpportunity), ResolveActionId(other.ActionOpportunity), StringComparison.OrdinalIgnoreCase) &&
                    Vector2.SqrMagnitude((Vector2)(TargetPosition - other.TargetPosition)) <= 0.04f &&
                    Mathf.Abs(StopDistance - other.StopDistance) <= 0.03f;
+        }
+
+        private static string ResolveActionId(CampusNpcActionOpportunity opportunity)
+        {
+            return opportunity != null ? opportunity.ActionId : string.Empty;
         }
     }
 }

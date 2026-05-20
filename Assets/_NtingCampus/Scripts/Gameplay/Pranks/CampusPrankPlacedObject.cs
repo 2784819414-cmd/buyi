@@ -1,5 +1,6 @@
 using NtingCampus.Gameplay.Core;
 using NtingCampus.Gameplay.Rooms;
+using NtingCampus.Gameplay.UI;
 using NtingCampusMapEditor;
 using UnityEngine;
 
@@ -7,12 +8,14 @@ namespace NtingCampus.Gameplay.Pranks
 {
     [DisallowMultipleComponent]
     [RequireComponent(typeof(CampusPlacedObject))]
-    public sealed class CampusPrankPlacedObject : MonoBehaviour, ICampusInteractionActionHandler, ICampusInteractionAvailability
+    public sealed class CampusPrankPlacedObject : MonoBehaviour, ICampusInteractionAvailability
     {
-        [SerializeField] private string displayName = "缺德点";
+        [SerializeField] private string displayName = string.Empty;
+        [SerializeField] private CampusLocalizedText localizedDisplayName = CampusPrankTextCatalog.Localized(CampusPrankTextId.DefaultPrankSpot);
         [SerializeField] private string prankPayload = CampusPrankPayloadIds.PassNote;
         [SerializeField] private CampusRoomType requiredRoomType = CampusRoomType.Unknown;
-        [SerializeField] private string unsupportedReason = "该缺德点还没接入正式玩法。";
+        [SerializeField] private string unsupportedReason = string.Empty;
+        [SerializeField] private CampusLocalizedText localizedUnsupportedReason = CampusPrankTextCatalog.Localized(CampusPrankTextId.DefaultUnsupportedPrankSpot);
 
         private CampusPrankService prankService;
 
@@ -21,9 +24,11 @@ namespace NtingCampus.Gameplay.Pranks
         public void Configure(CampusPrankDefinition definition)
         {
             displayName = definition.DisplayName;
+            localizedDisplayName = definition.LocalizedDisplayName;
             prankPayload = definition.Payload;
             requiredRoomType = definition.RequiredRoomType;
             unsupportedReason = definition.UnsupportedReason;
+            localizedUnsupportedReason = definition.LocalizedUnsupportedReason;
         }
 
         public bool CanInteract(GameObject actor, out string unavailableReason)
@@ -31,27 +36,11 @@ namespace NtingCampus.Gameplay.Pranks
             prankService = prankService != null ? prankService : ResolvePrankService();
             if (prankService == null)
             {
-                unavailableReason = "Formal prank service is missing.";
+                unavailableReason = CampusPrankTextCatalog.Get(CampusPrankTextId.MissingPrankService);
                 return false;
             }
 
             return prankService.CanExecutePayload(prankPayload, actor, out unavailableReason);
-        }
-
-        public bool TryHandleInteractionAction(CampusInteractionAnchor anchor, string actionId, string payload, GameObject actor)
-        {
-            if (!CampusInteractionActionIds.Equals(actionId, CampusInteractionActionIds.PrankExecute))
-            {
-                return false;
-            }
-
-            if (!string.Equals(payload, prankPayload, System.StringComparison.OrdinalIgnoreCase))
-            {
-                return false;
-            }
-
-            prankService = prankService != null ? prankService : ResolvePrankService();
-            return prankService != null && prankService.TryExecutePayload(prankPayload, actor);
         }
 
         private CampusPrankService ResolvePrankService()

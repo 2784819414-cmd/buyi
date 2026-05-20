@@ -29,11 +29,9 @@ namespace NtingCampus.Gameplay.Schedule
             {
                 timeController.SegmentChanged -= HandleSegmentChanged;
                 timeController.SegmentChanged += HandleSegmentChanged;
-                timeController.DailySettlementStarted -= HandleDailySettlementStarted;
-                timeController.DailySettlementStarted += HandleDailySettlementStarted;
             }
 
-            ApplyCurrentSegment();
+            RefreshRuntimeRoomBindings();
         }
 
         public bool IsClassSession(CampusTimeSegment segment)
@@ -105,42 +103,21 @@ namespace NtingCampus.Gameplay.Schedule
             if (timeController != null)
             {
                 timeController.SegmentChanged -= HandleSegmentChanged;
-                timeController.DailySettlementStarted -= HandleDailySettlementStarted;
             }
         }
 
         private void HandleSegmentChanged(CampusTimeSegment previousSegment, CampusTimeSegment currentSegment)
         {
-            ApplyCurrentSegment();
+            RefreshRuntimeRoomBindings();
         }
 
-        private void HandleDailySettlementStarted(CampusGameDate date)
-        {
-            if (rosterService == null)
-            {
-                return;
-            }
-
-            foreach (CampusCharacterRuntime runtime in rosterService.Runtimes)
-            {
-                if (runtime == null || runtime.Data == null)
-                {
-                    continue;
-                }
-
-                runtime.Data.SetState(CampusCharacterState.Normal);
-                runtime.Data.SetSleepiness(Mathf.Clamp(runtime.Data.Sleepiness + 15, 0, 100));
-            }
-        }
-
-        private void ApplyCurrentSegment()
+        private void RefreshRuntimeRoomBindings()
         {
             if (timeController == null || worldService == null || rosterService == null)
             {
                 return;
             }
 
-            bool classSession = IsClassSession(timeController.CurrentSegment);
             foreach (CampusCharacterRuntime runtime in rosterService.Runtimes)
             {
                 if (runtime == null || runtime.Data == null)
@@ -149,10 +126,6 @@ namespace NtingCampus.Gameplay.Schedule
                 }
 
                 SyncRuntimeRoomBinding(runtime);
-                if (runtime.Data.Role == CampusCharacterRole.Student && classSession)
-                {
-                    runtime.Data.SetState(CampusCharacterState.Normal);
-                }
             }
         }
 

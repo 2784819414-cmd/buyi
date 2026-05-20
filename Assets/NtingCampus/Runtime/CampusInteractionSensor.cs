@@ -321,7 +321,7 @@ namespace NtingCampusMapEditor
         {
             if (interactableComponent == null)
             {
-                return "交互";
+                return CampusInteractionTextCatalog.Get(CampusInteractionTextId.Interact);
             }
 
             string typeName = interactableComponent.GetType().Name;
@@ -329,16 +329,21 @@ namespace NtingCampusMapEditor
             bool isDoor = typeName.IndexOf("Door", StringComparison.OrdinalIgnoreCase) >= 0 || objectName.Contains("门");
             if (isDoor)
             {
-                return TryReadIsOpen(interactableComponent, out bool isOpen) && isOpen ? "关门" : "开门";
+                return CampusInteractionTextCatalog.Get(
+                    TryReadIsOpen(interactableComponent, out bool isOpen) && isOpen
+                        ? CampusInteractionTextId.CloseDoor
+                        : CampusInteractionTextId.OpenDoor);
             }
 
             CampusPlacedObject placedObject = interactableComponent.GetComponentInParent<CampusPlacedObject>();
             if (placedObject != null && !string.IsNullOrWhiteSpace(placedObject.ObjectId))
             {
-                return "交互 " + CampusObjectNames.GetDisplayName(placedObject.ObjectId);
+                return CampusInteractionTextCatalog.Format(
+                    CampusInteractionTextId.InteractWith,
+                    CampusObjectNames.GetDisplayName(placedObject.ObjectId));
             }
 
-            return "交互 " + objectName;
+            return CampusInteractionTextCatalog.Format(CampusInteractionTextId.InteractWith, objectName);
         }
 
         private static bool TryReadIsOpen(Component component, out bool isOpen)

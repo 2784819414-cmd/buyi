@@ -1,19 +1,21 @@
 using System.Collections.Generic;
 using UnityEngine;
+using NtingCampus.Gameplay.UI;
 
 namespace Nting.Storage
 {
     [DisallowMultipleComponent]
     public sealed class StorageMemory : MonoBehaviour
     {
-        private const string PlayerPrefsKey = "Nting.Storage.Memory";
-
         private static StorageMemory instance;
 
-        private readonly Dictionary<string, StorageContainerModel> containers = new Dictionary<string, StorageContainerModel>();
+        private readonly Dictionary<string, StorageContainerModel> containers =
+            new Dictionary<string, StorageContainerModel>();
         private readonly HashSet<string> sessionFlags = new HashSet<string>();
 
         public StorageItemRegistry ItemRegistry;
+
+        public IEnumerable<StorageContainerModel> Containers => containers.Values;
 
         public static StorageMemory Instance => GetOrCreate();
 
@@ -65,11 +67,27 @@ namespace Nting.Storage
         {
             container = null;
             return !string.IsNullOrWhiteSpace(containerId) &&
-                   containers.TryGetValue(containerId, out container) &&
+                   containers.TryGetValue(containerId.Trim(), out container) &&
                    container != null;
         }
 
-        public StorageContainerModel GetOrCreateContainer(string id, string displayName, int columns, int rows, float maxWeight)
+        public StorageContainerModel GetOrCreateContainer(
+            string id,
+            string displayName,
+            int columns,
+            int rows,
+            float maxWeight)
+        {
+            return GetOrCreateContainer(id, displayName, default, columns, rows, maxWeight);
+        }
+
+        public StorageContainerModel GetOrCreateContainer(
+            string id,
+            string displayName,
+            CampusLocalizedText localizedDisplayName,
+            int columns,
+            int rows,
+            float maxWeight)
         {
             if (string.IsNullOrWhiteSpace(id))
             {
@@ -77,67 +95,29 @@ namespace Nting.Storage
                 return null;
             }
 
+            string containerId = id.Trim();
             int normalizedColumns = Mathf.Max(1, columns);
             int normalizedRows = Mathf.Max(1, rows);
-            if (containers.TryGetValue(id, out StorageContainerModel existing) && existing != null)
+            if (containers.TryGetValue(containerId, out StorageContainerModel existing) && existing != null)
             {
-                existing.DisplayName = displayName;
-                if (CanResizeContainer(existing, normalizedColumns, normalizedRows))
-                {
-                    existing.Columns = normalizedColumns;
-                    existing.Rows = normalizedRows;
-                }
-                else
-                {
-                    Debug.LogWarning("Storage memory kept previous size for container '" + id + "' because existing items would be out of bounds.");
-                }
-
-                existing.MaxWeight = maxWeight;
+                ConfigureContainer(existing, displayName, localizedDisplayName, normalizedColumns, normalizedRows, maxWeight);
                 return existing;
             }
 
-            StorageContainerModel container = new StorageContainerModel
-            {
-                Id = id,
-                DisplayName = displayName,
-                Columns = normalizedColumns,
-                Rows = normalizedRows,
-                MaxWeight = maxWeight
-            };
-
-            containers[id] = container;
+            StorageContainerModel container = new StorageContainerModel { Id = containerId };
+            ConfigureContainer(container, displayName, localizedDisplayName, normalizedColumns, normalizedRows, maxWeight);
+            containers[containerId] = container;
             return container;
         }
 
-        private static bool CanResizeContainer(StorageContainerModel container, int columns, int rows)
+        public void ClearContainers()
         {
-            if (container == null || container.Items == null)
-            {
-                return true;
-            }
-
-            for (int i = 0; i < container.Items.Count; i++)
-            {
-                StorageItemModel item = container.Items[i];
-                if (item == null)
-                {
-                    continue;
-                }
-
-                if (item.X < 0 || item.Y < 0 ||
-                    item.X + item.CurrentWidth > columns ||
-                    item.Y + item.CurrentHeight > rows)
-                {
-                    return false;
-                }
-            }
-
-            return true;
+            containers.Clear();
         }
 
         public bool TryPlaceNewItem(string containerId, string definitionId, string instanceId, int x, int y)
         {
-            if (!containers.TryGetValue(containerId, out StorageContainerModel container) || container == null)
+            if (!TryGetContainer(containerId, out StorageContainerModel container))
             {
                 Debug.LogWarning("Storage memory failed: missing container '" + containerId + "'.");
                 return false;
@@ -150,147 +130,30 @@ namespace Nting.Storage
             }
 
             StorageItemModel item = ItemRegistry.CreateItem(definitionId, instanceId);
-            if (item == null)
-            {
-                return false;
-            }
-
-            return container.PlaceItem(item, x, y);
+            return item != null && container.PlaceItem(item, x, y);
         }
 
         public bool IsSessionFlagSet(string flag)
         {
-            return !string.IsNullOrWhiteSpace(flag) && sessionFlags.Contains(flag);
+            return !string.IsNullOrWhiteSpace(flag) && sessionFlags.Contains(flag.Trim());
         }
 
         public void SetSessionFlag(string flag)
         {
             if (!string.IsNullOrWhiteSpace(flag))
             {
-                sessionFlags.Add(flag);
+                sessionFlags.Add(flag.Trim());
             }
         }
 
         public StorageMemorySaveData ToSaveData()
         {
-            StorageMemorySaveData data = new StorageMemorySaveData();
-            foreach (KeyValuePair<string, StorageContainerModel> pair in containers)
-            {
-                StorageContainerModel container = pair.Value;
-                if (container == null)
-                {
-                    continue;
-                }
-
-                StorageContainerSaveData containerData = new StorageContainerSaveData
-                {
-                    Id = container.Id,
-                    DisplayName = container.DisplayName,
-                    Columns = container.Columns,
-                    Rows = container.Rows,
-                    MaxWeight = container.MaxWeight,
-                    AccessPolicy = container.AccessPolicy,
-                    OwnerId = container.OwnerId,
-                    OwnerRole = container.OwnerRole,
-                    RoomId = container.RoomId,
-                    AllowTakingContents = container.AllowTakingContents,
-                    IsPlayerCarried = container.IsPlayerCarried,
-                    SuspicionRisk = container.SuspicionRisk
-                };
-
-                for (int i = 0; i < container.Items.Count; i++)
-                {
-                    StorageItemModel item = container.Items[i];
-                    if (item == null)
-                    {
-                        continue;
-                    }
-
-                    containerData.Items.Add(new StorageItemSaveData
-                    {
-                        DefinitionId = item.DefinitionId,
-                        InstanceId = string.IsNullOrWhiteSpace(item.InstanceId) ? item.Id : item.InstanceId,
-                        DisplayName = item.DisplayName,
-                        Width = item.CurrentWidth,
-                        Height = item.CurrentHeight,
-                        Weight = item.Weight,
-                        Description = item.Description,
-                        X = item.X,
-                        Y = item.Y,
-                        Rotated = item.Rotated,
-                        ThemeColor = item.ThemeColor,
-                        IsUsable = item.IsUsable,
-                        UseActionId = item.UseActionId,
-                        ConsumeOnUse = item.ConsumeOnUse,
-                        UseText = item.UseText,
-                        LegalState = item.LegalState,
-                        OwnerId = item.OwnerId,
-                        SourceContainerId = item.SourceContainerId,
-                        SourceRoomId = item.SourceRoomId,
-                        SourceLocation = item.SourceLocation,
-                        AllowTaking = item.AllowTaking,
-                        StolenDuringSession = item.StolenDuringSession,
-                        SuspicionRisk = item.SuspicionRisk
-                    });
-                }
-
-                data.Containers.Add(containerData);
-            }
-
-            return data;
+            return StorageMemorySerializer.ToSaveData(Containers);
         }
 
         public void LoadFromSaveData(StorageMemorySaveData data)
         {
-            containers.Clear();
-            if (data == null || data.Containers == null)
-            {
-                return;
-            }
-
-            for (int i = 0; i < data.Containers.Count; i++)
-            {
-                StorageContainerSaveData containerData = data.Containers[i];
-                if (containerData == null || string.IsNullOrWhiteSpace(containerData.Id))
-                {
-                    continue;
-                }
-
-                StorageContainerModel container = GetOrCreateContainer(
-                    containerData.Id,
-                    containerData.DisplayName,
-                    containerData.Columns,
-                    containerData.Rows,
-                    containerData.MaxWeight);
-                container.AccessPolicy = containerData.AccessPolicy;
-                container.OwnerId = containerData.OwnerId;
-                container.OwnerRole = containerData.OwnerRole;
-                container.RoomId = containerData.RoomId;
-                container.AllowTakingContents = containerData.AllowTakingContents;
-                container.IsPlayerCarried = containerData.IsPlayerCarried;
-                container.SuspicionRisk = containerData.SuspicionRisk;
-
-                container.Items.Clear();
-                if (containerData.Items == null)
-                {
-                    continue;
-                }
-
-                for (int itemIndex = 0; itemIndex < containerData.Items.Count; itemIndex++)
-                {
-                    StorageItemSaveData itemData = containerData.Items[itemIndex];
-                    StorageItemModel item = CreateItemFromSaveData(itemData);
-                    if (item == null)
-                    {
-                        continue;
-                    }
-
-                    if (!container.PlaceItem(item, itemData.X, itemData.Y))
-                    {
-                        Debug.LogWarning("Storage memory load skipped item '" + item.DisplayName + "' because its saved position is invalid.");
-                    }
-                }
-            }
+            StorageMemorySerializer.LoadInto(this, data);
         }
 
         public string ToJson(bool prettyPrint = false)
@@ -300,80 +163,65 @@ namespace Nting.Storage
 
         public void LoadFromJson(string json)
         {
-            if (string.IsNullOrWhiteSpace(json))
+            if (!string.IsNullOrWhiteSpace(json))
             {
-                return;
+                LoadFromSaveData(JsonUtility.FromJson<StorageMemorySaveData>(json));
             }
-
-            LoadFromSaveData(JsonUtility.FromJson<StorageMemorySaveData>(json));
         }
 
         public void SaveToPlayerPrefs()
         {
-            PlayerPrefs.SetString(PlayerPrefsKey, ToJson(false));
-            PlayerPrefs.Save();
+            StorageMemoryPersistence.SaveToPlayerPrefs(this);
         }
 
         public bool LoadFromPlayerPrefs()
         {
-            if (!PlayerPrefs.HasKey(PlayerPrefsKey))
-            {
-                return false;
-            }
-
-            LoadFromJson(PlayerPrefs.GetString(PlayerPrefsKey));
-            return true;
+            return StorageMemoryPersistence.LoadFromPlayerPrefs(this);
         }
 
-        private StorageItemModel CreateItemFromSaveData(StorageItemSaveData itemData)
+        private static void ConfigureContainer(
+            StorageContainerModel container,
+            string displayName,
+            CampusLocalizedText localizedDisplayName,
+            int columns,
+            int rows,
+            float maxWeight)
         {
-            if (itemData == null)
+            container.DisplayName = displayName;
+            container.LocalizedDisplayName = localizedDisplayName;
+            if (CanResizeContainer(container, columns, rows))
             {
-                return null;
+                container.Columns = columns;
+                container.Rows = rows;
+            }
+            else
+            {
+                Debug.LogWarning("Storage memory kept previous size for container '" + container.Id + "' because existing items would be out of bounds.");
             }
 
-            StorageItemModel item = null;
-            if (ItemRegistry != null && !string.IsNullOrWhiteSpace(itemData.DefinitionId))
+            container.MaxWeight = maxWeight;
+        }
+
+        private static bool CanResizeContainer(StorageContainerModel container, int columns, int rows)
+        {
+            if (container == null || container.Items == null)
             {
-                item = ItemRegistry.CreateItem(itemData.DefinitionId, itemData.InstanceId);
+                return true;
             }
 
-            if (item == null)
+            for (int i = 0; i < container.Items.Count; i++)
             {
-                item = new StorageItemModel
+                StorageItemModel item = container.Items[i];
+                if (item != null &&
+                    (item.X < 0 || item.Y < 0 ||
+                     item.X + item.CurrentWidth > columns ||
+                     item.Y + item.CurrentHeight > rows))
                 {
-                    Id = itemData.InstanceId,
-                    InstanceId = itemData.InstanceId,
-                    DefinitionId = itemData.DefinitionId
-                };
+                    return false;
+                }
             }
 
-            item.DisplayName = itemData.DisplayName;
-            item.Width = Mathf.Max(1, itemData.Width);
-            item.Height = Mathf.Max(1, itemData.Height);
-            item.Weight = itemData.Weight;
-            item.Description = itemData.Description;
-            item.Rotated = itemData.Rotated;
-            item.ThemeColor = itemData.ThemeColor;
-            item.IsUsable = itemData.IsUsable;
-            item.UseActionId = itemData.UseActionId;
-            item.ConsumeOnUse = itemData.ConsumeOnUse;
-            item.UseText = itemData.UseText;
-            StorageItemLegalState savedLegalState = itemData.LegalState;
-            item.LegalState = savedLegalState;
-            if (item.LegalState == StorageItemLegalState.Unknown)
-            {
-                item.LegalState = StorageItemLegalState.Personal;
-            }
-
-            item.OwnerId = itemData.OwnerId;
-            item.SourceContainerId = itemData.SourceContainerId;
-            item.SourceRoomId = itemData.SourceRoomId;
-            item.SourceLocation = itemData.SourceLocation;
-            item.AllowTaking = savedLegalState == StorageItemLegalState.Unknown || itemData.AllowTaking;
-            item.StolenDuringSession = itemData.StolenDuringSession;
-            item.SuspicionRisk = itemData.SuspicionRisk;
-            return item;
+            return true;
         }
     }
 }

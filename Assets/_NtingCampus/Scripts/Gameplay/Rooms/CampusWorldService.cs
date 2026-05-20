@@ -13,7 +13,11 @@ namespace NtingCampus.Gameplay.Rooms
         [SerializeField] private CampusRoomRegistry roomRegistry;
         [SerializeField] private bool rebuildRegistryOnInitialize = true;
 
+        private readonly List<CampusEcologyValidator.ValidationIssue> ecologyValidationIssues =
+            new List<CampusEcologyValidator.ValidationIssue>();
+
         public CampusRoomRegistry RoomRegistry => roomRegistry;
+        public IReadOnlyList<CampusEcologyValidator.ValidationIssue> EcologyValidationIssues => ecologyValidationIssues;
 
         public void Initialize(CampusGameBootstrap targetBootstrap)
         {
@@ -57,8 +61,26 @@ namespace NtingCampus.Gameplay.Rooms
 
         public CampusGameplayRoom FindFirstRoom(CampusRoomType roomType, bool requireUsableForGameplay = false)
         {
-            List<CampusGameplayRoom> matches = GetRoomsByType(roomType, requireUsableForGameplay);
-            return matches.Count > 0 ? matches[0] : null;
+            if (roomRegistry == null || roomRegistry.Rooms == null)
+            {
+                return null;
+            }
+
+            for (int i = 0; i < roomRegistry.Rooms.Count; i++)
+            {
+                CampusGameplayRoom room = roomRegistry.Rooms[i];
+                if (room == null || room.RoomType != roomType)
+                {
+                    continue;
+                }
+
+                if (!requireUsableForGameplay || room.IsUsableForGameplay)
+                {
+                    return room;
+                }
+            }
+
+            return null;
         }
 
         public CampusGameplayRoom FindRoomById(string roomId)
@@ -108,6 +130,32 @@ namespace NtingCampus.Gameplay.Rooms
             }
 
             return null;
+        }
+
+        public CampusWorldFacts BuildFacts(CampusRosterService rosterService)
+        {
+            ResolveRoomRegistry();
+            return CampusWorldFacts.Build(this, rosterService);
+        }
+
+        public IReadOnlyList<CampusEcologyValidator.ValidationIssue> ValidateEcology(
+            CampusRosterService rosterService,
+            bool logIssues)
+        {
+            ecologyValidationIssues.Clear();
+            CampusWorldFacts facts = BuildFacts(rosterService);
+            List<CampusEcologyValidator.ValidationIssue> issues = CampusEcologyValidator.Validate(facts);
+            for (int i = 0; i < issues.Count; i++)
+            {
+                ecologyValidationIssues.Add(issues[i]);
+            }
+
+            if (logIssues)
+            {
+                CampusEcologyValidator.LogIssues(ecologyValidationIssues);
+            }
+
+            return ecologyValidationIssues;
         }
 
         private int ResolveFloorIndex(CampusCharacterRuntime runtime)

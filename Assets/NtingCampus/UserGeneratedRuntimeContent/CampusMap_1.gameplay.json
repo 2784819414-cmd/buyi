@@ -65,7 +65,7 @@
             ],
             "Assignments": {
                 "StudentClassroomId": "classroom_f1_1",
-                "StudentDeskId": "facility_f1_StudentDesk_-10_-14",
+                "StudentDeskId": "facility_f1_StudentDesk_-10_-11",
                 "TeacherClassroomId": "",
                 "TeacherPodiumId": "",
                 "OfficeRoomId": "",
@@ -139,7 +139,7 @@
             ],
             "Assignments": {
                 "StudentClassroomId": "classroom_f1_1",
-                "StudentDeskId": "facility_f1_StudentDesk_-10_-8",
+                "StudentDeskId": "facility_f1_StudentDesk_-13_-5",
                 "TeacherClassroomId": "",
                 "TeacherPodiumId": "",
                 "OfficeRoomId": "",
@@ -176,7 +176,7 @@
             ],
             "Assignments": {
                 "StudentClassroomId": "classroom_f1_1",
-                "StudentDeskId": "facility_f1_StudentDesk_-16_-14",
+                "StudentDeskId": "facility_f1_StudentDesk_-7_-11",
                 "TeacherClassroomId": "",
                 "TeacherPodiumId": "",
                 "OfficeRoomId": "",
@@ -213,7 +213,7 @@
             ],
             "Assignments": {
                 "StudentClassroomId": "classroom_f1_1",
-                "StudentDeskId": "facility_f1_StudentDesk_-10_-11",
+                "StudentDeskId": "facility_f1_StudentDesk_-16_-5",
                 "TeacherClassroomId": "",
                 "TeacherPodiumId": "",
                 "OfficeRoomId": "",
@@ -250,7 +250,7 @@
             ],
             "Assignments": {
                 "StudentClassroomId": "classroom_f1_1",
-                "StudentDeskId": "facility_f1_StudentDesk_-13_-11",
+                "StudentDeskId": "facility_f1_StudentDesk_-10_-5",
                 "TeacherClassroomId": "",
                 "TeacherPodiumId": "",
                 "OfficeRoomId": "",
@@ -287,7 +287,7 @@
             ],
             "Assignments": {
                 "StudentClassroomId": "classroom_f1_1",
-                "StudentDeskId": "facility_f1_StudentDesk_-13_-14",
+                "StudentDeskId": "facility_f1_StudentDesk_-10_-8",
                 "TeacherClassroomId": "",
                 "TeacherPodiumId": "",
                 "OfficeRoomId": "",
@@ -324,7 +324,7 @@
             ],
             "Assignments": {
                 "StudentClassroomId": "classroom_f1_1",
-                "StudentDeskId": "facility_f1_StudentDesk_-7_-11",
+                "StudentDeskId": "facility_f1_StudentDesk_-13_-11",
                 "TeacherClassroomId": "",
                 "TeacherPodiumId": "",
                 "OfficeRoomId": "",
@@ -361,7 +361,7 @@
             ],
             "Assignments": {
                 "StudentClassroomId": "classroom_f1_1",
-                "StudentDeskId": "facility_f1_StudentDesk_-16_-5",
+                "StudentDeskId": "facility_f1_StudentDesk_-16_-11",
                 "TeacherClassroomId": "",
                 "TeacherPodiumId": "",
                 "OfficeRoomId": "",
@@ -398,7 +398,7 @@
             ],
             "Assignments": {
                 "StudentClassroomId": "classroom_f1_1",
-                "StudentDeskId": "facility_f1_StudentDesk_-16_-11",
+                "StudentDeskId": "facility_f1_StudentDesk_-10_-14",
                 "TeacherClassroomId": "",
                 "TeacherPodiumId": "",
                 "OfficeRoomId": "",
@@ -435,7 +435,7 @@
             ],
             "Assignments": {
                 "StudentClassroomId": "classroom_f1_1",
-                "StudentDeskId": "facility_f1_StudentDesk_-13_-5",
+                "StudentDeskId": "facility_f1_StudentDesk_-7_-14",
                 "TeacherClassroomId": "",
                 "TeacherPodiumId": "",
                 "OfficeRoomId": "",
@@ -472,7 +472,7 @@
             ],
             "Assignments": {
                 "StudentClassroomId": "classroom_f1_1",
-                "StudentDeskId": "facility_f1_StudentDesk_-13_-8",
+                "StudentDeskId": "facility_f1_StudentDesk_-16_-14",
                 "TeacherClassroomId": "",
                 "TeacherPodiumId": "",
                 "OfficeRoomId": "",
@@ -509,7 +509,7 @@
             ],
             "Assignments": {
                 "StudentClassroomId": "classroom_f1_1",
-                "StudentDeskId": "facility_f1_StudentDesk_-7_-14",
+                "StudentDeskId": "facility_f1_StudentDesk_-13_-8",
                 "TeacherClassroomId": "",
                 "TeacherPodiumId": "",
                 "OfficeRoomId": "",
@@ -630,242 +630,394 @@
                 "DeliveryRoomId": "",
                 "DeliveryPointId": ""
             }
+        },
+        {
+            "Id": "staff_canteen_1",
+            "DisplayName": "CanteenClerk1",
+            "LocalizedDisplayName": {
+                "chinese": "食堂店员1",
+                "english": "CanteenClerk1"
+            },
+            "Role": 2,
+            "TeacherDuty": 0,
+            "StaffDuty": 1,
+            "ClassId": "class_1",
+            "InitialState": 0,
+            "IsPlayerControlled": false,
+            "FloorIndex": 1,
+            "Cell": {
+                "x": 42,
+                "y": 4,
+                "z": 0
+            },
+            "Sleepiness": 10,
+            "Mischief": 0,
+            "Traits": [
+                0
+            ],
+            "Assignments": {
+                "StudentClassroomId": "",
+                "StudentDeskId": "",
+                "TeacherClassroomId": "",
+                "TeacherPodiumId": "",
+                "OfficeRoomId": "",
+                "OfficeDeskId": "",
+                "WorkRoomId": "canteen_f1_1",
+                "PrimaryWorkstationId": "facility_f1_CanteenClerkStandPoint_42_3",
+                "DeliveryRoomId": "",
+                "DeliveryPointId": ""
+            }
+        },
+        {
+            "Id": "staff_canteen_2",
+            "DisplayName": "CanteenClerk2",
+            "LocalizedDisplayName": {
+                "chinese": "食堂店员2",
+                "english": "CanteenClerk2"
+            },
+            "Role": 2,
+            "TeacherDuty": 0,
+            "StaffDuty": 1,
+            "ClassId": "class_1",
+            "InitialState": 0,
+            "IsPlayerControlled": false,
+            "FloorIndex": 1,
+            "Cell": {
+                "x": 44,
+                "y": 4,
+                "z": 0
+            },
+            "Sleepiness": 10,
+            "Mischief": 0,
+            "Traits": [
+                0
+            ],
+            "Assignments": {
+                "StudentClassroomId": "",
+                "StudentDeskId": "",
+                "TeacherClassroomId": "",
+                "TeacherPodiumId": "",
+                "OfficeRoomId": "",
+                "OfficeDeskId": "",
+                "WorkRoomId": "canteen_f1_1",
+                "PrimaryWorkstationId": "facility_f1_CanteenClerkStandPoint_44_3",
+                "DeliveryRoomId": "",
+                "DeliveryPointId": ""
+            }
+        },
+        {
+            "Id": "staff_canteen_3",
+            "DisplayName": "CanteenClerk3",
+            "LocalizedDisplayName": {
+                "chinese": "食堂店员3",
+                "english": "CanteenClerk3"
+            },
+            "Role": 2,
+            "TeacherDuty": 0,
+            "StaffDuty": 1,
+            "ClassId": "class_1",
+            "InitialState": 0,
+            "IsPlayerControlled": false,
+            "FloorIndex": 1,
+            "Cell": {
+                "x": 48,
+                "y": 4,
+                "z": 0
+            },
+            "Sleepiness": 10,
+            "Mischief": 0,
+            "Traits": [
+                0
+            ],
+            "Assignments": {
+                "StudentClassroomId": "",
+                "StudentDeskId": "",
+                "TeacherClassroomId": "",
+                "TeacherPodiumId": "",
+                "OfficeRoomId": "",
+                "OfficeDeskId": "",
+                "WorkRoomId": "canteen_f1_1",
+                "PrimaryWorkstationId": "facility_f1_CanteenClerkStandPoint_48_3",
+                "DeliveryRoomId": "",
+                "DeliveryPointId": ""
+            }
+        },
+        {
+            "Id": "staff_canteen_4",
+            "DisplayName": "CanteenClerk4",
+            "LocalizedDisplayName": {
+                "chinese": "食堂店员4",
+                "english": "CanteenClerk4"
+            },
+            "Role": 2,
+            "TeacherDuty": 0,
+            "StaffDuty": 1,
+            "ClassId": "class_1",
+            "InitialState": 0,
+            "IsPlayerControlled": false,
+            "FloorIndex": 1,
+            "Cell": {
+                "x": 46,
+                "y": 4,
+                "z": 0
+            },
+            "Sleepiness": 10,
+            "Mischief": 0,
+            "Traits": [
+                0
+            ],
+            "Assignments": {
+                "StudentClassroomId": "",
+                "StudentDeskId": "",
+                "TeacherClassroomId": "",
+                "TeacherPodiumId": "",
+                "OfficeRoomId": "",
+                "OfficeDeskId": "",
+                "WorkRoomId": "canteen_f1_1",
+                "PrimaryWorkstationId": "facility_f1_CanteenClerkStandPoint_46_3",
+                "DeliveryRoomId": "",
+                "DeliveryPointId": ""
+            }
+        },
+        {
+            "Id": "staff_canteen_5",
+            "DisplayName": "CanteenClerk5",
+            "LocalizedDisplayName": {
+                "chinese": "食堂店员5",
+                "english": "CanteenClerk5"
+            },
+            "Role": 2,
+            "TeacherDuty": 0,
+            "StaffDuty": 1,
+            "ClassId": "class_1",
+            "InitialState": 0,
+            "IsPlayerControlled": false,
+            "FloorIndex": 1,
+            "Cell": {
+                "x": 50,
+                "y": 4,
+                "z": 0
+            },
+            "Sleepiness": 10,
+            "Mischief": 0,
+            "Traits": [
+                0
+            ],
+            "Assignments": {
+                "StudentClassroomId": "",
+                "StudentDeskId": "",
+                "TeacherClassroomId": "",
+                "TeacherPodiumId": "",
+                "OfficeRoomId": "",
+                "OfficeDeskId": "",
+                "WorkRoomId": "canteen_f1_1",
+                "PrimaryWorkstationId": "facility_f1_CanteenClerkStandPoint_50_3",
+                "DeliveryRoomId": "",
+                "DeliveryPointId": ""
+            }
+        },
+        {
+            "Id": "staff_canteen_6",
+            "DisplayName": "CanteenClerk6",
+            "LocalizedDisplayName": {
+                "chinese": "食堂店员6",
+                "english": "CanteenClerk6"
+            },
+            "Role": 2,
+            "TeacherDuty": 0,
+            "StaffDuty": 1,
+            "ClassId": "class_1",
+            "InitialState": 0,
+            "IsPlayerControlled": false,
+            "FloorIndex": 1,
+            "Cell": {
+                "x": 52,
+                "y": 4,
+                "z": 0
+            },
+            "Sleepiness": 10,
+            "Mischief": 0,
+            "Traits": [
+                0
+            ],
+            "Assignments": {
+                "StudentClassroomId": "",
+                "StudentDeskId": "",
+                "TeacherClassroomId": "",
+                "TeacherPodiumId": "",
+                "OfficeRoomId": "",
+                "OfficeDeskId": "",
+                "WorkRoomId": "canteen_f1_1",
+                "PrimaryWorkstationId": "facility_f1_CanteenClerkStandPoint_52_3",
+                "DeliveryRoomId": "",
+                "DeliveryPointId": ""
+            }
+        },
+        {
+            "Id": "staff_canteen_7",
+            "DisplayName": "CanteenClerk7",
+            "LocalizedDisplayName": {
+                "chinese": "食堂店员7",
+                "english": "CanteenClerk7"
+            },
+            "Role": 2,
+            "TeacherDuty": 0,
+            "StaffDuty": 1,
+            "ClassId": "class_1",
+            "InitialState": 0,
+            "IsPlayerControlled": false,
+            "FloorIndex": 1,
+            "Cell": {
+                "x": 54,
+                "y": 4,
+                "z": 0
+            },
+            "Sleepiness": 10,
+            "Mischief": 0,
+            "Traits": [
+                0
+            ],
+            "Assignments": {
+                "StudentClassroomId": "",
+                "StudentDeskId": "",
+                "TeacherClassroomId": "",
+                "TeacherPodiumId": "",
+                "OfficeRoomId": "",
+                "OfficeDeskId": "",
+                "WorkRoomId": "canteen_f1_1",
+                "PrimaryWorkstationId": "facility_f1_CanteenClerkStandPoint_54_3",
+                "DeliveryRoomId": "",
+                "DeliveryPointId": ""
+            }
+        },
+        {
+            "Id": "staff_canteen_8",
+            "DisplayName": "CanteenClerk8",
+            "LocalizedDisplayName": {
+                "chinese": "食堂店员8",
+                "english": "CanteenClerk8"
+            },
+            "Role": 2,
+            "TeacherDuty": 0,
+            "StaffDuty": 1,
+            "ClassId": "class_1",
+            "InitialState": 0,
+            "IsPlayerControlled": false,
+            "FloorIndex": 1,
+            "Cell": {
+                "x": 56,
+                "y": 4,
+                "z": 0
+            },
+            "Sleepiness": 10,
+            "Mischief": 0,
+            "Traits": [
+                0
+            ],
+            "Assignments": {
+                "StudentClassroomId": "",
+                "StudentDeskId": "",
+                "TeacherClassroomId": "",
+                "TeacherPodiumId": "",
+                "OfficeRoomId": "",
+                "OfficeDeskId": "",
+                "WorkRoomId": "canteen_f1_1",
+                "PrimaryWorkstationId": "facility_f1_CanteenClerkStandPoint_56_3",
+                "DeliveryRoomId": "",
+                "DeliveryPointId": ""
+            }
         }
     ],
     "Rooms": [],
     "Facilities": [
         {
-            "Id": "facility_f1_CanteenQueuePoint_45_2",
-            "DisplayName": "食堂排队点",
-            "FacilityType": 21,
+            "Id": "facility_f1_CanteenCustomerPickupPoint_44_1",
+            "DisplayName": "顾客取餐点",
+            "FacilityType": 26,
             "FloorIndex": 1,
             "Cell": {
-                "x": 45,
-                "y": 2,
+                "x": 44,
+                "y": 1,
                 "z": 0
             },
             "CountsAsCoreFacility": true
         },
         {
-            "Id": "facility_f1_DiningTable_49_-2",
-            "DisplayName": "吃饭区座位",
-            "FacilityType": 4,
+            "Id": "facility_f1_DeliveryDropPoint_15_-23",
+            "DisplayName": "外卖放置点",
+            "FacilityType": 20,
             "FloorIndex": 1,
             "Cell": {
-                "x": 49,
-                "y": -2,
+                "x": 15,
+                "y": -23,
                 "z": 0
             },
             "CountsAsCoreFacility": true
         },
         {
-            "Id": "facility_f1_DiningTable_52_-2",
-            "DisplayName": "吃饭区座位",
-            "FacilityType": 4,
-            "FloorIndex": 1,
-            "Cell": {
-                "x": 52,
-                "y": -2,
-                "z": 0
-            },
-            "CountsAsCoreFacility": true
-        },
-        {
-            "Id": "facility_f1_DiningTable_54_-1",
-            "DisplayName": "吃饭区座位",
-            "FacilityType": 4,
+            "Id": "facility_f1_CanteenCustomerPickupPoint_54_1",
+            "DisplayName": "顾客取餐点",
+            "FacilityType": 26,
             "FloorIndex": 1,
             "Cell": {
                 "x": 54,
+                "y": 1,
+                "z": 0
+            },
+            "CountsAsCoreFacility": true
+        },
+        {
+            "Id": "facility_f1_CanteenQueuePoint_48_0",
+            "DisplayName": "食堂排队点",
+            "FacilityType": 21,
+            "FloorIndex": 1,
+            "Cell": {
+                "x": 48,
+                "y": 0,
+                "z": 0
+            },
+            "CountsAsCoreFacility": true
+        },
+        {
+            "Id": "facility_f1_DeliveryDropPoint_21_-6",
+            "DisplayName": "外卖放置点",
+            "FacilityType": 20,
+            "FloorIndex": 1,
+            "Cell": {
+                "x": 21,
+                "y": -6,
+                "z": 0
+            },
+            "CountsAsCoreFacility": true
+        },
+        {
+            "Id": "facility_f1_CanteenClerkStandPoint_52_3",
+            "DisplayName": "店员后台站位",
+            "FacilityType": 25,
+            "FloorIndex": 1,
+            "Cell": {
+                "x": 52,
+                "y": 3,
+                "z": 0
+            },
+            "CountsAsCoreFacility": true
+        },
+        {
+            "Id": "facility_f1_CanteenQueuePoint_46_-1",
+            "DisplayName": "食堂排队点",
+            "FacilityType": 21,
+            "FloorIndex": 1,
+            "Cell": {
+                "x": 46,
                 "y": -1,
                 "z": 0
             },
             "CountsAsCoreFacility": true
         },
         {
-            "Id": "facility_f1_DiningTable_42_-3",
-            "DisplayName": "吃饭区座位",
-            "FacilityType": 4,
-            "FloorIndex": 1,
-            "Cell": {
-                "x": 42,
-                "y": -3,
-                "z": 0
-            },
-            "CountsAsCoreFacility": true
-        },
-        {
-            "Id": "facility_f1_DiningTable_49_-1",
-            "DisplayName": "吃饭区座位",
-            "FacilityType": 4,
-            "FloorIndex": 1,
-            "Cell": {
-                "x": 49,
-                "y": -1,
-                "z": 0
-            },
-            "CountsAsCoreFacility": true
-        },
-        {
-            "Id": "facility_f1_CanteenQueuePoint_53_2",
+            "Id": "facility_f1_CanteenQueuePoint_52_-3",
             "DisplayName": "食堂排队点",
             "FacilityType": 21,
-            "FloorIndex": 1,
-            "Cell": {
-                "x": 53,
-                "y": 2,
-                "z": 0
-            },
-            "CountsAsCoreFacility": true
-        },
-        {
-            "Id": "facility_f1_CanteenQueuePoint_47_2",
-            "DisplayName": "食堂排队点",
-            "FacilityType": 21,
-            "FloorIndex": 1,
-            "Cell": {
-                "x": 47,
-                "y": 2,
-                "z": 0
-            },
-            "CountsAsCoreFacility": true
-        },
-        {
-            "Id": "facility_f1_CanteenQueuePoint_43_2",
-            "DisplayName": "食堂排队点",
-            "FacilityType": 21,
-            "FloorIndex": 1,
-            "Cell": {
-                "x": 43,
-                "y": 2,
-                "z": 0
-            },
-            "CountsAsCoreFacility": true
-        },
-        {
-            "Id": "facility_f1_CanteenQueuePoint_55_2",
-            "DisplayName": "食堂排队点",
-            "FacilityType": 21,
-            "FloorIndex": 1,
-            "Cell": {
-                "x": 55,
-                "y": 2,
-                "z": 0
-            },
-            "CountsAsCoreFacility": true
-        },
-        {
-            "Id": "facility_f1_CanteenQueuePoint_51_2",
-            "DisplayName": "食堂排队点",
-            "FacilityType": 21,
-            "FloorIndex": 1,
-            "Cell": {
-                "x": 51,
-                "y": 2,
-                "z": 0
-            },
-            "CountsAsCoreFacility": true
-        },
-        {
-            "Id": "facility_f1_DiningTable_47_-3",
-            "DisplayName": "吃饭区座位",
-            "FacilityType": 4,
-            "FloorIndex": 1,
-            "Cell": {
-                "x": 47,
-                "y": -3,
-                "z": 0
-            },
-            "CountsAsCoreFacility": true
-        },
-        {
-            "Id": "facility_f1_DiningTable_47_-1",
-            "DisplayName": "吃饭区座位",
-            "FacilityType": 4,
-            "FloorIndex": 1,
-            "Cell": {
-                "x": 47,
-                "y": -1,
-                "z": 0
-            },
-            "CountsAsCoreFacility": true
-        },
-        {
-            "Id": "facility_f1_DiningTable_44_-1",
-            "DisplayName": "吃饭区座位",
-            "FacilityType": 4,
-            "FloorIndex": 1,
-            "Cell": {
-                "x": 44,
-                "y": -1,
-                "z": 0
-            },
-            "CountsAsCoreFacility": true
-        },
-        {
-            "Id": "facility_f1_DiningTable_42_-1",
-            "DisplayName": "吃饭区座位",
-            "FacilityType": 4,
-            "FloorIndex": 1,
-            "Cell": {
-                "x": 42,
-                "y": -1,
-                "z": 0
-            },
-            "CountsAsCoreFacility": true
-        },
-        {
-            "Id": "facility_f1_DiningTable_47_-2",
-            "DisplayName": "吃饭区座位",
-            "FacilityType": 4,
-            "FloorIndex": 1,
-            "Cell": {
-                "x": 47,
-                "y": -2,
-                "z": 0
-            },
-            "CountsAsCoreFacility": true
-        },
-        {
-            "Id": "facility_f1_DiningTable_49_-3",
-            "DisplayName": "吃饭区座位",
-            "FacilityType": 4,
-            "FloorIndex": 1,
-            "Cell": {
-                "x": 49,
-                "y": -3,
-                "z": 0
-            },
-            "CountsAsCoreFacility": true
-        },
-        {
-            "Id": "facility_f1_DiningTable_42_-2",
-            "DisplayName": "吃饭区座位",
-            "FacilityType": 4,
-            "FloorIndex": 1,
-            "Cell": {
-                "x": 42,
-                "y": -2,
-                "z": 0
-            },
-            "CountsAsCoreFacility": true
-        },
-        {
-            "Id": "facility_f1_DiningTable_44_-2",
-            "DisplayName": "吃饭区座位",
-            "FacilityType": 4,
-            "FloorIndex": 1,
-            "Cell": {
-                "x": 44,
-                "y": -2,
-                "z": 0
-            },
-            "CountsAsCoreFacility": true
-        },
-        {
-            "Id": "facility_f1_DiningTable_52_-3",
-            "DisplayName": "吃饭区座位",
-            "FacilityType": 4,
             "FloorIndex": 1,
             "Cell": {
                 "x": 52,
@@ -875,33 +1027,189 @@
             "CountsAsCoreFacility": true
         },
         {
-            "Id": "facility_f1_CanteenQueuePoint_49_2",
+            "Id": "facility_f1_CanteenQueuePoint_46_-2",
             "DisplayName": "食堂排队点",
             "FacilityType": 21,
             "FloorIndex": 1,
             "Cell": {
-                "x": 49,
+                "x": 46,
+                "y": -2,
+                "z": 0
+            },
+            "CountsAsCoreFacility": true
+        },
+        {
+            "Id": "facility_f1_CanteenCustomerPickupPoint_42_1",
+            "DisplayName": "顾客取餐点",
+            "FacilityType": 26,
+            "FloorIndex": 1,
+            "Cell": {
+                "x": 42,
+                "y": 1,
+                "z": 0
+            },
+            "CountsAsCoreFacility": true
+        },
+        {
+            "Id": "facility_f1_DeliveryDropPoint_23_-23",
+            "DisplayName": "外卖放置点",
+            "FacilityType": 20,
+            "FloorIndex": 1,
+            "Cell": {
+                "x": 23,
+                "y": -23,
+                "z": 0
+            },
+            "CountsAsCoreFacility": true
+        },
+        {
+            "Id": "facility_f1_CanteenCustomerPickupPoint_46_1",
+            "DisplayName": "顾客取餐点",
+            "FacilityType": 26,
+            "FloorIndex": 1,
+            "Cell": {
+                "x": 46,
+                "y": 1,
+                "z": 0
+            },
+            "CountsAsCoreFacility": true
+        },
+        {
+            "Id": "facility_f1_DeliveryDropPoint_21_-23",
+            "DisplayName": "外卖放置点",
+            "FacilityType": 20,
+            "FloorIndex": 1,
+            "Cell": {
+                "x": 21,
+                "y": -23,
+                "z": 0
+            },
+            "CountsAsCoreFacility": true
+        },
+        {
+            "Id": "facility_f1_CanteenServingWindow_48_2",
+            "DisplayName": "打饭窗口",
+            "FacilityType": 27,
+            "FloorIndex": 1,
+            "Cell": {
+                "x": 48,
                 "y": 2,
                 "z": 0
             },
             "CountsAsCoreFacility": true
         },
         {
-            "Id": "facility_f1_CanteenQueuePoint_41_2",
+            "Id": "facility_f1_CanteenQueuePoint_48_-3",
             "DisplayName": "食堂排队点",
             "FacilityType": 21,
             "FloorIndex": 1,
             "Cell": {
-                "x": 41,
+                "x": 48,
+                "y": -3,
+                "z": 0
+            },
+            "CountsAsCoreFacility": true
+        },
+        {
+            "Id": "facility_f1_CanteenQueuePoint_44_-2",
+            "DisplayName": "食堂排队点",
+            "FacilityType": 21,
+            "FloorIndex": 1,
+            "Cell": {
+                "x": 44,
+                "y": -2,
+                "z": 0
+            },
+            "CountsAsCoreFacility": true
+        },
+        {
+            "Id": "facility_f1_CanteenServingWindow_54_2",
+            "DisplayName": "打饭窗口",
+            "FacilityType": 27,
+            "FloorIndex": 1,
+            "Cell": {
+                "x": 54,
                 "y": 2,
                 "z": 0
             },
             "CountsAsCoreFacility": true
         },
         {
-            "Id": "facility_f1_DiningTable_44_-3",
-            "DisplayName": "吃饭区座位",
-            "FacilityType": 4,
+            "Id": "facility_f1_CanteenClerkStandPoint_56_3",
+            "DisplayName": "店员后台站位",
+            "FacilityType": 25,
+            "FloorIndex": 1,
+            "Cell": {
+                "x": 56,
+                "y": 3,
+                "z": 0
+            },
+            "CountsAsCoreFacility": true
+        },
+        {
+            "Id": "facility_f1_CanteenServingWindow_46_2",
+            "DisplayName": "打饭窗口",
+            "FacilityType": 27,
+            "FloorIndex": 1,
+            "Cell": {
+                "x": 46,
+                "y": 2,
+                "z": 0
+            },
+            "CountsAsCoreFacility": true
+        },
+        {
+            "Id": "facility_f1_CanteenQueuePoint_42_-2",
+            "DisplayName": "食堂排队点",
+            "FacilityType": 21,
+            "FloorIndex": 1,
+            "Cell": {
+                "x": 42,
+                "y": -2,
+                "z": 0
+            },
+            "CountsAsCoreFacility": true
+        },
+        {
+            "Id": "facility_f1_CanteenCustomerPickupPoint_50_1",
+            "DisplayName": "顾客取餐点",
+            "FacilityType": 26,
+            "FloorIndex": 1,
+            "Cell": {
+                "x": 50,
+                "y": 1,
+                "z": 0
+            },
+            "CountsAsCoreFacility": true
+        },
+        {
+            "Id": "facility_f1_CanteenQueuePoint_50_-3",
+            "DisplayName": "食堂排队点",
+            "FacilityType": 21,
+            "FloorIndex": 1,
+            "Cell": {
+                "x": 50,
+                "y": -3,
+                "z": 0
+            },
+            "CountsAsCoreFacility": true
+        },
+        {
+            "Id": "facility_f1_CanteenQueuePoint_44_-1",
+            "DisplayName": "食堂排队点",
+            "FacilityType": 21,
+            "FloorIndex": 1,
+            "Cell": {
+                "x": 44,
+                "y": -1,
+                "z": 0
+            },
+            "CountsAsCoreFacility": true
+        },
+        {
+            "Id": "facility_f1_CanteenQueuePoint_44_-3",
+            "DisplayName": "食堂排队点",
+            "FacilityType": 21,
             "FloorIndex": 1,
             "Cell": {
                 "x": 44,
@@ -911,9 +1219,105 @@
             "CountsAsCoreFacility": true
         },
         {
-            "Id": "facility_f1_DiningTable_52_-1",
-            "DisplayName": "吃饭区座位",
-            "FacilityType": 4,
+            "Id": "facility_f1_CanteenServingWindow_42_2",
+            "DisplayName": "打饭窗口",
+            "FacilityType": 27,
+            "FloorIndex": 1,
+            "Cell": {
+                "x": 42,
+                "y": 2,
+                "z": 0
+            },
+            "CountsAsCoreFacility": true
+        },
+        {
+            "Id": "facility_f1_CanteenClerkStandPoint_46_3",
+            "DisplayName": "店员后台站位",
+            "FacilityType": 25,
+            "FloorIndex": 1,
+            "Cell": {
+                "x": 46,
+                "y": 3,
+                "z": 0
+            },
+            "CountsAsCoreFacility": true
+        },
+        {
+            "Id": "facility_f1_CanteenQueuePoint_42_0",
+            "DisplayName": "食堂排队点",
+            "FacilityType": 21,
+            "FloorIndex": 1,
+            "Cell": {
+                "x": 42,
+                "y": 0,
+                "z": 0
+            },
+            "CountsAsCoreFacility": true
+        },
+        {
+            "Id": "facility_f1_CanteenCustomerPickupPoint_56_1",
+            "DisplayName": "顾客取餐点",
+            "FacilityType": 26,
+            "FloorIndex": 1,
+            "Cell": {
+                "x": 56,
+                "y": 1,
+                "z": 0
+            },
+            "CountsAsCoreFacility": true
+        },
+        {
+            "Id": "facility_f1_CanteenQueuePoint_50_-2",
+            "DisplayName": "食堂排队点",
+            "FacilityType": 21,
+            "FloorIndex": 1,
+            "Cell": {
+                "x": 50,
+                "y": -2,
+                "z": 0
+            },
+            "CountsAsCoreFacility": true
+        },
+        {
+            "Id": "facility_f1_CanteenQueuePoint_54_-1",
+            "DisplayName": "食堂排队点",
+            "FacilityType": 21,
+            "FloorIndex": 1,
+            "Cell": {
+                "x": 54,
+                "y": -1,
+                "z": 0
+            },
+            "CountsAsCoreFacility": true
+        },
+        {
+            "Id": "facility_f1_DeliveryDropPoint_25_-23",
+            "DisplayName": "外卖放置点",
+            "FacilityType": 20,
+            "FloorIndex": 1,
+            "Cell": {
+                "x": 25,
+                "y": -23,
+                "z": 0
+            },
+            "CountsAsCoreFacility": true
+        },
+        {
+            "Id": "facility_f1_CanteenCustomerPickupPoint_48_1",
+            "DisplayName": "顾客取餐点",
+            "FacilityType": 26,
+            "FloorIndex": 1,
+            "Cell": {
+                "x": 48,
+                "y": 1,
+                "z": 0
+            },
+            "CountsAsCoreFacility": true
+        },
+        {
+            "Id": "facility_f1_CanteenQueuePoint_52_-1",
+            "DisplayName": "食堂排队点",
+            "FacilityType": 21,
             "FloorIndex": 1,
             "Cell": {
                 "x": 52,
@@ -923,9 +1327,213 @@
             "CountsAsCoreFacility": true
         },
         {
-            "Id": "facility_f1_DiningTable_54_-2",
-            "DisplayName": "吃饭区座位",
-            "FacilityType": 4,
+            "Id": "facility_f1_DeliveryDropPoint_27_-23",
+            "DisplayName": "外卖放置点",
+            "FacilityType": 20,
+            "FloorIndex": 1,
+            "Cell": {
+                "x": 27,
+                "y": -23,
+                "z": 0
+            },
+            "CountsAsCoreFacility": true
+        },
+        {
+            "Id": "facility_f1_DeliveryDropPoint_17_-23",
+            "DisplayName": "外卖放置点",
+            "FacilityType": 20,
+            "FloorIndex": 1,
+            "Cell": {
+                "x": 17,
+                "y": -23,
+                "z": 0
+            },
+            "CountsAsCoreFacility": true
+        },
+        {
+            "Id": "facility_f1_CanteenClerkStandPoint_54_3",
+            "DisplayName": "店员后台站位",
+            "FacilityType": 25,
+            "FloorIndex": 1,
+            "Cell": {
+                "x": 54,
+                "y": 3,
+                "z": 0
+            },
+            "CountsAsCoreFacility": true
+        },
+        {
+            "Id": "facility_f1_CanteenQueuePoint_50_0",
+            "DisplayName": "食堂排队点",
+            "FacilityType": 21,
+            "FloorIndex": 1,
+            "Cell": {
+                "x": 50,
+                "y": 0,
+                "z": 0
+            },
+            "CountsAsCoreFacility": true
+        },
+        {
+            "Id": "facility_f1_CanteenQueuePoint_56_-3",
+            "DisplayName": "食堂排队点",
+            "FacilityType": 21,
+            "FloorIndex": 1,
+            "Cell": {
+                "x": 56,
+                "y": -3,
+                "z": 0
+            },
+            "CountsAsCoreFacility": true
+        },
+        {
+            "Id": "facility_f1_CanteenQueuePoint_46_0",
+            "DisplayName": "食堂排队点",
+            "FacilityType": 21,
+            "FloorIndex": 1,
+            "Cell": {
+                "x": 46,
+                "y": 0,
+                "z": 0
+            },
+            "CountsAsCoreFacility": true
+        },
+        {
+            "Id": "facility_f1_DeliveryDropPoint_29_-23",
+            "DisplayName": "外卖放置点",
+            "FacilityType": 20,
+            "FloorIndex": 1,
+            "Cell": {
+                "x": 29,
+                "y": -23,
+                "z": 0
+            },
+            "CountsAsCoreFacility": true
+        },
+        {
+            "Id": "facility_f1_CanteenClerkStandPoint_50_3",
+            "DisplayName": "店员后台站位",
+            "FacilityType": 25,
+            "FloorIndex": 1,
+            "Cell": {
+                "x": 50,
+                "y": 3,
+                "z": 0
+            },
+            "CountsAsCoreFacility": true
+        },
+        {
+            "Id": "facility_f1_CanteenQueuePoint_44_0",
+            "DisplayName": "食堂排队点",
+            "FacilityType": 21,
+            "FloorIndex": 1,
+            "Cell": {
+                "x": 44,
+                "y": 0,
+                "z": 0
+            },
+            "CountsAsCoreFacility": true
+        },
+        {
+            "Id": "facility_f1_CanteenQueuePoint_42_-1",
+            "DisplayName": "食堂排队点",
+            "FacilityType": 21,
+            "FloorIndex": 1,
+            "Cell": {
+                "x": 42,
+                "y": -1,
+                "z": 0
+            },
+            "CountsAsCoreFacility": true
+        },
+        {
+            "Id": "facility_f1_CanteenQueuePoint_56_-1",
+            "DisplayName": "食堂排队点",
+            "FacilityType": 21,
+            "FloorIndex": 1,
+            "Cell": {
+                "x": 56,
+                "y": -1,
+                "z": 0
+            },
+            "CountsAsCoreFacility": true
+        },
+        {
+            "Id": "facility_f1_CanteenQueuePoint_48_-1",
+            "DisplayName": "食堂排队点",
+            "FacilityType": 21,
+            "FloorIndex": 1,
+            "Cell": {
+                "x": 48,
+                "y": -1,
+                "z": 0
+            },
+            "CountsAsCoreFacility": true
+        },
+        {
+            "Id": "facility_f1_CanteenQueuePoint_42_-3",
+            "DisplayName": "食堂排队点",
+            "FacilityType": 21,
+            "FloorIndex": 1,
+            "Cell": {
+                "x": 42,
+                "y": -3,
+                "z": 0
+            },
+            "CountsAsCoreFacility": true
+        },
+        {
+            "Id": "facility_f1_CanteenQueuePoint_54_0",
+            "DisplayName": "食堂排队点",
+            "FacilityType": 21,
+            "FloorIndex": 1,
+            "Cell": {
+                "x": 54,
+                "y": 0,
+                "z": 0
+            },
+            "CountsAsCoreFacility": true
+        },
+        {
+            "Id": "facility_f1_CanteenClerkStandPoint_44_3",
+            "DisplayName": "店员后台站位",
+            "FacilityType": 25,
+            "FloorIndex": 1,
+            "Cell": {
+                "x": 44,
+                "y": 3,
+                "z": 0
+            },
+            "CountsAsCoreFacility": true
+        },
+        {
+            "Id": "facility_f1_CanteenQueuePoint_46_-3",
+            "DisplayName": "食堂排队点",
+            "FacilityType": 21,
+            "FloorIndex": 1,
+            "Cell": {
+                "x": 46,
+                "y": -3,
+                "z": 0
+            },
+            "CountsAsCoreFacility": true
+        },
+        {
+            "Id": "facility_f1_CanteenCustomerPickupPoint_52_1",
+            "DisplayName": "顾客取餐点",
+            "FacilityType": 26,
+            "FloorIndex": 1,
+            "Cell": {
+                "x": 52,
+                "y": 1,
+                "z": 0
+            },
+            "CountsAsCoreFacility": true
+        },
+        {
+            "Id": "facility_f1_CanteenQueuePoint_54_-2",
+            "DisplayName": "食堂排队点",
+            "FacilityType": 21,
             "FloorIndex": 1,
             "Cell": {
                 "x": 54,
@@ -935,13 +1543,181 @@
             "CountsAsCoreFacility": true
         },
         {
-            "Id": "facility_f1_DiningTable_54_-3",
-            "DisplayName": "吃饭区座位",
-            "FacilityType": 4,
+            "Id": "facility_f1_CanteenQueuePoint_52_-2",
+            "DisplayName": "食堂排队点",
+            "FacilityType": 21,
+            "FloorIndex": 1,
+            "Cell": {
+                "x": 52,
+                "y": -2,
+                "z": 0
+            },
+            "CountsAsCoreFacility": true
+        },
+        {
+            "Id": "facility_f1_CanteenClerkStandPoint_42_3",
+            "DisplayName": "店员后台站位",
+            "FacilityType": 25,
+            "FloorIndex": 1,
+            "Cell": {
+                "x": 42,
+                "y": 3,
+                "z": 0
+            },
+            "CountsAsCoreFacility": true
+        },
+        {
+            "Id": "facility_f1_DeliveryDropPoint_13_-23",
+            "DisplayName": "外卖放置点",
+            "FacilityType": 20,
+            "FloorIndex": 1,
+            "Cell": {
+                "x": 13,
+                "y": -23,
+                "z": 0
+            },
+            "CountsAsCoreFacility": true
+        },
+        {
+            "Id": "facility_f1_CanteenQueuePoint_48_-2",
+            "DisplayName": "食堂排队点",
+            "FacilityType": 21,
+            "FloorIndex": 1,
+            "Cell": {
+                "x": 48,
+                "y": -2,
+                "z": 0
+            },
+            "CountsAsCoreFacility": true
+        },
+        {
+            "Id": "facility_f1_DeliveryDropPoint_19_-23",
+            "DisplayName": "外卖放置点",
+            "FacilityType": 20,
+            "FloorIndex": 1,
+            "Cell": {
+                "x": 19,
+                "y": -23,
+                "z": 0
+            },
+            "CountsAsCoreFacility": true
+        },
+        {
+            "Id": "facility_f1_CanteenQueuePoint_54_-3",
+            "DisplayName": "食堂排队点",
+            "FacilityType": 21,
             "FloorIndex": 1,
             "Cell": {
                 "x": 54,
                 "y": -3,
+                "z": 0
+            },
+            "CountsAsCoreFacility": true
+        },
+        {
+            "Id": "facility_f1_CanteenClerkStandPoint_48_3",
+            "DisplayName": "店员后台站位",
+            "FacilityType": 25,
+            "FloorIndex": 1,
+            "Cell": {
+                "x": 48,
+                "y": 3,
+                "z": 0
+            },
+            "CountsAsCoreFacility": true
+        },
+        {
+            "Id": "facility_f1_DeliveryDropPoint_32_17",
+            "DisplayName": "外卖放置点",
+            "FacilityType": 20,
+            "FloorIndex": 1,
+            "Cell": {
+                "x": 32,
+                "y": 17,
+                "z": 0
+            },
+            "CountsAsCoreFacility": true
+        },
+        {
+            "Id": "facility_f1_CanteenServingWindow_52_2",
+            "DisplayName": "打饭窗口",
+            "FacilityType": 27,
+            "FloorIndex": 1,
+            "Cell": {
+                "x": 52,
+                "y": 2,
+                "z": 0
+            },
+            "CountsAsCoreFacility": true
+        },
+        {
+            "Id": "facility_f1_CanteenQueuePoint_50_-1",
+            "DisplayName": "食堂排队点",
+            "FacilityType": 21,
+            "FloorIndex": 1,
+            "Cell": {
+                "x": 50,
+                "y": -1,
+                "z": 0
+            },
+            "CountsAsCoreFacility": true
+        },
+        {
+            "Id": "facility_f1_CanteenQueuePoint_52_0",
+            "DisplayName": "食堂排队点",
+            "FacilityType": 21,
+            "FloorIndex": 1,
+            "Cell": {
+                "x": 52,
+                "y": 0,
+                "z": 0
+            },
+            "CountsAsCoreFacility": true
+        },
+        {
+            "Id": "facility_f1_CanteenServingWindow_50_2",
+            "DisplayName": "打饭窗口",
+            "FacilityType": 27,
+            "FloorIndex": 1,
+            "Cell": {
+                "x": 50,
+                "y": 2,
+                "z": 0
+            },
+            "CountsAsCoreFacility": true
+        },
+        {
+            "Id": "facility_f1_CanteenQueuePoint_56_0",
+            "DisplayName": "食堂排队点",
+            "FacilityType": 21,
+            "FloorIndex": 1,
+            "Cell": {
+                "x": 56,
+                "y": 0,
+                "z": 0
+            },
+            "CountsAsCoreFacility": true
+        },
+        {
+            "Id": "facility_f1_CanteenServingWindow_44_2",
+            "DisplayName": "打饭窗口",
+            "FacilityType": 27,
+            "FloorIndex": 1,
+            "Cell": {
+                "x": 44,
+                "y": 2,
+                "z": 0
+            },
+            "CountsAsCoreFacility": true
+        },
+        {
+            "Id": "facility_f1_CanteenQueuePoint_56_-2",
+            "DisplayName": "食堂排队点",
+            "FacilityType": 21,
+            "FloorIndex": 1,
+            "Cell": {
+                "x": 56,
+                "y": -2,
                 "z": 0
             },
             "CountsAsCoreFacility": true

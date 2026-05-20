@@ -46,6 +46,8 @@ namespace NtingCampusMapEditor
         RectangleRoom,
         PlaceGameplayMarker,
         EraseGameplayMarker,
+        PlaceGameplayActor,
+        EraseGameplayActor,
         CreateRoomPrefab,
         PlaceRoomPrefab,
         PlaceLight,
@@ -104,117 +106,7 @@ namespace NtingCampusMapEditor
     {
         public static CampusRuntimeMapEditor Instance { get; private set; }
 
-        private sealed class CampusRuntimeGameplayMarkerPreset
-        {
-            public readonly string ChineseLabel;
-            public readonly string EnglishLabel;
-            public readonly string ChineseDisplayName;
-            public readonly string EnglishDisplayName;
-            public readonly CampusRoomType RoomType;
-            public readonly CampusFacilityType FacilityType;
-            public readonly string PrankPayload;
-            public readonly CampusPrankSpotVisualKind VisualKind;
-            public readonly Color Color;
-
-            private CampusRuntimeGameplayMarkerPreset(
-                string chineseLabel,
-                string englishLabel,
-                string chineseDisplayName,
-                string englishDisplayName,
-                CampusRoomType roomType,
-                CampusFacilityType facilityType,
-                string prankPayload,
-                CampusPrankSpotVisualKind visualKind,
-                Color color)
-            {
-                ChineseLabel = chineseLabel;
-                EnglishLabel = englishLabel;
-                ChineseDisplayName = chineseDisplayName;
-                EnglishDisplayName = englishDisplayName;
-                RoomType = roomType;
-                FacilityType = facilityType;
-                PrankPayload = prankPayload;
-                VisualKind = visualKind;
-                Color = color;
-            }
-
-            public bool UsesInteractionSpot => !string.IsNullOrWhiteSpace(PrankPayload);
-
-            public static CampusRuntimeGameplayMarkerPreset FacilityPoint(
-                string chineseLabel,
-                string englishLabel,
-                CampusFacilityType facilityType,
-                Color color)
-            {
-                return new CampusRuntimeGameplayMarkerPreset(
-                    chineseLabel,
-                    englishLabel,
-                    chineseLabel,
-                    englishLabel,
-                    CampusRoomType.Unknown,
-                    facilityType,
-                    string.Empty,
-                    CampusPrankSpotVisualKind.Envelope,
-                    color);
-            }
-
-            public static CampusRuntimeGameplayMarkerPreset InteractionFacilityPoint(
-                string chineseLabel,
-                string englishLabel,
-                string payload,
-                CampusRoomType requiredRoomType,
-                CampusPrankSpotVisualKind visualKind,
-                Color color)
-            {
-                return new CampusRuntimeGameplayMarkerPreset(
-                    chineseLabel,
-                    englishLabel,
-                    chineseLabel,
-                    englishLabel,
-                    requiredRoomType,
-                    CampusFacilityType.Unknown,
-                    payload,
-                    visualKind,
-                    color);
-            }
-        }
-
-        private sealed class CampusRuntimeAreaPreset
-        {
-            public readonly string RoomName;
-            public readonly string ChineseLabel;
-            public readonly string EnglishLabel;
-            public readonly int RequiredCount;
-
-            public CampusRuntimeAreaPreset(
-                string roomName,
-                string chineseLabel,
-                string englishLabel,
-                int requiredCount)
-            {
-                RoomName = roomName;
-                ChineseLabel = chineseLabel;
-                EnglishLabel = englishLabel;
-                RequiredCount = Mathf.Max(0, requiredCount);
-            }
-        }
-
         private const string RuntimeResourceFolder = "NtingCampusRuntime";
-        private const string RuntimeImportFolder = "CampusRuntimeImports";
-        private const string FloorImportFolder = "Floors";
-        private const string WallImportFolder = "Walls";
-        private const string ObjectImportFolder = "Objects";
-        private const string ObjectSettingsFolder = "ObjectSettings";
-        private const string RoomImportFile = "Rooms.txt";
-        private const string RoomPrefabFolder = "RoomPrefabs";
-        private const string PlayerSaveFolder = "CampusPlayerMapSave";
-        private const string PlayerSaveMapFile = "CampusMap_PlayerSave.json";
-        private const string PlayerSaveManifestFile = "save_manifest.json";
-        private const string AuthoringPackageFolder = "UserGeneratedRuntimeContent";
-        private const string AuthoringPackageMapFile = "CampusMap_AuthoringPackage.json";
-        private const string AuthoringPackageManifestFile = "authoring_manifest.json";
-        private const string GameplayOverlaySchema = "NtingCampusGameplayOverlay.v1";
-        private const string GameplayOverlayExtension = ".gameplay.json";
         private const string WallStrokeUndoPrefix = "WALLSTROKE:";
         private const int MaxUndoSnapshots = 64;
         private const float SceneReferenceRetryInterval = 0.5f;
@@ -233,155 +125,6 @@ namespace NtingCampusMapEditor
         private const int WallStrokeVisualBatchCellThreshold = 8;
         private const int WallStrokeVisualBatchChunkThreshold = 4;
 
-        private static readonly CampusRuntimeAreaPreset[] DefaultAreaPresets =
-        {
-            new CampusRuntimeAreaPreset("Classroom", "\u6559\u5ba4", "Classroom", 2),
-            new CampusRuntimeAreaPreset("Corridor", "\u8d70\u5eca", "Corridor", 1),
-            new CampusRuntimeAreaPreset("Office", "\u529e\u516c\u5ba4", "Office", 1),
-            new CampusRuntimeAreaPreset("CommonActivityZone", "\u516c\u5171\u6d3b\u52a8\u533a", "Common Activity Zone", 1),
-            new CampusRuntimeAreaPreset("Canteen", "\u98df\u5802", "Canteen", 1),
-            new CampusRuntimeAreaPreset("Store", "\u8d85\u5e02", "Store", 1),
-            new CampusRuntimeAreaPreset("Outdoor", "\u5ba4\u5916", "Outdoor", 1),
-            new CampusRuntimeAreaPreset("Dormitory", "\u5bbf\u820d", "Dormitory", 0),
-            new CampusRuntimeAreaPreset("Restroom", "\u536b\u751f\u95f4", "Restroom", 0),
-            new CampusRuntimeAreaPreset("Library", "\u56fe\u4e66\u9986", "Library", 0),
-            new CampusRuntimeAreaPreset("Stairwell", "\u697c\u68af\u95f4", "Stairwell", 0),
-            new CampusRuntimeAreaPreset("HumanResources", "\u4eba\u4e8b\u5904", "Human Resources", 0),
-            new CampusRuntimeAreaPreset("ShrineRoom", "\u795e\u9f9b\u5ba4", "Shrine Room", 0)
-        };
-
-        private static readonly CampusRuntimeGameplayMarkerPreset[] GameplayMarkerPresets =
-        {
-            CampusRuntimeGameplayMarkerPreset.FacilityPoint(
-                "\u95e8",
-                "Door",
-                CampusFacilityType.Door,
-                new Color(0.72f, 0.72f, 0.72f, 1f)),
-            CampusRuntimeGameplayMarkerPreset.FacilityPoint(
-                "\u9ed1\u677f",
-                "Blackboard",
-                CampusFacilityType.Blackboard,
-                new Color(0.12f, 0.46f, 0.36f, 1f)),
-            CampusRuntimeGameplayMarkerPreset.FacilityPoint(
-                "\u8bfe\u684c",
-                "Student Desk",
-                CampusFacilityType.StudentDesk,
-                new Color(0.26f, 0.56f, 0.96f, 1f)),
-            CampusRuntimeGameplayMarkerPreset.FacilityPoint(
-                "\u8bb2\u53f0",
-                "Podium",
-                CampusFacilityType.Podium,
-                new Color(0.18f, 0.38f, 0.86f, 1f)),
-            CampusRuntimeGameplayMarkerPreset.FacilityPoint(
-                "\u529e\u516c\u684c",
-                "Office Desk",
-                CampusFacilityType.OfficeDesk,
-                new Color(0.72f, 0.48f, 0.28f, 1f)),
-            CampusRuntimeGameplayMarkerPreset.FacilityPoint(
-                "\u5e8a",
-                "Bed",
-                CampusFacilityType.Bed,
-                new Color(0.56f, 0.42f, 0.88f, 1f)),
-            CampusRuntimeGameplayMarkerPreset.FacilityPoint(
-                "\u516c\u544a\u680f",
-                "Bulletin Board",
-                CampusFacilityType.BulletinBoard,
-                new Color(0.88f, 0.62f, 0.24f, 1f)),
-            CampusRuntimeGameplayMarkerPreset.FacilityPoint(
-                "\u62db\u52df\u70b9",
-                "Recruitment",
-                CampusFacilityType.Recruitment,
-                new Color(0.74f, 0.36f, 0.88f, 1f)),
-            CampusRuntimeGameplayMarkerPreset.FacilityPoint(
-                "\u6d17\u624b\u6c60",
-                "Sink",
-                CampusFacilityType.Sink,
-                new Color(0.22f, 0.68f, 0.92f, 1f)),
-            CampusRuntimeGameplayMarkerPreset.FacilityPoint(
-                "\u50a8\u7269\u70b9",
-                "Storage",
-                CampusFacilityType.Storage,
-                new Color(0.62f, 0.56f, 0.46f, 1f)),
-            CampusRuntimeGameplayMarkerPreset.FacilityPoint(
-                "\u98df\u5802\u67dc\u53f0",
-                "Canteen Counter",
-                CampusFacilityType.CanteenCounter,
-                new Color(0.18f, 0.68f, 0.72f, 1f)),
-            CampusRuntimeGameplayMarkerPreset.FacilityPoint(
-                "\u5e97\u5458\u540e\u53f0\u7ad9\u4f4d",
-                "Clerk Back Stand",
-                CampusFacilityType.CanteenClerkStandPoint,
-                new Color(0.12f, 0.58f, 0.68f, 1f)),
-            CampusRuntimeGameplayMarkerPreset.FacilityPoint(
-                "\u987e\u5ba2\u53d6\u9910\u70b9",
-                "Customer Pickup",
-                CampusFacilityType.CanteenCustomerPickupPoint,
-                new Color(0.48f, 0.82f, 0.62f, 1f)),
-            CampusRuntimeGameplayMarkerPreset.FacilityPoint(
-                "\u98df\u5802\u6392\u961f\u70b9",
-                "Canteen Queue",
-                CampusFacilityType.CanteenQueuePoint,
-                new Color(0.95f, 0.76f, 0.28f, 1f)),
-            CampusRuntimeGameplayMarkerPreset.FacilityPoint(
-                "\u6253\u996d\u6258\u76d8",
-                "Food Tray",
-                CampusFacilityType.CanteenFoodTray,
-                new Color(0.96f, 0.64f, 0.24f, 1f)),
-            CampusRuntimeGameplayMarkerPreset.FacilityPoint(
-                "\u5403\u996d\u533a\u5ea7\u4f4d",
-                "Dining Table",
-                CampusFacilityType.DiningTable,
-                new Color(0.55f, 0.76f, 0.28f, 1f)),
-            CampusRuntimeGameplayMarkerPreset.FacilityPoint(
-                "\u5916\u5356\u653e\u7f6e\u70b9",
-                "Delivery Drop",
-                CampusFacilityType.DeliveryDropPoint,
-                new Color(0.32f, 0.54f, 0.98f, 1f)),
-            CampusRuntimeGameplayMarkerPreset.FacilityPoint(
-                "\u8d85\u5e02\u8d27\u67b6",
-                "Store Shelf",
-                CampusFacilityType.StoreShelf,
-                new Color(0.88f, 0.36f, 0.72f, 1f)),
-            CampusRuntimeGameplayMarkerPreset.FacilityPoint(
-                "\u8d85\u5e02\u6392\u961f\u70b9",
-                "Store Queue",
-                CampusFacilityType.StoreQueuePoint,
-                new Color(0.94f, 0.48f, 0.82f, 1f)),
-            CampusRuntimeGameplayMarkerPreset.FacilityPoint(
-                "\u8d85\u5e02\u6536\u94f6\u53f0",
-                "Store Checkout",
-                CampusFacilityType.StoreCheckout,
-                new Color(0.76f, 0.24f, 0.64f, 1f)),
-            CampusRuntimeGameplayMarkerPreset.InteractionFacilityPoint(
-                "\u5077\u70b8\u9e21",
-                "Steal Chicken",
-                CampusPrankPayloadIds.StealFriedChicken,
-                CampusRoomType.Canteen,
-                CampusPrankSpotVisualKind.Snack,
-                new Color(0.95f, 0.52f, 0.22f, 1f)),
-            CampusRuntimeGameplayMarkerPreset.InteractionFacilityPoint(
-                "\u5077\u6c49\u5821",
-                "Steal Burger",
-                CampusPrankPayloadIds.StealBurger,
-                CampusRoomType.Canteen,
-                CampusPrankSpotVisualKind.Snack,
-                new Color(0.88f, 0.64f, 0.24f, 1f)),
-            CampusRuntimeGameplayMarkerPreset.InteractionFacilityPoint(
-                "\u5077\u5173\u4e1c\u716e",
-                "Steal Oden",
-                CampusPrankPayloadIds.StealOden,
-                CampusRoomType.Canteen,
-                CampusPrankSpotVisualKind.Snack,
-                new Color(0.78f, 0.48f, 0.9f, 1f)),
-            CampusRuntimeGameplayMarkerPreset.InteractionFacilityPoint(
-                "\u5077\u5916\u5356",
-                "Steal Delivery",
-                CampusPrankPayloadIds.StealDelivery,
-                CampusRoomType.Outdoor,
-                CampusPrankSpotVisualKind.DeliveryBox,
-                new Color(0.28f, 0.66f, 0.98f, 1f))
-        };
-
         [SerializeField] private bool openOnStart = false;
         [SerializeField] private bool showGridOverlay = true;
         [SerializeField] private bool showHelpOverlay;
@@ -397,6 +140,7 @@ namespace NtingCampusMapEditor
         [SerializeField] private int selectedRoomIndex;
         [SerializeField] private int selectedRoomPrefabIndex;
         [SerializeField] private int selectedGameplayPresetIndex;
+        [SerializeField] private int selectedGameplayActorPresetIndex;
         [SerializeField] private int selectedWallProfileIndex;
         [SerializeField] private int brushSize = 1;
         [SerializeField] private int rotation90;
@@ -438,6 +182,7 @@ namespace NtingCampusMapEditor
         private bool authoringPackageInProgress;
         private bool suppressPlayerSaveScheduling;
         private bool importLibraryMigrationChecked;
+        private bool gameplayActorCacheInitialized;
         private float playerSaveDueTime;
         private float nextSceneReferenceRetryTime;
         private Vector3Int rectangleStartCell;
@@ -453,6 +198,10 @@ namespace NtingCampusMapEditor
         private bool newObjectIsInteractable;
         private bool newObjectIsStorageContainer;
         private string newRoomPrefabName = string.Empty;
+        private string newGameplayActorId = string.Empty;
+        private string newGameplayActorChineseName = string.Empty;
+        private string newGameplayActorEnglishName = string.Empty;
+        private string newGameplayActorClassId = "class_1";
         [SerializeField] private CampusDisplayLanguage displayLanguage = CampusDisplayLanguage.Chinese;
         private string statusText = string.Empty;
         private CampusRuntimeMapLoadSource lastMapLoadSource = CampusRuntimeMapLoadSource.Scene;
@@ -882,24 +631,13 @@ namespace NtingCampusMapEditor
 
         private void EnsureImportFolders()
         {
-            Directory.CreateDirectory(GetImportRootFolder());
-            Directory.CreateDirectory(GetFloorImportFolder());
-            Directory.CreateDirectory(GetWallImportFolder());
-            Directory.CreateDirectory(GetObjectImportFolder());
-            Directory.CreateDirectory(GetObjectSettingsRootFolder());
-            Directory.CreateDirectory(GetRoomPrefabFolder());
-            string roomFile = GetRoomImportFile();
-            if (!File.Exists(roomFile))
-            {
-                File.WriteAllText(roomFile, "# One room per line: RoomName or RoomName,Count\n", Encoding.UTF8);
-            }
-
+            CampusRuntimeImportLibrary.EnsureFolders(GetImportRootFolder());
             MigratePersistentImportLibraryToProjectIfNeeded();
         }
 
         private void LoadImportedTiles(string folder, List<TileBase> destination)
         {
-            string[] files = GetImportImageFiles(folder);
+            string[] files = CampusRuntimeImportLibrary.GetImageFiles(folder);
             for (int i = 0; i < files.Length; i++)
             {
                 Texture2D texture = LoadImportedTexture(files[i]);
@@ -924,14 +662,15 @@ namespace NtingCampusMapEditor
 
         private void LoadImportedObjects(string folder)
         {
-            string[] files = GetImportImageFiles(folder);
+            string[] files = CampusRuntimeImportLibrary.GetImageFiles(folder);
             if (files.Length == 0)
             {
                 return;
             }
 
             Transform root = EnsureRuntimeImportPrefabRoot();
-            List<RuntimeImportedObjectDefinition> definitions = BuildImportedObjectDefinitions(files);
+            List<RuntimeImportedObjectDefinition> definitions =
+                CampusRuntimeImportedObjectLibrary.BuildDefinitions(files, GetImportRootFolder());
             for (int i = 0; i < definitions.Count; i++)
             {
                 RuntimeImportedObjectDefinition definition = definitions[i];
@@ -981,134 +720,6 @@ namespace NtingCampusMapEditor
                 importedAssets.Add(prefab);
                 AddUnique(objectPrefabs, prefab);
             }
-        }
-
-        private List<RuntimeImportedObjectDefinition> BuildImportedObjectDefinitions(string[] files)
-        {
-            Dictionary<string, RuntimeImportedObjectDefinition> definitionMap = new Dictionary<string, RuntimeImportedObjectDefinition>(StringComparer.OrdinalIgnoreCase);
-            List<RuntimeImportedObjectDefinition> definitions = new List<RuntimeImportedObjectDefinition>();
-            for (int i = 0; i < files.Length; i++)
-            {
-                string filePath = files[i];
-                string objectName = Path.GetFileNameWithoutExtension(filePath);
-                if (string.IsNullOrWhiteSpace(objectName))
-                {
-                    continue;
-                }
-
-                if (TryParseDirectionalObjectImportName(objectName, out string groupedObjectName, out int rotation90))
-                {
-                    RuntimeImportedObjectDefinition definition = GetOrCreateImportedObjectDefinition(definitionMap, definitions, groupedObjectName);
-                    definition.DirectionSpritePaths[rotation90] = NormalizeSerializedImportPath(filePath);
-                    if (string.IsNullOrWhiteSpace(definition.BaseSpritePath) || rotation90 == 0)
-                    {
-                        definition.BaseSpritePath = filePath;
-                    }
-
-                    continue;
-                }
-
-                RuntimeImportedObjectDefinition standalone = GetOrCreateImportedObjectDefinition(definitionMap, definitions, objectName);
-                standalone.BaseSpritePath = filePath;
-            }
-
-            definitions.Sort((a, b) => string.Compare(a.ObjectName, b.ObjectName, StringComparison.OrdinalIgnoreCase));
-            return definitions;
-        }
-
-        private static RuntimeImportedObjectDefinition GetOrCreateImportedObjectDefinition(
-            Dictionary<string, RuntimeImportedObjectDefinition> definitionMap,
-            List<RuntimeImportedObjectDefinition> definitions,
-            string objectName)
-        {
-            if (definitionMap.TryGetValue(objectName, out RuntimeImportedObjectDefinition definition))
-            {
-                return definition;
-            }
-
-            definition = new RuntimeImportedObjectDefinition(objectName);
-            definitionMap.Add(objectName, definition);
-            definitions.Add(definition);
-            return definition;
-        }
-
-        private static bool TryParseDirectionalObjectImportName(string objectName, out string baseObjectName, out int rotation90)
-        {
-            baseObjectName = objectName;
-            rotation90 = 0;
-            if (string.IsNullOrWhiteSpace(objectName))
-            {
-                return false;
-            }
-
-            Match match = Regex.Match(
-                objectName,
-                @"^(?<base>.+?)(?:[_\-\s]+)(?<dir>0|90|180|270|front|right|back|left|up|down|north|east|south|west|qian|hou|zuo|you|shang|xia|bei|dong|nan|xi|前|后|後|左|右|上|下|北|东|東|南|西)$",
-                RegexOptions.IgnoreCase);
-            if (!match.Success)
-            {
-                return false;
-            }
-
-            string rawBaseName = match.Groups["base"].Value.Trim();
-            if (string.IsNullOrWhiteSpace(rawBaseName))
-            {
-                return false;
-            }
-
-            string dir = match.Groups["dir"].Value.Trim().ToLowerInvariant();
-            switch (dir)
-            {
-                case "0":
-                case "front":
-                case "up":
-                case "north":
-                case "qian":
-                case "shang":
-                case "bei":
-                case "前":
-                case "上":
-                case "北":
-                    rotation90 = 0;
-                    break;
-                case "90":
-                case "right":
-                case "east":
-                case "you":
-                case "dong":
-                case "右":
-                case "东":
-                case "東":
-                    rotation90 = 1;
-                    break;
-                case "180":
-                case "back":
-                case "down":
-                case "south":
-                case "hou":
-                case "xia":
-                case "nan":
-                case "后":
-                case "後":
-                case "下":
-                case "南":
-                    rotation90 = 2;
-                    break;
-                case "270":
-                case "left":
-                case "west":
-                case "zuo":
-                case "xi":
-                case "左":
-                case "西":
-                    rotation90 = 3;
-                    break;
-                default:
-                    return false;
-            }
-
-            baseObjectName = rawBaseName;
-            return true;
         }
 
         private Sprite CreateObjectSprite(Texture2D texture, string spriteName, Vector2Int footprint)
@@ -1209,13 +820,13 @@ namespace NtingCampusMapEditor
                 Mathf.Clamp(newObjectFootprintY, 1, 32));
 
             EnsureImportFolders();
-            string safeName = SanitizeFileName(displayName);
+            string safeName = CampusRuntimeImportLibrary.SanitizeFileName(displayName);
             if (safeName == "_")
             {
                 safeName = "Object";
             }
 
-            string path = MakeUniqueImportPath(Path.Combine(GetObjectImportFolder(), safeName + "_" + footprint.x + "x" + footprint.y + ".png"));
+            string path = CampusRuntimeImportLibrary.MakeUniquePath(Path.Combine(GetObjectImportFolder(), safeName + "_" + footprint.x + "x" + footprint.y + ".png"));
             Texture2D texture = CreateGeneratedObjectTexture(footprint, newObjectColor);
             try
             {
@@ -1251,7 +862,7 @@ namespace NtingCampusMapEditor
             if (placed != null)
             {
                 placed.ObjectId = objectId;
-                placed.TypeId = InferObjectTypeId(objectId, displayName, newObjectIsStorageContainer);
+                placed.TypeId = CampusRuntimeObjectAuthoring.InferObjectTypeId(objectId, displayName, newObjectIsStorageContainer);
                 placed.DisplayNameOverride = displayName;
                 placed.OverrideFootprintSize = true;
                 placed.FootprintSize = footprint;
@@ -1263,7 +874,11 @@ namespace NtingCampusMapEditor
                 placed.StorageMaxWeight = CampusPlacedObject.DefaultStorageMaxWeight;
                 placed.ApplyRotationVisualState();
                 placed.ApplyInteractionState();
-                SaveRuntimeObjectSettings(CaptureRuntimeObjectSettings(prefab, placed));
+                SaveRuntimeObjectSettings(CampusRuntimeObjectAuthoring.CaptureSettings(
+                    prefab,
+                    placed,
+                    GetImportRootFolder(),
+                    Tr("\u4ea4\u4e92", "Interact")));
             }
 
             SchedulePlayerMapSave();
@@ -1353,33 +968,9 @@ namespace NtingCampusMapEditor
         private void LoadImportedRoomPrefabs()
         {
             roomPrefabs.Clear();
-            string folder = GetRoomPrefabFolder();
-            Directory.CreateDirectory(folder);
-            string[] files = Directory.GetFiles(folder, "*.json");
-            Array.Sort(files, StringComparer.OrdinalIgnoreCase);
-            for (int i = 0; i < files.Length; i++)
-            {
-                try
-                {
-                    CampusRuntimeRoomPrefab roomPrefab = JsonUtility.FromJson<CampusRuntimeRoomPrefab>(File.ReadAllText(files[i], Encoding.UTF8));
-                    if (roomPrefab == null)
-                    {
-                        continue;
-                    }
-
-                    NormalizeRoomPrefab(roomPrefab, Path.GetFileNameWithoutExtension(files[i]));
-                    roomPrefab.SourcePath = files[i];
-                    if (!string.IsNullOrWhiteSpace(roomPrefab.RoomName))
-                    {
-                        roomPrefabs.Add(roomPrefab);
-                    }
-                }
-                catch (Exception exception)
-                {
-                    Debug.LogWarning("[NtingCampusRuntimeMapEditor] Failed to load room prefab '" + files[i] + "': " + exception.Message);
-                }
-            }
-
+            roomPrefabs.AddRange(CampusRuntimeRoomPrefabLibrary.LoadAll(
+                GetRoomPrefabFolder(),
+                message => Debug.LogWarning("[NtingCampusRuntimeMapEditor] " + message)));
             selectedRoomPrefabIndex = roomPrefabs.Count > 0 ? Mathf.Clamp(selectedRoomPrefabIndex, 0, roomPrefabs.Count - 1) : 0;
         }
 
@@ -1438,22 +1029,6 @@ namespace NtingCampusMapEditor
             {
                 return 0L;
             }
-        }
-
-        private string[] GetImportImageFiles(string folder)
-        {
-            if (!Directory.Exists(folder))
-            {
-                return Array.Empty<string>();
-            }
-
-            List<string> files = new List<string>();
-            files.AddRange(Directory.GetFiles(folder, "*.png"));
-            files.AddRange(Directory.GetFiles(folder, "*.jpg"));
-            files.AddRange(Directory.GetFiles(folder, "*.jpeg"));
-            files.AddRange(Directory.GetFiles(folder, "*.bmp"));
-            files.Sort(StringComparer.OrdinalIgnoreCase);
-            return files.ToArray();
         }
 
         private Vector2Int ResolveImportedObjectFootprint(string objectName, Texture2D texture)
@@ -1536,99 +1111,42 @@ namespace NtingCampusMapEditor
 
         private string NormalizeSerializedImportPath(string path)
         {
-            if (string.IsNullOrWhiteSpace(path))
-            {
-                return string.Empty;
-            }
-
-            string normalized = NormalizeClipboardPath(path).Replace('\\', '/');
-            if (!Path.IsPathRooted(normalized))
-            {
-                const string importFolderPrefix = RuntimeImportFolder + "/";
-                if (normalized.StartsWith(importFolderPrefix, StringComparison.OrdinalIgnoreCase))
-                {
-                    normalized = normalized.Substring(importFolderPrefix.Length);
-                }
-
-                return normalized.TrimStart('/');
-            }
-
-            string importRoot = Path.GetFullPath(GetImportRootFolder()).Replace('\\', '/').TrimEnd('/');
-            if (normalized.StartsWith(importRoot + "/", StringComparison.OrdinalIgnoreCase))
-            {
-                return normalized.Substring(importRoot.Length + 1);
-            }
-
-            return Path.GetFileName(normalized);
+            return CampusRuntimeImportLibrary.NormalizeSerializedPath(path, GetImportRootFolder());
         }
 
         private string ResolveImportContentPath(string path)
         {
-            if (string.IsNullOrWhiteSpace(path))
-            {
-                return string.Empty;
-            }
-
-            string normalized = NormalizeClipboardPath(path);
-            if (Path.IsPathRooted(normalized))
-            {
-                return normalized;
-            }
-
-            normalized = normalized.Replace('\\', '/');
-            const string importFolderPrefix = RuntimeImportFolder + "/";
-            if (normalized.StartsWith(importFolderPrefix, StringComparison.OrdinalIgnoreCase))
-            {
-                normalized = normalized.Substring(importFolderPrefix.Length);
-            }
-
-            string relativePath = normalized.Replace('/', Path.DirectorySeparatorChar);
-            return Path.Combine(GetImportRootFolder(), relativePath);
+            return CampusRuntimeImportLibrary.ResolveContentPath(path, GetImportRootFolder());
         }
 
         private string GetPersistentImportRootFolder()
         {
-            return Path.Combine(Application.persistentDataPath, RuntimeImportFolder);
+            return CampusRuntimeImportLibrary.GetPersistentImportRootFolder();
         }
 
         private string GetFloorImportFolder()
         {
-            return Path.Combine(GetImportRootFolder(), FloorImportFolder);
+            return CampusRuntimeImportLibrary.GetFloorImportFolder(GetImportRootFolder());
         }
 
         private string GetWallImportFolder()
         {
-            return Path.Combine(GetImportRootFolder(), WallImportFolder);
+            return CampusRuntimeImportLibrary.GetWallImportFolder(GetImportRootFolder());
         }
 
         private string GetObjectImportFolder()
         {
-            return Path.Combine(GetImportRootFolder(), ObjectImportFolder);
-        }
-
-        private string GetObjectSettingsRootFolder()
-        {
-            return Path.Combine(GetImportRootFolder(), ObjectSettingsFolder);
-        }
-
-        private string GetObjectSettingsFolder(string objectId)
-        {
-            return Path.Combine(GetObjectSettingsRootFolder(), SanitizeFileName(objectId));
-        }
-
-        private string GetObjectSettingsPath(string objectId)
-        {
-            return Path.Combine(GetObjectSettingsFolder(objectId), "settings.json");
+            return CampusRuntimeImportLibrary.GetObjectImportFolder(GetImportRootFolder());
         }
 
         private string GetRoomImportFile()
         {
-            return Path.Combine(GetImportRootFolder(), RoomImportFile);
+            return CampusRuntimeImportLibrary.GetRoomImportFile(GetImportRootFolder());
         }
 
         private string GetRoomPrefabFolder()
         {
-            return Path.Combine(GetImportRootFolder(), RoomPrefabFolder);
+            return CampusRuntimeImportLibrary.GetRoomPrefabFolder(GetImportRootFolder());
         }
 
         private void RefreshSceneReferences()
@@ -1793,9 +1311,9 @@ namespace NtingCampusMapEditor
         {
             roomNames.Clear();
             roomRequiredCounts.Clear();
-            for (int i = 0; i < DefaultAreaPresets.Length; i++)
+            for (int i = 0; i < CampusRuntimeAreaPresetCatalog.Presets.Length; i++)
             {
-                CampusRuntimeAreaPreset preset = DefaultAreaPresets[i];
+                CampusRuntimeAreaPreset preset = CampusRuntimeAreaPresetCatalog.Presets[i];
                 if (preset == null || string.IsNullOrWhiteSpace(preset.RoomName))
                 {
                     continue;
@@ -1823,7 +1341,7 @@ namespace NtingCampusMapEditor
 
         private int FindRoomDefinitionIndex(string roomName)
         {
-            if (!TryResolvePresetRoomName(roomName, out string presetRoomName))
+            if (!CampusRuntimeAreaPresetCatalog.TryResolveRoomName(roomName, out string presetRoomName))
             {
                 return -1;
             }
@@ -1839,144 +1357,9 @@ namespace NtingCampusMapEditor
             return -1;
         }
 
-        private static bool TryResolvePresetRoomName(string roomName, out string presetRoomName)
-        {
-            presetRoomName = string.Empty;
-            if (string.IsNullOrWhiteSpace(roomName))
-            {
-                return false;
-            }
-
-            string key = NormalizeAreaPresetKey(roomName);
-            for (int i = 0; i < DefaultAreaPresets.Length; i++)
-            {
-                CampusRuntimeAreaPreset preset = DefaultAreaPresets[i];
-                if (preset == null)
-                {
-                    continue;
-                }
-
-                if (key == NormalizeAreaPresetKey(preset.RoomName) ||
-                    key == NormalizeAreaPresetKey(preset.EnglishLabel) ||
-                    key == NormalizeAreaPresetKey(preset.ChineseLabel))
-                {
-                    presetRoomName = preset.RoomName;
-                    return true;
-                }
-            }
-
-            if (ContainsRoomNameToken(key, "\u6559\u5ba4", "class"))
-            {
-                presetRoomName = "Classroom";
-                return true;
-            }
-
-            if (ContainsRoomNameToken(key, "\u8d70\u5eca", "\u8fc7\u9053", "corridor", "hall"))
-            {
-                presetRoomName = "Corridor";
-                return true;
-            }
-
-            if (ContainsRoomNameToken(key, "\u529e\u516c\u5ba4", "\u6559\u5e08", "office", "teacher"))
-            {
-                presetRoomName = "Office";
-                return true;
-            }
-
-            if (ContainsRoomNameToken(key, "\u516c\u5171", "\u6d3b\u52a8", "common", "activity"))
-            {
-                presetRoomName = "CommonActivityZone";
-                return true;
-            }
-
-            if (ContainsRoomNameToken(key, "\u98df\u5802", "\u9910\u5385", "canteen", "dining"))
-            {
-                presetRoomName = "Canteen";
-                return true;
-            }
-
-            if (ContainsRoomNameToken(key, "\u8d85\u5e02", "\u5546\u5e97", "\u5c0f\u5356", "shop", "store", "market"))
-            {
-                presetRoomName = "Store";
-                return true;
-            }
-
-            if (ContainsRoomNameToken(key, "\u5ba4\u5916", "\u6821\u5916", "\u64cd\u573a", "\u5916\u5356", "outdoor", "outside", "delivery"))
-            {
-                presetRoomName = "Outdoor";
-                return true;
-            }
-
-            if (ContainsRoomNameToken(key, "\u5bbf\u820d", "dorm"))
-            {
-                presetRoomName = "Dormitory";
-                return true;
-            }
-
-            if (ContainsRoomNameToken(key, "\u536b\u751f\u95f4", "\u5395\u6240", "\u6d17\u624b\u95f4", "restroom", "toilet", "bath"))
-            {
-                presetRoomName = "Restroom";
-                return true;
-            }
-
-            if (ContainsRoomNameToken(key, "\u56fe\u4e66\u9986", "library"))
-            {
-                presetRoomName = "Library";
-                return true;
-            }
-
-            if (ContainsRoomNameToken(key, "\u697c\u68af", "stair"))
-            {
-                presetRoomName = "Stairwell";
-                return true;
-            }
-
-            if (ContainsRoomNameToken(key, "\u4eba\u4e8b", "humanresources", "hr"))
-            {
-                presetRoomName = "HumanResources";
-                return true;
-            }
-
-            if (ContainsRoomNameToken(key, "\u795e\u9f9b", "shrine"))
-            {
-                presetRoomName = "ShrineRoom";
-                return true;
-            }
-
-            return false;
-        }
-
-        private static string NormalizeAreaPresetKey(string value)
-        {
-            if (string.IsNullOrWhiteSpace(value))
-            {
-                return string.Empty;
-            }
-
-            return value.Trim()
-                .Replace(" ", string.Empty)
-                .Replace("_", string.Empty)
-                .Replace("-", string.Empty)
-                .ToLowerInvariant();
-        }
-
         private CampusRuntimeAreaPreset GetAreaPreset(string roomName)
         {
-            if (!TryResolvePresetRoomName(roomName, out string presetRoomName))
-            {
-                return null;
-            }
-
-            for (int i = 0; i < DefaultAreaPresets.Length; i++)
-            {
-                CampusRuntimeAreaPreset preset = DefaultAreaPresets[i];
-                if (preset != null && string.Equals(preset.RoomName, presetRoomName, StringComparison.OrdinalIgnoreCase))
-                {
-                    return preset;
-                }
-            }
-
-            return null;
+            return CampusRuntimeAreaPresetCatalog.GetPreset(roomName);
         }
 
         private string GetAreaPresetLabel(string roomName)
@@ -2177,7 +1560,12 @@ namespace NtingCampusMapEditor
 
             if (forceErase)
             {
-                if (IsGameplayBrushMode(brushMode))
+                if (brushMode == CampusRuntimeBrushMode.PlaceGameplayActor ||
+                    brushMode == CampusRuntimeBrushMode.EraseGameplayActor)
+                {
+                    EraseGameplayActorsAtCell(floor, hoverCell, true);
+                }
+                else if (IsGameplayBrushMode(brushMode))
                 {
                     EraseGameplayMarkersAtCell(floor, hoverCell, true, true, true, true);
                 }
@@ -2271,6 +1659,13 @@ namespace NtingCampusMapEditor
                     }
 
                     break;
+                case CampusRuntimeBrushMode.PlaceGameplayActor:
+                    if (leftDown)
+                    {
+                        PlaceGameplayActor(floor, hoverCell);
+                    }
+
+                    break;
                 case CampusRuntimeBrushMode.PlaceRoomPrefab:
                     if (leftDown)
                     {
@@ -2295,6 +1690,13 @@ namespace NtingCampusMapEditor
                     if (leftDown)
                     {
                         EraseGameplayMarkersAtCell(floor, hoverCell, true, true, true, true);
+                    }
+
+                    break;
+                case CampusRuntimeBrushMode.EraseGameplayActor:
+                    if (leftDown)
+                    {
+                        EraseGameplayActorsAtCell(floor, hoverCell, true);
                     }
 
                     break;
@@ -2499,7 +1901,9 @@ namespace NtingCampusMapEditor
         private static bool IsGameplayBrushMode(CampusRuntimeBrushMode mode)
         {
             return mode == CampusRuntimeBrushMode.PlaceGameplayMarker ||
-                   mode == CampusRuntimeBrushMode.EraseGameplayMarker;
+                   mode == CampusRuntimeBrushMode.EraseGameplayMarker ||
+                   mode == CampusRuntimeBrushMode.PlaceGameplayActor ||
+                   mode == CampusRuntimeBrushMode.EraseGameplayActor;
         }
 
         private void ApplyRectangleBrush(CampusFloorRoot floor, Vector3Int start, Vector3Int end, CampusRuntimeBrushMode mode)
@@ -2587,6 +1991,8 @@ namespace NtingCampusMapEditor
             }
 
             CampusPlacedObject prefabPlaced = prefab.GetComponent<CampusPlacedObject>();
+            string displayName = GetObjectDisplayName(prefab);
+            CampusFacilityType placementType = CampusRuntimeObjectAuthoring.ResolveFacilityType(prefab, prefabPlaced, displayName);
             Vector2Int footprint = prefabPlaced != null ? prefabPlaced.NormalizedFootprintSize : Vector2Int.one;
             int effectiveRotation90 = prefabPlaced != null ? prefabPlaced.ResolveAllowedRotation90(rotation90) : 0;
             if (prefabPlaced != null && prefabPlaced.IsWallMounted)
@@ -2599,13 +2005,24 @@ namespace NtingCampusMapEditor
                 }
             }
 
+            if (CampusRuntimeObjectAuthoring.IsStackableFacilityObject(placementType))
+            {
+                footprint = Vector2Int.one;
+            }
+
             Vector2Int rotatedFootprint = CampusPlacedObject.RotateFootprintSize(footprint, effectiveRotation90);
-            EraseObjectsAtCells(floor, cell, rotatedFootprint);
+            if (CampusRuntimeObjectAuthoring.IsStackableFacilityObject(placementType))
+            {
+                EraseStackableFacilityObjectsAtCells(floor, cell, rotatedFootprint);
+            }
+            else
+            {
+                EraseObjectsAtCells(floor, cell, rotatedFootprint);
+            }
 
             GameObject instance = Instantiate(prefab, floor.PropsRoot);
             CampusSceneInstanceUtility.NormalizeSceneInstance(instance);
             instance.SetActive(true);
-            string displayName = GetObjectDisplayName(prefab);
             instance.name = displayName + "_F" + floor.FloorIndex + "_" + cell.x + "_" + cell.y;
             instance.transform.rotation = Quaternion.identity;
             CampusPlacedObject placed = instance.GetComponent<CampusPlacedObject>();
@@ -2636,6 +2053,7 @@ namespace NtingCampusMapEditor
                 }
             }
 
+                CampusRuntimeObjectAuthoring.NormalizeStackableFacilityObject(placed, placementType);
             placed.ApplyCellToTransform(floor.Grid);
             placed.ApplyInteractionState();
             placed.EnsureShadowRegistration();
@@ -2815,6 +2233,103 @@ namespace NtingCampusMapEditor
             PlaceGameplayFacilityMarker(floor, cell, preset);
         }
 
+        private void PlaceGameplayActor(CampusFloorRoot floor, Vector3Int cell)
+        {
+            if (floor == null || floor.Grid == null)
+            {
+                return;
+            }
+
+            CampusRuntimeGameplayActorPreset preset = GetSelectedGameplayActorPreset();
+            if (preset == null)
+            {
+                SetStatus(Tr("\u8bf7\u5148\u9009\u62e9 NPC \u9884\u8bbe\u3002", "Select an NPC preset first."));
+                return;
+            }
+
+            EnsureCachedGameplayActorsForEditing();
+            Vector3Int normalizedCell = NormalizeCell(cell);
+            EraseGameplayActorsAtCell(floor, normalizedCell, false);
+
+            CampusRuntimeGameplayActorDraft draft = new CampusRuntimeGameplayActorDraft(
+                newGameplayActorId,
+                newGameplayActorChineseName,
+                newGameplayActorEnglishName,
+                newGameplayActorClassId);
+            CampusRuntimeGameplayActorSnapshot actor =
+                CampusRuntimeGameplayActorAuthoring.CreateActor(
+                    preset,
+                    draft,
+                    floor.FloorIndex,
+                    normalizedCell,
+                    cachedGameplayActors);
+            cachedGameplayActors.Add(actor);
+            CampusRuntimeGameplayActorAuthoring.SpawnActorForEditing(actor, EnsureFloor);
+            CampusRuntimeGameplayActorAuthoring.RebuildRosterFromScene();
+            SchedulePlayerMapSave();
+            SetStatus(TrFormat("\u5df2\u653e\u7f6e NPC\uff1a{0}", "Placed NPC: {0}", actor.LocalizedDisplayName.Get(displayLanguage, actor.DisplayName, actor.Id)));
+        }
+
+        private bool EraseGameplayActorsAtCell(CampusFloorRoot floor, Vector3Int cell, bool showStatus)
+        {
+            if (floor == null)
+            {
+                return false;
+            }
+
+            EnsureCachedGameplayActorsForEditing();
+            bool erased = CampusRuntimeGameplayActorAuthoring.EraseActorsAtCell(
+                cachedGameplayActors,
+                floor,
+                cell,
+                DestroyRuntimeObject);
+
+            if (erased)
+            {
+                CampusRuntimeGameplayActorAuthoring.RebuildRosterFromScene();
+                SchedulePlayerMapSave();
+                if (showStatus)
+                {
+                    SetStatus(Tr("\u5df2\u5220\u9664 NPC\u3002", "Erased NPC."));
+                }
+            }
+            else if (showStatus)
+            {
+                SetStatus(Tr("\u5f53\u524d\u683c\u5b50\u6ca1\u6709 NPC\u3002", "No NPC at the current cell."));
+            }
+
+            return erased;
+        }
+
+        private void EnsureCachedGameplayActorsForEditing()
+        {
+            if (gameplayActorCacheInitialized)
+            {
+                return;
+            }
+
+            gameplayActorCacheInitialized = true;
+            CampusRuntimeGameplayOverlaySnapshot existing;
+            string readError;
+            bool loaded = CampusRuntimeGameplayOverlayStore.TryReadSnapshot(
+                ResolveCurrentWritableMapPath(),
+                out existing,
+                out readError);
+            if (!loaded && !string.IsNullOrWhiteSpace(readError))
+            {
+                Debug.LogWarning("[NtingCampusRuntimeMapEditor] Read gameplay overlay failed: " + readError);
+            }
+
+            if (loaded && existing.Actors != null && existing.Actors.Count > 0)
+            {
+                CacheGameplayActors(existing.Actors);
+                return;
+            }
+
+            RefreshSceneReferencesIfNeeded(sceneReferencesDirty || mapRoot == null);
+            CampusRuntimeGameplayActorAuthoring.CaptureSceneActors(cachedGameplayActors, mapRoot);
+        }
+
         private void PlaceGameplayFacilityMarker(
             CampusFloorRoot floor,
             Vector3Int cell,
@@ -2826,25 +2341,15 @@ namespace NtingCampusMapEditor
             }
 
             EraseGameplayMarkersAtCell(floor, cell, false, true, false, false);
-            GameObject markerObject = CreateGameplayMarkerObject(
-                floor,
-                cell,
-                "GameplayFacility_" + preset.FacilityType + "_F" + floor.FloorIndex + "_" + cell.x + "_" + cell.y);
-            if (markerObject == null)
+            if (!CampusRuntimeGameplayOverlayAuthoring.CreateFacilityMarker(
+                    floor,
+                    cell,
+                    GetGameplayPresetDisplayName(preset),
+                    preset.FacilityType))
             {
                 return;
             }
 
-            CampusGameplayFacilityMarker marker = markerObject.AddComponent<CampusGameplayFacilityMarker>();
-            marker.Configure(
-                GetGameplayPresetDisplayName(preset),
-                preset.FacilityType,
-                floor.FloorIndex,
-                NormalizeCell(cell),
-                true,
-                null);
-
-            floor.MarkUsedBoundsDirty();
             RebuildGameplayRoomRegistrySafe();
             SchedulePlayerMapSave();
             SetStatus(TrFormat("\u5df2\u653e\u7f6e\u8bbe\u65bd\u70b9\uff1a{0}", "Placed facility point: {0}", GetGameplayPresetLabel(preset)));
@@ -2861,46 +2366,22 @@ namespace NtingCampusMapEditor
             }
 
             EraseGameplayMarkersAtCell(floor, cell, false, false, true, false);
-            GameObject markerObject = CreateGameplayMarkerObject(
-                floor,
-                cell,
-                "GameplayPrank_" + SanitizeFileName(preset.EnglishLabel) + "_F" + floor.FloorIndex + "_" + cell.x + "_" + cell.y);
-            if (markerObject == null)
+            if (!CampusRuntimeGameplayOverlayAuthoring.CreatePrankSpot(
+                    floor,
+                    cell,
+                    preset.EnglishLabel,
+                    GetGameplayPresetDisplayName(preset),
+                    preset.PrankPayload,
+                    preset.RoomType,
+                    preset.VisualKind,
+                    preset.Color,
+                    "This prank is unavailable here."))
             {
                 return;
             }
 
-            CampusPrankInteractionSpot spot = markerObject.AddComponent<CampusPrankInteractionSpot>();
-            spot.Configure(
-                GetGameplayPresetDisplayName(preset),
-                preset.PrankPayload,
-                preset.RoomType,
-                preset.VisualKind,
-                0.95f,
-                preset.Color,
-                "This prank is unavailable here.");
-
-            floor.MarkUsedBoundsDirty();
             SchedulePlayerMapSave();
             SetStatus(TrFormat("\u5df2\u653e\u7f6e\u8bbe\u65bd\u70b9\uff1a{0}", "Placed facility point: {0}", GetGameplayPresetLabel(preset)));
-        }
-
-        private GameObject CreateGameplayMarkerObject(CampusFloorRoot floor, Vector3Int cell, string objectName)
-        {
-            if (floor == null || floor.Grid == null || floor.PropsRoot == null)
-            {
-                return null;
-            }
-
-            Vector3Int normalizedCell = NormalizeCell(cell);
-            GameObject markerObject = new GameObject(objectName);
-            markerObject.transform.SetParent(floor.PropsRoot, false);
-            markerObject.transform.position = floor.Grid.GetCellCenterWorld(normalizedCell);
-
-            CampusRuntimeGameplayOverlayEntity entity =
-                markerObject.AddComponent<CampusRuntimeGameplayOverlayEntity>();
-            entity.Configure(false, floor.FloorIndex, normalizedCell);
-            return markerObject;
         }
 
         private bool EraseGameplayMarkersAtCell(
@@ -2916,69 +2397,18 @@ namespace NtingCampusMapEditor
                 return false;
             }
 
-            Vector3Int normalizedCell = NormalizeCell(cell);
-            bool erased = false;
-
-            if (eraseRooms)
-            {
-                CampusGameplayRoomMarker[] roomMarkers =
-                    FindObjectsByType<CampusGameplayRoomMarker>(FindObjectsInactive.Include, FindObjectsSortMode.None);
-                for (int i = roomMarkers.Length - 1; i >= 0; i--)
-                {
-                    CampusGameplayRoomMarker marker = roomMarkers[i];
-                    if (marker == null || marker.FloorIndex != floor.FloorIndex)
-                    {
-                        continue;
-                    }
-
-                    if (CellInBounds(marker.BuildBounds(), normalizedCell))
-                    {
-                        DestroyRuntimeObject(marker.gameObject);
-                        erased = true;
-                    }
-                }
-            }
-
-            if (eraseFacilities)
-            {
-                CampusGameplayFacilityMarker[] facilityMarkers =
-                    FindObjectsByType<CampusGameplayFacilityMarker>(FindObjectsInactive.Include, FindObjectsSortMode.None);
-                for (int i = facilityMarkers.Length - 1; i >= 0; i--)
-                {
-                    CampusGameplayFacilityMarker marker = facilityMarkers[i];
-                    if (marker != null &&
-                        marker.FloorIndex == floor.FloorIndex &&
-                        NormalizeCell(marker.Cell) == normalizedCell)
-                    {
-                        DestroyRuntimeObject(marker.gameObject);
-                        erased = true;
-                    }
-                }
-            }
-
-            if (erasePranks)
-            {
-                CampusPrankInteractionSpot[] prankSpots =
-                    FindObjectsByType<CampusPrankInteractionSpot>(FindObjectsInactive.Include, FindObjectsSortMode.None);
-                for (int i = prankSpots.Length - 1; i >= 0; i--)
-                {
-                    CampusPrankInteractionSpot spot = prankSpots[i];
-                    if (spot == null || !TryResolveGameplayMarkerCell(spot, out int floorIndex, out Vector3Int spotCell))
-                    {
-                        continue;
-                    }
-
-                    if (floorIndex == floor.FloorIndex && NormalizeCell(spotCell) == normalizedCell)
-                    {
-                        DestroyRuntimeObject(spot.gameObject);
-                        erased = true;
-                    }
-                }
-            }
+            RefreshSceneReferencesIfNeeded(sceneReferencesDirty || mapRoot == null);
+            bool erased = CampusRuntimeGameplayOverlayAuthoring.EraseMarkersAtCell(
+                floor,
+                cell,
+                eraseRooms,
+                eraseFacilities,
+                erasePranks,
+                mapRoot,
+                DestroyRuntimeObject);
 
             if (erased)
             {
-                floor.MarkUsedBoundsDirty();
                 RebuildGameplayRoomRegistrySafe();
                 SchedulePlayerMapSave();
                 if (showStatus)
@@ -3001,51 +2431,12 @@ namespace NtingCampusMapEditor
                 return false;
             }
 
-            bool erased = false;
-            CampusGameplayRoomMarker[] roomMarkers =
-                FindObjectsByType<CampusGameplayRoomMarker>(FindObjectsInactive.Include, FindObjectsSortMode.None);
-            for (int i = roomMarkers.Length - 1; i >= 0; i--)
-            {
-                CampusGameplayRoomMarker marker = roomMarkers[i];
-                if (marker != null &&
-                    marker.FloorIndex == floor.FloorIndex &&
-                    BoundsOverlap2D(marker.BuildBounds(), bounds))
-                {
-                    DestroyRuntimeObject(marker.gameObject);
-                    erased = true;
-                }
-            }
-
-            CampusGameplayFacilityMarker[] facilityMarkers =
-                FindObjectsByType<CampusGameplayFacilityMarker>(FindObjectsInactive.Include, FindObjectsSortMode.None);
-            for (int i = facilityMarkers.Length - 1; i >= 0; i--)
-            {
-                CampusGameplayFacilityMarker marker = facilityMarkers[i];
-                if (marker != null &&
-                    marker.FloorIndex == floor.FloorIndex &&
-                    CellInBounds(bounds, NormalizeCell(marker.Cell)))
-                {
-                    DestroyRuntimeObject(marker.gameObject);
-                    erased = true;
-                }
-            }
-
-            CampusPrankInteractionSpot[] prankSpots =
-                FindObjectsByType<CampusPrankInteractionSpot>(FindObjectsInactive.Include, FindObjectsSortMode.None);
-            for (int i = prankSpots.Length - 1; i >= 0; i--)
-            {
-                CampusPrankInteractionSpot spot = prankSpots[i];
-                if (spot == null || !TryResolveGameplayMarkerCell(spot, out int floorIndex, out Vector3Int cell))
-                {
-                    continue;
-                }
-
-                if (floorIndex == floor.FloorIndex && CellInBounds(bounds, NormalizeCell(cell)))
-                {
-                    DestroyRuntimeObject(spot.gameObject);
-                    erased = true;
-                }
-            }
+            RefreshSceneReferencesIfNeeded(sceneReferencesDirty || mapRoot == null);
+            bool erased = CampusRuntimeGameplayOverlayAuthoring.EraseMarkersInBounds(
+                floor,
+                bounds,
+                mapRoot,
+                DestroyRuntimeObject);
 
             if (erased)
             {
@@ -3069,9 +2460,9 @@ namespace NtingCampusMapEditor
                 return;
             }
 
-            BoundsInt bounds = BuildInclusiveCellBounds(start, end);
+            BoundsInt bounds = CampusRuntimeRoomPrefabAuthoring.BuildInclusiveCellBounds(start, end);
             CampusRuntimeRoomPrefab roomPrefab = CaptureRoomPrefab(floor, bounds, roomName.Trim());
-            if (!HasRoomPrefabContent(roomPrefab))
+            if (!CampusRuntimeRoomPrefabLibrary.HasContent(roomPrefab))
             {
                 SetStatus(Tr("\u9009\u4e2d\u533a\u57df\u6ca1\u6709\u5730\u677f\u3001\u5899\u4f53\u3001\u7269\u4ef6\u3001\u706f\u5149\u3001\u533a\u57df\u6216\u70b9\u4f4d\u5185\u5bb9\uff0c\u65e0\u6cd5\u4fdd\u5b58\u4e3a\u6a21\u5757\u3002", "The selected area has no floor, wall, object, light, area, or point content to save as a module."));
                 return;
@@ -3090,7 +2481,7 @@ namespace NtingCampusMapEditor
         private CampusRuntimeRoomPrefab CaptureRoomPrefab(CampusFloorRoot floor, BoundsInt bounds, string roomName)
         {
             CampusRuntimeRoomPrefab roomPrefab = new CampusRuntimeRoomPrefab();
-            roomPrefab.Schema = "NtingCampusRuntimeRoomPrefab.v1";
+            roomPrefab.Schema = CampusRuntimeRoomPrefabLibrary.Schema;
             roomPrefab.RoomName = roomName;
             roomPrefab.CreatedAtLocal = DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss");
             roomPrefab.Size = new Vector2Int(Mathf.Max(1, bounds.size.x), Mathf.Max(1, bounds.size.y));
@@ -3100,9 +2491,23 @@ namespace NtingCampusMapEditor
             CaptureRoomTiles(CampusWallTileUtility.GetWallLogicTilemap(floor), wallTiles, bounds, originCell, roomPrefab.WallTiles);
             CaptureRoomObjects(floor, bounds, originCell, roomPrefab.Objects);
             CaptureRoomMarkers(floor, bounds, originCell, roomPrefab.RoomMarkers);
-            CaptureRoomGameplayRooms(floor, bounds, originCell, roomPrefab.GameplayRooms);
-            CaptureRoomGameplayFacilities(floor, bounds, originCell, roomPrefab.GameplayFacilities);
-            CaptureRoomGameplayPrankSpots(floor, bounds, originCell, roomPrefab.GameplayPrankSpots);
+            RefreshSceneReferencesIfNeeded(sceneReferencesDirty || mapRoot == null);
+            CampusRuntimeGameplayOverlayAuthoring.CaptureRoomPrefabRooms(
+                floor,
+                bounds,
+                originCell,
+                roomPrefab.GameplayRooms);
+            CampusRuntimeGameplayOverlayAuthoring.CaptureRoomPrefabFacilities(
+                floor,
+                bounds,
+                originCell,
+                roomPrefab.GameplayFacilities);
+            CampusRuntimeGameplayOverlayAuthoring.CaptureRoomPrefabPrankSpots(
+                floor,
+                bounds,
+                originCell,
+                roomPrefab.GameplayPrankSpots,
+                mapRoot);
             CaptureRoomLights(floor, bounds, originCell, roomPrefab.Lights);
             return roomPrefab;
         }
@@ -3127,7 +2532,7 @@ namespace NtingCampusMapEditor
                     }
 
                     CampusRuntimeTileSnapshot tileSnapshot = new CampusRuntimeTileSnapshot();
-                    tileSnapshot.Cell = ToRelativeCell(cell, originCell);
+                    tileSnapshot.Cell = CampusRuntimeRoomPrefabAuthoring.ToRelativeCell(cell, originCell);
                     tileSnapshot.AssetName = tile.name;
                     tileSnapshot.PaletteIndex = palette.IndexOf(tile);
                     tileSnapshot.Transform = tilemap.GetTransformMatrix(cell);
@@ -3161,7 +2566,8 @@ namespace NtingCampusMapEditor
                 }
 
                 CampusRuntimeObjectSnapshot objectSnapshot = CreateObjectSnapshot(floor, placed);
-                objectSnapshot.Cell = ToRelativeCell(objectSnapshot.Cell, originCell);
+                objectSnapshot.Cell =
+                    CampusRuntimeRoomPrefabAuthoring.ToRelativeCell(objectSnapshot.Cell, originCell);
                 objectSnapshot.FloorIndex = 0;
                 objectSnapshot.Position = placed.transform.position - originWorld;
                 output.Add(objectSnapshot);
@@ -3180,12 +2586,14 @@ namespace NtingCampusMapEditor
             for (int i = 0; i < markers.Length; i++)
             {
                 CampusRuntimeRoomMarker marker = markers[i];
-                if (marker == null || marker.FloorIndex != floor.FloorIndex || !CellInBounds(bounds, marker.Cell))
+                if (marker == null ||
+                    marker.FloorIndex != floor.FloorIndex ||
+                    !CampusRuntimeRoomPrefabAuthoring.CellInBounds(bounds, marker.Cell))
                 {
                     continue;
                 }
 
-                if (!TryResolvePresetRoomName(marker.RoomName, out string roomName))
+                if (!CampusRuntimeAreaPresetCatalog.TryResolveRoomName(marker.RoomName, out string roomName))
                 {
                     continue;
                 }
@@ -3193,132 +2601,8 @@ namespace NtingCampusMapEditor
                 CampusRuntimeRoomSnapshot roomSnapshot = new CampusRuntimeRoomSnapshot();
                 roomSnapshot.RoomName = roomName;
                 roomSnapshot.FloorIndex = 0;
-                roomSnapshot.Cell = ToRelativeCell(marker.Cell, originCell);
+                roomSnapshot.Cell = CampusRuntimeRoomPrefabAuthoring.ToRelativeCell(marker.Cell, originCell);
                 output.Add(roomSnapshot);
-            }
-        }
-
-        private void CaptureRoomGameplayRooms(
-            CampusFloorRoot floor,
-            BoundsInt bounds,
-            Vector3Int originCell,
-            List<CampusRuntimeGameplayRoomSnapshot> output)
-        {
-            output.Clear();
-            if (floor == null)
-            {
-                return;
-            }
-
-            CampusGameplayRoomMarker[] markers =
-                FindObjectsByType<CampusGameplayRoomMarker>(FindObjectsInactive.Include, FindObjectsSortMode.None);
-            for (int i = 0; i < markers.Length; i++)
-            {
-                CampusGameplayRoomMarker marker = markers[i];
-                if (marker == null || marker.FloorIndex != floor.FloorIndex)
-                {
-                    continue;
-                }
-
-                BoundsInt markerBounds = marker.BuildBounds();
-                if (!BoundsContains2D(bounds, markerBounds))
-                {
-                    continue;
-                }
-
-                output.Add(new CampusRuntimeGameplayRoomSnapshot
-                {
-                    Id = marker.RoomIdOverride,
-                    DisplayName = marker.RoomDisplayName,
-                    RoomType = marker.RoomType,
-                    FloorIndex = 0,
-                    AnchorCell = ToRelativeCell(NormalizeCell(marker.AnchorCell), originCell),
-                    Size = marker.RoomSize,
-                    UsableForGameplay = marker.UsableForGameplay
-                });
-            }
-        }
-
-        private void CaptureRoomGameplayFacilities(
-            CampusFloorRoot floor,
-            BoundsInt bounds,
-            Vector3Int originCell,
-            List<CampusRuntimeGameplayFacilitySnapshot> output)
-        {
-            output.Clear();
-            if (floor == null)
-            {
-                return;
-            }
-
-            CampusGameplayFacilityMarker[] markers =
-                FindObjectsByType<CampusGameplayFacilityMarker>(FindObjectsInactive.Include, FindObjectsSortMode.None);
-            for (int i = 0; i < markers.Length; i++)
-            {
-                CampusGameplayFacilityMarker marker = markers[i];
-                if (marker == null || marker.FloorIndex != floor.FloorIndex)
-                {
-                    continue;
-                }
-
-                Vector3Int cell = NormalizeCell(marker.Cell);
-                if (!CellInBounds(bounds, cell))
-                {
-                    continue;
-                }
-
-                output.Add(new CampusRuntimeGameplayFacilitySnapshot
-                {
-                    Id = marker.FacilityId,
-                    DisplayName = marker.DisplayName,
-                    FacilityType = marker.FacilityType,
-                    FloorIndex = 0,
-                    Cell = ToRelativeCell(cell, originCell),
-                    CountsAsCoreFacility = marker.CountsAsCoreFacility
-                });
-            }
-        }
-
-        private void CaptureRoomGameplayPrankSpots(
-            CampusFloorRoot floor,
-            BoundsInt bounds,
-            Vector3Int originCell,
-            List<CampusRuntimeGameplayPrankSpotSnapshot> output)
-        {
-            output.Clear();
-            if (floor == null)
-            {
-                return;
-            }
-
-            CampusPrankInteractionSpot[] spots =
-                FindObjectsByType<CampusPrankInteractionSpot>(FindObjectsInactive.Include, FindObjectsSortMode.None);
-            for (int i = 0; i < spots.Length; i++)
-            {
-                CampusPrankInteractionSpot spot = spots[i];
-                if (spot == null || !TryResolveGameplayMarkerCell(spot, out int floorIndex, out Vector3Int cell))
-                {
-                    continue;
-                }
-
-                cell = NormalizeCell(cell);
-                if (floorIndex != floor.FloorIndex || !CellInBounds(bounds, cell))
-                {
-                    continue;
-                }
-
-                output.Add(new CampusRuntimeGameplayPrankSpotSnapshot
-                {
-                    DisplayName = spot.DisplayName,
-                    Payload = spot.PrankPayload,
-                    RequiredRoomType = spot.RequiredRoomType,
-                    VisualKind = spot.VisualKind,
-                    FloorIndex = 0,
-                    Cell = ToRelativeCell(cell, originCell),
-                    InteractionRadius = spot.InteractionRadius,
-                    AccentColor = spot.AccentColor,
-                    UnsupportedReason = spot.UnsupportedReason
-                });
             }
         }
 
@@ -3341,7 +2625,8 @@ namespace NtingCampusMapEditor
                 }
 
                 CampusRuntimeLightSnapshot lightSnapshot = CreateLightSnapshot(light);
-                if (lightSnapshot.FloorIndex != floor.FloorIndex || !CellInBounds(bounds, lightSnapshot.Cell))
+                if (lightSnapshot.FloorIndex != floor.FloorIndex ||
+                    !CampusRuntimeRoomPrefabAuthoring.CellInBounds(bounds, lightSnapshot.Cell))
                 {
                     continue;
                 }
@@ -3349,7 +2634,8 @@ namespace NtingCampusMapEditor
                 CampusRuntimeRoomLightSnapshot roomLight = new CampusRuntimeRoomLightSnapshot();
                 roomLight.Light = lightSnapshot;
                 roomLight.Light.FloorIndex = 0;
-                roomLight.Light.Cell = ToRelativeCell(lightSnapshot.Cell, originCell);
+                roomLight.Light.Cell =
+                    CampusRuntimeRoomPrefabAuthoring.ToRelativeCell(lightSnapshot.Cell, originCell);
                 roomLight.RelativeCell = roomLight.Light.Cell;
                 roomLight.RelativePosition = light.transform.position - originWorld;
                 roomLight.HasRelativePosition = true;
@@ -3371,24 +2657,42 @@ namespace NtingCampusMapEditor
                 return;
             }
 
-            EraseRoomPrefabArea(floor, anchorCell, roomPrefab.Size);
-            ApplyRoomPrefabTiles(floor.FloorTilemap, roomPrefab.FloorTiles, floorTiles, anchorCell);
-            ApplyRoomPrefabTiles(CampusWallTileUtility.GetWallLogicTilemap(floor), roomPrefab.WallTiles, wallTiles, anchorCell);
-            ApplyRoomPrefabObjects(floor, roomPrefab.Objects, anchorCell);
-            ApplyRoomPrefabMarkers(floor, roomPrefab.RoomMarkers, anchorCell, roomPrefab.RoomName);
-            ApplyRoomPrefabGameplayMarkers(floor, roomPrefab, anchorCell);
-            ApplyRoomPrefabLights(floor, roomPrefab.Lights, anchorCell);
-            AddRoomDefinitionsFromRoomPrefab(roomPrefab);
-            RebuildWallVisuals(floor);
-            floor.MarkUsedBoundsDirty();
-            CampusRenderSortingUtility.ApplyFloorSorting(floor, floor.FloorIndex * mapRoot.SortingOrderStepPerFloor);
+            CampusRuntimeRoomPrefabAuthoring.Place(
+                roomPrefab,
+                floor,
+                anchorCell,
+                floorTiles,
+                wallTiles,
+                BuildRoomPrefabPlacementContext());
             SchedulePlayerMapSave();
             SetStatus(TrFormat("\u5df2\u653e\u7f6e\u623f\u95f4\u6a21\u5757\uff1a{0}", "Placed room module: {0}", roomPrefab.RoomName));
         }
 
+        private CampusRuntimeRoomPrefabPlacementContext BuildRoomPrefabPlacementContext()
+        {
+            return new CampusRuntimeRoomPrefabPlacementContext
+            {
+                EraseArea = EraseRoomPrefabArea,
+                ApplyTiles = ApplyRoomPrefabTiles,
+                ApplyObjects = ApplyRoomPrefabObjects,
+                ApplyMarkers = ApplyRoomPrefabMarkers,
+                ApplyGameplayMarkers = ApplyRoomPrefabGameplayMarkers,
+                ApplyLights = ApplyRoomPrefabLights,
+                AddRoomDefinitions = AddRoomDefinitionsFromRoomPrefab,
+                FinishPlacement = FinishRoomPrefabPlacement
+            };
+        }
+
+        private void FinishRoomPrefabPlacement(CampusFloorRoot floor)
+        {
+            RebuildWallVisuals(floor);
+            floor.MarkUsedBoundsDirty();
+            CampusRenderSortingUtility.ApplyFloorSorting(floor, floor.FloorIndex * mapRoot.SortingOrderStepPerFloor);
+        }
+
         private void EraseRoomPrefabArea(CampusFloorRoot floor, Vector3Int anchorCell, Vector2Int size)
         {
-            size = NormalizeRoomPrefabSize(size);
+            size = CampusRuntimeRoomPrefabLibrary.NormalizeSize(size);
             for (int y = 0; y < size.y; y++)
             {
                 for (int x = 0; x < size.x; x++)
@@ -3418,7 +2722,7 @@ namespace NtingCampusMapEditor
                     continue;
                 }
 
-                Vector3Int cell = ToAbsoluteCell(anchorCell, tileSnapshot.Cell);
+                Vector3Int cell = CampusRuntimeRoomPrefabAuthoring.ToAbsoluteCell(anchorCell, tileSnapshot.Cell);
                 tilemap.SetTile(cell, tile);
                 tilemap.SetTileFlags(cell, TileFlags.None);
                 tilemap.SetTransformMatrix(cell, HasUsableMatrix(tileSnapshot.Transform) ? tileSnapshot.Transform : Matrix4x4.identity);
@@ -3438,7 +2742,7 @@ namespace NtingCampusMapEditor
             for (int i = 0; i < objects.Count; i++)
             {
                 CampusRuntimeObjectSnapshot shifted = CloneObjectSnapshot(objects[i]);
-                shifted.Cell = ToAbsoluteCell(anchorCell, objects[i].Cell);
+                shifted.Cell = CampusRuntimeRoomPrefabAuthoring.ToAbsoluteCell(anchorCell, objects[i].Cell);
                 shifted.FloorIndex = floor != null ? floor.FloorIndex : 1;
                 shiftedObjects.Add(shifted);
             }
@@ -3460,7 +2764,7 @@ namespace NtingCampusMapEditor
                     }
 
                     string sourceRoomName = string.IsNullOrWhiteSpace(marker.RoomName) ? fallbackRoomName : marker.RoomName;
-                    if (!TryResolvePresetRoomName(sourceRoomName, out string roomName))
+                    if (!CampusRuntimeAreaPresetCatalog.TryResolveRoomName(sourceRoomName, out string roomName))
                     {
                         continue;
                     }
@@ -3468,7 +2772,7 @@ namespace NtingCampusMapEditor
                     CampusRuntimeRoomSnapshot shifted = new CampusRuntimeRoomSnapshot();
                     shifted.RoomName = roomName;
                     shifted.FloorIndex = floor != null ? floor.FloorIndex : 1;
-                    shifted.Cell = ToAbsoluteCell(anchorCell, marker.Cell);
+                    shifted.Cell = CampusRuntimeRoomPrefabAuthoring.ToAbsoluteCell(anchorCell, marker.Cell);
                     shifted.HideMarkerVisual = true;
                     shiftedMarkers.Add(shifted);
                 }
@@ -3507,13 +2811,13 @@ namespace NtingCampusMapEditor
                         DisplayName = source.DisplayName,
                         RoomType = source.RoomType,
                         FloorIndex = floor.FloorIndex,
-                        AnchorCell = ToAbsoluteCell(anchorCell, source.AnchorCell),
+                        AnchorCell = CampusRuntimeRoomPrefabAuthoring.ToAbsoluteCell(anchorCell, source.AnchorCell),
                         Size = source.Size,
                         UsableForGameplay = source.UsableForGameplay
                     });
                 }
 
-                SpawnGameplayRooms(shiftedRooms);
+                CampusRuntimeGameplayOverlayAuthoring.SpawnRooms(shiftedRooms, EnsureFloor);
             }
 
             if (roomPrefab.GameplayFacilities != null && roomPrefab.GameplayFacilities.Count > 0)
@@ -3528,7 +2832,8 @@ namespace NtingCampusMapEditor
                         continue;
                     }
 
-                    Vector3Int absoluteCell = ToAbsoluteCell(anchorCell, source.Cell);
+                    Vector3Int absoluteCell =
+                        CampusRuntimeRoomPrefabAuthoring.ToAbsoluteCell(anchorCell, source.Cell);
                     shiftedFacilities.Add(new CampusRuntimeGameplayFacilitySnapshot
                     {
                         Id = CampusGameplayFacilityMarker.BuildStableFacilityId(
@@ -3543,7 +2848,7 @@ namespace NtingCampusMapEditor
                     });
                 }
 
-                SpawnGameplayFacilities(shiftedFacilities);
+                CampusRuntimeGameplayOverlayAuthoring.SpawnFacilities(shiftedFacilities, EnsureFloor);
             }
 
             if (roomPrefab.GameplayPrankSpots != null && roomPrefab.GameplayPrankSpots.Count > 0)
@@ -3565,14 +2870,14 @@ namespace NtingCampusMapEditor
                         RequiredRoomType = source.RequiredRoomType,
                         VisualKind = source.VisualKind,
                         FloorIndex = floor.FloorIndex,
-                        Cell = ToAbsoluteCell(anchorCell, source.Cell),
+                        Cell = CampusRuntimeRoomPrefabAuthoring.ToAbsoluteCell(anchorCell, source.Cell),
                         InteractionRadius = source.InteractionRadius,
                         AccentColor = source.AccentColor,
                         UnsupportedReason = source.UnsupportedReason
                     });
                 }
 
-                SpawnGameplayPrankSpots(shiftedSpots);
+                CampusRuntimeGameplayOverlayAuthoring.SpawnPrankSpots(shiftedSpots, EnsureFloor);
             }
 
             RebuildGameplayRoomRegistrySafe();
@@ -3628,7 +2933,7 @@ namespace NtingCampusMapEditor
                     relativeCell = roomLight.Light.Cell;
                 }
 
-                shifted.Cell = ToAbsoluteCell(anchorCell, relativeCell);
+                shifted.Cell = CampusRuntimeRoomPrefabAuthoring.ToAbsoluteCell(anchorCell, relativeCell);
                 shifted.Position = roomLight.HasRelativePosition
                     ? originWorld + roomLight.RelativePosition
                     : floor.Grid.GetCellCenterWorld(shifted.Cell);
@@ -3725,6 +3030,43 @@ namespace NtingCampusMapEditor
                 for (int x = 0; x < size.x; x++)
                 {
                     EraseObjectsAtCell(floor, new Vector3Int(anchorCell.x + x, anchorCell.y + y, anchorCell.z));
+                }
+            }
+        }
+
+        private void EraseStackableFacilityObjectsAtCells(CampusFloorRoot floor, Vector3Int anchorCell, Vector2Int size)
+        {
+            if (floor == null || floor.PropsRoot == null)
+            {
+                return;
+            }
+
+            HashSet<CampusPlacedObject> targets = new HashSet<CampusPlacedObject>();
+            CampusPlacedObject[] objects = floor.PropsRoot.GetComponentsInChildren<CampusPlacedObject>(true);
+            for (int y = 0; y < size.y; y++)
+            {
+                for (int x = 0; x < size.x; x++)
+                {
+                    Vector3Int cell = new Vector3Int(anchorCell.x + x, anchorCell.y + y, anchorCell.z);
+                    for (int i = 0; i < objects.Length; i++)
+                    {
+                        CampusPlacedObject placed = objects[i];
+                        if (placed != null &&
+                            placed.ContainsCell(cell) &&
+                            CampusRuntimeObjectAuthoring.IsStackableFacilityObject(
+                                CampusRuntimeObjectAuthoring.ResolveFacilityType(placed)))
+                        {
+                            targets.Add(placed);
+                        }
+                    }
+                }
+            }
+
+            foreach (CampusPlacedObject placed in targets)
+            {
+                if (placed != null)
+                {
+                    DestroyRuntimeObject(placed.gameObject);
                 }
             }
         }
@@ -4014,7 +3356,7 @@ namespace NtingCampusMapEditor
         {
             using (CampusWallBuildProfiler.BuildSnapshotJson.Auto())
             {
-                return JsonUtility.ToJson(BuildSnapshot(refreshReferences), prettyPrint);
+                return CampusRuntimeMapSnapshotStore.ToJson(BuildSnapshot(refreshReferences), prettyPrint);
             }
         }
 
@@ -4072,7 +3414,7 @@ namespace NtingCampusMapEditor
             }
 
             CampusRuntimeMapSnapshot snapshot = new CampusRuntimeMapSnapshot();
-            snapshot.Schema = "NtingCampusRuntimeMapEditor.v1";
+            snapshot.Schema = CampusRuntimeMapSnapshotStore.Schema;
             snapshot.MapName = mapRoot != null ? mapRoot.gameObject.name : "CampusMap";
             snapshot.ExportedAtLocal = DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss");
             snapshot.SortingOrderStepPerFloor = mapRoot != null ? mapRoot.SortingOrderStepPerFloor : 1000;
@@ -4125,7 +3467,7 @@ namespace NtingCampusMapEditor
                 return;
             }
 
-            CampusRuntimeMapSnapshot snapshot = JsonUtility.FromJson<CampusRuntimeMapSnapshot>(json);
+            CampusRuntimeMapSnapshot snapshot = CampusRuntimeMapSnapshotStore.FromJson(json);
             if (snapshot == null)
             {
                 SetStatus(Tr("\u5bfc\u5165\u5931\u8d25\uff1aJSON \u65e0\u6548\u3002", "Import failed: invalid JSON."));
@@ -4191,10 +3533,7 @@ namespace NtingCampusMapEditor
 
         private void ExportToJson()
         {
-            string folder = GetExportFolder();
-            Directory.CreateDirectory(folder);
-            string path = Path.Combine(folder, "CampusMap_" + DateTime.Now.ToString("yyyyMMdd_HHmmss") + ".json");
-            File.WriteAllText(path, BuildSnapshotJson());
+            string path = CampusRuntimeMapSnapshotStore.ExportMap(BuildSnapshot());
             SaveGameplayOverlayForMapPath(path, false);
             SetStatus(TrFormat("\u5df2\u5bfc\u51fa\u5730\u56fe JSON\uff1a{0}", "Exported map JSON: {0}", path));
             Debug.Log("[NtingCampusRuntimeMapEditor] Exported map to " + path);
@@ -4231,8 +3570,9 @@ namespace NtingCampusMapEditor
             }
 
             ClearRuntimeEditableLights();
-            ClearRuntimeGameplayOverlayMarkers();
+            CampusRuntimeGameplayOverlayAuthoring.ClearSceneMarkers(DestroyRuntimeObject);
             cachedGameplayActors.Clear();
+            gameplayActorCacheInitialized = false;
             selectedFloorIndex = 1;
             mapRoot.CurrentPreviewFloor = selectedFloorIndex;
             RememberMapLoadSource(CampusRuntimeMapLoadSource.Scene, GetActiveScenePath());
@@ -4265,18 +3605,9 @@ namespace NtingCampusMapEditor
             {
                 playerSaveInProgress = true;
                 EnsureImportFolders();
-                string saveRoot = GetPlayerSaveRootFolder();
-                Directory.CreateDirectory(saveRoot);
-                File.WriteAllText(GetPlayerSaveMapPath(), BuildSnapshotJson(), Encoding.UTF8);
-                SaveGameplayOverlayForMapPath(GetPlayerSaveMapPath(), false);
-                CampusRuntimePlayerMapSaveManifest manifest = new CampusRuntimePlayerMapSaveManifest
-                {
-                    SavedAtLocal = DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss"),
-                    UnityPersistentDataPath = string.Empty,
-                    ImportRootFolderName = RuntimeImportFolder,
-                    MapFileName = PlayerSaveMapFile
-                };
-                File.WriteAllText(GetPlayerSaveManifestPath(), JsonUtility.ToJson(manifest, true), Encoding.UTF8);
+                string mapPath = CampusRuntimeMapSnapshotStore.WritePlayerSave(BuildSnapshot());
+                string saveRoot = CampusRuntimeMapSnapshotStore.GetPlayerSaveRootFolder();
+                SaveGameplayOverlayForMapPath(mapPath, false);
                 playerSavePending = false;
                 if (showStatus)
                 {
@@ -4334,7 +3665,7 @@ namespace NtingCampusMapEditor
                     Directory.CreateDirectory(folder);
                 }
 
-                File.WriteAllText(path, BuildSnapshotJson(), Encoding.UTF8);
+                CampusRuntimeMapSnapshotStore.WriteMap(path, BuildSnapshot(), true);
                 SaveGameplayOverlayForMapPath(path, false);
                 RememberMapLoadSource(source, path);
                 RefreshAssetDatabaseIfAvailable();
@@ -4386,7 +3717,7 @@ namespace NtingCampusMapEditor
 
                 EnsureImportFolders();
                 LoadRuntimeResources();
-                LoadSnapshotJson(File.ReadAllText(savePath, Encoding.UTF8));
+                ApplySnapshot(CampusRuntimeMapSnapshotStore.ReadMap(savePath));
                 RememberMapLoadSource(CampusRuntimeMapLoadSource.PlayerSave, savePath);
                 ApplyGameplayOverlayFromPath(savePath, false);
                 playerSavePending = false;
@@ -4429,23 +3760,8 @@ namespace NtingCampusMapEditor
                 SavePlayerMap(false);
                 EnsureImportFolders();
                 string packageRoot = GetAuthoringPackageRootFolder();
-                string packageImportFolder = GetAuthoringPackageImportFolder();
-                Directory.CreateDirectory(packageRoot);
-                if (!AreSamePath(GetImportRootFolder(), packageImportFolder))
-                {
-                    MirrorDirectory(GetImportRootFolder(), packageImportFolder, true);
-                }
-
-                File.WriteAllText(GetAuthoringPackageMapPath(), BuildSnapshotJson(), Encoding.UTF8);
-                SaveGameplayOverlayForMapPath(GetAuthoringPackageMapPath(), false);
-                CampusRuntimeAuthoringPackageManifest manifest = new CampusRuntimeAuthoringPackageManifest
-                {
-                    ExportedAtLocal = DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss"),
-                    UnityPersistentDataPath = string.Empty,
-                    ImportRootFolderName = RuntimeImportFolder,
-                    MapFileName = AuthoringPackageMapFile
-                };
-                File.WriteAllText(GetAuthoringPackageManifestPath(), JsonUtility.ToJson(manifest, true), Encoding.UTF8);
+                string mapPath = CampusRuntimeMapSnapshotStore.WriteAuthoringPackage(BuildSnapshot(), GetImportRootFolder());
+                SaveGameplayOverlayForMapPath(mapPath, false);
                 RefreshAssetDatabaseIfAvailable();
                 if (showStatus)
                 {
@@ -4497,12 +3813,12 @@ namespace NtingCampusMapEditor
                     RecordUndo();
                 }
 
-                if (!AreSamePath(packageImportFolder, GetImportRootFolder()))
+                if (!CampusRuntimeImportLibrary.AreSamePath(packageImportFolder, GetImportRootFolder()))
                 {
-                    BackupLocalRuntimeImportFolder();
+                    CampusRuntimeImportLibrary.BackupImportRoot(GetImportRootFolder());
                     if (Directory.Exists(packageImportFolder))
                     {
-                        MirrorDirectory(packageImportFolder, GetImportRootFolder(), true);
+                        CampusRuntimeImportLibrary.MirrorDirectory(packageImportFolder, GetImportRootFolder(), true);
                     }
                 }
 
@@ -4618,54 +3934,42 @@ namespace NtingCampusMapEditor
 
         private string GetExportFolder()
         {
-            return Path.Combine(Application.persistentDataPath, "CampusMapExports");
+            return CampusRuntimeMapSnapshotStore.GetExportFolder();
         }
 
         private string GetPlayerSaveRootFolder()
         {
-            return Path.Combine(Application.persistentDataPath, PlayerSaveFolder);
+            return CampusRuntimeMapSnapshotStore.GetPlayerSaveRootFolder();
         }
 
         private string GetPlayerSaveMapPath()
         {
-            return Path.Combine(GetPlayerSaveRootFolder(), PlayerSaveMapFile);
+            return CampusRuntimeMapSnapshotStore.GetPlayerSaveMapPath();
         }
 
         private string GetPlayerSaveManifestPath()
         {
-            return Path.Combine(GetPlayerSaveRootFolder(), PlayerSaveManifestFile);
+            return CampusRuntimeMapSnapshotStore.GetPlayerSaveManifestPath();
         }
 
         private string GetAuthoringPackageRootFolder()
         {
-            return Path.Combine(Application.dataPath, "NtingCampus", AuthoringPackageFolder);
+            return CampusRuntimeMapSnapshotStore.GetAuthoringPackageRootFolder();
         }
 
         private string GetAuthoringPackageImportFolder()
         {
-            return Path.Combine(GetAuthoringPackageRootFolder(), RuntimeImportFolder);
+            return CampusRuntimeMapSnapshotStore.GetAuthoringPackageImportFolder();
         }
 
         private string GetAuthoringPackageMapPath()
         {
-            return Path.Combine(GetAuthoringPackageRootFolder(), AuthoringPackageMapFile);
+            return CampusRuntimeMapSnapshotStore.GetAuthoringPackageMapPath();
         }
 
         private string GetAuthoringPackageManifestPath()
         {
-            return Path.Combine(GetAuthoringPackageRootFolder(), AuthoringPackageManifestFile);
-        }
-
-        private static string GetGameplayOverlayPathForMapPath(string mapPath)
-        {
-            if (string.IsNullOrWhiteSpace(mapPath))
-            {
-                return string.Empty;
-            }
-
-            string folder = Path.GetDirectoryName(mapPath) ?? string.Empty;
-            string fileName = Path.GetFileNameWithoutExtension(mapPath);
-            return Path.Combine(folder, fileName + GameplayOverlayExtension);
+            return CampusRuntimeMapSnapshotStore.GetAuthoringPackageManifestPath();
         }
 
         private bool SaveGameplayOverlayForMapPath(string mapPath, bool showStatus)
@@ -4677,15 +3981,9 @@ namespace NtingCampusMapEditor
 
             try
             {
-                string overlayPath = GetGameplayOverlayPathForMapPath(mapPath);
-                string folder = Path.GetDirectoryName(overlayPath);
-                if (!string.IsNullOrWhiteSpace(folder))
-                {
-                    Directory.CreateDirectory(folder);
-                }
-
+                string overlayPath = CampusRuntimeGameplayOverlayStore.GetPathForMapPath(mapPath);
                 CampusRuntimeGameplayOverlaySnapshot snapshot = BuildGameplayOverlaySnapshot(mapPath);
-                File.WriteAllText(overlayPath, JsonUtility.ToJson(snapshot, true), Encoding.UTF8);
+                CampusRuntimeGameplayOverlayStore.WriteSnapshot(mapPath, snapshot);
                 if (showStatus)
                 {
                     SetStatus(TrFormat("\u5df2\u4fdd\u5b58\u73a9\u6cd5\u5c42\uff1a{0}", "Saved gameplay overlay: {0}", overlayPath));
@@ -4751,10 +4049,11 @@ namespace NtingCampusMapEditor
 
         private void ApplyGameplayOverlayFromPath(string mapPath, bool showStatus)
         {
-            ClearRuntimeGameplayOverlayMarkers();
+            CampusRuntimeGameplayOverlayAuthoring.ClearSceneMarkers(DestroyRuntimeObject);
             cachedGameplayActors.Clear();
+            gameplayActorCacheInitialized = false;
 
-            string overlayPath = GetGameplayOverlayPathForMapPath(mapPath);
+            string overlayPath = CampusRuntimeGameplayOverlayStore.GetPathForMapPath(mapPath);
             if (string.IsNullOrWhiteSpace(overlayPath) || !File.Exists(overlayPath))
             {
                 RebuildGameplayRoomRegistrySafe();
@@ -4768,19 +4067,17 @@ namespace NtingCampusMapEditor
 
             try
             {
-                string json = File.ReadAllText(overlayPath, Encoding.UTF8);
-                CampusRuntimeGameplayOverlaySnapshot snapshot =
-                    JsonUtility.FromJson<CampusRuntimeGameplayOverlaySnapshot>(json);
-                if (snapshot == null)
+                CampusRuntimeGameplayOverlaySnapshot snapshot;
+                string readError;
+                if (!CampusRuntimeGameplayOverlayStore.TryReadSnapshot(mapPath, out snapshot, out readError))
                 {
-                    throw new InvalidOperationException(Tr("\u73a9\u6cd5\u5c42 JSON \u65e0\u6548\u3002", "Invalid gameplay overlay JSON."));
+                    throw new InvalidOperationException(string.IsNullOrWhiteSpace(readError)
+                        ? Tr("\u73a9\u6cd5\u5c42 JSON \u65e0\u6548\u3002", "Invalid gameplay overlay JSON.")
+                        : readError);
                 }
 
-                NormalizeGameplayOverlaySnapshot(snapshot);
                 CacheGameplayActors(snapshot.Actors);
-                SpawnGameplayRooms(snapshot.Rooms);
-                SpawnGameplayFacilities(snapshot.Facilities);
-                SpawnGameplayPrankSpots(snapshot.PrankSpots);
+                CampusRuntimeGameplayOverlayAuthoring.SpawnSceneMarkers(snapshot, EnsureFloor);
                 RebuildGameplayRoomRegistrySafe();
                 if (showStatus)
                 {
@@ -4800,459 +4097,66 @@ namespace NtingCampusMapEditor
         private CampusRuntimeGameplayOverlaySnapshot BuildGameplayOverlaySnapshot(string targetMapPath)
         {
             CampusRuntimeGameplayOverlaySnapshot snapshot = new CampusRuntimeGameplayOverlaySnapshot();
-            snapshot.Schema = GameplayOverlaySchema;
+            snapshot.Schema = CampusRuntimeGameplayOverlayStore.Schema;
             snapshot.MapName = mapRoot != null ? mapRoot.gameObject.name : "CampusMap";
             snapshot.Actors = ResolveGameplayActorsForSave(targetMapPath);
             snapshot.Rooms = new List<CampusRuntimeGameplayRoomSnapshot>();
             snapshot.Facilities = new List<CampusRuntimeGameplayFacilitySnapshot>();
             snapshot.PrankSpots = new List<CampusRuntimeGameplayPrankSpotSnapshot>();
 
-            CaptureGameplayRooms(snapshot.Rooms);
-            CaptureGameplayFacilities(snapshot.Facilities);
-            CaptureGameplayPrankSpots(snapshot.PrankSpots);
+            RefreshSceneReferencesIfNeeded(sceneReferencesDirty || mapRoot == null);
+            CampusRuntimeGameplayOverlayAuthoring.CaptureSceneMarkers(snapshot, mapRoot);
             return snapshot;
         }
 
         private List<CampusRuntimeGameplayActorSnapshot> ResolveGameplayActorsForSave(string targetMapPath)
         {
             List<CampusRuntimeGameplayActorSnapshot> actors;
-            if (cachedGameplayActors.Count > 0)
+            if (gameplayActorCacheInitialized)
             {
-                actors = CloneGameplayActors(cachedGameplayActors);
+                actors = CampusRuntimeGameplayOverlayStore.CloneActors(cachedGameplayActors);
             }
             else
             {
-                CampusRuntimeGameplayOverlaySnapshot existing = ReadGameplayOverlaySnapshot(targetMapPath);
-                actors = existing != null
-                    ? CloneGameplayActors(existing.Actors)
+                CampusRuntimeGameplayOverlaySnapshot existing;
+                string readError;
+                bool loaded = CampusRuntimeGameplayOverlayStore.TryReadSnapshot(
+                    targetMapPath,
+                    out existing,
+                    out readError);
+                if (!loaded && !string.IsNullOrWhiteSpace(readError))
+                {
+                    Debug.LogWarning("[NtingCampusRuntimeMapEditor] Read gameplay overlay failed: " + readError);
+                }
+
+                actors = loaded
+                    ? CampusRuntimeGameplayOverlayStore.CloneActors(existing.Actors)
                     : new List<CampusRuntimeGameplayActorSnapshot>();
+                if (actors.Count == 0)
+                {
+                    RefreshSceneReferencesIfNeeded(sceneReferencesDirty || mapRoot == null);
+                    CampusRuntimeGameplayActorAuthoring.CaptureSceneActors(actors, mapRoot);
+                }
             }
 
-            MergeRuntimeActorAssignments(actors);
+            CampusRuntimeGameplayOverlayStore.MergeRuntimeActorAssignments(actors);
             return actors;
-        }
-
-        private CampusRuntimeGameplayOverlaySnapshot ReadGameplayOverlaySnapshot(string mapPath)
-        {
-            string overlayPath = GetGameplayOverlayPathForMapPath(mapPath);
-            if (string.IsNullOrWhiteSpace(overlayPath) || !File.Exists(overlayPath))
-            {
-                return null;
-            }
-
-            try
-            {
-                CampusRuntimeGameplayOverlaySnapshot snapshot =
-                    JsonUtility.FromJson<CampusRuntimeGameplayOverlaySnapshot>(File.ReadAllText(overlayPath, Encoding.UTF8));
-                if (snapshot == null)
-                {
-                    return null;
-                }
-
-                NormalizeGameplayOverlaySnapshot(snapshot);
-                return snapshot;
-            }
-            catch (Exception exception)
-            {
-                Debug.LogWarning("[NtingCampusRuntimeMapEditor] Read gameplay overlay failed: " + exception.Message);
-                return null;
-            }
-        }
-
-        private static void NormalizeGameplayOverlaySnapshot(CampusRuntimeGameplayOverlaySnapshot snapshot)
-        {
-            if (snapshot == null)
-            {
-                return;
-            }
-
-            if (string.IsNullOrWhiteSpace(snapshot.Schema))
-            {
-                snapshot.Schema = GameplayOverlaySchema;
-            }
-
-            snapshot.Actors = snapshot.Actors ?? new List<CampusRuntimeGameplayActorSnapshot>();
-            snapshot.Rooms = snapshot.Rooms ?? new List<CampusRuntimeGameplayRoomSnapshot>();
-            snapshot.Facilities = snapshot.Facilities ?? new List<CampusRuntimeGameplayFacilitySnapshot>();
-            snapshot.PrankSpots = snapshot.PrankSpots ?? new List<CampusRuntimeGameplayPrankSpotSnapshot>();
-            for (int i = 0; i < snapshot.Actors.Count; i++)
-            {
-                if (snapshot.Actors[i] != null)
-                {
-                    snapshot.Actors[i].Normalize();
-                }
-            }
-
-            for (int i = 0; i < snapshot.Facilities.Count; i++)
-            {
-                if (snapshot.Facilities[i] != null)
-                {
-                    snapshot.Facilities[i].Normalize();
-                }
-            }
         }
 
         private void CacheGameplayActors(List<CampusRuntimeGameplayActorSnapshot> actors)
         {
             cachedGameplayActors.Clear();
+            gameplayActorCacheInitialized = true;
             if (actors == null)
             {
                 return;
             }
 
-            List<CampusRuntimeGameplayActorSnapshot> clones = CloneGameplayActors(actors);
+            List<CampusRuntimeGameplayActorSnapshot> clones =
+                CampusRuntimeGameplayOverlayStore.CloneActors(actors);
             for (int i = 0; i < clones.Count; i++)
             {
                 cachedGameplayActors.Add(clones[i]);
-            }
-        }
-
-        private static List<CampusRuntimeGameplayActorSnapshot> CloneGameplayActors(
-            List<CampusRuntimeGameplayActorSnapshot> actors)
-        {
-            List<CampusRuntimeGameplayActorSnapshot> clones = new List<CampusRuntimeGameplayActorSnapshot>();
-            if (actors == null)
-            {
-                return clones;
-            }
-
-            for (int i = 0; i < actors.Count; i++)
-            {
-                CampusRuntimeGameplayActorSnapshot source = actors[i];
-                if (source == null)
-                {
-                    continue;
-                }
-
-                CampusRuntimeGameplayActorSnapshot clone = new CampusRuntimeGameplayActorSnapshot
-                {
-                    Id = source.Id,
-                    DisplayName = source.DisplayName,
-                    LocalizedDisplayName = source.LocalizedDisplayName,
-                    Role = source.Role,
-                    TeacherDuty = source.TeacherDuty,
-                    StaffDuty = source.StaffDuty,
-                    ClassId = source.ClassId,
-                    InitialState = source.InitialState,
-                    IsPlayerControlled = source.IsPlayerControlled,
-                    FloorIndex = Mathf.Max(1, source.FloorIndex),
-                    Cell = NormalizeCell(source.Cell),
-                    Sleepiness = source.Sleepiness,
-                    Mischief = source.Mischief,
-                    Traits = source.Traits != null
-                        ? (CampusCharacterTrait[])source.Traits.Clone()
-                        : Array.Empty<CampusCharacterTrait>(),
-                    Assignments = source.Assignments != null
-                        ? source.Assignments.Clone()
-                        : new CampusCharacterAssignmentData()
-                };
-                clone.Normalize();
-                clones.Add(clone);
-            }
-
-            return clones;
-        }
-
-        private static void MergeRuntimeActorAssignments(List<CampusRuntimeGameplayActorSnapshot> actors)
-        {
-            if (actors == null || actors.Count == 0)
-            {
-                return;
-            }
-
-            Dictionary<string, CampusRuntimeGameplayActorSnapshot> actorsById =
-                new Dictionary<string, CampusRuntimeGameplayActorSnapshot>(StringComparer.OrdinalIgnoreCase);
-            for (int i = 0; i < actors.Count; i++)
-            {
-                CampusRuntimeGameplayActorSnapshot actor = actors[i];
-                if (actor == null || string.IsNullOrWhiteSpace(actor.Id))
-                {
-                    continue;
-                }
-
-                actorsById[actor.Id.Trim()] = actor;
-            }
-
-            CampusCharacterRuntime[] runtimes =
-                UnityEngine.Object.FindObjectsByType<CampusCharacterRuntime>(
-                    FindObjectsInactive.Include,
-                    FindObjectsSortMode.None);
-            for (int i = 0; i < runtimes.Length; i++)
-            {
-                CampusCharacterData data = runtimes[i] != null ? runtimes[i].Data : null;
-                if (data == null || string.IsNullOrWhiteSpace(data.Id) || !data.Assignments.HasAny())
-                {
-                    continue;
-                }
-
-                if (!actorsById.TryGetValue(data.Id.Trim(), out CampusRuntimeGameplayActorSnapshot actor))
-                {
-                    continue;
-                }
-
-                actor.Assignments = data.Assignments.Clone();
-                actor.Normalize();
-            }
-        }
-
-        private void CaptureGameplayRooms(List<CampusRuntimeGameplayRoomSnapshot> output)
-        {
-            output.Clear();
-            CampusGameplayRoomMarker[] markers =
-                FindObjectsByType<CampusGameplayRoomMarker>(FindObjectsInactive.Include, FindObjectsSortMode.None);
-            HashSet<string> capturedKeys = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
-            for (int i = 0; i < markers.Length; i++)
-            {
-                CampusGameplayRoomMarker marker = markers[i];
-                if (marker == null)
-                {
-                    continue;
-                }
-
-                Vector3Int anchor = NormalizeCell(marker.AnchorCell);
-                Vector2Int size = marker.RoomSize;
-                string key = marker.FloorIndex + "|" + marker.RoomType + "|" + anchor + "|" + size + "|" + marker.RoomDisplayName;
-                if (!capturedKeys.Add(key))
-                {
-                    continue;
-                }
-
-                output.Add(new CampusRuntimeGameplayRoomSnapshot
-                {
-                    Id = marker.RoomIdOverride,
-                    DisplayName = marker.RoomDisplayName,
-                    RoomType = marker.RoomType,
-                    FloorIndex = Mathf.Max(1, marker.FloorIndex),
-                    AnchorCell = anchor,
-                    Size = size,
-                    UsableForGameplay = marker.UsableForGameplay
-                });
-            }
-        }
-
-        private void CaptureGameplayFacilities(List<CampusRuntimeGameplayFacilitySnapshot> output)
-        {
-            output.Clear();
-            CampusGameplayFacilityMarker[] markers =
-                FindObjectsByType<CampusGameplayFacilityMarker>(FindObjectsInactive.Include, FindObjectsSortMode.None);
-            HashSet<string> capturedKeys = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
-            for (int i = 0; i < markers.Length; i++)
-            {
-                CampusGameplayFacilityMarker marker = markers[i];
-                if (marker == null)
-                {
-                    continue;
-                }
-
-                Vector3Int cell = NormalizeCell(marker.Cell);
-                string id = CampusGameplayFacilityMarker.NormalizeFacilityId(marker.FacilityId);
-                if (string.IsNullOrEmpty(id))
-                {
-                    id = CampusGameplayFacilityMarker.BuildStableFacilityId(marker.FloorIndex, marker.FacilityType, cell);
-                }
-
-                string key = id;
-                if (!capturedKeys.Add(key))
-                {
-                    continue;
-                }
-
-                output.Add(new CampusRuntimeGameplayFacilitySnapshot
-                {
-                    Id = id,
-                    DisplayName = marker.DisplayName,
-                    FacilityType = marker.FacilityType,
-                    FloorIndex = Mathf.Max(1, marker.FloorIndex),
-                    Cell = cell,
-                    CountsAsCoreFacility = marker.CountsAsCoreFacility
-                });
-            }
-        }
-
-        private void CaptureGameplayPrankSpots(List<CampusRuntimeGameplayPrankSpotSnapshot> output)
-        {
-            output.Clear();
-            CampusPrankInteractionSpot[] spots =
-                FindObjectsByType<CampusPrankInteractionSpot>(FindObjectsInactive.Include, FindObjectsSortMode.None);
-            HashSet<string> capturedKeys = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
-            for (int i = 0; i < spots.Length; i++)
-            {
-                CampusPrankInteractionSpot spot = spots[i];
-                if (spot == null || !TryResolveGameplayMarkerCell(spot, out int floorIndex, out Vector3Int cell))
-                {
-                    continue;
-                }
-
-                cell = NormalizeCell(cell);
-                string key = floorIndex + "|" + spot.PrankPayload + "|" + cell + "|" + spot.DisplayName;
-                if (!capturedKeys.Add(key))
-                {
-                    continue;
-                }
-
-                output.Add(new CampusRuntimeGameplayPrankSpotSnapshot
-                {
-                    DisplayName = spot.DisplayName,
-                    Payload = spot.PrankPayload,
-                    RequiredRoomType = spot.RequiredRoomType,
-                    VisualKind = spot.VisualKind,
-                    FloorIndex = Mathf.Max(1, floorIndex),
-                    Cell = cell,
-                    InteractionRadius = spot.InteractionRadius,
-                    AccentColor = spot.AccentColor,
-                    UnsupportedReason = spot.UnsupportedReason
-                });
-            }
-        }
-
-        private void SpawnGameplayRooms(List<CampusRuntimeGameplayRoomSnapshot> rooms)
-        {
-            if (rooms == null)
-            {
-                return;
-            }
-
-            for (int i = 0; i < rooms.Count; i++)
-            {
-                CampusRuntimeGameplayRoomSnapshot room = rooms[i];
-                if (room == null)
-                {
-                    continue;
-                }
-
-                CampusFloorRoot floor = EnsureFloor(Mathf.Max(1, room.FloorIndex));
-                if (floor == null || floor.Grid == null || floor.PropsRoot == null)
-                {
-                    continue;
-                }
-
-                Vector3Int anchor = NormalizeCell(room.AnchorCell);
-                GameObject markerObject = CreateGameplayMarkerObject(
-                    floor,
-                    anchor,
-                    "GameplayRoom_" + room.RoomType + "_F" + floor.FloorIndex + "_" + anchor.x + "_" + anchor.y);
-                if (markerObject == null)
-                {
-                    continue;
-                }
-
-                CampusGameplayRoomMarker marker = markerObject.AddComponent<CampusGameplayRoomMarker>();
-                marker.Configure(
-                    room.Id,
-                    room.DisplayName,
-                    room.RoomType,
-                    floor.FloorIndex,
-                    anchor,
-                    room.Size,
-                    room.UsableForGameplay);
-            }
-        }
-
-        private void SpawnGameplayFacilities(List<CampusRuntimeGameplayFacilitySnapshot> facilities)
-        {
-            if (facilities == null)
-            {
-                return;
-            }
-
-            for (int i = 0; i < facilities.Count; i++)
-            {
-                CampusRuntimeGameplayFacilitySnapshot facility = facilities[i];
-                if (facility == null)
-                {
-                    continue;
-                }
-
-                facility.Normalize();
-                CampusFloorRoot floor = EnsureFloor(Mathf.Max(1, facility.FloorIndex));
-                if (floor == null || floor.Grid == null || floor.PropsRoot == null)
-                {
-                    continue;
-                }
-
-                Vector3Int cell = NormalizeCell(facility.Cell);
-                GameObject markerObject = CreateGameplayMarkerObject(
-                    floor,
-                    cell,
-                    "GameplayFacility_" + facility.FacilityType + "_F" + floor.FloorIndex + "_" + cell.x + "_" + cell.y);
-                if (markerObject == null)
-                {
-                    continue;
-                }
-
-                CampusGameplayFacilityMarker marker = markerObject.AddComponent<CampusGameplayFacilityMarker>();
-                marker.Configure(
-                    facility.Id,
-                    facility.DisplayName,
-                    facility.FacilityType,
-                    floor.FloorIndex,
-                    cell,
-                    facility.CountsAsCoreFacility,
-                    null);
-            }
-        }
-
-        private void SpawnGameplayPrankSpots(List<CampusRuntimeGameplayPrankSpotSnapshot> spots)
-        {
-            if (spots == null)
-            {
-                return;
-            }
-
-            for (int i = 0; i < spots.Count; i++)
-            {
-                CampusRuntimeGameplayPrankSpotSnapshot spot = spots[i];
-                if (spot == null)
-                {
-                    continue;
-                }
-
-                CampusFloorRoot floor = EnsureFloor(Mathf.Max(1, spot.FloorIndex));
-                if (floor == null || floor.Grid == null || floor.PropsRoot == null)
-                {
-                    continue;
-                }
-
-                Vector3Int cell = NormalizeCell(spot.Cell);
-                GameObject markerObject = CreateGameplayMarkerObject(
-                    floor,
-                    cell,
-                    "GameplayPrank_" + SanitizeFileName(spot.DisplayName) + "_F" + floor.FloorIndex + "_" + cell.x + "_" + cell.y);
-                if (markerObject == null)
-                {
-                    continue;
-                }
-
-                CampusPrankInteractionSpot interactionSpot = markerObject.AddComponent<CampusPrankInteractionSpot>();
-                interactionSpot.Configure(
-                    spot.DisplayName,
-                    spot.Payload,
-                    spot.RequiredRoomType,
-                    spot.VisualKind,
-                    spot.InteractionRadius,
-                    spot.AccentColor,
-                    spot.UnsupportedReason);
-            }
-        }
-
-        private void ClearRuntimeGameplayOverlayMarkers()
-        {
-            CampusRuntimeGameplayOverlayEntity[] entities =
-                FindObjectsByType<CampusRuntimeGameplayOverlayEntity>(FindObjectsInactive.Include, FindObjectsSortMode.None);
-            for (int i = entities.Length - 1; i >= 0; i--)
-            {
-                CampusRuntimeGameplayOverlayEntity entity = entities[i];
-                if (entity == null || entity.IsActorEntity)
-                {
-                    continue;
-                }
-
-                if (entity.GetComponent<CampusGameplayRoomMarker>() != null ||
-                    entity.GetComponent<CampusGameplayFacilityMarker>() != null ||
-                    entity.GetComponent<CampusPrankInteractionSpot>() != null)
-                {
-                    DestroyRuntimeObject(entity.gameObject);
-                }
             }
         }
 
@@ -5302,57 +4206,24 @@ namespace NtingCampusMapEditor
 #if UNITY_EDITOR
             string persistentImportRoot = GetPersistentImportRootFolder();
             string projectImportRoot = GetAuthoringPackageImportFolder();
-            if (AreSamePath(persistentImportRoot, projectImportRoot) ||
+            if (CampusRuntimeImportLibrary.AreSamePath(persistentImportRoot, projectImportRoot) ||
                 !Directory.Exists(persistentImportRoot) ||
-                ImportLibraryHasContent(projectImportRoot) ||
-                !ImportLibraryHasContent(persistentImportRoot))
+                CampusRuntimeImportLibrary.HasImportContent(projectImportRoot) ||
+                !CampusRuntimeImportLibrary.HasImportContent(persistentImportRoot))
             {
                 return;
             }
 
-            MirrorDirectory(persistentImportRoot, projectImportRoot, false);
+            CampusRuntimeImportLibrary.MirrorDirectory(persistentImportRoot, projectImportRoot, false);
             RefreshAssetDatabaseIfAvailable();
             Debug.Log("[NtingCampusRuntimeMapEditor] Migrated runtime import library into project folder: " + projectImportRoot);
 #endif
         }
 
-        private bool ImportLibraryHasContent(string folder)
-        {
-            if (string.IsNullOrEmpty(folder) || !Directory.Exists(folder))
-            {
-                return false;
-            }
-
-            string[] files = Directory.GetFiles(folder, "*", SearchOption.AllDirectories);
-            for (int i = 0; i < files.Length; i++)
-            {
-                string file = files[i];
-                string extension = Path.GetExtension(file);
-                if (string.Equals(extension, ".meta", StringComparison.OrdinalIgnoreCase))
-                {
-                    continue;
-                }
-
-                string name = Path.GetFileName(file);
-                if (string.Equals(name, RoomImportFile, StringComparison.OrdinalIgnoreCase))
-                {
-                    string text = File.ReadAllText(file, Encoding.UTF8);
-                    if (text.StartsWith("# One room per line", StringComparison.Ordinal))
-                    {
-                        continue;
-                    }
-                }
-
-                return true;
-            }
-
-            return false;
-        }
-
         private void RefreshImportAssetDatabaseIfProjectBacked()
         {
 #if UNITY_EDITOR
-            if (AreSamePath(GetImportRootFolder(), GetAuthoringPackageImportFolder()))
+            if (CampusRuntimeImportLibrary.AreSamePath(GetImportRootFolder(), GetAuthoringPackageImportFolder()))
             {
                 RefreshAssetDatabaseIfAvailable();
             }
@@ -5520,12 +4391,15 @@ namespace NtingCampusMapEditor
 
             objectSnapshot.ObjectId = string.IsNullOrEmpty(placed.ObjectId) ? placed.gameObject.name : placed.ObjectId;
             objectSnapshot.DisplayNameOverride = placed.DisplayNameOverride;
-            objectSnapshot.TypeId = ResolveObjectTypeIdForPlacedObject(placed);
+            objectSnapshot.TypeId = CampusRuntimeObjectAuthoring.ResolveTypeIdForPlacedObject(placed);
             if (!string.IsNullOrEmpty(objectSnapshot.TypeId) && string.IsNullOrWhiteSpace(placed.TypeId))
             {
                 placed.TypeId = objectSnapshot.TypeId;
             }
 
+            CampusRuntimeObjectAuthoring.NormalizeStackableFacilityObject(
+                placed,
+                CampusRuntimeObjectAuthoring.ResolveFacilityType(placed));
             objectSnapshot.PaletteIndex = FindPrefabIndexByName(objectSnapshot.ObjectId);
             objectSnapshot.Position = placed.transform.position;
             objectSnapshot.Cell = placed.Cell;
@@ -5558,51 +4432,6 @@ namespace NtingCampusMapEditor
             objectSnapshot.CustomInteractionPromptText = placed.CustomInteractionPromptText;
             objectSnapshot.CustomInteractionAnchors = CampusPlacedObject.CloneInteractionAnchors(placed.CustomInteractionAnchors);
             return objectSnapshot;
-        }
-
-        private static string ResolveObjectTypeIdForPlacedObject(CampusPlacedObject placed)
-        {
-            if (placed == null)
-            {
-                return string.Empty;
-            }
-
-            if (!string.IsNullOrWhiteSpace(placed.TypeId))
-            {
-                return placed.TypeId.Trim();
-            }
-
-            return InferObjectTypeId(
-                placed.ObjectId,
-                placed.DisplayName,
-                placed.IsStorageContainer);
-        }
-
-        private static string ResolveObjectTypeIdForSnapshot(
-            CampusRuntimeObjectSnapshot objectSnapshot,
-            GameObject prefab,
-            string resolvedDisplayName)
-        {
-            if (objectSnapshot == null)
-            {
-                return string.Empty;
-            }
-
-            if (!string.IsNullOrWhiteSpace(objectSnapshot.TypeId))
-            {
-                return objectSnapshot.TypeId.Trim();
-            }
-
-            CampusPlacedObject prefabPlaced = prefab != null ? prefab.GetComponent<CampusPlacedObject>() : null;
-            if (prefabPlaced != null && !string.IsNullOrWhiteSpace(prefabPlaced.TypeId))
-            {
-                return prefabPlaced.TypeId.Trim();
-            }
-
-            return InferObjectTypeId(
-                objectSnapshot.ObjectId,
-                resolvedDisplayName,
-                objectSnapshot.IsStorageContainer);
         }
 
         private static CampusRuntimeObjectSnapshot CloneObjectSnapshot(CampusRuntimeObjectSnapshot source)
@@ -5675,7 +4504,8 @@ namespace NtingCampusMapEditor
                 string displayName = string.IsNullOrWhiteSpace(objectSnapshot.DisplayNameOverride)
                     ? GetObjectDisplayName(prefab)
                     : objectSnapshot.DisplayNameOverride.Trim();
-                objectSnapshot.TypeId = ResolveObjectTypeIdForSnapshot(objectSnapshot, prefab, displayName);
+                objectSnapshot.TypeId =
+                    CampusRuntimeObjectAuthoring.ResolveTypeIdForSnapshot(objectSnapshot, prefab, displayName);
                 instance.name = displayName + "_F" + floor.FloorIndex + "_" + objectSnapshot.Cell.x + "_" + objectSnapshot.Cell.y;
                 CampusPlacedObject placed = instance.GetComponent<CampusPlacedObject>();
                 if (placed == null)
@@ -5743,6 +4573,9 @@ namespace NtingCampusMapEditor
                     ? Tr("\u4ea4\u4e92", "Interact")
                     : objectSnapshot.CustomInteractionPromptText;
                 placed.CustomInteractionAnchors = CampusPlacedObject.CloneInteractionAnchors(objectSnapshot.CustomInteractionAnchors);
+                CampusRuntimeObjectAuthoring.NormalizeStackableFacilityObject(
+                    placed,
+                    CampusRuntimeObjectAuthoring.ResolveFacilityType(placed));
                 placed.ApplyInteractionState();
                 if (floor.Grid != null)
                 {
@@ -5832,7 +4665,7 @@ namespace NtingCampusMapEditor
                     continue;
                 }
 
-                if (!TryResolvePresetRoomName(marker.RoomName, out string roomName))
+                if (!CampusRuntimeAreaPresetCatalog.TryResolveRoomName(marker.RoomName, out string roomName))
                 {
                     continue;
                 }
@@ -5856,7 +4689,7 @@ namespace NtingCampusMapEditor
             for (int i = 0; i < rooms.Count; i++)
             {
                 CampusRuntimeRoomSnapshot roomSnapshot = rooms[i];
-                if (roomSnapshot == null || !TryResolvePresetRoomName(roomSnapshot.RoomName, out string roomName))
+                if (roomSnapshot == null || !CampusRuntimeAreaPresetCatalog.TryResolveRoomName(roomSnapshot.RoomName, out string roomName))
                 {
                     continue;
                 }
@@ -6262,12 +5095,14 @@ namespace NtingCampusMapEditor
 
         private float GetGameplayContentHeight(float width)
         {
-            int pointCount = GameplayMarkerPresets.Length;
+            int pointCount = CampusRuntimeGameplayMarkerPresetCatalog.Presets.Length;
+            int actorCount = CampusRuntimeGameplayActorPresetCatalog.Presets.Length;
             float height = 34f + 40f + 12f;
             height += 34f + 38f + 80f + 8f;
             height += roomNames.Count == 0 ? 66f : roomNames.Count * 40f;
             height += 12f + (roomNames.Count > 0 ? 42f : 0f) + 70f;
             height += 34f + 40f + Mathf.CeilToInt(pointCount / 2f) * 38f + 18f;
+            height += 34f + 40f + Mathf.CeilToInt(actorCount / 2f) * 38f + 164f;
             height += 96f;
             return height;
         }
@@ -6491,6 +5326,7 @@ namespace NtingCampusMapEditor
 
         private void DrawGameplayTab(Rect contentRect)
         {
+            EnsureCachedGameplayActorsForEditing();
             float viewWidth = contentRect.width - 22f;
             Rect viewRect = new Rect(0f, 0f, viewWidth, Mathf.Max(contentRect.height + 1f, GetGameplayContentHeight(viewWidth)));
             leftScroll = GUI.BeginScrollView(contentRect, leftScroll, viewRect);
@@ -6545,21 +5381,29 @@ namespace NtingCampusMapEditor
                 new string[] { Tr("\u653e\u7f6e\u8bbe\u65bd\u70b9", "Place Facility Point"), Tr("\u5220\u9664\u8bbe\u65bd\u70b9", "Erase Facility Point") });
             DrawGameplayPresetSection(ref y, viewRect.width);
 
+            GUI.Label(new Rect(0f, y, viewRect.width, 26f), Tr("\u89d2\u8272", "Actors"), headerStyle);
+            y += 34f;
+            DrawModeButtonRow(ref y, viewRect.width,
+                new CampusRuntimeBrushMode[] { CampusRuntimeBrushMode.PlaceGameplayActor, CampusRuntimeBrushMode.EraseGameplayActor },
+                new string[] { Tr("\u653e\u7f6e NPC", "Place NPC"), Tr("\u5220\u9664 NPC", "Erase NPC") });
+            DrawGameplayActorPresetSection(ref y, viewRect.width);
+            DrawGameplayActorFields(ref y, viewRect.width);
+
             y += 8f;
             Rect noteRect = new Rect(0f, y, viewRect.width, 76f);
             GUI.Label(
                 noteRect,
-                Tr("\u533a\u57df\u4fdd\u5b58\u5728\u5730\u56fe JSON\uff0c\u8bbe\u65bd\u70b9\u4fdd\u5b58\u5728\u540c\u76ee\u5f55\u7684 .gameplay.json\u3002\u5148\u6846\u9009\u533a\u57df\uff0c\u518d\u653e\u7f6e\u6559\u5ba4\u3001\u529e\u516c\u5ba4\u3001\u98df\u5802\u3001\u8d85\u5e02\u3001\u5bbf\u820d\u7b49\u8bbe\u65bd\u70b9\u3002", "Areas are saved in the map JSON. Facility points are saved next to the map as .gameplay.json. Box areas first, then place classroom, office, canteen, store, dormitory, and other facility points."),
+                Tr("\u533a\u57df\u4fdd\u5b58\u5728\u5730\u56fe JSON\uff0c\u8bbe\u65bd\u70b9\u548c NPC \u4fdd\u5b58\u5728\u540c\u76ee\u5f55\u7684 .gameplay.json\u3002\u5148\u6846\u9009\u533a\u57df\uff0c\u518d\u653e\u7f6e\u8bbe\u65bd\u70b9\u548c NPC\u3002", "Areas are saved in the map JSON. Facility points and NPCs are saved next to the map as .gameplay.json. Box areas first, then place facility points and NPCs."),
                 mutedStyle);
             y += 84f;
 
             float halfWidth = (viewRect.width - 8f) * 0.5f;
-            if (GUI.Button(new Rect(0f, y, halfWidth, 30f), Tr("\u4fdd\u5b58\u8bbe\u65bd\u70b9", "Save Facility Points"), buttonStyle))
+            if (GUI.Button(new Rect(0f, y, halfWidth, 30f), Tr("\u4fdd\u5b58\u73a9\u6cd5\u5c42", "Save Gameplay Layer"), buttonStyle))
             {
                 SaveGameplayOverlayForCurrentSource(true);
             }
 
-            if (GUI.Button(new Rect(halfWidth + 8f, y, halfWidth, 30f), Tr("\u91cd\u8bfb\u8bbe\u65bd\u70b9", "Reload Facility Points"), buttonStyle))
+            if (GUI.Button(new Rect(halfWidth + 8f, y, halfWidth, 30f), Tr("\u91cd\u8bfb\u73a9\u6cd5\u5c42", "Reload Gameplay Layer"), buttonStyle))
             {
                 ReloadGameplayOverlayForCurrentSource(true);
             }
@@ -7053,7 +5897,7 @@ namespace NtingCampusMapEditor
             else if (brushMode == CampusRuntimeBrushMode.PlaceRoomPrefab)
             {
                 CampusRuntimeRoomPrefab roomPrefab = GetSelectedRoomPrefab();
-                Vector2Int size = roomPrefab != null ? NormalizeRoomPrefabSize(roomPrefab.Size) : Vector2Int.one;
+                Vector2Int size = roomPrefab != null ? CampusRuntimeRoomPrefabLibrary.NormalizeSize(roomPrefab.Size) : Vector2Int.one;
                 DrawCellGrid(floor.Grid, hoverCell, size, new Color(0.2f, 0.85f, 1f, 0.72f), 2f);
             }
             else if (brushMode == CampusRuntimeBrushMode.PlaceStair)
@@ -7084,6 +5928,31 @@ namespace NtingCampusMapEditor
                         hoverCell,
                         new Color(color.r, color.g, color.b, 0.2f),
                         new Color(color.r, color.g, color.b, 0.82f),
+                        2f);
+                }
+                else
+                {
+                    DrawFilledCellRect(
+                        floor.Grid,
+                        hoverCell,
+                        hoverCell,
+                        new Color(1f, 0.18f, 0.18f, 0.16f),
+                        new Color(1f, 0.25f, 0.18f, 0.86f),
+                        2f);
+                }
+            }
+            else if (brushMode == CampusRuntimeBrushMode.PlaceGameplayActor ||
+                     brushMode == CampusRuntimeBrushMode.EraseGameplayActor)
+            {
+                if (brushMode == CampusRuntimeBrushMode.PlaceGameplayActor)
+                {
+                    Color color = ResolveSelectedGameplayActorOverlayColor();
+                    DrawFilledCellRect(
+                        floor.Grid,
+                        hoverCell,
+                        hoverCell,
+                        new Color(color.r, color.g, color.b, 0.2f),
+                        new Color(color.r, color.g, color.b, 0.92f),
                         2f);
                 }
                 else
@@ -7157,7 +6026,7 @@ namespace NtingCampusMapEditor
             Color oldColor = GUI.color;
             foreach (KeyValuePair<string, HashSet<Vector3Int>> pair in cellsByRoomName)
             {
-                Color roomColor = ResolveRoomOverlayColor(pair.Key);
+                Color roomColor = CampusRuntimeGameplayOverlayPalette.ResolveRoomNameColor(pair.Key);
                 GUI.color = new Color(roomColor.r, roomColor.g, roomColor.b, 0.24f);
                 foreach (Vector3Int cell in pair.Value)
                 {
@@ -7193,7 +6062,7 @@ namespace NtingCampusMapEditor
                     continue;
                 }
 
-                Color color = ResolveGameplayRoomOverlayColor(marker.RoomType);
+                Color color = CampusRuntimeGameplayOverlayPalette.ResolveRoomTypeColor(marker.RoomType);
                 BoundsInt bounds = marker.BuildBounds();
                 DrawFilledCellRect(
                     floor.Grid,
@@ -7215,7 +6084,7 @@ namespace NtingCampusMapEditor
                     continue;
                 }
 
-                Color color = ResolveGameplayFacilityOverlayColor(marker.FacilityType);
+                Color color = CampusRuntimeGameplayOverlayPalette.ResolveFacilityColor(marker.FacilityType);
                 Vector3Int cell = NormalizeCell(marker.Cell);
                 DrawFilledCellRect(
                     floor.Grid,
@@ -7254,6 +6123,27 @@ namespace NtingCampusMapEditor
                 DrawWorldLabel(floor.Grid.GetCellCenterWorld(cell), spot.DisplayName, color);
             }
 
+            for (int i = 0; i < cachedGameplayActors.Count; i++)
+            {
+                CampusRuntimeGameplayActorSnapshot actor = cachedGameplayActors[i];
+                if (actor == null || Mathf.Max(1, actor.FloorIndex) != floor.FloorIndex)
+                {
+                    continue;
+                }
+
+                Color color = CampusRuntimeGameplayOverlayPalette.ResolveActorColor(actor);
+                Vector3Int cell = NormalizeCell(actor.Cell);
+                DrawFilledCellRect(
+                    floor.Grid,
+                    cell,
+                    cell,
+                    new Color(color.r, color.g, color.b, 0.22f),
+                    new Color(color.r, color.g, color.b, 0.94f),
+                    2f);
+                string label = actor.LocalizedDisplayName.Get(displayLanguage, actor.DisplayName, actor.Id);
+                DrawWorldLabel(floor.Grid.GetCellCenterWorld(cell), label, color);
+            }
+
             GUI.color = oldColor;
         }
 
@@ -7284,210 +6174,15 @@ namespace NtingCampusMapEditor
             return preset != null ? preset.Color : new Color(0.2f, 0.85f, 1f, 1f);
         }
 
+        private Color ResolveSelectedGameplayActorOverlayColor()
+        {
+            CampusRuntimeGameplayActorPreset preset = GetSelectedGameplayActorPreset();
+            return preset != null ? preset.Color : new Color(0.95f, 0.78f, 0.32f, 1f);
+        }
+
         private Color ResolveSelectedRoomOverlayColor()
         {
-            return ResolveRoomOverlayColor(GetSelectedRoomName());
-        }
-
-        private static Color ResolveGameplayRoomOverlayColor(CampusRoomType roomType)
-        {
-            switch (roomType)
-            {
-                case CampusRoomType.Classroom:
-                    return new Color(0.25f, 0.55f, 0.98f, 1f);
-                case CampusRoomType.Corridor:
-                    return new Color(0.96f, 0.66f, 0.22f, 1f);
-                case CampusRoomType.Office:
-                    return new Color(0.72f, 0.48f, 0.28f, 1f);
-                case CampusRoomType.Dormitory:
-                    return new Color(0.56f, 0.42f, 0.88f, 1f);
-                case CampusRoomType.Restroom:
-                    return new Color(0.22f, 0.68f, 0.92f, 1f);
-                case CampusRoomType.Canteen:
-                    return new Color(0.22f, 0.72f, 0.46f, 1f);
-                case CampusRoomType.Store:
-                    return new Color(0.88f, 0.36f, 0.72f, 1f);
-                case CampusRoomType.Library:
-                    return new Color(0.16f, 0.72f, 0.72f, 1f);
-                case CampusRoomType.CommonActivityZone:
-                    return new Color(0.88f, 0.62f, 0.24f, 1f);
-                case CampusRoomType.Outdoor:
-                    return new Color(0.22f, 0.58f, 0.95f, 1f);
-                case CampusRoomType.HumanResources:
-                    return new Color(0.74f, 0.36f, 0.88f, 1f);
-                case CampusRoomType.ShrineRoom:
-                    return new Color(0.92f, 0.38f, 0.45f, 1f);
-                default:
-                    return new Color(0.42f, 0.82f, 0.95f, 1f);
-            }
-        }
-
-        private static Color ResolveGameplayFacilityOverlayColor(CampusFacilityType facilityType)
-        {
-            switch (facilityType)
-            {
-                case CampusFacilityType.Door:
-                    return new Color(0.72f, 0.72f, 0.72f, 1f);
-                case CampusFacilityType.Blackboard:
-                    return new Color(0.12f, 0.46f, 0.36f, 1f);
-                case CampusFacilityType.StudentDesk:
-                    return new Color(0.26f, 0.56f, 0.96f, 1f);
-                case CampusFacilityType.Podium:
-                    return new Color(0.18f, 0.38f, 0.86f, 1f);
-                case CampusFacilityType.OfficeDesk:
-                    return new Color(0.72f, 0.48f, 0.28f, 1f);
-                case CampusFacilityType.Bed:
-                    return new Color(0.56f, 0.42f, 0.88f, 1f);
-                case CampusFacilityType.BulletinBoard:
-                    return new Color(0.88f, 0.62f, 0.24f, 1f);
-                case CampusFacilityType.Recruitment:
-                    return new Color(0.74f, 0.36f, 0.88f, 1f);
-                case CampusFacilityType.Sink:
-                    return new Color(0.22f, 0.68f, 0.92f, 1f);
-                case CampusFacilityType.Storage:
-                    return new Color(0.62f, 0.56f, 0.46f, 1f);
-                case CampusFacilityType.CanteenCounter:
-                    return new Color(0.18f, 0.68f, 0.72f, 1f);
-                case CampusFacilityType.CanteenClerkStandPoint:
-                    return new Color(0.12f, 0.58f, 0.68f, 1f);
-                case CampusFacilityType.CanteenCustomerPickupPoint:
-                    return new Color(0.48f, 0.82f, 0.62f, 1f);
-                case CampusFacilityType.CanteenQueuePoint:
-                    return new Color(0.95f, 0.76f, 0.28f, 1f);
-                case CampusFacilityType.CanteenFoodTray:
-                    return new Color(0.96f, 0.64f, 0.24f, 1f);
-                case CampusFacilityType.DeliveryDropPoint:
-                    return new Color(0.32f, 0.54f, 0.98f, 1f);
-                case CampusFacilityType.DiningTable:
-                    return new Color(0.55f, 0.76f, 0.28f, 1f);
-                case CampusFacilityType.StoreShelf:
-                    return new Color(0.88f, 0.36f, 0.72f, 1f);
-                case CampusFacilityType.StoreQueuePoint:
-                    return new Color(0.94f, 0.48f, 0.82f, 1f);
-                case CampusFacilityType.StoreCheckout:
-                    return new Color(0.76f, 0.24f, 0.64f, 1f);
-                default:
-                    return new Color(0.78f, 0.78f, 0.78f, 1f);
-            }
-        }
-
-        private static Color ResolveRoomOverlayColor(string roomName)
-        {
-            string key = string.IsNullOrWhiteSpace(roomName) ? "Unnamed Room" : roomName.Trim().ToLowerInvariant();
-            if (ContainsRoomNameToken(key, "\u6559\u5ba4", "class"))
-            {
-                return new Color(0.25f, 0.55f, 0.98f, 1f);
-            }
-
-            if (ContainsRoomNameToken(key, "\u8d70\u5eca", "\u8fc7\u9053", "corridor", "hall"))
-            {
-                return new Color(0.96f, 0.66f, 0.22f, 1f);
-            }
-
-            if (ContainsRoomNameToken(key, "\u529e\u516c\u5ba4", "\u6559\u5e08", "office", "teacher"))
-            {
-                return new Color(0.72f, 0.48f, 0.28f, 1f);
-            }
-
-            if (ContainsRoomNameToken(key, "\u5bbf\u820d", "dorm"))
-            {
-                return new Color(0.56f, 0.42f, 0.88f, 1f);
-            }
-
-            if (ContainsRoomNameToken(key, "\u536b\u751f\u95f4", "\u5395\u6240", "\u6d17\u624b\u95f4", "restroom", "toilet", "bath"))
-            {
-                return new Color(0.22f, 0.68f, 0.92f, 1f);
-            }
-
-            if (ContainsRoomNameToken(key, "\u98df\u5802", "\u9910\u5385", "canteen", "dining"))
-            {
-                return new Color(0.18f, 0.70f, 0.42f, 1f);
-            }
-
-            if (ContainsRoomNameToken(key, "\u5916\u5356", "delivery"))
-            {
-                return new Color(0.35f, 0.55f, 1f, 1f);
-            }
-
-            if (ContainsRoomNameToken(key, "\u8d85\u5e02", "\u5546\u5e97", "\u5c0f\u5356", "shop", "store", "market"))
-            {
-                return new Color(0.88f, 0.36f, 0.72f, 1f);
-            }
-
-            if (ContainsRoomNameToken(key, "\u4e66\u5e97", "bookstore", "bookshop"))
-            {
-                return new Color(0.58f, 0.42f, 0.94f, 1f);
-            }
-
-            if (ContainsRoomNameToken(key, "\u56fe\u4e66\u9986", "library"))
-            {
-                return new Color(0.16f, 0.72f, 0.72f, 1f);
-            }
-
-            if (ContainsRoomNameToken(key, "\u516c\u5171", "\u6d3b\u52a8", "common", "activity"))
-            {
-                return new Color(0.88f, 0.62f, 0.24f, 1f);
-            }
-
-            if (ContainsRoomNameToken(key, "\u697c\u68af", "stair"))
-            {
-                return new Color(0.62f, 0.62f, 0.62f, 1f);
-            }
-
-            if (ContainsRoomNameToken(key, "\u4eba\u4e8b", "humanresources", "hr"))
-            {
-                return new Color(0.74f, 0.36f, 0.88f, 1f);
-            }
-
-            if (ContainsRoomNameToken(key, "\u795e\u9f9b", "shrine"))
-            {
-                return new Color(0.92f, 0.38f, 0.45f, 1f);
-            }
-
-            if (ContainsRoomNameToken(key, "\u6821\u5916", "\u5ba4\u5916", "\u64cd\u573a", "outdoor", "outside"))
-            {
-                return new Color(0.88f, 0.48f, 0.24f, 1f);
-            }
-
-            Color[] palette =
-            {
-                new Color(0.28f, 0.68f, 0.95f, 1f),
-                new Color(0.88f, 0.52f, 0.28f, 1f),
-                new Color(0.54f, 0.72f, 0.24f, 1f),
-                new Color(0.78f, 0.42f, 0.88f, 1f),
-                new Color(0.22f, 0.72f, 0.58f, 1f),
-                new Color(0.92f, 0.38f, 0.45f, 1f),
-                new Color(0.42f, 0.58f, 0.92f, 1f),
-                new Color(0.72f, 0.62f, 0.22f, 1f)
-            };
-
-            int hash = 23;
-            for (int i = 0; i < key.Length; i++)
-            {
-                hash = unchecked(hash * 37 + key[i]);
-            }
-
-            int index = Mathf.Abs(hash == int.MinValue ? 0 : hash) % palette.Length;
-            return palette[index];
-        }
-
-        private static bool ContainsRoomNameToken(string value, params string[] tokens)
-        {
-            if (string.IsNullOrEmpty(value) || tokens == null)
-            {
-                return false;
-            }
-
-            for (int i = 0; i < tokens.Length; i++)
-            {
-                string token = tokens[i];
-                if (!string.IsNullOrEmpty(token) && value.Contains(token))
-                {
-                    return true;
-                }
-            }
-
-            return false;
+            return CampusRuntimeGameplayOverlayPalette.ResolveRoomNameColor(GetSelectedRoomName());
         }
 
         private void SetEditorOpen(bool open)
@@ -7972,7 +6667,7 @@ namespace NtingCampusMapEditor
                 return;
             }
 
-            Color color = ResolveRoomOverlayColor(roomName);
+            Color color = CampusRuntimeGameplayOverlayPalette.ResolveRoomNameColor(roomName);
             Color oldColor = GUI.color;
             GUI.color = color;
             GUI.DrawTexture(rect, lineTexture);
@@ -7989,9 +6684,9 @@ namespace NtingCampusMapEditor
             float gap = 8f;
             float buttonWidth = (width - gap) * 0.5f;
             int column = 0;
-            for (int i = 0; i < GameplayMarkerPresets.Length; i++)
+            for (int i = 0; i < CampusRuntimeGameplayMarkerPresetCatalog.Presets.Length; i++)
             {
-                CampusRuntimeGameplayMarkerPreset preset = GameplayMarkerPresets[i];
+                CampusRuntimeGameplayMarkerPreset preset = CampusRuntimeGameplayMarkerPresetCatalog.Presets[i];
                 if (preset == null)
                 {
                     continue;
@@ -8023,6 +6718,73 @@ namespace NtingCampusMapEditor
             }
 
             y += 10f;
+        }
+
+        private void DrawGameplayActorPresetSection(ref float y, float width)
+        {
+            float gap = 8f;
+            float buttonWidth = (width - gap) * 0.5f;
+            int column = 0;
+            for (int i = 0; i < CampusRuntimeGameplayActorPresetCatalog.Presets.Length; i++)
+            {
+                CampusRuntimeGameplayActorPreset preset = CampusRuntimeGameplayActorPresetCatalog.Presets[i];
+                if (preset == null)
+                {
+                    continue;
+                }
+
+                Rect rect = new Rect(column * (buttonWidth + gap), y, buttonWidth, 30f);
+                Color oldColor = GUI.color;
+                GUI.color = selectedGameplayActorPresetIndex == i
+                    ? Color.white
+                    : new Color(1f, 1f, 1f, 0.92f);
+                if (GUI.Button(rect, GetGameplayActorPresetLabel(preset), selectedGameplayActorPresetIndex == i ? selectedButtonStyle : buttonStyle))
+                {
+                    selectedGameplayActorPresetIndex = i;
+                    brushMode = CampusRuntimeBrushMode.PlaceGameplayActor;
+                    if (string.IsNullOrWhiteSpace(newGameplayActorClassId))
+                    {
+                        newGameplayActorClassId = preset.ClassId;
+                    }
+                }
+
+                GUI.color = oldColor;
+                column++;
+                if (column >= 2)
+                {
+                    column = 0;
+                    y += 38f;
+                }
+            }
+
+            if (column != 0)
+            {
+                y += 38f;
+            }
+
+            y += 8f;
+        }
+
+        private void DrawGameplayActorFields(ref float y, float width)
+        {
+            GUI.Label(new Rect(0f, y, width, 42f), Tr("\u4e0b\u9762\u90fd\u53ef\u7559\u7a7a\uff1a\u7559\u7a7a\u65f6\u81ea\u52a8\u751f\u6210\u552f\u4e00 ID \u548c\u540d\u5b57\u3002\u628a\u5458\u5de5\u653e\u5728\u5bf9\u5e94\u8bbe\u65bd\u70b9\u9644\u8fd1\u4f1a\u81ea\u52a8\u7ed1\u5b9a\u5de5\u4f4d\u3002", "All fields below are optional. Empty fields generate a unique ID/name. Placing staff near matching facility points auto-binds their workstation."), mutedStyle);
+            y += 50f;
+
+            GUI.Label(new Rect(0f, y, 70f, 30f), "ID", bodyStyle);
+            newGameplayActorId = DrawTextInput(new Rect(72f, y, width - 72f, 30f), newGameplayActorId, "gameplay_actor_id");
+            y += 38f;
+
+            GUI.Label(new Rect(0f, y, 70f, 30f), Tr("\u4e2d\u6587\u540d", "CN Name"), bodyStyle);
+            newGameplayActorChineseName = DrawTextInput(new Rect(72f, y, width - 72f, 30f), newGameplayActorChineseName, "gameplay_actor_cn_name");
+            y += 38f;
+
+            GUI.Label(new Rect(0f, y, 70f, 30f), Tr("\u82f1\u6587\u540d", "EN Name"), bodyStyle);
+            newGameplayActorEnglishName = DrawTextInput(new Rect(72f, y, width - 72f, 30f), newGameplayActorEnglishName, "gameplay_actor_en_name");
+            y += 38f;
+
+            GUI.Label(new Rect(0f, y, 70f, 30f), Tr("\u73ed\u7ea7", "Class"), bodyStyle);
+            newGameplayActorClassId = DrawTextInput(new Rect(72f, y, width - 72f, 30f), newGameplayActorClassId, "gameplay_actor_class_id");
+            y += 42f;
         }
 
         private float DrawSlider(float y, float width, string label, ref float value, float min, float max)
@@ -8716,14 +7478,14 @@ namespace NtingCampusMapEditor
                     continue;
                 }
 
-                if (File.Exists(path) && IsSupportedImportImage(path))
+                if (File.Exists(path) && CampusRuntimeImportLibrary.IsSupportedImage(path))
                 {
                     return path;
                 }
 
                 if (Directory.Exists(path))
                 {
-                    string[] files = GetImportImageFiles(path);
+                    string[] files = CampusRuntimeImportLibrary.GetImageFiles(path);
                     if (files.Length > 0)
                     {
                         return files[0];
@@ -8736,7 +7498,7 @@ namespace NtingCampusMapEditor
 
         private void LoadCustomWallTexture(string path, CampusRuntimeImportTarget target)
         {
-            if (!IsSupportedImportImage(path))
+            if (!CampusRuntimeImportLibrary.IsSupportedImage(path))
             {
                 SetStatus(Tr("\u8bf7\u9009\u62e9 png/jpg/jpeg/bmp \u56fe\u7247\u3002", "Choose a png/jpg/jpeg/bmp image."));
                 return;
@@ -8946,7 +7708,7 @@ namespace NtingCampusMapEditor
                 return false;
             }
 
-            if (!IsSupportedImportImage(sourcePath))
+            if (!CampusRuntimeImportLibrary.IsSupportedImage(sourcePath))
             {
                 SetStatus(Tr("\u8bf7\u9009\u62e9 png/jpg/jpeg/bmp \u56fe\u7247\u3002", "Choose a png/jpg/jpeg/bmp image."));
                 return false;
@@ -9012,7 +7774,7 @@ namespace NtingCampusMapEditor
                 return rotation90Index == 0 && TryAssignSelectedWallMountedSprite(sourcePath);
             }
 
-            if (!IsSupportedImportImage(sourcePath))
+            if (!CampusRuntimeImportLibrary.IsSupportedImage(sourcePath))
             {
                 SetStatus(Tr("\u8bf7\u9009\u62e9 png/jpg/jpeg/bmp \u56fe\u7247\u3002", "Choose a png/jpg/jpeg/bmp image."));
                 return false;
@@ -9081,7 +7843,11 @@ namespace NtingCampusMapEditor
 
             placed.ApplyRotationVisualState();
             placed.ApplyInteractionState();
-            CampusRuntimeObjectSettings settings = CaptureRuntimeObjectSettings(prefab, placed);
+            CampusRuntimeObjectSettings settings = CampusRuntimeObjectAuthoring.CaptureSettings(
+                prefab,
+                placed,
+                GetImportRootFolder(),
+                Tr("\u4ea4\u4e92", "Interact"));
             SaveRuntimeObjectSettings(settings);
             int appliedCount = ApplyObjectSettingsToPlacedInstances(prefab, settings, true);
             SchedulePlayerMapSave();
@@ -9105,7 +7871,11 @@ namespace NtingCampusMapEditor
 
             placed.ApplyRotationVisualState();
             placed.ApplyInteractionState();
-            CampusRuntimeObjectSettings settings = CaptureRuntimeObjectSettings(prefab, placed);
+            CampusRuntimeObjectSettings settings = CampusRuntimeObjectAuthoring.CaptureSettings(
+                prefab,
+                placed,
+                GetImportRootFolder(),
+                Tr("\u4ea4\u4e92", "Interact"));
             SaveRuntimeObjectSettings(settings);
             int appliedCount = ApplyObjectSettingsToPlacedInstances(prefab, settings, true);
             SchedulePlayerMapSave();
@@ -9119,7 +7889,7 @@ namespace NtingCampusMapEditor
                 return 0;
             }
 
-            string targetObjectId = ResolveObjectSyncId(settings, prefab);
+            string targetObjectId = CampusRuntimeObjectAuthoring.ResolveSyncId(settings, prefab);
             if (string.IsNullOrEmpty(targetObjectId))
             {
                 return 0;
@@ -9133,7 +7903,7 @@ namespace NtingCampusMapEditor
             for (int objectIndex = 0; objectIndex < objects.Length; objectIndex++)
             {
                 CampusPlacedObject placed = objects[objectIndex];
-                if (!DoesPlacedObjectMatchObjectIdentity(placed, targetObjectId, prefab.name))
+                if (!CampusRuntimeObjectAuthoring.DoesPlacedObjectMatchIdentity(placed, targetObjectId, prefab.name))
                 {
                     continue;
                 }
@@ -9263,201 +8033,46 @@ namespace NtingCampusMapEditor
                 }
             }
 
-            return ResolveObjectTypeIdForPlacedObject(placed);
+            return CampusRuntimeObjectAuthoring.ResolveTypeIdForPlacedObject(placed);
         }
 
         private CampusPlacedObject ApplyRuntimeObjectSettings(GameObject target, CampusRuntimeObjectSettings settings)
         {
-            if (target == null || settings == null)
-            {
-                return null;
-            }
-
             CampusPlacedObject placed = EnsureRuntimePlacedObject(target);
-            if (placed == null)
-            {
-                return null;
-            }
-
-            if (string.IsNullOrWhiteSpace(placed.ObjectId))
-            {
-                placed.ObjectId = !string.IsNullOrWhiteSpace(settings.ObjectId) ? settings.ObjectId : target.name;
-            }
-
-            placed.TypeId = ResolveObjectTypeIdForSettings(target, settings);
-            placed.DisplayNameOverride = string.IsNullOrWhiteSpace(settings.DisplayNameOverride)
-                ? string.Empty
-                : settings.DisplayNameOverride.Trim();
-            placed.VisualScale = CampusPlacedObject.NormalizeVisualScale(settings.VisualScale);
-            placed.LockVisualScaleAspect = settings.LockVisualScaleAspect;
-            if (placed.LockVisualScaleAspect)
-            {
-                float uniform = Mathf.Max(placed.VisualScale.x, placed.VisualScale.y);
-                placed.VisualScale = new Vector2(uniform, uniform);
-            }
-
-            placed.OverrideFootprintSize = settings.OverrideFootprintSize;
-            placed.FootprintSize = CampusPlacedObject.NormalizeFootprintSize(settings.FootprintSize);
-            placed.IsWallMounted = settings.IsWallMounted;
-            if (placed.IsWallMounted)
-            {
-                placed.OverrideFootprintSize = true;
-                placed.FootprintSize = Vector2Int.one;
-                placed.OverrideAllowRotation = true;
-                placed.AllowRotation = true;
-                placed.BlocksMovement = false;
-                placed.BlocksSight = false;
-            }
-
-            placed.OverrideAllowRotation = settings.OverrideAllowRotation;
-            placed.AllowRotation = settings.AllowRotation;
-            if (placed.IsWallMounted)
-            {
-                placed.OverrideAllowRotation = true;
-                placed.AllowRotation = true;
-            }
-
-            AssignRuntimeObjectDirectionSprite(placed, 0, settings.OverrideRotation0Sprite, settings.Rotation0SpritePath, target.name);
-            AssignRuntimeObjectDirectionSprite(placed, 1, settings.OverrideRotation90Sprite, settings.Rotation90SpritePath, target.name);
-            AssignRuntimeObjectDirectionSprite(placed, 2, settings.OverrideRotation180Sprite, settings.Rotation180SpritePath, target.name);
-            AssignRuntimeObjectDirectionSprite(placed, 3, settings.OverrideRotation270Sprite, settings.Rotation270SpritePath, target.name);
-
-            placed.UseCustomInteractionAnchor = settings.UseCustomInteractionAnchor;
-            placed.CustomInteractionAnchorLocalPosition = settings.CustomInteractionAnchorLocalPosition;
-            placed.CustomInteractionAnchorRadius = CampusPlacedObject.NormalizeInteractionAnchorRadius(settings.CustomInteractionAnchorRadius);
-            placed.CustomInteractionPromptText = string.IsNullOrWhiteSpace(settings.CustomInteractionPromptText)
-                ? Tr("\u4ea4\u4e92", "Interact")
-                : settings.CustomInteractionPromptText;
-            placed.CustomInteractionAnchors = CampusPlacedObject.CloneInteractionAnchors(settings.CustomInteractionAnchors);
-            placed.IsStorageContainer = settings.IsStorageContainer;
-            placed.StorageSize = CampusPlacedObject.NormalizeStorageSize(settings.StorageSize);
-            placed.StorageMaxWeight = CampusPlacedObject.NormalizeStorageMaxWeight(settings.StorageMaxWeight);
-            if (placed.IsStorageContainer)
-            {
-                EnsureStorageInteractionAnchor(placed);
-            }
-
-            placed.IsInteractable = placed.UseCustomInteractionAnchor || placed.IsStorageContainer;
-
-            placed.ApplyRotationVisualState();
-            placed.ApplyInteractionState();
-            return placed;
-        }
-
-        private CampusRuntimeObjectSettings CaptureRuntimeObjectSettings(GameObject prefab, CampusPlacedObject placed)
-        {
-            CampusRuntimeObjectSettings settings = new CampusRuntimeObjectSettings();
-            settings.ObjectId = prefab != null ? prefab.name : (placed != null ? placed.ObjectId : string.Empty);
-            if (placed == null)
-            {
-                return settings;
-            }
-
-            placed.NormalizeCustomInteractionAnchors();
-            placed.NormalizeStorageSettings();
-            settings.TypeId = string.IsNullOrWhiteSpace(placed.TypeId) ? string.Empty : placed.TypeId.Trim();
-            settings.DisplayNameOverride = string.IsNullOrWhiteSpace(placed.DisplayNameOverride) ? string.Empty : placed.DisplayNameOverride.Trim();
-            settings.OverrideFootprintSize = placed.OverrideFootprintSize;
-            settings.FootprintSize = placed.NormalizedFootprintSize;
-            settings.VisualScale = placed.NormalizedVisualScale;
-            settings.LockVisualScaleAspect = placed.LockVisualScaleAspect;
-            settings.IsWallMounted = placed.IsWallMounted;
-            settings.OverrideAllowRotation = placed.OverrideAllowRotation;
-            settings.AllowRotation = placed.AllowRotation;
-            settings.OverrideRotation0Sprite = placed.OverrideRotation0Sprite;
-            settings.Rotation0SpritePath = NormalizeSerializedImportPath(placed.Rotation0SpritePath);
-            settings.OverrideRotation90Sprite = placed.OverrideRotation90Sprite;
-            settings.Rotation90SpritePath = NormalizeSerializedImportPath(placed.Rotation90SpritePath);
-            settings.OverrideRotation180Sprite = placed.OverrideRotation180Sprite;
-            settings.Rotation180SpritePath = NormalizeSerializedImportPath(placed.Rotation180SpritePath);
-            settings.OverrideRotation270Sprite = placed.OverrideRotation270Sprite;
-            settings.Rotation270SpritePath = NormalizeSerializedImportPath(placed.Rotation270SpritePath);
-            settings.UseCustomInteractionAnchor = placed.UseCustomInteractionAnchor;
-            settings.CustomInteractionAnchorLocalPosition = placed.CustomInteractionAnchorLocalPosition;
-            settings.CustomInteractionAnchorRadius = CampusPlacedObject.NormalizeInteractionAnchorRadius(placed.CustomInteractionAnchorRadius);
-            settings.CustomInteractionPromptText = string.IsNullOrWhiteSpace(placed.CustomInteractionPromptText)
-                ? Tr("\u4ea4\u4e92", "Interact")
-                : placed.CustomInteractionPromptText.Trim();
-            settings.CustomInteractionAnchors = CampusPlacedObject.CloneInteractionAnchors(placed.CustomInteractionAnchors);
-            settings.IsStorageContainer = placed.IsStorageContainer;
-            settings.StorageSize = placed.NormalizedStorageSize;
-            settings.StorageMaxWeight = placed.NormalizedStorageMaxWeight;
-            return settings;
+            return CampusRuntimeObjectAuthoring.ApplySettings(
+                target,
+                placed,
+                settings,
+                GetImportRootFolder(),
+                Tr("\u4ea4\u4e92", "Interact"),
+                LoadRuntimeObjectSprite,
+                EnsureStorageInteractionAnchor);
         }
 
         private void SaveRuntimeObjectSettings(CampusRuntimeObjectSettings settings)
         {
-            if (settings == null || string.IsNullOrWhiteSpace(settings.ObjectId))
-            {
-                return;
-            }
-
-            string folder = GetObjectSettingsFolder(settings.ObjectId);
-            Directory.CreateDirectory(folder);
-            File.WriteAllText(GetObjectSettingsPath(settings.ObjectId), JsonUtility.ToJson(settings, true), Encoding.UTF8);
+            CampusRuntimeObjectSettingsStore.Save(GetImportRootFolder(), settings);
             RefreshImportAssetDatabaseIfProjectBacked();
         }
 
         private CampusRuntimeObjectSettings LoadRuntimeObjectSettings(string objectId)
         {
-            if (string.IsNullOrWhiteSpace(objectId))
-            {
-                return null;
-            }
-
-            string path = GetObjectSettingsPath(objectId);
-            if (!File.Exists(path))
-            {
-                return null;
-            }
-
-            try
-            {
-                return JsonUtility.FromJson<CampusRuntimeObjectSettings>(File.ReadAllText(path, Encoding.UTF8));
-            }
-            catch (Exception exception)
-            {
-                Debug.LogWarning("[NtingCampusRuntimeMapEditor] Failed to load object settings '" + path + "': " + exception.Message);
-                return null;
-            }
+            return CampusRuntimeObjectSettingsStore.Load(
+                GetImportRootFolder(),
+                objectId,
+                message => Debug.LogWarning("[NtingCampusRuntimeMapEditor] " + message));
         }
 
         private void AssignRuntimeObjectDirectionSprite(CampusPlacedObject placed, int rotation90Index, bool hasOverride, string spritePath, string objectName)
         {
-            if (placed == null)
-            {
-                return;
-            }
-
-            string normalizedSpritePath = NormalizeSerializedImportPath(spritePath);
-            bool enableOverride = hasOverride && !string.IsNullOrWhiteSpace(normalizedSpritePath);
-            Vector2Int spriteFootprint = CampusPlacedObject.RotateFootprintSize(placed.NormalizedFootprintSize, rotation90Index);
-            Sprite sprite = enableOverride
-                ? LoadRuntimeObjectSprite(normalizedSpritePath, objectName + "_" + (rotation90Index * 90), spriteFootprint)
-                : null;
-            switch (CampusPlacedObject.NormalizeRotation90(rotation90Index))
-            {
-                case 0:
-                    placed.OverrideRotation0Sprite = enableOverride;
-                    placed.Rotation0SpritePath = enableOverride ? normalizedSpritePath : string.Empty;
-                    placed.Rotation0Sprite = sprite;
-                    break;
-                case 1:
-                    placed.OverrideRotation90Sprite = enableOverride;
-                    placed.Rotation90SpritePath = enableOverride ? normalizedSpritePath : string.Empty;
-                    placed.Rotation90Sprite = sprite;
-                    break;
-                case 2:
-                    placed.OverrideRotation180Sprite = enableOverride;
-                    placed.Rotation180SpritePath = enableOverride ? normalizedSpritePath : string.Empty;
-                    placed.Rotation180Sprite = sprite;
-                    break;
-                case 3:
-                    placed.OverrideRotation270Sprite = enableOverride;
-                    placed.Rotation270SpritePath = enableOverride ? normalizedSpritePath : string.Empty;
-                    placed.Rotation270Sprite = sprite;
-                    break;
-            }
+            CampusRuntimeObjectAuthoring.AssignDirectionSprite(
+                placed,
+                rotation90Index,
+                hasOverride,
+                spritePath,
+                objectName,
+                GetImportRootFolder(),
+                LoadRuntimeObjectSprite);
         }
 
         private Sprite LoadRuntimeObjectSprite(string path, string spriteName, Vector2Int footprint)
@@ -9493,35 +8108,13 @@ namespace NtingCampusMapEditor
 
         private string CopyObjectDirectionSprite(string objectId, int rotation90Index, string sourcePath)
         {
-            string folder = GetObjectSettingsFolder(objectId);
-            Directory.CreateDirectory(folder);
-            string prefix = "rotation_" + (rotation90Index * 90);
-            string extension = Path.GetExtension(sourcePath);
-            if (string.IsNullOrEmpty(extension))
-            {
-                extension = ".png";
-            }
-
-            string targetPath = Path.Combine(folder, prefix + extension.ToLowerInvariant());
-            string sourceFullPath = Path.GetFullPath(sourcePath);
-            string targetFullPath = Path.GetFullPath(targetPath);
-            if (string.Equals(sourceFullPath, targetFullPath, StringComparison.OrdinalIgnoreCase))
-            {
-                return NormalizeSerializedImportPath(targetPath);
-            }
-
-            string[] existing = Directory.GetFiles(folder, prefix + ".*");
-            for (int i = 0; i < existing.Length; i++)
-            {
-                if (!string.Equals(Path.GetFullPath(existing[i]), sourceFullPath, StringComparison.OrdinalIgnoreCase))
-                {
-                    File.Delete(existing[i]);
-                }
-            }
-
-            File.Copy(sourcePath, targetPath, true);
+            string serializedPath = CampusRuntimeObjectSettingsStore.CopyDirectionSprite(
+                GetImportRootFolder(),
+                objectId,
+                rotation90Index,
+                sourcePath);
             RefreshImportAssetDatabaseIfProjectBacked();
-            return NormalizeSerializedImportPath(targetPath);
+            return serializedPath;
         }
 
         private Sprite GetObjectDirectionSprite(CampusPlacedObject placed, int rotation90Index)
@@ -9544,158 +8137,6 @@ namespace NtingCampusMapEditor
                 default:
                     return null;
             }
-        }
-
-        private static string InferObjectTypeId(string objectId, string displayName, bool isStorageContainer)
-        {
-            if (isStorageContainer)
-            {
-                return nameof(CampusFacilityType.Storage);
-            }
-
-            string key = NormalizeObjectTypeIdSeed(objectId) + "|" + NormalizeObjectTypeIdSeed(displayName);
-            if (ContainsObjectTypeToken(key, "studentdesk", "student_desk", "desk_1x1", "\u8bfe\u684c", "\u4e66\u684c"))
-            {
-                return nameof(CampusFacilityType.StudentDesk);
-            }
-
-            if (ContainsObjectTypeToken(key, "officedesk", "office_desk", "teacherdesk", "teacher_desk", "\u529e\u516c\u684c", "\u6559\u5e08\u684c"))
-            {
-                return nameof(CampusFacilityType.OfficeDesk);
-            }
-
-            if (ContainsObjectTypeToken(key, "blackboard", "whiteboard", "chalkboard", "\u9ed1\u677f", "\u767d\u677f"))
-            {
-                return nameof(CampusFacilityType.Blackboard);
-            }
-
-            if (ContainsObjectTypeToken(key, "podium", "teacherpodium", "teacher_podium", "\u8bb2\u53f0"))
-            {
-                return nameof(CampusFacilityType.Podium);
-            }
-
-            if (ContainsObjectTypeToken(key, "canteencounter", "canteen_counter", "foodcounter", "food_counter", "\u98df\u5802\u67dc\u53f0", "\u7a97\u53e3"))
-            {
-                return nameof(CampusFacilityType.CanteenCounter);
-            }
-
-            if (ContainsObjectTypeToken(key, "canteenclerkstand", "canteen_clerk_stand", "canteenbackcounter", "canteen_back_counter", "canteen_staff", "\u5e97\u5458\u7ad9\u4f4d", "\u67dc\u53f0\u540e"))
-            {
-                return nameof(CampusFacilityType.CanteenClerkStandPoint);
-            }
-
-            if (ContainsObjectTypeToken(key, "canteenpickup", "canteen_pickup", "mealpickup", "meal_pickup", "customerpickup", "\u53d6\u9910\u70b9", "\u987e\u5ba2\u53d6\u9910"))
-            {
-                return nameof(CampusFacilityType.CanteenCustomerPickupPoint);
-            }
-
-            if (ContainsObjectTypeToken(key, "canteenqueue", "canteen_queue", "mealqueue", "meal_queue", "\u98df\u5802\u6392\u961f"))
-            {
-                return nameof(CampusFacilityType.CanteenQueuePoint);
-            }
-
-            if (ContainsObjectTypeToken(key, "foodtray", "food_tray", "friedchicken", "burger", "oden", "\u6258\u76d8", "\u70b8\u9e21", "\u6c49\u5821", "\u5173\u4e1c\u716e"))
-            {
-                return nameof(CampusFacilityType.CanteenFoodTray);
-            }
-
-            if (ContainsObjectTypeToken(key, "diningtable", "dining_table", "\u9910\u684c", "\u5403\u996d"))
-            {
-                return nameof(CampusFacilityType.DiningTable);
-            }
-
-            if (ContainsObjectTypeToken(key, "storeshelf", "store_shelf", "shopshelf", "shop_shelf", "snackshelf", "\u8d27\u67b6", "\u96f6\u98df\u67b6"))
-            {
-                return nameof(CampusFacilityType.StoreShelf);
-            }
-
-            if (ContainsObjectTypeToken(key, "storecheckout", "store_checkout", "cashregister", "cash_register", "checkout", "\u6536\u94f6"))
-            {
-                return nameof(CampusFacilityType.StoreCheckout);
-            }
-
-            if (ContainsObjectTypeToken(key, "storequeue", "store_queue", "checkoutqueue", "checkout_queue", "\u6536\u94f6\u961f", "\u8d85\u5e02\u6392\u961f"))
-            {
-                return nameof(CampusFacilityType.StoreQueuePoint);
-            }
-
-            if (ContainsObjectTypeToken(key, "delivery", "takeout", "waimai", "\u5916\u5356"))
-            {
-                return nameof(CampusFacilityType.DeliveryDropPoint);
-            }
-
-            if (ContainsObjectTypeToken(key, "bulletin", "\u516c\u544a\u680f"))
-            {
-                return nameof(CampusFacilityType.BulletinBoard);
-            }
-
-            if (ContainsObjectTypeToken(key, "recruitment", "recruit", "\u62db\u52df"))
-            {
-                return nameof(CampusFacilityType.Recruitment);
-            }
-
-            if (ContainsObjectTypeToken(key, "restroomstall", "restroom_stall", "stall", "\u9694\u95f4"))
-            {
-                return nameof(CampusFacilityType.RestroomStall);
-            }
-
-            if (ContainsObjectTypeToken(key, "urinal", "\u5c0f\u4fbf\u6c60"))
-            {
-                return nameof(CampusFacilityType.Urinal);
-            }
-
-            if (ContainsObjectTypeToken(key, "sink", "\u6d17\u624b\u6c60", "\u6c34\u6c60"))
-            {
-                return nameof(CampusFacilityType.Sink);
-            }
-
-            if (ContainsObjectTypeToken(key, "bed", "\u5e8a"))
-            {
-                return nameof(CampusFacilityType.Bed);
-            }
-
-            if (ContainsObjectTypeToken(key, "chair", "\u6905\u5b50"))
-            {
-                return nameof(CampusFacilityType.Chair);
-            }
-
-            if (ContainsObjectTypeToken(key, "door", "\u95e8"))
-            {
-                return nameof(CampusFacilityType.Door);
-            }
-
-            if (ContainsObjectTypeToken(key, "stair", "\u697c\u68af"))
-            {
-                return nameof(CampusFacilityType.Stair);
-            }
-
-            return string.Empty;
-        }
-
-        private static string NormalizeObjectTypeIdSeed(string value)
-        {
-            return string.IsNullOrWhiteSpace(value)
-                ? string.Empty
-                : value.Trim().Replace(" ", string.Empty).Replace("-", "_").ToLowerInvariant();
-        }
-
-        private static bool ContainsObjectTypeToken(string value, params string[] tokens)
-        {
-            if (string.IsNullOrEmpty(value) || tokens == null)
-            {
-                return false;
-            }
-
-            for (int i = 0; i < tokens.Length; i++)
-            {
-                string token = NormalizeObjectTypeIdSeed(tokens[i]);
-                if (!string.IsNullOrEmpty(token) && value.Contains(token))
-                {
-                    return true;
-                }
-            }
-
-            return false;
         }
 
         private CampusPlacedObject EnsureRuntimePlacedObject(GameObject target)
@@ -9725,65 +8166,6 @@ namespace NtingCampusMapEditor
             return placed;
         }
 
-        private static string ResolveObjectTypeIdForSettings(GameObject target, CampusRuntimeObjectSettings settings)
-        {
-            if (settings == null)
-            {
-                return string.Empty;
-            }
-
-            if (!string.IsNullOrWhiteSpace(settings.TypeId))
-            {
-                return settings.TypeId.Trim();
-            }
-
-            return InferObjectTypeId(
-                !string.IsNullOrWhiteSpace(settings.ObjectId) ? settings.ObjectId : target != null ? target.name : string.Empty,
-                settings.DisplayNameOverride,
-                settings.IsStorageContainer);
-        }
-
-        private static string ResolveObjectSyncId(CampusRuntimeObjectSettings settings, GameObject prefab)
-        {
-            string objectId = settings != null && !string.IsNullOrWhiteSpace(settings.ObjectId)
-                ? settings.ObjectId
-                : prefab != null ? prefab.name : string.Empty;
-            return string.IsNullOrWhiteSpace(objectId) ? string.Empty : objectId.Trim();
-        }
-
-        private static bool DoesPlacedObjectMatchObjectIdentity(
-            CampusPlacedObject placed,
-            string targetObjectId,
-            string fallbackPrefabName)
-        {
-            if (placed == null || string.IsNullOrWhiteSpace(targetObjectId))
-            {
-                return false;
-            }
-
-            string placedObjectId = !string.IsNullOrWhiteSpace(placed.ObjectId)
-                ? placed.ObjectId
-                : placed.gameObject != null ? placed.gameObject.name : string.Empty;
-            return ObjectIdentityEquals(placedObjectId, targetObjectId) ||
-                   ObjectIdentityEquals(placedObjectId, fallbackPrefabName);
-        }
-
-        private static bool ObjectIdentityEquals(string left, string right)
-        {
-            if (string.IsNullOrWhiteSpace(left) || string.IsNullOrWhiteSpace(right))
-            {
-                return false;
-            }
-
-            string normalizedLeft = left.Trim();
-            string normalizedRight = right.Trim();
-            return string.Equals(normalizedLeft, normalizedRight, StringComparison.OrdinalIgnoreCase) ||
-                   string.Equals(
-                       CampusObjectNames.GetDisplayName(normalizedLeft),
-                       CampusObjectNames.GetDisplayName(normalizedRight),
-                       StringComparison.OrdinalIgnoreCase);
-        }
-
         private bool DoesPlacedObjectMatchTypeKey(CampusPlacedObject placed, string targetObjectTypeKey)
         {
             if (placed == null || string.IsNullOrEmpty(targetObjectTypeKey))
@@ -9791,33 +8173,8 @@ namespace NtingCampusMapEditor
                 return false;
             }
 
-            string objectTypeKey = ResolvePlacedObjectTypeKey(placed);
+            string objectTypeKey = CampusRuntimeObjectAuthoring.ResolvePlacedObjectTypeKey(placed);
             return string.Equals(objectTypeKey, targetObjectTypeKey, StringComparison.Ordinal);
-        }
-
-        private string ResolvePlacedObjectTypeKey(CampusPlacedObject placed)
-        {
-            if (placed == null)
-            {
-                return string.Empty;
-            }
-
-            return ResolveObjectTypeKey(placed.TypeId, placed.ObjectId, placed.gameObject != null ? placed.gameObject.name : string.Empty);
-        }
-
-        private static string ResolveObjectTypeKey(string typeId, string objectId, string fallbackName)
-        {
-            string resolved = !string.IsNullOrWhiteSpace(typeId)
-                ? typeId
-                : !string.IsNullOrWhiteSpace(objectId)
-                    ? objectId
-                    : fallbackName;
-            if (string.IsNullOrWhiteSpace(resolved))
-            {
-                return string.Empty;
-            }
-
-            return resolved.Trim();
         }
 
         private CampusFloorRoot ResolveFloorForPlacedObject(CampusPlacedObject placed)
@@ -10384,7 +8741,7 @@ namespace NtingCampusMapEditor
 
         private void AddOrUpdateRoomDefinition(string roomName, int required)
         {
-            if (!TryResolvePresetRoomName(roomName, out string presetRoomName))
+            if (!CampusRuntimeAreaPresetCatalog.TryResolveRoomName(roomName, out string presetRoomName))
             {
                 return;
             }
@@ -10446,7 +8803,7 @@ namespace NtingCampusMapEditor
 
         private int CountRoomMarkers(string roomName)
         {
-            if (!TryResolvePresetRoomName(roomName, out string targetRoomName))
+            if (!CampusRuntimeAreaPresetCatalog.TryResolveRoomName(roomName, out string targetRoomName))
             {
                 return 0;
             }
@@ -10456,7 +8813,7 @@ namespace NtingCampusMapEditor
             for (int i = 0; i < markers.Length; i++)
             {
                 if (markers[i] != null &&
-                    TryResolvePresetRoomName(markers[i].RoomName, out string markerRoomName) &&
+                    CampusRuntimeAreaPresetCatalog.TryResolveRoomName(markers[i].RoomName, out string markerRoomName) &&
                     string.Equals(markerRoomName, targetRoomName, StringComparison.OrdinalIgnoreCase))
                 {
                     count++;
@@ -10491,13 +8848,30 @@ namespace NtingCampusMapEditor
 
         private CampusRuntimeGameplayMarkerPreset GetSelectedGameplayPreset()
         {
-            if (GameplayMarkerPresets.Length == 0)
+            if (CampusRuntimeGameplayMarkerPresetCatalog.Presets.Length == 0)
             {
                 return null;
             }
 
-            selectedGameplayPresetIndex = Mathf.Clamp(selectedGameplayPresetIndex, 0, GameplayMarkerPresets.Length - 1);
-            return GameplayMarkerPresets[selectedGameplayPresetIndex];
+            selectedGameplayPresetIndex = Mathf.Clamp(
+                selectedGameplayPresetIndex,
+                0,
+                CampusRuntimeGameplayMarkerPresetCatalog.Presets.Length - 1);
+            return CampusRuntimeGameplayMarkerPresetCatalog.Presets[selectedGameplayPresetIndex];
+        }
+
+        private CampusRuntimeGameplayActorPreset GetSelectedGameplayActorPreset()
+        {
+            if (CampusRuntimeGameplayActorPresetCatalog.Presets.Length == 0)
+            {
+                return null;
+            }
+
+            selectedGameplayActorPresetIndex = Mathf.Clamp(
+                selectedGameplayActorPresetIndex,
+                0,
+                CampusRuntimeGameplayActorPresetCatalog.Presets.Length - 1);
+            return CampusRuntimeGameplayActorPresetCatalog.Presets[selectedGameplayActorPresetIndex];
         }
 
         private string GetGameplayPresetLabel(CampusRuntimeGameplayMarkerPreset preset)
@@ -10520,70 +8894,24 @@ namespace NtingCampusMapEditor
             return Tr(preset.ChineseDisplayName, preset.EnglishDisplayName);
         }
 
+        private string GetGameplayActorPresetLabel(CampusRuntimeGameplayActorPreset preset)
+        {
+            if (preset == null)
+            {
+                return Tr("NPC", "NPC");
+            }
+
+            return Tr(preset.ChineseLabel, preset.EnglishLabel);
+        }
+
         private bool TryResolveGameplayMarkerCell(Component component, out int floorIndex, out Vector3Int cell)
         {
-            floorIndex = 1;
-            cell = Vector3Int.zero;
-            if (component == null)
-            {
-                return false;
-            }
-
-            CampusRuntimeGameplayOverlayEntity entity =
-                component.GetComponent<CampusRuntimeGameplayOverlayEntity>();
-            if (entity != null)
-            {
-                floorIndex = entity.FloorIndex;
-                cell = NormalizeCell(entity.Cell);
-                return true;
-            }
-
-            CampusGameplayFacilityMarker facility = component.GetComponent<CampusGameplayFacilityMarker>();
-            if (facility != null)
-            {
-                floorIndex = Mathf.Max(1, facility.FloorIndex);
-                cell = NormalizeCell(facility.Cell);
-                return true;
-            }
-
-            CampusGameplayRoomMarker room = component.GetComponent<CampusGameplayRoomMarker>();
-            if (room != null)
-            {
-                floorIndex = Mathf.Max(1, room.FloorIndex);
-                cell = NormalizeCell(room.AnchorCell);
-                return true;
-            }
-
             RefreshSceneReferencesIfNeeded(sceneReferencesDirty || mapRoot == null);
-            if (mapRoot == null || mapRoot.Floors == null)
-            {
-                return false;
-            }
-
-            Vector3 position = component.transform.position;
-            float bestDistance = float.PositiveInfinity;
-            bool found = false;
-            for (int i = 0; i < mapRoot.Floors.Count; i++)
-            {
-                CampusFloorRoot floor = mapRoot.Floors[i];
-                if (floor == null || floor.Grid == null)
-                {
-                    continue;
-                }
-
-                Vector3Int candidate = NormalizeCell(floor.Grid.WorldToCell(position));
-                Vector3 center = floor.Grid.GetCellCenterWorld(candidate);
-                float distance = Vector2.Distance(center, position);
-                if (distance < bestDistance)
-                {
-                    bestDistance = distance;
-                    floorIndex = floor.FloorIndex;
-                    cell = candidate;
-                    found = true;
-                }
-            }
-
-            return found;
+            return CampusRuntimeGameplayOverlayAuthoring.TryResolveMarkerCell(
+                component,
+                mapRoot,
+                out floorIndex,
+                out cell);
         }
 
         private string ResolveNewRoomPrefabName()
@@ -10594,28 +8922,6 @@ namespace NtingCampusMapEditor
             }
 
             return GetSelectedRoomName();
-        }
-
-        private static Vector2Int NormalizeRoomPrefabSize(Vector2Int size)
-        {
-            return new Vector2Int(Mathf.Max(1, size.x), Mathf.Max(1, size.y));
-        }
-
-        private static BoundsInt BuildInclusiveCellBounds(Vector3Int start, Vector3Int end)
-        {
-            int minX = Mathf.Min(start.x, end.x);
-            int maxX = Mathf.Max(start.x, end.x);
-            int minY = Mathf.Min(start.y, end.y);
-            int maxY = Mathf.Max(start.y, end.y);
-            return new BoundsInt(minX, minY, 0, maxX - minX + 1, maxY - minY + 1, 1);
-        }
-
-        private static bool CellInBounds(BoundsInt bounds, Vector3Int cell)
-        {
-            return cell.x >= bounds.xMin &&
-                   cell.x < bounds.xMax &&
-                   cell.y >= bounds.yMin &&
-                   cell.y < bounds.yMax;
         }
 
         private static bool BoundsOverlap2D(BoundsInt a, BoundsInt b)
@@ -10639,16 +8945,6 @@ namespace NtingCampusMapEditor
             return new Vector3Int(cell.x, cell.y, 0);
         }
 
-        private static Vector3Int ToRelativeCell(Vector3Int cell, Vector3Int originCell)
-        {
-            return new Vector3Int(cell.x - originCell.x, cell.y - originCell.y, 0);
-        }
-
-        private static Vector3Int ToAbsoluteCell(Vector3Int anchorCell, Vector3Int relativeCell)
-        {
-            return new Vector3Int(anchorCell.x + relativeCell.x, anchorCell.y + relativeCell.y, 0);
-        }
-
         private static bool IsPlacedObjectFullyInsideBounds(CampusPlacedObject placed, BoundsInt bounds)
         {
             if (placed == null)
@@ -10662,7 +8958,7 @@ namespace NtingCampusMapEditor
                 for (int x = 0; x < footprint.x; x++)
                 {
                     Vector3Int cell = new Vector3Int(placed.Cell.x + x, placed.Cell.y + y, 0);
-                    if (!CellInBounds(bounds, cell))
+                    if (!CampusRuntimeRoomPrefabAuthoring.CellInBounds(bounds, cell))
                     {
                         return false;
                     }
@@ -10670,45 +8966,6 @@ namespace NtingCampusMapEditor
             }
 
             return true;
-        }
-
-        private static bool HasRoomPrefabContent(CampusRuntimeRoomPrefab roomPrefab)
-        {
-            return roomPrefab != null &&
-                   ((roomPrefab.FloorTiles != null && roomPrefab.FloorTiles.Count > 0) ||
-                    (roomPrefab.WallTiles != null && roomPrefab.WallTiles.Count > 0) ||
-                    (roomPrefab.Objects != null && roomPrefab.Objects.Count > 0) ||
-                    (roomPrefab.RoomMarkers != null && roomPrefab.RoomMarkers.Count > 0) ||
-                    (roomPrefab.GameplayRooms != null && roomPrefab.GameplayRooms.Count > 0) ||
-                    (roomPrefab.GameplayFacilities != null && roomPrefab.GameplayFacilities.Count > 0) ||
-                    (roomPrefab.GameplayPrankSpots != null && roomPrefab.GameplayPrankSpots.Count > 0) ||
-                    (roomPrefab.Lights != null && roomPrefab.Lights.Count > 0));
-        }
-
-        private static void NormalizeRoomPrefab(CampusRuntimeRoomPrefab roomPrefab, string fallbackName)
-        {
-            if (roomPrefab == null)
-            {
-                return;
-            }
-
-            if (string.IsNullOrWhiteSpace(roomPrefab.Schema))
-            {
-                roomPrefab.Schema = "NtingCampusRuntimeRoomPrefab.v1";
-            }
-
-            roomPrefab.RoomName = string.IsNullOrWhiteSpace(roomPrefab.RoomName)
-                ? (string.IsNullOrWhiteSpace(fallbackName) ? "Unnamed Room" : fallbackName.Trim())
-                : roomPrefab.RoomName.Trim();
-            roomPrefab.Size = NormalizeRoomPrefabSize(roomPrefab.Size);
-            roomPrefab.FloorTiles = roomPrefab.FloorTiles ?? new List<CampusRuntimeTileSnapshot>();
-            roomPrefab.WallTiles = roomPrefab.WallTiles ?? new List<CampusRuntimeTileSnapshot>();
-            roomPrefab.Objects = roomPrefab.Objects ?? new List<CampusRuntimeObjectSnapshot>();
-            roomPrefab.RoomMarkers = roomPrefab.RoomMarkers ?? new List<CampusRuntimeRoomSnapshot>();
-            roomPrefab.GameplayRooms = roomPrefab.GameplayRooms ?? new List<CampusRuntimeGameplayRoomSnapshot>();
-            roomPrefab.GameplayFacilities = roomPrefab.GameplayFacilities ?? new List<CampusRuntimeGameplayFacilitySnapshot>();
-            roomPrefab.GameplayPrankSpots = roomPrefab.GameplayPrankSpots ?? new List<CampusRuntimeGameplayPrankSpotSnapshot>();
-            roomPrefab.Lights = roomPrefab.Lights ?? new List<CampusRuntimeRoomLightSnapshot>();
         }
 
         private TileBase GetSelectedFloorTile()
@@ -11189,58 +9446,17 @@ namespace NtingCampusMapEditor
             }
 
             string targetFolder = GetImportFolderForTarget(activeImportTarget);
-            Directory.CreateDirectory(targetFolder);
-            for (int i = 0; i < paths.Length; i++)
+            bool requireImage =
+                activeImportTarget == CampusRuntimeImportTarget.Floor ||
+                activeImportTarget == CampusRuntimeImportTarget.Wall ||
+                activeImportTarget == CampusRuntimeImportTarget.Object ||
+                activeImportTarget == CampusRuntimeImportTarget.WallFace ||
+                activeImportTarget == CampusRuntimeImportTarget.WallCap;
+            if (CampusRuntimeImportLibrary.ImportFiles(paths, targetFolder, requireImage) > 0)
             {
-                string path = paths[i];
-                if (string.IsNullOrWhiteSpace(path))
-                {
-                    continue;
-                }
-
-                if (Directory.Exists(path))
-                {
-                    MirrorDirectory(path, Path.Combine(targetFolder, Path.GetFileName(path)), false);
-                    continue;
-                }
-
-                if (!File.Exists(path))
-                {
-                    continue;
-                }
-
-                if ((activeImportTarget == CampusRuntimeImportTarget.Floor ||
-                     activeImportTarget == CampusRuntimeImportTarget.Wall ||
-                     activeImportTarget == CampusRuntimeImportTarget.Object ||
-                     activeImportTarget == CampusRuntimeImportTarget.WallFace ||
-                     activeImportTarget == CampusRuntimeImportTarget.WallCap) &&
-                    !IsSupportedImportImage(path))
-                {
-                    continue;
-                }
-
-                string destination = MakeUniqueImportPath(Path.Combine(targetFolder, Path.GetFileName(path)));
-                File.Copy(path, destination, false);
+                LoadRuntimeResources();
+                RefreshImportAssetDatabaseIfProjectBacked();
             }
-
-            LoadRuntimeResources();
-            RefreshImportAssetDatabaseIfProjectBacked();
-        }
-
-        private string MakeUniqueImportPath(string path)
-        {
-            string folder = Path.GetDirectoryName(path);
-            string fileName = Path.GetFileNameWithoutExtension(path);
-            string extension = Path.GetExtension(path);
-            string candidate = path;
-            int suffix = 1;
-            while (File.Exists(candidate))
-            {
-                candidate = Path.Combine(folder ?? string.Empty, fileName + "_" + suffix + extension);
-                suffix++;
-            }
-
-            return candidate;
         }
 
         private int ImportRoomDefinitionsFromText(string text)
@@ -11288,11 +9504,7 @@ namespace NtingCampusMapEditor
                 return;
             }
 
-            NormalizeRoomPrefab(roomPrefab, roomPrefab.RoomName);
-            Directory.CreateDirectory(GetRoomPrefabFolder());
-            string filePath = Path.Combine(GetRoomPrefabFolder(), SanitizeFileName(roomPrefab.RoomName) + ".json");
-            File.WriteAllText(filePath, JsonUtility.ToJson(roomPrefab, true), Encoding.UTF8);
-            roomPrefab.SourcePath = filePath;
+            CampusRuntimeRoomPrefabLibrary.Save(GetRoomPrefabFolder(), roomPrefab);
             RefreshImportAssetDatabaseIfProjectBacked();
         }
 
@@ -11314,86 +9526,12 @@ namespace NtingCampusMapEditor
             }
         }
 
-        private static bool AreSamePath(string a, string b)
-        {
-            if (string.IsNullOrWhiteSpace(a) || string.IsNullOrWhiteSpace(b))
-            {
-                return false;
-            }
-
-            string left = Path.GetFullPath(a).TrimEnd(Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar);
-            string right = Path.GetFullPath(b).TrimEnd(Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar);
-            return string.Equals(left, right, StringComparison.OrdinalIgnoreCase);
-        }
-
-        private void MirrorDirectory(string source, string destination, bool deleteExtra)
-        {
-            if (!Directory.Exists(source))
-            {
-                return;
-            }
-
-            Directory.CreateDirectory(destination);
-            string[] files = Directory.GetFiles(source);
-            for (int i = 0; i < files.Length; i++)
-            {
-                string file = files[i];
-                string target = Path.Combine(destination, Path.GetFileName(file));
-                File.Copy(file, target, true);
-            }
-
-            string[] directories = Directory.GetDirectories(source);
-            for (int i = 0; i < directories.Length; i++)
-            {
-                string directory = directories[i];
-                string target = Path.Combine(destination, Path.GetFileName(directory));
-                MirrorDirectory(directory, target, deleteExtra);
-            }
-
-            if (!deleteExtra)
-            {
-                return;
-            }
-
-            foreach (string destinationFile in Directory.GetFiles(destination))
-            {
-                string sourceFile = Path.Combine(source, Path.GetFileName(destinationFile));
-                if (!File.Exists(sourceFile))
-                {
-                    File.Delete(destinationFile);
-                }
-            }
-
-            foreach (string destinationDirectory in Directory.GetDirectories(destination))
-            {
-                string sourceDirectory = Path.Combine(source, Path.GetFileName(destinationDirectory));
-                if (!Directory.Exists(sourceDirectory))
-                {
-                    Directory.Delete(destinationDirectory, true);
-                }
-            }
-        }
-
         private void RefreshAssetDatabaseIfAvailable()
         {
 #if UNITY_EDITOR
             AssetDatabase.Refresh();
             AssetDatabase.SaveAssets();
 #endif
-        }
-
-        private string BackupLocalRuntimeImportFolder()
-        {
-            string source = GetImportRootFolder();
-            if (!Directory.Exists(source))
-            {
-                return string.Empty;
-            }
-
-            string backup = source.TrimEnd(Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar) +
-                            "_backup_" + DateTime.Now.ToString("yyyyMMdd_HHmmss");
-            MirrorDirectory(source, backup, false);
-            return backup;
         }
 
         private void DeleteImportedTileResource(string folder, List<TileBase> tiles, int index, string resourceLabel)
@@ -11405,7 +9543,7 @@ namespace NtingCampusMapEditor
 
             TileBase tile = tiles[index];
             string assetName = tile != null ? tile.name : string.Empty;
-            string path = FindImportedImagePathByName(folder, assetName);
+            string path = CampusRuntimeImportLibrary.FindImagePathByName(folder, assetName);
             if (string.IsNullOrEmpty(path))
             {
                 SetStatus(TrFormat("\u53ea\u80fd\u5220\u9664\u5bfc\u5165\u7684 {0} \u8d44\u6e90\u3002", "Only imported {0} resources can be deleted.", resourceLabel));
@@ -11437,7 +9575,7 @@ namespace NtingCampusMapEditor
 
             GameObject prefab = objectPrefabs[index];
             string objectId = prefab != null ? prefab.name : string.Empty;
-            string path = FindImportedImagePathByName(GetObjectImportFolder(), objectId);
+            string path = CampusRuntimeImportLibrary.FindImagePathByName(GetObjectImportFolder(), objectId);
             if (string.IsNullOrEmpty(path))
             {
                 SetStatus(Tr("\u53ea\u80fd\u5220\u9664\u5bfc\u5165\u7684\u7269\u4ef6\u8d44\u6e90\u3002", "Only imported object resources can be deleted."));
@@ -11447,11 +9585,7 @@ namespace NtingCampusMapEditor
             try
             {
                 File.Delete(path);
-                string settingsFolder = GetObjectSettingsFolder(objectId);
-                if (Directory.Exists(settingsFolder))
-                {
-                    Directory.Delete(settingsFolder, true);
-                }
+                CampusRuntimeObjectSettingsStore.DeleteFolder(GetImportRootFolder(), objectId);
 
                 if (lastObjectSettingsPrefab == prefab)
                 {
@@ -11472,25 +9606,6 @@ namespace NtingCampusMapEditor
             RefreshImportAssetDatabaseIfProjectBacked();
         }
 
-        private string FindImportedImagePathByName(string folder, string assetName)
-        {
-            if (string.IsNullOrWhiteSpace(folder) || string.IsNullOrWhiteSpace(assetName))
-            {
-                return string.Empty;
-            }
-
-            string[] files = GetImportImageFiles(folder);
-            for (int i = 0; i < files.Length; i++)
-            {
-                if (string.Equals(Path.GetFileNameWithoutExtension(files[i]), assetName, StringComparison.OrdinalIgnoreCase))
-                {
-                    return files[i];
-                }
-            }
-
-            return string.Empty;
-        }
-
         private void DeleteSelectedRoomPrefab()
         {
             CampusRuntimeRoomPrefab roomPrefab = GetSelectedRoomPrefab();
@@ -11499,14 +9614,7 @@ namespace NtingCampusMapEditor
                 return;
             }
 
-            string path = string.IsNullOrWhiteSpace(roomPrefab.SourcePath)
-                ? Path.Combine(GetRoomPrefabFolder(), SanitizeFileName(roomPrefab.RoomName) + ".json")
-                : roomPrefab.SourcePath;
-            if (File.Exists(path))
-            {
-                File.Delete(path);
-            }
-
+            CampusRuntimeRoomPrefabLibrary.Delete(roomPrefab, GetRoomPrefabFolder());
             roomPrefabs.Remove(roomPrefab);
             selectedRoomPrefabIndex = roomPrefabs.Count > 0 ? Mathf.Clamp(selectedRoomPrefabIndex, 0, roomPrefabs.Count - 1) : 0;
             RefreshImportAssetDatabaseIfProjectBacked();
@@ -11564,7 +9672,7 @@ namespace NtingCampusMapEditor
             y += 34f;
             GUI.Label(
                 new Rect(0f, y, width, 54f),
-                Tr("\u7528\u4e8e\u7269\u54c1/\u8bbe\u65bd\u5224\u5b9a\u7684\u7a33\u5b9aID\u3002\u4f8b\uff1aStudentDesk\u3001OfficeDesk\u3001CanteenCounter\u3001CanteenClerkStandPoint\u3001CanteenCustomerPickupPoint\u3001StoreShelf\u3001Storage\u3002", "Stable ID for object/facility checks. Examples: StudentDesk, OfficeDesk, CanteenCounter, CanteenClerkStandPoint, CanteenCustomerPickupPoint, StoreShelf, Storage."),
+                Tr("\u7528\u4e8e\u7269\u54c1/\u8bbe\u65bd\u5224\u5b9a\u7684\u7a33\u5b9aID\u3002\u4f8b\uff1aStudentDesk\u3001OfficeDesk\u3001CanteenServingWindow\u3001CanteenFoodBox\u3001StoreShelf\u3001Storage\u3002", "Stable ID for object/facility checks. Examples: StudentDesk, OfficeDesk, CanteenServingWindow, CanteenFoodBox, StoreShelf, Storage."),
                 mutedStyle);
             y += 62f;
         }
@@ -11838,7 +9946,7 @@ namespace NtingCampusMapEditor
                 for (int i = 0; i < paths.Length; i++)
                 {
                     string path = paths[i];
-                    if (!string.IsNullOrWhiteSpace(path) && File.Exists(path) && IsSupportedImportImage(path))
+                    if (!string.IsNullOrWhiteSpace(path) && File.Exists(path) && CampusRuntimeImportLibrary.IsSupportedImage(path))
                     {
                         return path;
                     }
@@ -11857,7 +9965,7 @@ namespace NtingCampusMapEditor
                     }
 
                     string fullPath = Path.GetFullPath(assetPath);
-                    if (File.Exists(fullPath) && IsSupportedImportImage(fullPath))
+                    if (File.Exists(fullPath) && CampusRuntimeImportLibrary.IsSupportedImage(fullPath))
                     {
                         return fullPath;
                     }
@@ -12138,10 +10246,11 @@ namespace NtingCampusMapEditor
                 return;
             }
 
-            Directory.CreateDirectory(folder);
-            File.Copy(path, MakeUniqueImportPath(Path.Combine(folder, Path.GetFileName(path))), false);
-            LoadRuntimeResources();
-            RefreshImportAssetDatabaseIfProjectBacked();
+            if (CampusRuntimeImportLibrary.ImportFiles(new[] { path }, folder, false) > 0)
+            {
+                LoadRuntimeResources();
+                RefreshImportAssetDatabaseIfProjectBacked();
+            }
 #endif
         }
 
@@ -12154,7 +10263,7 @@ namespace NtingCampusMapEditor
                 return;
             }
 
-            MirrorDirectory(source, folder, false);
+            CampusRuntimeImportLibrary.MirrorDirectory(source, folder, false);
             LoadRuntimeResources();
             RefreshImportAssetDatabaseIfProjectBacked();
 #endif
@@ -12168,20 +10277,7 @@ namespace NtingCampusMapEditor
                 return 0;
             }
 
-            int count = 0;
-            string[] candidates = buffer.Split(new[] { '\r', '\n' }, StringSplitOptions.RemoveEmptyEntries);
-            Directory.CreateDirectory(folder);
-            for (int i = 0; i < candidates.Length; i++)
-            {
-                string normalized = NormalizeClipboardPath(candidates[i]);
-                if (!File.Exists(normalized) || !IsSupportedImportImage(normalized))
-                {
-                    continue;
-                }
-
-                File.Copy(normalized, MakeUniqueImportPath(Path.Combine(folder, Path.GetFileName(normalized))), false);
-                count++;
-            }
+            int count = CampusRuntimeImportLibrary.ImportClipboardImages(buffer, folder);
 
             if (count > 0)
             {
@@ -12254,15 +10350,6 @@ namespace NtingCampusMapEditor
             }
         }
 
-        private bool IsSupportedImportImage(string path)
-        {
-            string extension = Path.GetExtension(path);
-            return string.Equals(extension, ".png", StringComparison.OrdinalIgnoreCase) ||
-                   string.Equals(extension, ".jpg", StringComparison.OrdinalIgnoreCase) ||
-                   string.Equals(extension, ".jpeg", StringComparison.OrdinalIgnoreCase) ||
-                   string.Equals(extension, ".bmp", StringComparison.OrdinalIgnoreCase);
-        }
-
         private void EnsureStorageInteractionAnchor(CampusPlacedObject placed)
         {
             if (placed == null)
@@ -12285,22 +10372,6 @@ namespace NtingCampusMapEditor
             }
 
             placed.NormalizeCustomInteractionAnchors();
-        }
-
-        private string NormalizeClipboardPath(string path)
-        {
-            if (string.IsNullOrWhiteSpace(path))
-            {
-                return string.Empty;
-            }
-
-            string value = path.Trim().Trim('"');
-            if (value.StartsWith("file:///", StringComparison.OrdinalIgnoreCase))
-            {
-                value = Uri.UnescapeDataString(value.Substring("file:///".Length));
-            }
-
-            return value.Replace('/', Path.DirectorySeparatorChar);
         }
 
         private string GetImportFolderForTarget(CampusRuntimeImportTarget target)
@@ -12370,24 +10441,6 @@ namespace NtingCampusMapEditor
             {
                 list.Add(item);
             }
-        }
-
-        private static string SanitizeFileName(string value)
-        {
-            if (string.IsNullOrWhiteSpace(value))
-            {
-                return "_";
-            }
-
-            char[] invalid = Path.GetInvalidFileNameChars();
-            string sanitized = value.Trim();
-            for (int i = 0; i < invalid.Length; i++)
-            {
-                sanitized = sanitized.Replace(invalid[i], '_');
-            }
-
-            sanitized = sanitized.Replace('/', '_').Replace('\\', '_');
-            return string.IsNullOrWhiteSpace(sanitized) ? "_" : sanitized;
         }
 
         private static bool WasKeyPressed(KeyCode key)
@@ -12804,245 +10857,6 @@ namespace NtingCampusMapEditor
         private static extern bool GetOpenFileName(ref OpenFileName openFileName);
     }
 #endif
-
-    [Serializable]
-    public sealed class CampusRuntimeMapSnapshot
-    {
-        public string Schema;
-        public string MapName;
-        public string ExportedAtLocal;
-        public int SortingOrderStepPerFloor = 1000;
-        public int SelectedFloorIndex = 1;
-        public bool HasRoomDefinitions;
-        public List<string> RoomNames = new List<string>();
-        public List<int> RoomRequiredCounts = new List<int>();
-        public List<CampusRuntimeFloorSnapshot> Floors = new List<CampusRuntimeFloorSnapshot>();
-        public List<CampusRuntimeLightSnapshot> Lights = new List<CampusRuntimeLightSnapshot>();
-    }
-
-    [Serializable]
-    public sealed class CampusRuntimeFloorSnapshot
-    {
-        public int FloorIndex = 1;
-        public bool IsUnlocked = true;
-        public List<CampusRuntimeTileSnapshot> FloorTiles = new List<CampusRuntimeTileSnapshot>();
-        public List<CampusRuntimeTileSnapshot> WallTiles = new List<CampusRuntimeTileSnapshot>();
-        public List<CampusRuntimeObjectSnapshot> Objects = new List<CampusRuntimeObjectSnapshot>();
-        public List<CampusRuntimeStairSnapshot> Stairs = new List<CampusRuntimeStairSnapshot>();
-        public List<CampusRuntimeRoomSnapshot> Rooms = new List<CampusRuntimeRoomSnapshot>();
-    }
-
-    [Serializable]
-    public sealed class CampusRuntimeRoomPrefab
-    {
-        public string Schema;
-        public string RoomName;
-        public string CreatedAtLocal;
-        public Vector2Int Size = Vector2Int.one;
-        public List<CampusRuntimeTileSnapshot> FloorTiles = new List<CampusRuntimeTileSnapshot>();
-        public List<CampusRuntimeTileSnapshot> WallTiles = new List<CampusRuntimeTileSnapshot>();
-        public List<CampusRuntimeObjectSnapshot> Objects = new List<CampusRuntimeObjectSnapshot>();
-        public List<CampusRuntimeRoomSnapshot> RoomMarkers = new List<CampusRuntimeRoomSnapshot>();
-        public List<CampusRuntimeGameplayRoomSnapshot> GameplayRooms = new List<CampusRuntimeGameplayRoomSnapshot>();
-        public List<CampusRuntimeGameplayFacilitySnapshot> GameplayFacilities = new List<CampusRuntimeGameplayFacilitySnapshot>();
-        public List<CampusRuntimeGameplayPrankSpotSnapshot> GameplayPrankSpots = new List<CampusRuntimeGameplayPrankSpotSnapshot>();
-        public List<CampusRuntimeRoomLightSnapshot> Lights = new List<CampusRuntimeRoomLightSnapshot>();
-
-        [NonSerialized] public string SourcePath;
-    }
-
-    [Serializable]
-    public sealed class CampusRuntimeRoomLightSnapshot
-    {
-        public CampusRuntimeLightSnapshot Light = new CampusRuntimeLightSnapshot();
-        public Vector3Int RelativeCell;
-        public Vector3 RelativePosition;
-        public bool HasRelativePosition;
-    }
-
-    [Serializable]
-    public sealed class CampusRuntimeTileSnapshot
-    {
-        public Vector3Int Cell;
-        public string AssetName;
-        public int PaletteIndex = -1;
-        public Matrix4x4 Transform = Matrix4x4.identity;
-    }
-
-    [Serializable]
-    public sealed class CampusRuntimeWallStrokeUndoEntry
-    {
-        public int FloorIndex = 1;
-        public List<CampusRuntimeWallStrokeCellUndoEntry> Cells = new List<CampusRuntimeWallStrokeCellUndoEntry>();
-    }
-
-    [Serializable]
-    public sealed class CampusRuntimeWallStrokeCellUndoEntry
-    {
-        public Vector3Int Cell;
-        public CampusRuntimeTileSnapshot Before;
-        public CampusRuntimeTileSnapshot After;
-    }
-
-    [Serializable]
-    public sealed class CampusRuntimeObjectSnapshot
-    {
-        public string ObjectId;
-        public string TypeId;
-        public string DisplayNameOverride;
-        public int PaletteIndex = -1;
-        public Vector3 Position;
-        public Vector3Int Cell;
-        public Vector2Int FootprintSize = Vector2Int.one;
-        public int FloorIndex = 1;
-        public bool OverrideFootprintSize;
-        public Vector2 VisualScale = Vector2.one;
-        public bool LockVisualScaleAspect = true;
-        public bool IsWallMounted;
-        public bool OverrideAllowRotation;
-        public bool AllowRotation;
-        public bool OverrideRotation0Sprite;
-        public string Rotation0SpritePath;
-        public bool OverrideRotation90Sprite;
-        public string Rotation90SpritePath;
-        public bool OverrideRotation180Sprite;
-        public string Rotation180SpritePath;
-        public bool OverrideRotation270Sprite;
-        public string Rotation270SpritePath;
-        public int Rotation90;
-        public bool BlocksMovement;
-        public bool BlocksSight;
-        public bool IsInteractable;
-        public bool IsStorageContainer;
-        public Vector2Int StorageSize = new Vector2Int(4, 4);
-        public float StorageMaxWeight = CampusPlacedObject.DefaultStorageMaxWeight;
-        public bool UseCustomInteractionAnchor;
-        public Vector3 CustomInteractionAnchorLocalPosition;
-        public float CustomInteractionAnchorRadius = CampusPlacedObject.DefaultInteractionAnchorRadius;
-        public string CustomInteractionPromptText;
-        public List<CampusPlacedObjectInteractionAnchor> CustomInteractionAnchors = new List<CampusPlacedObjectInteractionAnchor>();
-    }
-
-    [Serializable]
-    public sealed class CampusRuntimeObjectSettings
-    {
-        public string ObjectId;
-        public string TypeId;
-        public string DisplayNameOverride;
-        public bool OverrideFootprintSize;
-        public Vector2Int FootprintSize = Vector2Int.one;
-        public Vector2 VisualScale = Vector2.one;
-        public bool LockVisualScaleAspect = true;
-        public bool IsWallMounted;
-        public bool OverrideAllowRotation;
-        public bool AllowRotation;
-        public bool OverrideRotation0Sprite;
-        public string Rotation0SpritePath;
-        public bool OverrideRotation90Sprite;
-        public string Rotation90SpritePath;
-        public bool OverrideRotation180Sprite;
-        public string Rotation180SpritePath;
-        public bool OverrideRotation270Sprite;
-        public string Rotation270SpritePath;
-        public bool IsStorageContainer;
-        public Vector2Int StorageSize = new Vector2Int(4, 4);
-        public float StorageMaxWeight = CampusPlacedObject.DefaultStorageMaxWeight;
-        public bool UseCustomInteractionAnchor;
-        public Vector3 CustomInteractionAnchorLocalPosition;
-        public float CustomInteractionAnchorRadius = CampusPlacedObject.DefaultInteractionAnchorRadius;
-        public string CustomInteractionPromptText;
-        public List<CampusPlacedObjectInteractionAnchor> CustomInteractionAnchors = new List<CampusPlacedObjectInteractionAnchor>();
-    }
-
-    internal sealed class RuntimeImportedObjectDefinition
-    {
-        public RuntimeImportedObjectDefinition(string objectName)
-        {
-            ObjectName = objectName;
-        }
-
-        public string ObjectName;
-        public string BaseSpritePath;
-        public readonly string[] DirectionSpritePaths = new string[4];
-
-        public bool HasDirectionalSprites
-        {
-            get
-            {
-                for (int i = 0; i < DirectionSpritePaths.Length; i++)
-                {
-                    if (!string.IsNullOrWhiteSpace(DirectionSpritePaths[i]))
-                    {
-                        return true;
-                    }
-                }
-
-                return false;
-            }
-        }
-    }
-
-    [Serializable]
-    public sealed class CampusRuntimePlayerMapSaveManifest
-    {
-        public string SavedAtLocal;
-        public string UnityPersistentDataPath;
-        public string ImportRootFolderName;
-        public string MapFileName;
-    }
-
-    [Serializable]
-    public sealed class CampusRuntimeAuthoringPackageManifest
-    {
-        public string ExportedAtLocal;
-        public string UnityPersistentDataPath;
-        public string ImportRootFolderName;
-        public string MapFileName;
-    }
-
-    [Serializable]
-    public sealed class CampusRuntimeStairSnapshot
-    {
-        public int FromFloor = 1;
-        public int ToFloor = 2;
-        public Vector3Int FromCell;
-        public Vector3Int ToCell;
-        public Vector3Int SecondaryCell;
-        public int Rotation90;
-        public string LinkId;
-        public bool IsAutoReturnStair;
-    }
-
-    [Serializable]
-    public sealed class CampusRuntimeRoomSnapshot
-    {
-        public string RoomName;
-        public int FloorIndex = 1;
-        public Vector3Int Cell;
-        public bool HideMarkerVisual;
-    }
-
-    [Serializable]
-    public sealed class CampusRuntimeLightSnapshot
-    {
-        public string Name;
-        public string LightType;
-        public Vector3 Position;
-        public Vector3 Rotation;
-        public Color Color = Color.white;
-        public float Intensity = 1f;
-        public float InnerRadius = 1.5f;
-        public float OuterRadius = 4f;
-        public float InnerAngle = 360f;
-        public float OuterAngle = 360f;
-        public float FalloffIntensity = 0.18f;
-        public bool ShadowsEnabled = true;
-        public float ShadowIntensity = 0.75f;
-        public float ShadowSoftness = 0.3f;
-        public float ShadowSoftnessFalloff = 0.5f;
-        public int FloorIndex;
-        public Vector3Int Cell;
-    }
 }
 
 

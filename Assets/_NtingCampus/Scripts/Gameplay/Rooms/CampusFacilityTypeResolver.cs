@@ -6,19 +6,73 @@ using UnityEngine;
 
 namespace NtingCampus.Gameplay.Rooms
 {
+    public enum CampusFacilityTypeSource
+    {
+        Unknown = 0,
+        ExplicitTypeId = 1,
+        ExplicitMarker = 2,
+        StorageFallback = 3,
+        LegacyInference = 4,
+        MissingTypeId = 5,
+        UnknownTypeId = 6
+    }
+
+    public readonly struct CampusFacilityTypeResolution
+    {
+        public CampusFacilityTypeResolution(
+            CampusFacilityType facilityType,
+            CampusFacilityTypeSource source,
+            string diagnostic)
+        {
+            FacilityType = facilityType;
+            Source = source;
+            Diagnostic = diagnostic ?? string.Empty;
+        }
+
+        public CampusFacilityType FacilityType { get; }
+        public CampusFacilityTypeSource Source { get; }
+        public string Diagnostic { get; }
+        public bool IsExplicit => Source == CampusFacilityTypeSource.ExplicitTypeId ||
+                                  Source == CampusFacilityTypeSource.ExplicitMarker;
+
+        public static CampusFacilityTypeResolution ExplicitMarker(CampusFacilityType facilityType)
+        {
+            return new CampusFacilityTypeResolution(
+                facilityType,
+                CampusFacilityTypeSource.ExplicitMarker,
+                string.Empty);
+        }
+    }
+
     public static class CampusFacilityTypeResolver
     {
         private const string RuleFileRelativePath =
             "NtingCampus/UserGeneratedRuntimeContent/CampusRuntimeImports/FacilityRules.json";
 
         private static readonly List<FacilityRule> Rules = new List<FacilityRule>();
+
         private static bool rulesLoaded;
 
         public static CampusFacilityType Resolve(CampusPlacedObject placedObject)
         {
+            return ResolveDetailed(placedObject).FacilityType;
+        }
+
+        public static CampusFacilityType Resolve(CampusPlacedObject placedObject, out string diagnostic)
+        {
+            CampusFacilityTypeResolution resolution = ResolveDetailed(placedObject);
+            diagnostic = resolution.Diagnostic;
+            return resolution.FacilityType;
+        }
+
+        public static CampusFacilityTypeResolution ResolveDetailed(CampusPlacedObject placedObject)
+        {
             if (placedObject == null)
             {
-                return CampusFacilityType.Unknown;
+                return new CampusFacilityTypeResolution(
+                    CampusFacilityType.Unknown,
+                    CampusFacilityTypeSource.Unknown,
+                    string.Empty);
             }
 
             EnsureRulesLoaded();
@@ -28,27 +82,56 @@ namespace NtingCampus.Gameplay.Rooms
             {
                 if (TryResolveTypeId(typeId, rawTypeId, out CampusFacilityType typeIdType))
                 {
-                    return typeIdType;
+                    return new CampusFacilityTypeResolution(
+                        typeIdType,
+                        CampusFacilityTypeSource.ExplicitTypeId,
+                        string.Empty);
                 }
 
-                return placedObject.IsStorageContainer ? CampusFacilityType.Storage : CampusFacilityType.Unknown;
+                CampusFacilityType fallback = placedObject.IsStorageContainer
+                    ? CampusFacilityType.Storage
+                    : CampusFacilityType.Unknown;
+                return new CampusFacilityTypeResolution(
+                    fallback,
+                    CampusFacilityTypeSource.UnknownTypeId,
+                    rawTypeId.Trim());
             }
 
             string objectId = Normalize(placedObject.ObjectId);
             string displayName = Normalize(placedObject.DisplayName);
             string rawObjectId = placedObject.ObjectId ?? string.Empty;
             string rawDisplayName = placedObject.DisplayName ?? string.Empty;
+            if (placedObject.IsStorageContainer)
+            {
+                return new CampusFacilityTypeResolution(
+                    CampusFacilityType.Storage,
+                    CampusFacilityTypeSource.StorageFallback,
+                    string.Empty);
+            }
 
             for (int i = 0; i < Rules.Count; i++)
             {
                 FacilityRule rule = Rules[i];
-                if (rule != null && rule.TryResolve(objectId, displayName, rawObjectId, rawDisplayName, out CampusFacilityType type))
+                if (rule != null &&
+                    rule.TryResolveLegacy(
+                        objectId,
+                        displayName,
+                        rawObjectId,
+                        rawDisplayName,
+                        out CampusFacilityType type,
+                        out string source))
                 {
-                    return type;
+                    return new CampusFacilityTypeResolution(
+                        type,
+                        CampusFacilityTypeSource.LegacyInference,
+                        source);
                 }
             }
 
-            return placedObject.IsStorageContainer ? CampusFacilityType.Storage : CampusFacilityType.Unknown;
+            return new CampusFacilityTypeResolution(
+                CampusFacilityType.Unknown,
+                CampusFacilityTypeSource.MissingTypeId,
+                string.Empty);
         }
 
         private static bool TryResolveTypeId(string normalizedTypeId, string rawTypeId, out CampusFacilityType type)
@@ -218,6 +301,13 @@ namespace NtingCampus.Gameplay.Rooms
             });
             rules.Add(new FacilityRule
             {
+                FacilityType = nameof(CampusFacilityType.CanteenFoodBox),
+                TypeIds = new[] { "CanteenFoodBox", "canteen_food_box", "ready_food_box", "hot_food_box" },
+                DisplayNames = new[] { "canteen food box", "ready food box", "\u73b0\u6210\u98df\u7269\u7bb1", "\u98df\u5802\u98df\u7269\u7bb1" },
+                Contains = new[] { "canteen_food_box", "readyfoodbox", "hotfoodbox", "\u73b0\u6210\u98df\u7269\u7bb1", "\u98df\u5802\u98df\u7269\u7bb1" }
+            });
+            rules.Add(new FacilityRule
+            {
                 FacilityType = nameof(CampusFacilityType.Storage),
                 TypeIds = new[] { "Storage", "storage", "storage_box" },
                 DisplayNames = new[] { "storage", "\u50a8\u7269" },
@@ -225,10 +315,17 @@ namespace NtingCampus.Gameplay.Rooms
             });
             rules.Add(new FacilityRule
             {
+                FacilityType = nameof(CampusFacilityType.CanteenServingWindow),
+                TypeIds = new[] { "CanteenServingWindow", "canteen_serving_window", "meal_window", "food_window" },
+                DisplayNames = new[] { "canteen serving window", "meal window", "\u6253\u996d\u7a97\u53e3", "\u98df\u5802\u7a97\u53e3" },
+                Contains = new[] { "canteen_serving_window", "servingwindow", "mealwindow", "foodwindow", "\u6253\u996d\u7a97\u53e3", "\u98df\u5802\u7a97\u53e3" }
+            });
+            rules.Add(new FacilityRule
+            {
                 FacilityType = nameof(CampusFacilityType.CanteenCounter),
                 TypeIds = new[] { "CanteenCounter", "canteen_counter", "food_counter" },
-                DisplayNames = new[] { "canteen counter", "food counter", "\u98df\u5802\u67dc\u53f0", "\u7a97\u53e3" },
-                Contains = new[] { "canteen_counter", "foodcounter", "malatang", "noodle", "\u98df\u5802\u67dc\u53f0", "\u7a97\u53e3", "\u9ebb\u8fa3\u70eb", "\u9762\u6761" }
+                DisplayNames = new[] { "canteen counter", "food counter", "\u98df\u5802\u67dc\u53f0" },
+                Contains = new[] { "canteen_counter", "foodcounter", "malatang", "noodle", "\u98df\u5802\u67dc\u53f0", "\u9ebb\u8fa3\u70eb", "\u9762\u6761" }
             });
             rules.Add(new FacilityRule
             {
@@ -318,7 +415,7 @@ namespace NtingCampus.Gameplay.Rooms
                     return false;
                 }
 
-                if (MatchesExact(TypeIds, normalizedTypeId) || MatchesExact(ObjectIds, normalizedTypeId))
+                if (MatchesExact(TypeIds, normalizedTypeId))
                 {
                     type = parsedType;
                     return true;
@@ -327,22 +424,32 @@ namespace NtingCampus.Gameplay.Rooms
                 return false;
             }
 
-            public bool TryResolve(
+            public bool TryResolveLegacy(
                 string normalizedObjectId,
                 string normalizedDisplayName,
                 string rawObjectId,
                 string rawDisplayName,
-                out CampusFacilityType type)
+                out CampusFacilityType type,
+                out string source)
             {
                 type = CampusFacilityType.Unknown;
+                source = string.Empty;
                 if (!Enum.TryParse(FacilityType, true, out CampusFacilityType parsedType))
                 {
                     return false;
                 }
 
-                if (MatchesExact(ObjectIds, normalizedObjectId) || MatchesExact(DisplayNames, normalizedDisplayName))
+                if (MatchesExact(ObjectIds, normalizedObjectId))
                 {
                     type = parsedType;
+                    source = "ObjectId";
+                    return true;
+                }
+
+                if (MatchesExact(DisplayNames, normalizedDisplayName))
+                {
+                    type = parsedType;
+                    source = "DisplayName";
                     return true;
                 }
 
@@ -350,6 +457,7 @@ namespace NtingCampus.Gameplay.Rooms
                 if (MatchesContains(Contains, combined))
                 {
                     type = parsedType;
+                    source = "Contains";
                     return true;
                 }
 

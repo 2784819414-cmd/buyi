@@ -14,9 +14,20 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   Id: workbook
   DisplayName: 练习册
+  LocalizedDisplayName:
+    chinese: 练习册
+    english: Workbook
   Width: 2
   Height: 1
   Weight: 0.45
   Description: 边角卷起的练习册。
+  LocalizedDescription:
+    chinese: 边角卷起的练习册。
+    english: A workbook with curled corners.
+  UseAction: 0
+  UseText: 
+  LocalizedUseText:
+    chinese: 
+    english: 
   ThemeColor: {r: 0.42, g: 0.5, b: 0.47, a: 1}
-  Icon: {fileID: 0}
+  Icon: {fileID: 21300000, guid: 8f7c2e83b9fd4a54a8b0e6a79f2b7a17, type: 3}

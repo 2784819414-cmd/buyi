@@ -180,6 +180,50 @@ namespace NtingCampus.Gameplay.Events
         public bool Observed { get; }
     }
 
+    public readonly struct CampusProtectedItemMovedEvent
+    {
+        public CampusProtectedItemMovedEvent(
+            int serial,
+            string actorId,
+            string ownerId,
+            string itemInstanceId,
+            string itemDefinitionId,
+            string itemDisplayName,
+            string sourceContainerId,
+            string targetContainerId,
+            string roomId,
+            Vector3 worldPosition,
+            StorageTransferReason reason,
+            int suspicionRisk)
+        {
+            Serial = serial;
+            ActorId = actorId ?? string.Empty;
+            OwnerId = ownerId ?? string.Empty;
+            ItemInstanceId = itemInstanceId ?? string.Empty;
+            ItemDefinitionId = itemDefinitionId ?? string.Empty;
+            ItemDisplayName = itemDisplayName ?? string.Empty;
+            SourceContainerId = sourceContainerId ?? string.Empty;
+            TargetContainerId = targetContainerId ?? string.Empty;
+            RoomId = roomId ?? string.Empty;
+            WorldPosition = worldPosition;
+            Reason = reason;
+            SuspicionRisk = Mathf.Max(0, suspicionRisk);
+        }
+
+        public int Serial { get; }
+        public string ActorId { get; }
+        public string OwnerId { get; }
+        public string ItemInstanceId { get; }
+        public string ItemDefinitionId { get; }
+        public string ItemDisplayName { get; }
+        public string SourceContainerId { get; }
+        public string TargetContainerId { get; }
+        public string RoomId { get; }
+        public Vector3 WorldPosition { get; }
+        public StorageTransferReason Reason { get; }
+        public int SuspicionRisk { get; }
+    }
+
     public readonly struct CampusItemTheftObservedEvent
     {
         public CampusItemTheftObservedEvent(
@@ -283,11 +327,19 @@ namespace NtingCampus.Gameplay.Events
     public sealed class CampusGameplayEventHub : MonoBehaviour
     {
         private const int MaxRecentEvents = 20;
+        private const int MaxRecentProtectedItemMoves = 48;
 
         [SerializeField] private CampusGameBootstrap bootstrap;
         [SerializeField] private List<string> recentEventIds = new List<string>(MaxRecentEvents);
 
+        private readonly List<CampusProtectedItemMovedEvent> recentProtectedItemMoves =
+            new List<CampusProtectedItemMovedEvent>(MaxRecentProtectedItemMoves);
+
+        private int protectedItemMoveSerial;
+
         public IReadOnlyList<string> RecentEventIds => recentEventIds;
+        public IReadOnlyList<CampusProtectedItemMovedEvent> RecentProtectedItemMoves => recentProtectedItemMoves;
+        public int LatestProtectedItemMoveSerial => protectedItemMoveSerial;
         public event System.Action<CampusPrankAttemptedEvent> PrankAttempted;
         public event System.Action<CampusPrankResolvedEvent> PrankResolved;
         public event System.Action<CampusSanctionIssuedEvent> SanctionIssued;
@@ -295,6 +347,7 @@ namespace NtingCampus.Gameplay.Events
         public event System.Action<CampusTeacherDistractedEvent> TeacherDistracted;
         public event System.Action<CampusActorSkipClassEvent> ActorSkipClass;
         public event System.Action<CampusItemTransferredEvent> ItemTransferred;
+        public event System.Action<CampusProtectedItemMovedEvent> ProtectedItemMoved;
         public event System.Action<CampusItemTheftObservedEvent> ItemTheftObserved;
         public event System.Action<CampusInventoryQuestionedEvent> InventoryQuestioned;
         public event System.Action<CampusContrabandFoundEvent> ContrabandFound;
@@ -315,20 +368,22 @@ namespace NtingCampus.Gameplay.Events
 
             if (bootstrap != null && bootstrap.EventLog != null)
             {
-                bootstrap.EventLog.AddLog("[Event] " + normalizedId);
+                bootstrap.EventLog.AddLog(CampusCoreTextCatalog.Format(CampusCoreTextId.EventRecorded, normalizedId));
             }
         }
 
         public void PublishPrankAttempted(CampusPrankAttemptedEvent eventData)
         {
-            Record("prank.attempted." + Normalize(eventData.PrankType));
+            string eventId = "prank.attempted." + Normalize(eventData.PrankType);
+            Record(eventId);
             PrankAttempted?.Invoke(eventData);
         }
 
         public void PublishPrankResolved(CampusPrankResolvedEvent eventData)
         {
             string suffix = eventData.Succeeded ? "success" : "failure";
-            Record("prank.resolved." + Normalize(eventData.PrankType) + "." + suffix);
+            string eventId = "prank.resolved." + Normalize(eventData.PrankType) + "." + suffix;
+            Record(eventId);
             PrankResolved?.Invoke(eventData);
         }
 
@@ -368,21 +423,52 @@ namespace NtingCampus.Gameplay.Events
             ItemTransferred?.Invoke(eventData);
         }
 
+        public void PublishProtectedItemMoved(CampusProtectedItemMovedEvent eventData)
+        {
+            protectedItemMoveSerial++;
+            CampusProtectedItemMovedEvent storedEvent = new CampusProtectedItemMovedEvent(
+                protectedItemMoveSerial,
+                eventData.ActorId,
+                eventData.OwnerId,
+                eventData.ItemInstanceId,
+                eventData.ItemDefinitionId,
+                eventData.ItemDisplayName,
+                eventData.SourceContainerId,
+                eventData.TargetContainerId,
+                eventData.RoomId,
+                eventData.WorldPosition,
+                eventData.Reason,
+                eventData.SuspicionRisk);
+
+            recentProtectedItemMoves.Add(storedEvent);
+            if (recentProtectedItemMoves.Count > MaxRecentProtectedItemMoves)
+            {
+                recentProtectedItemMoves.RemoveRange(0, recentProtectedItemMoves.Count - MaxRecentProtectedItemMoves);
+            }
+
+            const string eventId = "item.protected_moved";
+            Record(eventId);
+            ProtectedItemMoved?.Invoke(storedEvent);
+        }
+
         public void PublishItemTheftObserved(CampusItemTheftObservedEvent eventData)
         {
-            Record("item.theft.observed");
+            const string eventId = "item.theft.observed";
+            Record(eventId);
             ItemTheftObserved?.Invoke(eventData);
         }
 
         public void PublishInventoryQuestioned(CampusInventoryQuestionedEvent eventData)
         {
-            Record(eventData.FoundContraband ? "inventory.questioned.hit" : "inventory.questioned.clear");
+            string eventId = eventData.FoundContraband ? "inventory.questioned.hit" : "inventory.questioned.clear";
+            Record(eventId);
             InventoryQuestioned?.Invoke(eventData);
         }
 
         public void PublishContrabandFound(CampusContrabandFoundEvent eventData)
         {
-            Record("inventory.contraband.found");
+            const string eventId = "inventory.contraband.found";
+            Record(eventId);
             ContrabandFound?.Invoke(eventData);
         }
 

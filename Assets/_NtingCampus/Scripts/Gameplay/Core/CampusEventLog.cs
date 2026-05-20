@@ -39,7 +39,7 @@ namespace NtingCampus.Gameplay.Core
             EnsureEntries();
 
             string normalizedMessage = string.IsNullOrWhiteSpace(message)
-                ? "(空事件)"
+                ? CampusCoreTextCatalog.Get(CampusCoreTextId.EmptyEvent)
                 : message.Trim();
 
             entries.Add(normalizedMessage);

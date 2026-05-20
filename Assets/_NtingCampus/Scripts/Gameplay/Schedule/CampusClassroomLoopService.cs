@@ -4,6 +4,7 @@ using NtingCampus.Gameplay.Characters;
 using NtingCampus.Gameplay.Core;
 using NtingCampus.Gameplay.Events;
 using NtingCampus.Gameplay.Rooms;
+using NtingCampus.Gameplay.UI;
 using UnityEngine;
 
 namespace NtingCampus.Gameplay.Schedule
@@ -12,8 +13,6 @@ namespace NtingCampus.Gameplay.Schedule
     public sealed class CampusClassroomLoopService : MonoBehaviour
     {
         private const float ThinkIntervalSeconds = 0.65f;
-        private const int SleepyheadDozeThreshold = 55;
-        private const int OrdinaryDozeThreshold = 75;
 
         [SerializeField] private CampusGameBootstrap bootstrap;
         [SerializeField] private CampusTimeController timeController;
@@ -27,7 +26,7 @@ namespace NtingCampus.Gameplay.Schedule
         [SerializeField, Range(0f, 1f)] private float distractedSkipDetectionMultiplier = 0.35f;
         [SerializeField, Range(0f, 1f)] private float noTeacherSkipDetectionMultiplier = 0.5f;
 
-        [SerializeField] private string currentPrompt = "课堂闭环等待上课。";
+        [SerializeField] private string currentPrompt = string.Empty;
         [SerializeField] private string activeClassroomId = string.Empty;
         [SerializeField] private string distractedTeacherId = string.Empty;
         [SerializeField] private string distractionSourceStudentId = string.Empty;
@@ -41,17 +40,33 @@ namespace NtingCampus.Gameplay.Schedule
         private readonly HashSet<string> dozedStudentIdsThisSegment =
             new HashSet<string>(StringComparer.OrdinalIgnoreCase);
 
+        private CampusClassroomFacts classroomFacts;
+        private CampusClassroomActions classroomActions;
+        private CampusScheduleService factsScheduleService;
+        private CampusWorldService factsWorldService;
+        private CampusRosterService factsRosterService;
         private float nextThinkTime = -999f;
 
         public string CurrentPrompt => currentPrompt;
-        public string ActiveClassroomId => activeClassroomId;
-        public string DistractedTeacherId => distractedTeacherId;
-        public string DistractionSourceStudentId => distractionSourceStudentId;
+        public string ActiveClassroomId => HasActiveDistraction ? activeClassroomId : string.Empty;
+        public string DistractedTeacherId => HasActiveDistraction ? distractedTeacherId : string.Empty;
+        public string DistractionSourceStudentId => HasActiveDistraction ? distractionSourceStudentId : string.Empty;
         public int DailyDozeEventCount => dailyDozeEventCount;
         public int DailySneakOutCount => dailySneakOutCount;
         public int DailyCaughtSkippingCount => dailyCaughtSkippingCount;
         public bool HasActiveDistraction => Time.time < distractedUntilTime && !string.IsNullOrWhiteSpace(activeClassroomId);
         public float DistractionRemainingSeconds => HasActiveDistraction ? Mathf.Max(0f, distractedUntilTime - Time.time) : 0f;
+
+        internal CampusGameBootstrap Bootstrap => bootstrap;
+        internal CampusGameplayEventHub GameplayEventHub => gameplayEventHub;
+        internal CampusClassroomFacts Facts
+        {
+            get
+            {
+                EnsureDomainOwners();
+                return classroomFacts;
+            }
+        }
 
         public void Initialize(CampusGameBootstrap targetBootstrap)
         {
@@ -61,6 +76,7 @@ namespace NtingCampus.Gameplay.Schedule
             rosterService = bootstrap != null ? bootstrap.RosterService : null;
             scheduleService = bootstrap != null ? bootstrap.ScheduleService : null;
             gameplayEventHub = bootstrap != null ? bootstrap.GameplayEventHub : null;
+            EnsureDomainOwners();
 
             if (timeController != null)
             {
@@ -76,15 +92,71 @@ namespace NtingCampus.Gameplay.Schedule
 
         public bool IsTeacherDistractedInRoom(string roomId)
         {
-            return HasActiveDistraction &&
-                   !string.IsNullOrWhiteSpace(roomId) &&
-                   string.Equals(activeClassroomId, roomId.Trim(), StringComparison.OrdinalIgnoreCase);
+            EnsureDomainOwners();
+            return classroomFacts != null &&
+                   classroomFacts.IsTeacherDistractedInRoom(
+                       activeClassroomId,
+                       distractedUntilTime,
+                       roomId,
+                       Time.time);
         }
 
         public bool TryForceSleepyDistraction()
         {
             ResolveReferences();
-            return TryTriggerSleepyStudentDistraction(true);
+            EnsureDomainOwners();
+            return classroomActions != null &&
+                   classroomActions.TryStudentDozeOff(rosterService != null ? rosterService.PlayerRuntime : null, true);
+        }
+
+        internal bool CanStudentDozeOff(CampusCharacterRuntime student, bool force)
+        {
+            ResolveReferences();
+            EnsureDomainOwners();
+            return classroomActions != null && classroomActions.CanStudentDozeOff(student, force);
+        }
+
+        internal bool TryStudentDozeOff(CampusCharacterRuntime student, bool force)
+        {
+            ResolveReferences();
+            EnsureDomainOwners();
+            return classroomActions != null && classroomActions.TryStudentDozeOff(student, force);
+        }
+
+        internal bool HasStudentDozedThisSegment(string studentId)
+        {
+            return !string.IsNullOrWhiteSpace(studentId) && dozedStudentIdsThisSegment.Contains(studentId);
+        }
+
+        internal void MarkStudentDozedThisSegment(string studentId)
+        {
+            if (!string.IsNullOrWhiteSpace(studentId))
+            {
+                dozedStudentIdsThisSegment.Add(studentId);
+            }
+        }
+
+        internal float BeginTeacherDistraction(
+            CampusGameplayRoom classroom,
+            CampusCharacterRuntime sourceStudent,
+            CampusCharacterRuntime teacher)
+        {
+            activeClassroomId = classroom != null ? classroom.RoomId : string.Empty;
+            distractionSourceStudentId = sourceStudent != null ? sourceStudent.CharacterId : string.Empty;
+            distractedTeacherId = teacher != null ? teacher.CharacterId : string.Empty;
+            distractedUntilTime = Time.time + UnityEngine.Random.Range(
+                Mathf.Min(minDistractionSeconds, maxDistractionSeconds),
+                Mathf.Max(minDistractionSeconds, maxDistractionSeconds));
+            dailyDozeEventCount++;
+            return DistractionRemainingSeconds;
+        }
+
+        internal void WriteClassroomLog(string message)
+        {
+            if (bootstrap != null && bootstrap.EventLog != null)
+            {
+                bootstrap.EventLog.AddLog(message);
+            }
         }
 
         private void OnDestroy()
@@ -105,16 +177,14 @@ namespace NtingCampus.Gameplay.Schedule
 
             nextThinkTime = Time.time + ThinkIntervalSeconds;
             ResolveReferences();
-            if (!IsClassSessionNow())
+            EnsureDomainOwners();
+            ExpireDistractionIfNeeded();
+
+            if (classroomFacts == null || !classroomFacts.IsClassSessionNow())
             {
                 ClearDistraction();
                 RefreshPrompt();
                 return;
-            }
-
-            if (!HasActiveDistraction)
-            {
-                TryTriggerSleepyStudentDistraction(false);
             }
 
             DetectControlledActorLeavingClassroom();
@@ -167,12 +237,40 @@ namespace NtingCampus.Gameplay.Schedule
             }
         }
 
+        private void EnsureDomainOwners()
+        {
+            if (classroomFacts != null &&
+                factsScheduleService == scheduleService &&
+                factsWorldService == worldService &&
+                factsRosterService == rosterService)
+            {
+                return;
+            }
+
+            factsScheduleService = scheduleService;
+            factsWorldService = worldService;
+            factsRosterService = rosterService;
+            classroomFacts = new CampusClassroomFacts(scheduleService, worldService, rosterService);
+            classroomActions = new CampusClassroomActions(this, classroomFacts);
+        }
+
         private void ResetSegmentState()
         {
+            EnsureDomainOwners();
             dozedStudentIdsThisSegment.Clear();
             controlledActorLeaveHandledThisSegment = false;
-            expectedControlledActorClassroomId = ResolveExpectedControlledActorClassroomId();
+            expectedControlledActorClassroomId = classroomFacts != null
+                ? classroomFacts.ResolveExpectedControlledActorClassroomId()
+                : string.Empty;
             ClearDistraction();
+        }
+
+        private void ExpireDistractionIfNeeded()
+        {
+            if (!string.IsNullOrWhiteSpace(activeClassroomId) && Time.time >= distractedUntilTime)
+            {
+                ClearDistraction();
+            }
         }
 
         private void ClearDistraction()
@@ -183,103 +281,6 @@ namespace NtingCampus.Gameplay.Schedule
             distractedUntilTime = -1f;
         }
 
-        private bool IsClassSessionNow()
-        {
-            return scheduleService != null && scheduleService.IsClassSessionNow();
-        }
-
-        private bool TryTriggerSleepyStudentDistraction(bool force)
-        {
-            if (rosterService == null || worldService == null)
-            {
-                return false;
-            }
-
-            CampusCharacterRuntime sleepyStudent = FindSleepyStudentCandidate(force);
-            if (sleepyStudent == null || sleepyStudent.Data == null)
-            {
-                return false;
-            }
-
-            CampusGameplayRoom classroom = ResolveRuntimeRoom(sleepyStudent);
-            if (classroom == null || classroom.RoomType != CampusRoomType.Classroom)
-            {
-                return false;
-            }
-
-            CampusCharacterRuntime teacher = FindTeacherForRoom(classroom.RoomId);
-            sleepyStudent.Data.SetState(CampusCharacterState.Sleeping);
-            sleepyStudent.Data.AddMemory(CampusCharacterMemoryId.DozedOffInClass);
-            dozedStudentIdsThisSegment.Add(sleepyStudent.CharacterId);
-
-            activeClassroomId = classroom.RoomId;
-            distractionSourceStudentId = sleepyStudent.CharacterId;
-            distractedTeacherId = teacher != null ? teacher.CharacterId : string.Empty;
-            distractedUntilTime = Time.time + UnityEngine.Random.Range(
-                Mathf.Min(minDistractionSeconds, maxDistractionSeconds),
-                Mathf.Max(minDistractionSeconds, maxDistractionSeconds));
-            dailyDozeEventCount++;
-
-            if (teacher != null && teacher.Data != null)
-            {
-                teacher.Data.SetState(CampusCharacterState.Nervous);
-                teacher.Data.AddMemory(CampusCharacterMemoryId.NoticedClassroomDozing);
-            }
-
-            gameplayEventHub?.PublishStudentDozedOff(new CampusStudentDozedOffEvent(
-                sleepyStudent.CharacterId,
-                classroom.RoomId,
-                sleepyStudent.Data.Sleepiness));
-            gameplayEventHub?.PublishTeacherDistracted(new CampusTeacherDistractedEvent(
-                distractedTeacherId,
-                sleepyStudent.CharacterId,
-                classroom.RoomId,
-                DistractionRemainingSeconds));
-
-            WriteLog("[课堂] " + sleepyStudent.Data.DisplayName + "撑不住睡着了，老师注意力被吸引。");
-            return true;
-        }
-
-        private CampusCharacterRuntime FindSleepyStudentCandidate(bool force)
-        {
-            CampusCharacterRuntime best = null;
-            int bestSleepiness = int.MinValue;
-            foreach (CampusCharacterRuntime runtime in rosterService.EnumerateByRole(CampusCharacterRole.Student))
-            {
-                if (runtime == null || runtime.Data == null || runtime.Data.IsPlayerControlled)
-                {
-                    continue;
-                }
-
-                if (dozedStudentIdsThisSegment.Contains(runtime.CharacterId))
-                {
-                    continue;
-                }
-
-                CampusGameplayRoom room = ResolveRuntimeRoom(runtime);
-                if (room == null || room.RoomType != CampusRoomType.Classroom)
-                {
-                    continue;
-                }
-
-                int threshold = runtime.Data.HasTrait(CampusCharacterTrait.Sleepyhead)
-                    ? SleepyheadDozeThreshold
-                    : OrdinaryDozeThreshold;
-                if (!force && runtime.Data.Sleepiness < threshold)
-                {
-                    continue;
-                }
-
-                if (best == null || runtime.Data.Sleepiness > bestSleepiness)
-                {
-                    best = runtime;
-                    bestSleepiness = runtime.Data.Sleepiness;
-                }
-            }
-
-            return best;
-        }
-
         private void DetectControlledActorLeavingClassroom()
         {
             if (controlledActorLeaveHandledThisSegment || rosterService == null || rosterService.PlayerRuntime == null)
@@ -288,10 +289,10 @@ namespace NtingCampus.Gameplay.Schedule
             }
 
             CampusCharacterRuntime controlledActor = rosterService.PlayerRuntime;
-            CampusGameplayRoom currentRoom = ResolveRuntimeRoom(controlledActor);
+            CampusGameplayRoom currentRoom = classroomFacts.ResolveRuntimeRoom(controlledActor);
             if (string.IsNullOrWhiteSpace(expectedControlledActorClassroomId))
             {
-                expectedControlledActorClassroomId = ResolveExpectedControlledActorClassroomId();
+                expectedControlledActorClassroomId = classroomFacts.ResolveExpectedControlledActorClassroomId();
             }
 
             if (string.IsNullOrWhiteSpace(expectedControlledActorClassroomId))
@@ -310,20 +311,24 @@ namespace NtingCampus.Gameplay.Schedule
 
             string toRoomId = currentRoom != null ? currentRoom.RoomId : string.Empty;
             bool usedDistraction = IsTeacherDistractedInRoom(expectedControlledActorClassroomId);
-            CampusCharacterRuntime teacher = FindTeacherForRoom(expectedControlledActorClassroomId);
+            CampusCharacterRuntime teacher = classroomFacts.FindTeacherForRoom(expectedControlledActorClassroomId);
             bool detected = RollSkipDetection(usedDistraction, teacher != null);
             if (detected)
             {
                 dailyCaughtSkippingCount++;
                 controlledActor.Data.AddMemory(CampusCharacterMemoryId.CaughtSkippingClass);
-                WriteLog("[课堂] " + controlledActor.Data.DisplayName + " 离开教室时被老师发现。");
+                WriteClassroomLog(CampusClassroomTextCatalog.Format(
+                    CampusClassroomTextId.ActorCaughtLeavingLog,
+                    controlledActor.Data.GetDisplayName(CampusLanguageState.CurrentLanguage)));
             }
             else
             {
                 controlledActor.Data.AddMemory(CampusCharacterMemoryId.SneakedOutDuringClass);
-                WriteLog(usedDistraction
-                    ? "[课堂] " + controlledActor.Data.DisplayName + " 趁老师分神离开教室。"
-                    : "[课堂] " + controlledActor.Data.DisplayName + " 偷偷离开教室，暂时没人追出来。");
+                WriteClassroomLog(CampusClassroomTextCatalog.Format(
+                    usedDistraction
+                        ? CampusClassroomTextId.ActorLeftDuringDistractionLog
+                        : CampusClassroomTextId.ActorSneakedOutLog,
+                    controlledActor.Data.GetDisplayName(CampusLanguageState.CurrentLanguage)));
             }
 
             gameplayEventHub?.PublishActorSkipClass(new CampusActorSkipClassEvent(
@@ -353,88 +358,24 @@ namespace NtingCampus.Gameplay.Schedule
             return UnityEngine.Random.value < Mathf.Clamp01(chance);
         }
 
-        private string ResolveExpectedControlledActorClassroomId()
-        {
-            if (!IsClassSessionNow() || rosterService == null || worldService == null)
-            {
-                return string.Empty;
-            }
-
-            CampusCharacterRuntime controlledActor = rosterService.PlayerRuntime;
-            CampusGameplayRoom controlledActorRoom = ResolveRuntimeRoom(controlledActor);
-            if (controlledActorRoom != null && controlledActorRoom.RoomType == CampusRoomType.Classroom)
-            {
-                return controlledActorRoom.RoomId;
-            }
-
-            CampusGameplayRoom firstClassroom = worldService.FindFirstUsableRoom(CampusRoomType.Classroom) ??
-                                                worldService.FindFirstRoom(CampusRoomType.Classroom);
-            return firstClassroom != null ? firstClassroom.RoomId : string.Empty;
-        }
-
-        private CampusCharacterRuntime FindTeacherForRoom(string roomId)
-        {
-            if (rosterService == null || string.IsNullOrWhiteSpace(roomId))
-            {
-                return null;
-            }
-
-            foreach (CampusCharacterRuntime runtime in rosterService.EnumerateByRole(CampusCharacterRole.Teacher))
-            {
-                if (runtime == null || runtime.Data == null)
-                {
-                    continue;
-                }
-
-                CampusGameplayRoom room = ResolveRuntimeRoom(runtime);
-                if (room != null && string.Equals(room.RoomId, roomId, StringComparison.OrdinalIgnoreCase))
-                {
-                    return runtime;
-                }
-            }
-
-            return null;
-        }
-
-        private CampusGameplayRoom ResolveRuntimeRoom(CampusCharacterRuntime runtime)
-        {
-            if (runtime == null || worldService == null)
-            {
-                return null;
-            }
-
-            CampusGameplayRoom room = worldService.FindRoomForRuntime(runtime);
-            if (room != null)
-            {
-                return room;
-            }
-
-            return runtime.Data != null ? worldService.FindRoomById(runtime.Data.CurrentRoomId) : null;
-        }
-
         private void RefreshPrompt()
         {
-            if (!IsClassSessionNow())
+            EnsureDomainOwners();
+            if (classroomFacts == null || !classroomFacts.IsClassSessionNow())
             {
-                currentPrompt = "课堂闭环等待上课。";
+                currentPrompt = CampusClassroomTextCatalog.Get(CampusClassroomTextId.WaitingForClass);
                 return;
             }
 
             if (HasActiveDistraction)
             {
-                currentPrompt = "老师分心窗口开启：" + DistractionRemainingSeconds.ToString("0.0") + " 秒，可传纸条或离开教室。";
+                currentPrompt = CampusClassroomTextCatalog.Format(
+                    CampusClassroomTextId.DistractionActive,
+                    DistractionRemainingSeconds.ToString("0.0"));
                 return;
             }
 
-            currentPrompt = "上课中：高困倦学生可能睡着，受控角色离开教室会触发逃课判定。";
-        }
-
-        private void WriteLog(string message)
-        {
-            if (bootstrap != null && bootstrap.EventLog != null)
-            {
-                bootstrap.EventLog.AddLog(message);
-            }
+            currentPrompt = CampusClassroomTextCatalog.Get(CampusClassroomTextId.ClassInSession);
         }
     }
 }

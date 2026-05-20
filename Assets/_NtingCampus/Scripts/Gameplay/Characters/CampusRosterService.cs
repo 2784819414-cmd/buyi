@@ -21,6 +21,8 @@ namespace NtingCampus.Gameplay.Characters
         private readonly Dictionary<string, CampusCharacterRuntime> runtimesById =
             new Dictionary<string, CampusCharacterRuntime>(StringComparer.OrdinalIgnoreCase);
 
+        private bool runtimeLookupReady;
+
         public IReadOnlyList<CampusCharacterData> Characters => characters;
         public IReadOnlyList<CampusCharacterRuntime> Runtimes => runtimes;
         public CampusCharacterRuntime PlayerRuntime => playerRuntime;
@@ -37,7 +39,7 @@ namespace NtingCampus.Gameplay.Characters
         public void RebuildRosterFromScene()
         {
             CollectSceneRuntimes();
-            RebuildRuntimeLookup();
+            runtimeLookupReady = true;
             SyncCurrentRoomsFromWorld();
             WriteInitializationLog();
         }
@@ -49,8 +51,12 @@ namespace NtingCampus.Gameplay.Characters
                 return null;
             }
 
-            RebuildRuntimeLookup();
-            runtimesById.TryGetValue(characterId.Trim(), out CampusCharacterRuntime runtime);
+            if (!runtimeLookupReady)
+            {
+                RebuildRuntimeLookup();
+            }
+
+            runtimesById.TryGetValue(NormalizeRuntimeId(characterId), out CampusCharacterRuntime runtime);
             return runtime;
         }
 
@@ -73,37 +79,14 @@ namespace NtingCampus.Gameplay.Characters
                 return false;
             }
 
-            if (playerRuntime == targetRuntime)
+            bool alreadyCurrentPlayer = playerRuntime == targetRuntime;
+            DemoteCurrentPlayerExcept(targetRuntime);
+            PromotePlayerRuntime(targetRuntime);
+
+            if (alreadyCurrentPlayer)
             {
                 return true;
             }
-
-            CampusCharacterRuntime previousPlayer = playerRuntime;
-            if (previousPlayer != null && previousPlayer.Data != null)
-            {
-                previousPlayer.Data.SetPlayerControlled(false);
-                EnsureNpcAgent(previousPlayer);
-                SetGameplayInput(previousPlayer, false);
-            }
-
-            playerRuntime = targetRuntime;
-            playerRuntime.Data.SetPlayerControlled(true);
-            EnsurePlayerActorStack(playerRuntime);
-
-            CampusNpcAgent promotedAgent = playerRuntime.GetComponent<CampusNpcAgent>();
-            if (promotedAgent != null)
-            {
-                Destroy(promotedAgent);
-            }
-
-            playerCharacter = playerRuntime.GetComponent<CampusPlayerCharacter>();
-            if (playerCharacter == null)
-            {
-                playerCharacter = playerRuntime.gameObject.AddComponent<CampusPlayerCharacter>();
-            }
-
-            playerCharacter.Bind(playerRuntime);
-            SetGameplayInput(playerRuntime, true);
 
             if (bootstrap != null && bootstrap.EventLog != null)
             {
@@ -132,6 +115,7 @@ namespace NtingCampus.Gameplay.Characters
             characters.Clear();
             runtimes.Clear();
             runtimesById.Clear();
+            runtimeLookupReady = false;
             playerRuntime = null;
             playerCharacter = null;
 
@@ -191,7 +175,7 @@ namespace NtingCampus.Gameplay.Characters
 
             runtimes.Add(runtime);
             characters.Add(runtime.Data);
-            EnsureBodyController(runtime);
+            IndexRuntime(runtime);
 
             if (runtime.Data.IsPlayerControlled)
             {
@@ -199,7 +183,7 @@ namespace NtingCampus.Gameplay.Characters
                 return;
             }
 
-            EnsureNpcAgent(runtime);
+            EnsureNpcActor(runtime);
         }
 
         private void BindPlayerRuntime(CampusCharacterRuntime runtime)
@@ -212,20 +196,80 @@ namespace NtingCampus.Gameplay.Characters
                     " and ignoring " +
                     runtime.name +
                     ".");
-                runtime.Data.SetPlayerControlled(false);
-                EnsureNpcAgent(runtime);
+                DemotePlayerRuntime(runtime);
+                return;
+            }
+
+            PromotePlayerRuntime(runtime);
+        }
+
+        private void PromotePlayerRuntime(CampusCharacterRuntime runtime)
+        {
+            if (runtime == null || runtime.Data == null)
+            {
                 return;
             }
 
             playerRuntime = runtime;
+            runtime.Data.SetPlayerControlled(true);
             EnsurePlayerActorStack(runtime);
-            playerCharacter = runtime.GetComponent<CampusPlayerCharacter>();
-            if (playerCharacter == null)
+            RemoveNpcActor(runtime);
+            playerCharacter = EnsurePlayerCharacter(runtime);
+            SetGameplayInput(runtime, true);
+        }
+
+        private void DemoteCurrentPlayerExcept(CampusCharacterRuntime promotedRuntime)
+        {
+            if (playerRuntime != null && playerRuntime != promotedRuntime)
             {
-                playerCharacter = runtime.gameObject.AddComponent<CampusPlayerCharacter>();
+                DemotePlayerRuntime(playerRuntime);
             }
 
-            playerCharacter.Bind(runtime);
+            for (int i = 0; i < runtimes.Count; i++)
+            {
+                CampusCharacterRuntime runtime = runtimes[i];
+                if (runtime == null || runtime == promotedRuntime)
+                {
+                    continue;
+                }
+
+                bool isMarkedPlayer =
+                    (runtime.Data != null && runtime.Data.IsPlayerControlled) ||
+                    runtime.GetComponent<CampusPlayerCharacter>() != null;
+                if (isMarkedPlayer)
+                {
+                    DemotePlayerRuntime(runtime);
+                }
+            }
+        }
+
+        private void DemotePlayerRuntime(CampusCharacterRuntime runtime)
+        {
+            if (runtime == null || runtime.Data == null)
+            {
+                return;
+            }
+
+            runtime.Data.SetPlayerControlled(false);
+            RemovePlayerCharacter(runtime);
+            SetGameplayInput(runtime, false);
+            EnsureNpcActor(runtime);
+            if (playerRuntime == runtime)
+            {
+                playerRuntime = null;
+            }
+        }
+
+        private CampusPlayerCharacter EnsurePlayerCharacter(CampusCharacterRuntime runtime)
+        {
+            CampusPlayerCharacter marker = runtime.GetComponent<CampusPlayerCharacter>();
+            if (marker == null)
+            {
+                marker = runtime.gameObject.AddComponent<CampusPlayerCharacter>();
+            }
+
+            marker.Bind(runtime);
+            return marker;
         }
 
         private void EnsurePlayerActorStack(CampusCharacterRuntime runtime)
@@ -297,14 +341,25 @@ namespace NtingCampus.Gameplay.Characters
             runtimesById.Clear();
             for (int i = 0; i < runtimes.Count; i++)
             {
-                CampusCharacterRuntime runtime = runtimes[i];
-                if (runtime == null || runtime.Data == null || string.IsNullOrWhiteSpace(runtime.CharacterId))
-                {
-                    continue;
-                }
-
-                runtimesById[runtime.CharacterId] = runtime;
+                IndexRuntime(runtimes[i]);
             }
+
+            runtimeLookupReady = true;
+        }
+
+        private void IndexRuntime(CampusCharacterRuntime runtime)
+        {
+            if (runtime == null || runtime.Data == null || string.IsNullOrWhiteSpace(runtime.CharacterId))
+            {
+                return;
+            }
+
+            runtimesById[NormalizeRuntimeId(runtime.CharacterId)] = runtime;
+        }
+
+        private static string NormalizeRuntimeId(string characterId)
+        {
+            return string.IsNullOrWhiteSpace(characterId) ? string.Empty : characterId.Trim();
         }
 
         private int CountByRole(CampusCharacterRole role)
@@ -341,21 +396,74 @@ namespace NtingCampus.Gameplay.Characters
             }
         }
 
-        private void EnsureNpcAgent(CampusCharacterRuntime runtime)
+        private void EnsureNpcActor(CampusCharacterRuntime runtime)
         {
             if (runtime == null || runtime.Data == null || runtime.Data.IsPlayerControlled)
             {
                 return;
             }
 
+            RemovePlayerCharacter(runtime);
             SetGameplayInput(runtime, false);
-            CampusNpcAgent agent = runtime.GetComponent<CampusNpcAgent>();
-            if (agent == null)
+            CampusNpcActor actor = runtime.GetComponent<CampusNpcActor>();
+            if (actor == null)
             {
-                agent = runtime.gameObject.AddComponent<CampusNpcAgent>();
+                actor = runtime.gameObject.AddComponent<CampusNpcActor>();
             }
 
-            agent.Initialize(runtime, bootstrap, worldService);
+            actor.Initialize(runtime, bootstrap, worldService);
+        }
+
+        private void RemovePlayerCharacter(CampusCharacterRuntime runtime)
+        {
+            if (runtime == null)
+            {
+                return;
+            }
+
+            CampusPlayerCharacter marker = runtime.GetComponent<CampusPlayerCharacter>();
+            if (marker == null)
+            {
+                return;
+            }
+
+            if (playerCharacter == marker)
+            {
+                playerCharacter = null;
+            }
+
+            marker.Clear();
+            DestroyRuntimeComponent(marker);
+        }
+
+        private static void RemoveNpcActor(CampusCharacterRuntime runtime)
+        {
+            if (runtime == null)
+            {
+                return;
+            }
+
+            CampusNpcActor actor = runtime.GetComponent<CampusNpcActor>();
+            if (actor != null)
+            {
+                DestroyRuntimeComponent(actor);
+            }
+        }
+
+        private static void DestroyRuntimeComponent(Component component)
+        {
+            if (component == null)
+            {
+                return;
+            }
+
+            if (Application.isPlaying)
+            {
+                UnityEngine.Object.Destroy(component);
+                return;
+            }
+
+            UnityEngine.Object.DestroyImmediate(component);
         }
 
         private static void SetGameplayInput(CampusCharacterRuntime runtime, bool enabled)

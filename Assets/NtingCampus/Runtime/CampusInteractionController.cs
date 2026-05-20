@@ -1,3 +1,4 @@
+using NtingCampus.Gameplay.Characters;
 using UnityEngine;
 
 namespace NtingCampusMapEditor
@@ -11,9 +12,12 @@ namespace NtingCampusMapEditor
         public KeyCode InteractKey = KeyCode.E;
         public bool PollInput = true;
         public bool RefreshEveryFrame = true;
+        public float RefreshIntervalSeconds = 0.1f;
         public bool AutoCreatePromptView = true;
 
         public CampusInteractionTarget CurrentTarget { get; private set; }
+        private float nextTargetRefreshTime;
+        private bool hasRefreshedTarget;
 
         private void Awake()
         {
@@ -29,25 +33,31 @@ namespace NtingCampusMapEditor
 
         private void OnValidate()
         {
+            RefreshIntervalSeconds = Mathf.Max(0.02f, RefreshIntervalSeconds);
             CacheReferences(false);
             ApplyKeyLabel();
         }
 
         private void Update()
         {
-            if (RefreshEveryFrame)
-            {
-                RefreshTarget();
-            }
-
-            if (PollInput && CampusInteractionInput.WasKeyPressed(InteractKey))
+            bool interactPressed = PollInput && CampusInteractionInput.WasKeyPressed(InteractKey);
+            if (interactPressed)
             {
                 TryInteractCurrent();
+                return;
+            }
+
+            if (RefreshEveryFrame)
+            {
+                RefreshTargetIfNeeded();
             }
         }
 
         private void OnDisable()
         {
+            CurrentTarget = default;
+            hasRefreshedTarget = false;
+            nextTargetRefreshTime = 0f;
             if (PromptView != null)
             {
                 PromptView.HideImmediate();
@@ -65,25 +75,43 @@ namespace NtingCampusMapEditor
 
         public bool TryInteractCurrent()
         {
-            if (!CurrentTarget.IsValid)
-            {
-                RefreshTarget();
-            }
+            RefreshTarget();
 
             if (!CurrentTarget.IsValid || !CurrentTarget.CanInteract)
             {
                 return false;
             }
 
-            CurrentTarget.Interact(gameObject);
+            CampusCharacterRuntime actor = GetComponentInParent<CampusCharacterRuntime>();
+            if (!CampusCharacterActionExecutor.TryPressInteract(actor, CurrentTarget))
+            {
+                return false;
+            }
+
             RefreshTarget();
             return true;
+        }
+
+        public void RefreshTargetIfNeeded()
+        {
+            if (Application.isPlaying &&
+                hasRefreshedTarget &&
+                Time.unscaledTime < nextTargetRefreshTime)
+            {
+                return;
+            }
+
+            RefreshTarget();
         }
 
         public void RefreshTarget()
         {
             CacheReferences(true);
             ApplyKeyLabel();
+            hasRefreshedTarget = true;
+            nextTargetRefreshTime = Application.isPlaying
+                ? Time.unscaledTime + Mathf.Max(0.02f, RefreshIntervalSeconds)
+                : 0f;
 
             if (Sensor != null && Sensor.TryGetBestTarget(gameObject, CurrentTarget, out CampusInteractionTarget target))
             {

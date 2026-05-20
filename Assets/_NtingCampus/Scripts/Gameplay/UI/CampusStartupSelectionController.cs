@@ -173,7 +173,7 @@ namespace NtingCampus.Gameplay.UI
 
                 GUILayout.BeginHorizontal();
                 GUILayout.BeginVertical(GUILayout.Width(500f));
-                GUILayout.Label("新地图名称 / New Map Name", theme.Subtitle, GUILayout.Height(24f));
+                GUILayout.Label(CampusPlayerUiTextCatalog.Get(CampusPlayerUiTextId.NewMapName), theme.Subtitle, GUILayout.Height(24f));
                 newMapName = GUILayout.TextField(newMapName ?? string.Empty, GUILayout.Height(38f), GUILayout.Width(500f));
                 GUILayout.EndVertical();
 
@@ -367,7 +367,7 @@ namespace NtingCampus.Gameplay.UI
             string sanitizedMapName = SanitizeMapName(newMapName);
             if (string.IsNullOrWhiteSpace(sanitizedMapName))
             {
-                statusText = "请输入新地图名称。";
+                statusText = CampusPlayerUiTextCatalog.Get(CampusPlayerUiTextId.EnterNewMapName);
                 return;
             }
 
@@ -376,7 +376,9 @@ namespace NtingCampus.Gameplay.UI
             string mapPath = Path.Combine(mapFolder, "CampusMap_" + sanitizedMapName + ".json");
             if (File.Exists(mapPath))
             {
-                statusText = "地图已存在：" + Path.GetFileNameWithoutExtension(mapPath);
+                statusText = CampusPlayerUiTextCatalog.Format(
+                    CampusPlayerUiTextId.MapAlreadyExists,
+                    Path.GetFileNameWithoutExtension(mapPath));
                 return;
             }
 

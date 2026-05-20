@@ -16,6 +16,12 @@ namespace NtingCampus.Gameplay.Characters
         private static readonly List<CampusGridNavigationAgent> ActiveAgents =
             new List<CampusGridNavigationAgent>();
 
+        private static readonly Dictionary<AgentCellKey, List<CampusGridNavigationAgent>> ActiveAgentsByCell =
+            new Dictionary<AgentCellKey, List<CampusGridNavigationAgent>>();
+
+        private static readonly List<AgentCellKey> EmptyAgentCells =
+            new List<AgentCellKey>();
+
         private static readonly List<CampusPlacedObject> PlacedObjectScratch =
             new List<CampusPlacedObject>();
 
@@ -26,6 +32,8 @@ namespace NtingCampus.Gameplay.Characters
 
         private static readonly Dictionary<string, int> ReservedDestinationOwnerByKey =
             new Dictionary<string, int>(StringComparer.OrdinalIgnoreCase);
+
+        private static int activeAgentCellIndexFrame = -1;
 
         [SerializeField] private CampusCharacterBodyController bodyController;
         [SerializeField] private CampusMapRoot mapRoot;
@@ -102,7 +110,13 @@ namespace NtingCampus.Gameplay.Characters
             float stuckDistance)
         {
             moveSpeed = Mathf.Max(0.05f, speed);
-            floorIndex = Mathf.Max(1, floor);
+            int nextFloorIndex = Mathf.Max(1, floor);
+            if (floorIndex != nextFloorIndex)
+            {
+                InvalidateAgentCellIndex();
+            }
+
+            floorIndex = nextFloorIndex;
             personalSeed = Mathf.Max(1, Mathf.Abs(seed));
             replanIntervalSeconds = Mathf.Max(MinReplanIntervalSeconds, replanSeconds);
             waypointArrivalDistance = Mathf.Max(0.02f, waypointDistance);
@@ -772,23 +786,36 @@ namespace NtingCampus.Gameplay.Characters
             Vector2 position = (Vector2)transform.position;
             float radius = Mathf.Max(0.1f, separationRadius);
             float radiusSqr = radius * radius;
-            for (int i = 0; i < ActiveAgents.Count; i++)
+            Vector3Int centerCell = WorldToCell(position);
+            RefreshAgentCellIndexIfNeeded();
+            for (int y = centerCell.y - 1; y <= centerCell.y + 1; y++)
             {
-                CampusGridNavigationAgent other = ActiveAgents[i];
-                if (other == null || other == this || !other.isActiveAndEnabled || other.floorIndex != floorIndex)
+                for (int x = centerCell.x - 1; x <= centerCell.x + 1; x++)
                 {
-                    continue;
-                }
+                    if (!ActiveAgentsByCell.TryGetValue(new AgentCellKey(floorIndex, x, y), out List<CampusGridNavigationAgent> agents))
+                    {
+                        continue;
+                    }
 
-                Vector2 delta = position - (Vector2)other.transform.position;
-                float distanceSqr = delta.sqrMagnitude;
-                if (distanceSqr <= 0.0001f || distanceSqr >= radiusSqr)
-                {
-                    continue;
-                }
+                    for (int i = 0; i < agents.Count; i++)
+                    {
+                        CampusGridNavigationAgent other = agents[i];
+                        if (!IsUsableOtherAgent(other))
+                        {
+                            continue;
+                        }
 
-                float distance = Mathf.Sqrt(distanceSqr);
-                push += delta / distance * (1f - distance / radius);
+                        Vector2 delta = position - (Vector2)other.transform.position;
+                        float distanceSqr = delta.sqrMagnitude;
+                        if (distanceSqr <= 0.0001f || distanceSqr >= radiusSqr)
+                        {
+                            continue;
+                        }
+
+                        float distance = Mathf.Sqrt(distanceSqr);
+                        push += delta / distance * (1f - distance / radius);
+                    }
+                }
             }
 
             return push;
@@ -949,23 +976,34 @@ namespace NtingCampus.Gameplay.Characters
                 cost += cell == targetCell ? 35f : 7f;
             }
 
-            for (int i = 0; i < ActiveAgents.Count; i++)
+            RefreshAgentCellIndexIfNeeded();
+            for (int yOffset = -1; yOffset <= 1; yOffset++)
             {
-                CampusGridNavigationAgent other = ActiveAgents[i];
-                if (other == null || other == this || !other.isActiveAndEnabled || other.floorIndex != floorIndex)
+                for (int xOffset = -1; xOffset <= 1; xOffset++)
                 {
-                    continue;
-                }
+                    int distance = Mathf.Abs(xOffset) + Mathf.Abs(yOffset);
+                    if (distance > 1)
+                    {
+                        continue;
+                    }
 
-                Vector3Int otherCell = WorldToCell(other.transform.position);
-                int distance = Mathf.Abs(cell.x - otherCell.x) + Mathf.Abs(cell.y - otherCell.y);
-                if (distance == 0)
-                {
-                    cost += cell == targetCell ? 26f : 9f;
-                }
-                else if (distance == 1)
-                {
-                    cost += 2.5f;
+                    AgentCellKey key = new AgentCellKey(floorIndex, cell.x + xOffset, cell.y + yOffset);
+                    if (!ActiveAgentsByCell.TryGetValue(key, out List<CampusGridNavigationAgent> agents))
+                    {
+                        continue;
+                    }
+
+                    for (int i = 0; i < agents.Count; i++)
+                    {
+                        if (!IsUsableOtherAgent(agents[i]))
+                        {
+                            continue;
+                        }
+
+                        cost += distance == 0
+                            ? (cell == targetCell ? 26f : 9f)
+                            : 2.5f;
+                    }
                 }
             }
 
@@ -976,17 +1014,29 @@ namespace NtingCampus.Gameplay.Characters
         {
             Vector2 center = (Vector2)CellCenterToWorld(cell);
             float radiusSqr = Mathf.Max(0.05f, worldRadius) * Mathf.Max(0.05f, worldRadius);
-            for (int i = 0; i < ActiveAgents.Count; i++)
+            RefreshAgentCellIndexIfNeeded();
+            for (int y = cell.y - 1; y <= cell.y + 1; y++)
             {
-                CampusGridNavigationAgent other = ActiveAgents[i];
-                if (other == null || other == this || !other.isActiveAndEnabled || other.floorIndex != floorIndex)
+                for (int x = cell.x - 1; x <= cell.x + 1; x++)
                 {
-                    continue;
-                }
+                    if (!ActiveAgentsByCell.TryGetValue(new AgentCellKey(floorIndex, x, y), out List<CampusGridNavigationAgent> agents))
+                    {
+                        continue;
+                    }
 
-                if (((Vector2)other.transform.position - center).sqrMagnitude <= radiusSqr)
-                {
-                    return true;
+                    for (int i = 0; i < agents.Count; i++)
+                    {
+                        CampusGridNavigationAgent other = agents[i];
+                        if (!IsUsableOtherAgent(other))
+                        {
+                            continue;
+                        }
+
+                        if (((Vector2)other.transform.position - center).sqrMagnitude <= radiusSqr)
+                        {
+                            return true;
+                        }
+                    }
                 }
             }
 
@@ -1042,6 +1092,7 @@ namespace NtingCampus.Gameplay.Characters
             }
 
             ActiveAgents.Add(agent);
+            InvalidateAgentCellIndex();
         }
 
         private static void UnregisterActiveAgent(CampusGridNavigationAgent agent)
@@ -1052,6 +1103,68 @@ namespace NtingCampus.Gameplay.Characters
             }
 
             ActiveAgents.Remove(agent);
+            InvalidateAgentCellIndex();
+        }
+
+        private static void InvalidateAgentCellIndex()
+        {
+            activeAgentCellIndexFrame = -1;
+        }
+
+        private static void RefreshAgentCellIndexIfNeeded()
+        {
+            if (Application.isPlaying && activeAgentCellIndexFrame == Time.frameCount)
+            {
+                return;
+            }
+
+            EmptyAgentCells.Clear();
+            foreach (KeyValuePair<AgentCellKey, List<CampusGridNavigationAgent>> pair in ActiveAgentsByCell)
+            {
+                pair.Value.Clear();
+            }
+
+            for (int i = 0; i < ActiveAgents.Count; i++)
+            {
+                CampusGridNavigationAgent agent = ActiveAgents[i];
+                if (agent == null || !agent.isActiveAndEnabled)
+                {
+                    continue;
+                }
+
+                Vector3Int cell = WorldToCell(agent.transform.position);
+                AgentCellKey key = new AgentCellKey(agent.floorIndex, cell.x, cell.y);
+                if (!ActiveAgentsByCell.TryGetValue(key, out List<CampusGridNavigationAgent> agents))
+                {
+                    agents = new List<CampusGridNavigationAgent>(2);
+                    ActiveAgentsByCell[key] = agents;
+                }
+
+                agents.Add(agent);
+            }
+
+            foreach (KeyValuePair<AgentCellKey, List<CampusGridNavigationAgent>> pair in ActiveAgentsByCell)
+            {
+                if (pair.Value.Count == 0)
+                {
+                    EmptyAgentCells.Add(pair.Key);
+                }
+            }
+
+            for (int i = 0; i < EmptyAgentCells.Count; i++)
+            {
+                ActiveAgentsByCell.Remove(EmptyAgentCells[i]);
+            }
+
+            activeAgentCellIndexFrame = Time.frameCount;
+        }
+
+        private bool IsUsableOtherAgent(CampusGridNavigationAgent other)
+        {
+            return other != null &&
+                   other != this &&
+                   other.isActiveAndEnabled &&
+                   other.floorIndex == floorIndex;
         }
 
         private CampusFloorRoot ResolveCurrentFloor()
@@ -1326,6 +1439,41 @@ namespace NtingCampus.Gameplay.Characters
             public float EstimatedCost { get; }
             public float TotalCost => CostFromStart + EstimatedCost;
             public PathNode Parent { get; set; }
+        }
+
+        private readonly struct AgentCellKey : IEquatable<AgentCellKey>
+        {
+            public AgentCellKey(int floor, int x, int y)
+            {
+                Floor = Mathf.Max(1, floor);
+                X = x;
+                Y = y;
+            }
+
+            public int Floor { get; }
+            public int X { get; }
+            public int Y { get; }
+
+            public bool Equals(AgentCellKey other)
+            {
+                return Floor == other.Floor && X == other.X && Y == other.Y;
+            }
+
+            public override bool Equals(object obj)
+            {
+                return obj is AgentCellKey other && Equals(other);
+            }
+
+            public override int GetHashCode()
+            {
+                unchecked
+                {
+                    int hash = Floor;
+                    hash = (hash * 397) ^ X;
+                    hash = (hash * 397) ^ Y;
+                    return hash;
+                }
+            }
         }
     }
 }

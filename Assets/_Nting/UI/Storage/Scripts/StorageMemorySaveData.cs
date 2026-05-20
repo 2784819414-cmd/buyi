@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using UnityEngine;
+using NtingCampus.Gameplay.UI;
 
 namespace Nting.Storage
 {
@@ -15,6 +16,7 @@ namespace Nting.Storage
     {
         public string Id;
         public string DisplayName;
+        public CampusLocalizedText LocalizedDisplayName;
         public int Columns;
         public int Rows;
         public float MaxWeight;
@@ -34,10 +36,12 @@ namespace Nting.Storage
         public string DefinitionId;
         public string InstanceId;
         public string DisplayName;
+        public CampusLocalizedText LocalizedDisplayName;
         public int Width;
         public int Height;
         public float Weight;
         public string Description;
+        public CampusLocalizedText LocalizedDescription;
         public int X;
         public int Y;
         public bool Rotated;
@@ -46,6 +50,7 @@ namespace Nting.Storage
         public string UseActionId;
         public bool ConsumeOnUse;
         public string UseText;
+        public CampusLocalizedText LocalizedUseText;
         public StorageItemLegalState LegalState;
         public string OwnerId;
         public string SourceContainerId;

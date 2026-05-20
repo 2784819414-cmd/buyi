@@ -20,7 +20,8 @@ namespace NtingCampus.Gameplay.Inventory
         [SerializeField, Min(0.5f)] private float minUiScale = 0.85f;
         [SerializeField, Min(1f)] private float maxUiScale = 2.1f;
         [SerializeField] private Vector2 scrollPosition;
-        [SerializeField] private string lastActionMessage = "Press F11 to toggle inspection debug.";
+        [SerializeField] private string lastActionMessage =
+            CampusInspectionTextCatalog.Get(CampusInspectionTextId.InitialDebugHint);
 
         public void Initialize(CampusGameBootstrap targetBootstrap)
         {
@@ -71,7 +72,11 @@ namespace NtingCampus.Gameplay.Inventory
                        minUiScale,
                        maxUiScale))
             {
-                GUILayout.BeginArea(PanelRect, "Inspection Debug (" + CampusInteractionInput.GetKeyLabel(toggleKey) + ")", GUI.skin.window);
+                GUILayout.BeginArea(
+                    PanelRect,
+                    CampusInspectionTextCatalog.Get(CampusInspectionTextId.DebugPanelTitle) +
+                    " (" + CampusInteractionInput.GetKeyLabel(toggleKey) + ")",
+                    GUI.skin.window);
                 scrollPosition = GUILayout.BeginScrollView(scrollPosition, false, true);
                 DrawPanelContent();
                 GUILayout.EndScrollView();
@@ -83,60 +88,70 @@ namespace NtingCampus.Gameplay.Inventory
         {
             if (inspectionService == null)
             {
-                GUILayout.Label("InspectionService: none");
+                GUILayout.Label(CampusInspectionTextCatalog.Get(CampusInspectionTextId.ServiceMissing));
                 return;
             }
 
             CampusInspectionDebugSnapshot snapshot = inspectionService.BuildDebugSnapshot();
             DrawSnapshot(snapshot);
             GUILayout.Space(6f);
-            GUILayout.Label("Actions");
+            GUILayout.Label(CampusInspectionTextCatalog.Get(CampusInspectionTextId.Actions));
             GUILayout.BeginHorizontal();
-            if (GUILayout.Button("Seed Contraband"))
+            if (GUILayout.Button(CampusInspectionTextCatalog.Get(CampusInspectionTextId.SeedContraband)))
             {
                 RunAction(inspectionService.TrySeedDebugContraband);
             }
 
-            if (GUILayout.Button("Force Questioning"))
+            if (GUILayout.Button(CampusInspectionTextCatalog.Get(CampusInspectionTextId.ForceQuestioning)))
             {
                 RunAction(inspectionService.TryForceQuestioning);
             }
 
-            if (GUILayout.Button("Force Search"))
+            if (GUILayout.Button(CampusInspectionTextCatalog.Get(CampusInspectionTextId.ForceSearch)))
             {
                 RunAction(inspectionService.TryForceSearch);
             }
 
             GUILayout.EndHorizontal();
             GUILayout.Space(4f);
-            GUILayout.Label("Last Action: " + (string.IsNullOrWhiteSpace(lastActionMessage) ? "-" : lastActionMessage));
+            GUILayout.Label(CampusInspectionTextCatalog.FormatLine(CampusInspectionTextId.LastAction, lastActionMessage));
         }
 
         private static void DrawSnapshot(CampusInspectionDebugSnapshot snapshot)
         {
-            GUILayout.Label("Status: " + snapshot.Status);
-            DrawLine("Room", snapshot.IsAvailable ? snapshot.RoomId + " / " + snapshot.RoomType : "-");
-            DrawLine("Area Pressure", "Search=" + snapshot.AreaSearchPressure + ", Question=" + snapshot.AreaQuestioningPressure);
-            DrawLine("Search Inspector", FormatActor(snapshot.SearchInspectorName, snapshot.SearchInspectorId));
-            DrawLine("Questioner", FormatActor(snapshot.QuestionerName, snapshot.QuestionerId));
-            DrawLine("Highest Vigilance NPC",
+            DrawLine(CampusInspectionTextId.Status, snapshot.Status);
+            DrawLine(CampusInspectionTextId.Room, snapshot.IsAvailable ? snapshot.RoomId + " / " + snapshot.RoomType : "-");
+            DrawLine(
+                CampusInspectionTextId.AreaPressure,
+                CampusInspectionTextCatalog.Get(CampusInspectionTextId.Search) + "=" + snapshot.AreaSearchPressure +
+                ", " + CampusInspectionTextCatalog.Get(CampusInspectionTextId.Question) + "=" + snapshot.AreaQuestioningPressure);
+            DrawLine(CampusInspectionTextId.SearchInspector, FormatActor(snapshot.SearchInspectorName, snapshot.SearchInspectorId));
+            DrawLine(CampusInspectionTextId.Questioner, FormatActor(snapshot.QuestionerName, snapshot.QuestionerId));
+            DrawLine(CampusInspectionTextId.HighestVigilanceNpc,
                 FormatActor(snapshot.HighestVigilanceNpcName, snapshot.HighestVigilanceNpcId) +
                 " / " + snapshot.HighestVigilancePressure);
-            DrawLine("Final Chance",
-                "Search=" + snapshot.SearchPressure + "%, Question=" + snapshot.QuestioningPressure + "%");
-            DrawLine("Cooldown",
-                "Search=" + snapshot.SearchCooldownRemaining.ToString("0.0") +
-                "s, Question=" + snapshot.QuestioningCooldownRemaining.ToString("0.0") + "s");
-            DrawLine("Carried Contraband",
+            DrawLine(CampusInspectionTextId.FinalChance,
+                CampusInspectionTextCatalog.Get(CampusInspectionTextId.Search) + "=" + snapshot.SearchPressure +
+                "%, " + CampusInspectionTextCatalog.Get(CampusInspectionTextId.Question) + "=" +
+                snapshot.QuestioningPressure + "%");
+            DrawLine(CampusInspectionTextId.Cooldown,
+                CampusInspectionTextCatalog.Get(CampusInspectionTextId.Search) + "=" +
+                snapshot.SearchCooldownRemaining.ToString("0.0") + "s, " +
+                CampusInspectionTextCatalog.Get(CampusInspectionTextId.Question) + "=" +
+                snapshot.QuestioningCooldownRemaining.ToString("0.0") + "s");
+            DrawLine(CampusInspectionTextId.CarriedContraband,
                 snapshot.HasContraband
-                    ? snapshot.ContrabandItemName + " in " + snapshot.ContrabandContainerId
-                    : "none");
-            DrawLine("Confiscated Evidence", snapshot.ConfiscatedItemCount.ToString());
+                    ? CampusInspectionTextCatalog.Format(
+                        CampusInspectionTextId.InContainer,
+                        snapshot.ContrabandItemName,
+                        snapshot.ContrabandContainerId)
+                    : CampusInspectionTextCatalog.Get(CampusInspectionTextId.None));
+            DrawLine(CampusInspectionTextId.ConfiscatedEvidence, snapshot.ConfiscatedItemCount.ToString());
         }
 
-        private static void DrawLine(string label, string value)
+        private static void DrawLine(CampusInspectionTextId label, string value)
         {
-            GUILayout.Label(label + ": " + (string.IsNullOrWhiteSpace(value) ? "-" : value));
+            GUILayout.Label(CampusInspectionTextCatalog.FormatLine(label, value));
         }
 
         private static string FormatActor(string displayName, string actorId)
@@ -163,12 +178,14 @@ namespace NtingCampus.Gameplay.Inventory
         {
             if (action == null)
             {
-                lastActionMessage = "Missing action.";
+                lastActionMessage = CampusInspectionTextCatalog.Get(CampusInspectionTextId.MissingAction);
                 return;
             }
 
             bool succeeded = action(out string message);
-            lastActionMessage = (succeeded ? "OK: " : "Failed: ") + message;
+            lastActionMessage = CampusInspectionTextCatalog.Format(
+                succeeded ? CampusInspectionTextId.ActionOk : CampusInspectionTextId.ActionFailed,
+                message);
         }
 
         private void ResolveReferences()

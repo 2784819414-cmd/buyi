@@ -1,0 +1,158 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 8f7c2e83b9fd4a54a8b0e6a79f2b7a24, type: 3}
+  m_Name: PlayerInventoryProfile
+  m_EditorClassIdentifier: 
+  OwnerId: player
+  RoomId: 
+  Containers:
+  - Id: hand_left
+    DisplayName: 左手
+    LocalizedDisplayName:
+      chinese: 左手
+      english: Left Hand
+    Columns: 2
+    Rows: 2
+    MaxWeight: 3
+    AccessPolicy: 1
+    OwnerRole: Player
+    AllowTakingContents: 1
+    IsPlayerCarried: 1
+    SuspicionRisk: 0
+  - Id: hand_right
+    DisplayName: 右手
+    LocalizedDisplayName:
+      chinese: 右手
+      english: Right Hand
+    Columns: 2
+    Rows: 2
+    MaxWeight: 3
+    AccessPolicy: 1
+    OwnerRole: Player
+    AllowTakingContents: 1
+    IsPlayerCarried: 1
+    SuspicionRisk: 0
+  - Id: pocket_left_chest
+    DisplayName: 左胸袋
+    LocalizedDisplayName:
+      chinese: 左胸袋
+      english: Left Chest Pocket
+    Columns: 2
+    Rows: 3
+    MaxWeight: 1.5
+    AccessPolicy: 1
+    OwnerRole: Player
+    AllowTakingContents: 1
+    IsPlayerCarried: 1
+    SuspicionRisk: 0
+  - Id: pocket_right_chest
+    DisplayName: 右胸袋
+    LocalizedDisplayName:
+      chinese: 右胸袋
+      english: Right Chest Pocket
+    Columns: 2
+    Rows: 3
+    MaxWeight: 1.5
+    AccessPolicy: 1
+    OwnerRole: Player
+    AllowTakingContents: 1
+    IsPlayerCarried: 1
+    SuspicionRisk: 0
+  - Id: pocket_left_pants
+    DisplayName: 左裤袋
+    LocalizedDisplayName:
+      chinese: 左裤袋
+      english: Left Pants Pocket
+    Columns: 2
+    Rows: 3
+    MaxWeight: 2
+    AccessPolicy: 1
+    OwnerRole: Player
+    AllowTakingContents: 1
+    IsPlayerCarried: 1
+    SuspicionRisk: 0
+  - Id: pocket_right_pants
+    DisplayName: 右裤袋
+    LocalizedDisplayName:
+      chinese: 右裤袋
+      english: Right Pants Pocket
+    Columns: 2
+    Rows: 3
+    MaxWeight: 2
+    AccessPolicy: 1
+    OwnerRole: Player
+    AllowTakingContents: 1
+    IsPlayerCarried: 1
+    SuspicionRisk: 0
+  - Id: school_backpack
+    DisplayName: 学生书包
+    LocalizedDisplayName:
+      chinese: 学生书包
+      english: School Backpack
+    Columns: 5
+    Rows: 6
+    MaxWeight: 20
+    AccessPolicy: 1
+    OwnerRole: Player
+    AllowTakingContents: 1
+    IsPlayerCarried: 1
+    SuspicionRisk: 0
+  HandContainerIds:
+  - hand_left
+  - hand_right
+  PocketContainerIds:
+  - pocket_left_chest
+  - pocket_right_chest
+  - pocket_left_pants
+  - pocket_right_pants
+  BackpackContainerId: school_backpack
+  StarterItems:
+  - ContainerId: pocket_left_chest
+    DefinitionId: phone
+    InstanceId: phone_player_001
+    X: 0
+    Y: 0
+  - ContainerId: pocket_left_chest
+    DefinitionId: note
+    InstanceId: note_player_001
+    X: 1
+    Y: 0
+  - ContainerId: pocket_right_chest
+    DefinitionId: key
+    InstanceId: key_player_001
+    X: 0
+    Y: 0
+  - ContainerId: pocket_left_pants
+    DefinitionId: snack
+    InstanceId: snack_player_001
+    X: 0
+    Y: 1
+  - ContainerId: school_backpack
+    DefinitionId: textbook
+    InstanceId: textbook_player_001
+    X: 0
+    Y: 0
+  - ContainerId: school_backpack
+    DefinitionId: workbook
+    InstanceId: workbook_player_001
+    X: 2
+    Y: 0
+  - ContainerId: school_backpack
+    DefinitionId: pencil_case
+    InstanceId: pencil_case_player_001
+    X: 2
+    Y: 2
+  - ContainerId: school_backpack
+    DefinitionId: lunch_box
+    InstanceId: lunch_box_player_001
+    X: 0
+    Y: 3

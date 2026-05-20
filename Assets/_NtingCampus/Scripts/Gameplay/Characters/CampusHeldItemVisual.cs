@@ -1,4 +1,5 @@
 using Nting.Storage;
+using NtingCampus.Gameplay.Inventory;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -53,10 +54,9 @@ namespace NtingCampus.Gameplay.Characters
                 return;
             }
 
-            StorageMemory memory = StorageMemory.GetOrCreate();
-            StorageContainerModel[] hands = StoragePlayerInventoryUtility.GetOrCreateHandContainers(memory);
-            StorageItemModel leftItem = ResolveFirstItem(hands, 0);
-            StorageItemModel rightItem = ResolveFirstItem(hands, 1);
+            CampusCharacterInventory inventory = CampusCharacterInventoryService.GetOrCreateInventory(runtime, false);
+            StorageItemModel leftItem = ResolveFirstItem(inventory.Hands, 0);
+            StorageItemModel rightItem = ResolveFirstItem(inventory.Hands, 1);
             bool hasAnyItem = leftItem != null || rightItem != null;
             SetCanvasVisible(hasAnyItem);
             if (!hasAnyItem)

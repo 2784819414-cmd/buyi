@@ -1,4 +1,5 @@
 using System;
+using NtingCampus.Gameplay.UI;
 using UnityEngine;
 
 namespace NtingCampus.Gameplay.Core
@@ -91,12 +92,24 @@ namespace NtingCampus.Gameplay.Core
         }
 
         /// <summary>
-        /// 返回中文日期显示文本。
+        /// 返回当前语言的日期显示文本。
         /// </summary>
         public string ToDisplayString()
         {
+            return ToDisplayString(CampusLanguageState.CurrentLanguage);
+        }
+
+        public string ToDisplayString(CampusDisplayLanguage language)
+        {
             DateTime dateTime = ToDateTime();
-            return dateTime.Year + "年" + dateTime.Month + "月" + dateTime.Day + "日 " + GetChineseWeekday(dateTime.DayOfWeek);
+            string chinese = dateTime.Year + "年" + dateTime.Month + "月" + dateTime.Day + "日 " + GetChineseWeekday(dateTime.DayOfWeek);
+            string english = dateTime.ToString("yyyy-MM-dd") + " " + GetEnglishWeekday(dateTime.DayOfWeek);
+            return language switch
+            {
+                CampusDisplayLanguage.English => english,
+                CampusDisplayLanguage.Bilingual => chinese + " / " + english,
+                _ => chinese
+            };
         }
 
         /// <summary>
@@ -128,6 +141,21 @@ namespace NtingCampus.Gameplay.Core
                 default:
                     return "星期三";
             }
+        }
+
+        private static string GetEnglishWeekday(DayOfWeek dayOfWeek)
+        {
+            return dayOfWeek switch
+            {
+                DayOfWeek.Monday => "Monday",
+                DayOfWeek.Tuesday => "Tuesday",
+                DayOfWeek.Wednesday => "Wednesday",
+                DayOfWeek.Thursday => "Thursday",
+                DayOfWeek.Friday => "Friday",
+                DayOfWeek.Saturday => "Saturday",
+                DayOfWeek.Sunday => "Sunday",
+                _ => "Wednesday"
+            };
         }
     }
 }

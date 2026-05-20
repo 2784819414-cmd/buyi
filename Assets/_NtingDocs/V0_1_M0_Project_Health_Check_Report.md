@@ -7,7 +7,7 @@
 ## Unity 版本
 
 - ProjectSettings：`6000.3.14f1 (d68c3f99a318)`
-- Unity Editor 路径：`F:/1Unity/Editors/6000.3.14f1/Editor/Unity.exe`
+- Unity Editor：`6000.3.14f1`
 - 当前项目已被一个 Unity Editor 实例打开，因此独立 `-batchmode` 二次打开被 Unity 拒绝：`Multiple Unity instances cannot open the same project.`
 
 ## 编译结果

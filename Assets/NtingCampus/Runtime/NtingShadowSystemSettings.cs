@@ -18,14 +18,14 @@ namespace NtingCampusMapEditor
 
         // 高质量扫描：允许大量灯参与候选排序。
         // 画质高不等于每个物体吃一堆灯影；后者只会把桌椅变成煤矿出土文物。
-        public const int MaxPointLights = 48;
+        public const int MaxPointLights = 16;
 
         // 每个物体只保留最有效的少数点光阴影。
         // 点光源在俯视角室内主要提供局部层次，不应该生成一把扇子。
-        public const int MaxPointLightShadowsPerCaster = 4;
+        public const int MaxPointLightShadowsPerCaster = 2;
 
         // 轮廓采样继续拉高，保证边缘顺滑。质量预设照样往上拉，不拿采样开刀。
-        public const int ObjectShadowSampleCount = 128;
+        public const int ObjectShadowSampleCount = 64;
 
         // 点光源阴影必须短、薄、干净。
         // 长影交给太阳；室内点光拖长就是脏，不是电影感。
@@ -60,7 +60,7 @@ namespace NtingCampusMapEditor
 
         // PC 端高响应。这里继续保留高刷新，不搞“低配友好”的借口。
         public const float ScanInterval = 0.25f;
-        public const float MinScanInterval = 0.1f;
+        public const float MinScanInterval = 0.25f;
 
         public const int ShadowSortingOrderOffset = 2;
 

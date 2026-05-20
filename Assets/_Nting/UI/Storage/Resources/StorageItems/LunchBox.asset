@@ -14,9 +14,20 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   Id: lunch_box
   DisplayName: 饭盒
+  LocalizedDisplayName:
+    chinese: 饭盒
+    english: Lunch Box
   Width: 2
   Height: 2
   Weight: 0.8
   Description: 塑料饭盒，盖子扣得不算紧。
+  LocalizedDescription:
+    chinese: 塑料饭盒，盖子扣得不算紧。
+    english: A plastic lunch box with a loose lid.
+  UseAction: 0
+  UseText: 
+  LocalizedUseText:
+    chinese: 
+    english: 
   ThemeColor: {r: 0.45, g: 0.42, b: 0.34, a: 1}
-  Icon: {fileID: 0}
+  Icon: {fileID: 21300000, guid: 8f7c2e83b9fd4a54a8b0e6a79f2b7a19, type: 3}
