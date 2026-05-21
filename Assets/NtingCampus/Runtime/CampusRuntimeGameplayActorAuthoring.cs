@@ -561,34 +561,12 @@ namespace NtingCampusMapEditor
                 return;
             }
 
-            CampusGameplayFacilityMarker facility = null;
-            if ((actor.StaffDuty & CampusStaffDuty.CanteenClerk) != 0)
-            {
-                facility = FindNearestFacility(
-                    actor.FloorIndex,
-                    actor.Cell,
-                    CampusFacilityType.CanteenServingWindow,
-                    CampusFacilityType.CanteenClerkStandPoint,
-                    CampusFacilityType.CanteenCounter,
-                    CampusFacilityType.CanteenCustomerPickupPoint);
-            }
-            else if ((actor.StaffDuty & CampusStaffDuty.StoreOwner) != 0 ||
-                     (actor.StaffDuty & CampusStaffDuty.BookstoreOwner) != 0)
-            {
-                facility = FindNearestFacility(
-                    actor.FloorIndex,
-                    actor.Cell,
-                    CampusFacilityType.StoreCheckout,
-                    CampusFacilityType.StoreQueuePoint);
-            }
-            else if ((actor.StaffDuty & CampusStaffDuty.DeliveryWatcher) != 0)
-            {
-                facility = FindNearestFacility(actor.FloorIndex, actor.Cell, CampusFacilityType.DeliveryDropPoint);
-                if (facility != null)
-                {
-                    actor.Assignments.DeliveryPointId = ResolveFacilityId(facility);
-                }
-            }
+            CampusGameplayFacilityMarker facility = FindNearestFacility(
+                actor.FloorIndex,
+                actor.Cell,
+                CampusFacilityType.OfficeDesk,
+                CampusFacilityType.Desk,
+                CampusFacilityType.Storage);
 
             if (facility != null)
             {

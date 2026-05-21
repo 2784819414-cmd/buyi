@@ -1,5 +1,4 @@
 using System;
-using System.Collections.Generic;
 using NtingCampus.Gameplay.Rooms;
 using UnityEngine;
 
@@ -27,12 +26,6 @@ namespace NtingCampus.Gameplay.Characters
         public string WorkRoomId = string.Empty;
         public string PrimaryWorkstationKey = string.Empty;
         public Vector3 PrimaryWorkstationPosition;
-        public List<Vector3> SecondaryWorkstationPositions = new List<Vector3>();
-        public List<Vector3> ShelfPositions = new List<Vector3>();
-
-        public string DeliveryRoomId = string.Empty;
-        public string DeliveryPointKey = string.Empty;
-        public Vector3 DeliveryPointPosition;
 
         public string DormRoomId = string.Empty;
         public Vector3 DormPosition;
@@ -44,7 +37,6 @@ namespace NtingCampus.Gameplay.Characters
         public bool HasTeacherPodium => !string.IsNullOrWhiteSpace(TeacherPodiumKey);
         public bool HasOfficeDesk => !string.IsNullOrWhiteSpace(OfficeDeskKey);
         public bool HasPrimaryWorkstation => !string.IsNullOrWhiteSpace(PrimaryWorkstationKey);
-        public bool HasDeliveryPoint => !string.IsNullOrWhiteSpace(DeliveryPointKey);
 
         public void Reset(CampusCharacterData data)
         {
@@ -63,11 +55,6 @@ namespace NtingCampus.Gameplay.Characters
             WorkRoomId = string.Empty;
             PrimaryWorkstationKey = string.Empty;
             PrimaryWorkstationPosition = Vector3.zero;
-            SecondaryWorkstationPositions.Clear();
-            ShelfPositions.Clear();
-            DeliveryRoomId = string.Empty;
-            DeliveryPointKey = string.Empty;
-            DeliveryPointPosition = Vector3.zero;
             DormRoomId = string.Empty;
             DormPosition = Vector3.zero;
             CommonRoomId = string.Empty;
@@ -100,13 +87,6 @@ namespace NtingCampus.Gameplay.Characters
             WorkRoomId = room != null ? room.RoomId : string.Empty;
             PrimaryWorkstationKey = key ?? string.Empty;
             PrimaryWorkstationPosition = position;
-        }
-
-        public void SetDeliveryPoint(CampusGameplayRoom room, string key, Vector3 position)
-        {
-            DeliveryRoomId = room != null ? room.RoomId : string.Empty;
-            DeliveryPointKey = key ?? string.Empty;
-            DeliveryPointPosition = position;
         }
 
         public void SetDorm(CampusGameplayRoom room, Vector3 position)

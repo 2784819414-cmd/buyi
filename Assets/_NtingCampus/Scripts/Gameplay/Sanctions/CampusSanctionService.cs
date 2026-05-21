@@ -38,8 +38,6 @@ namespace NtingCampus.Gameplay.Sanctions
 
             if (gameplayEventHub != null)
             {
-                gameplayEventHub.PrankResolved -= HandlePrankResolved;
-                gameplayEventHub.PrankResolved += HandlePrankResolved;
                 gameplayEventHub.ActorSkipClass -= HandleActorSkipClass;
                 gameplayEventHub.ActorSkipClass += HandleActorSkipClass;
                 gameplayEventHub.ItemTheftObserved -= HandleItemTheftObserved;
@@ -53,27 +51,10 @@ namespace NtingCampus.Gameplay.Sanctions
         {
             if (gameplayEventHub != null)
             {
-                gameplayEventHub.PrankResolved -= HandlePrankResolved;
                 gameplayEventHub.ActorSkipClass -= HandleActorSkipClass;
                 gameplayEventHub.ItemTheftObserved -= HandleItemTheftObserved;
                 gameplayEventHub.ContrabandFound -= HandleContrabandFound;
             }
-        }
-
-        private void HandlePrankResolved(CampusPrankResolvedEvent eventData)
-        {
-            if (!eventData.DetectedByTeacher || bootstrap == null || bootstrap.GameState == null)
-            {
-                return;
-            }
-
-            CampusCharacterRuntime actorRuntime = rosterService != null ? rosterService.FindRuntime(eventData.ActorId) : null;
-            if (actorRuntime == null || actorRuntime.Data == null)
-            {
-                return;
-            }
-
-            IssueDetectedRuleBreak(actorRuntime, eventData.RoomId, string.Empty);
         }
 
         private void HandleActorSkipClass(CampusActorSkipClassEvent eventData)
@@ -174,17 +155,29 @@ namespace NtingCampus.Gameplay.Sanctions
             switch (level)
             {
                 case CampusSanctionLevel.Warning:
-                    actorRuntime.Data.SetState(CampusCharacterState.Nervous);
+                    CampusCharacterEffects.TrySetState(
+                        actorRuntime,
+                        CampusCharacterState.Nervous,
+                        CampusCharacterEffectSource.Sanction);
                     break;
                 case CampusSanctionLevel.Reprimand:
-                    actorRuntime.Data.SetState(CampusCharacterState.Reprimanded);
+                    CampusCharacterEffects.TrySetState(
+                        actorRuntime,
+                        CampusCharacterState.Reprimanded,
+                        CampusCharacterEffectSource.Sanction);
                     break;
                 case CampusSanctionLevel.OfficePunishment:
-                    actorRuntime.Data.SetState(CampusCharacterState.Punished);
+                    CampusCharacterEffects.TrySetState(
+                        actorRuntime,
+                        CampusCharacterState.Punished,
+                        CampusCharacterEffectSource.Sanction);
                     MoveActorToOffice(actorRuntime);
                     break;
                 default:
-                    actorRuntime.Data.SetState(CampusCharacterState.Normal);
+                    CampusCharacterEffects.TrySetState(
+                        actorRuntime,
+                        CampusCharacterState.Normal,
+                        CampusCharacterEffectSource.Sanction);
                     break;
             }
         }
@@ -197,8 +190,11 @@ namespace NtingCampus.Gameplay.Sanctions
                 return;
             }
 
-            actorRuntime.transform.position = officeRoom.WorldCenter + new Vector3(-0.25f, -0.15f, 0f);
-            actorRuntime.Data.SetCurrentRoom(officeRoom.RoomId);
+            CampusCharacterEffects.TryMoveToRoom(
+                actorRuntime,
+                officeRoom,
+                new Vector3(-0.25f, -0.15f, 0f),
+                CampusCharacterEffectSource.Sanction);
         }
 
         private void WriteSanctionLog(CampusCharacterRuntime actorRuntime, CampusSanctionLevel level, int warningCount)

@@ -27,7 +27,7 @@ namespace NtingCampus.Gameplay.Inventory
                 return false;
             }
 
-            if (IsAllowedCommerceTake(source))
+            if (IsAllowedProtectedTransferTake(source))
             {
                 return false;
             }
@@ -72,9 +72,9 @@ namespace NtingCampus.Gameplay.Inventory
                 return;
             }
 
-            if (IsAllowedCommerceTake(source))
+            if (IsAllowedProtectedTransferTake(source))
             {
-                PreserveCommerceOwnership(item, source);
+                MarkUnclearedProtectedTransferItem(item, source);
                 return;
             }
 
@@ -152,30 +152,30 @@ namespace NtingCampus.Gameplay.Inventory
             return source.AccessPolicy == StorageContainerAccessPolicy.OwnedPrivate ||
                    source.AccessPolicy == StorageContainerAccessPolicy.ProtectedPublic ||
                    source.AccessPolicy == StorageContainerAccessPolicy.StaffOnly ||
-                   source.AccessPolicy == StorageContainerAccessPolicy.Commerce ||
+                   source.AccessPolicy == StorageContainerAccessPolicy.ProtectedTransfer ||
                    !source.AllowTakingContents;
         }
 
-        private static bool IsAllowedCommerceTake(StorageContainerModel source)
+        private static bool IsAllowedProtectedTransferTake(StorageContainerModel source)
         {
             return source != null &&
-                   source.AccessPolicy == StorageContainerAccessPolicy.Commerce &&
+                   source.AccessPolicy == StorageContainerAccessPolicy.ProtectedTransfer &&
                    source.AllowTakingContents;
         }
 
-        private static void PreserveCommerceOwnership(StorageItemModel item, StorageContainerModel source)
+        private static void MarkUnclearedProtectedTransferItem(StorageItemModel item, StorageContainerModel source)
         {
             if (item == null || source == null)
             {
                 return;
             }
 
-            item.LegalState = StorageItemLegalState.Public;
+            item.LegalState = StorageItemLegalState.Suspicious;
             item.OwnerId = source.OwnerId;
             item.SourceContainerId = source.Id;
             item.SourceRoomId = source.RoomId;
             item.SourceLocation = source.DisplayName;
-            item.AllowTaking = true;
+            item.AllowTaking = false;
             item.StolenDuringSession = false;
             item.SuspicionRisk = source.SuspicionRisk;
         }

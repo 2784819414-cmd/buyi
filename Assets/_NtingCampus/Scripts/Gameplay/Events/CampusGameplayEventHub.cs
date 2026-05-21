@@ -1,64 +1,11 @@
 using System.Collections.Generic;
 using Nting.Storage;
 using NtingCampus.Gameplay.Core;
-using NtingCampus.Gameplay.Pranks;
 using NtingCampus.Gameplay.Sanctions;
 using UnityEngine;
 
 namespace NtingCampus.Gameplay.Events
 {
-    public readonly struct CampusPrankAttemptedEvent
-    {
-        public CampusPrankAttemptedEvent(
-            CampusPrankType prankType,
-            string actorId,
-            string targetId,
-            string roomId,
-            bool duringClassSession)
-        {
-            PrankType = prankType;
-            ActorId = actorId ?? string.Empty;
-            TargetId = targetId ?? string.Empty;
-            RoomId = roomId ?? string.Empty;
-            DuringClassSession = duringClassSession;
-        }
-
-        public CampusPrankType PrankType { get; }
-        public string ActorId { get; }
-        public string TargetId { get; }
-        public string RoomId { get; }
-        public bool DuringClassSession { get; }
-    }
-
-    public readonly struct CampusPrankResolvedEvent
-    {
-        public CampusPrankResolvedEvent(
-            CampusPrankType prankType,
-            string actorId,
-            string targetId,
-            string roomId,
-            bool succeeded,
-            bool detectedByTeacher,
-            int divinePowerReward)
-        {
-            PrankType = prankType;
-            ActorId = actorId ?? string.Empty;
-            TargetId = targetId ?? string.Empty;
-            RoomId = roomId ?? string.Empty;
-            Succeeded = succeeded;
-            DetectedByTeacher = detectedByTeacher;
-            DivinePowerReward = divinePowerReward;
-        }
-
-        public CampusPrankType PrankType { get; }
-        public string ActorId { get; }
-        public string TargetId { get; }
-        public string RoomId { get; }
-        public bool Succeeded { get; }
-        public bool DetectedByTeacher { get; }
-        public int DivinePowerReward { get; }
-    }
-
     public readonly struct CampusSanctionIssuedEvent
     {
         public CampusSanctionIssuedEvent(
@@ -340,8 +287,6 @@ namespace NtingCampus.Gameplay.Events
         public IReadOnlyList<string> RecentEventIds => recentEventIds;
         public IReadOnlyList<CampusProtectedItemMovedEvent> RecentProtectedItemMoves => recentProtectedItemMoves;
         public int LatestProtectedItemMoveSerial => protectedItemMoveSerial;
-        public event System.Action<CampusPrankAttemptedEvent> PrankAttempted;
-        public event System.Action<CampusPrankResolvedEvent> PrankResolved;
         public event System.Action<CampusSanctionIssuedEvent> SanctionIssued;
         public event System.Action<CampusStudentDozedOffEvent> StudentDozedOff;
         public event System.Action<CampusTeacherDistractedEvent> TeacherDistracted;
@@ -370,21 +315,6 @@ namespace NtingCampus.Gameplay.Events
             {
                 bootstrap.EventLog.AddLog(CampusCoreTextCatalog.Format(CampusCoreTextId.EventRecorded, normalizedId));
             }
-        }
-
-        public void PublishPrankAttempted(CampusPrankAttemptedEvent eventData)
-        {
-            string eventId = "prank.attempted." + Normalize(eventData.PrankType);
-            Record(eventId);
-            PrankAttempted?.Invoke(eventData);
-        }
-
-        public void PublishPrankResolved(CampusPrankResolvedEvent eventData)
-        {
-            string suffix = eventData.Succeeded ? "success" : "failure";
-            string eventId = "prank.resolved." + Normalize(eventData.PrankType) + "." + suffix;
-            Record(eventId);
-            PrankResolved?.Invoke(eventData);
         }
 
         public void PublishSanctionIssued(CampusSanctionIssuedEvent eventData)
@@ -470,11 +400,6 @@ namespace NtingCampus.Gameplay.Events
             const string eventId = "inventory.contraband.found";
             Record(eventId);
             ContrabandFound?.Invoke(eventData);
-        }
-
-        private static string Normalize(CampusPrankType prankType)
-        {
-            return prankType.ToString().ToLowerInvariant();
         }
 
         private static string Normalize(CampusSanctionLevel sanctionLevel)

@@ -47,7 +47,7 @@ namespace NtingCampus.Gameplay.Characters
         public void RefreshImmediate()
         {
             EnsureSetup();
-            bool visible = runtime != null && runtime.Data != null && runtime.Data.IsPlayerControlled;
+            bool visible = runtime != null && runtime.Data != null;
             if (!visible)
             {
                 SetCanvasVisible(false);

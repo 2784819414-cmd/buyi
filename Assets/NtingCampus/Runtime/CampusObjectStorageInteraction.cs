@@ -1,7 +1,6 @@
 using Nting.Storage;
 using NtingCampus.Gameplay.Characters;
 using NtingCampus.Gameplay.Core;
-using NtingCampus.Gameplay.Economy;
 using NtingCampus.Gameplay.Rooms;
 using NtingCampus.Gameplay.UI;
 using UnityEngine;
@@ -30,10 +29,7 @@ namespace NtingCampusMapEditor
                 storageSize.y,
                 ResolveObjectStorageMaxWeight(placedObject));
 
-            if (!TryConfigureStoreShelfContainer(placedObject, container))
-            {
-                ConfigureObjectStorageContainer(source, placedObject, container);
-            }
+            ConfigureObjectStorageContainer(source, placedObject, container);
 
             return CampusCharacterActionExecutor.TryExecute(
                 actorRuntime,
@@ -56,18 +52,6 @@ namespace NtingCampusMapEditor
             return bootstrap != null && bootstrap.RosterService != null
                 ? bootstrap.RosterService.PlayerRuntime
                 : null;
-        }
-
-        private static bool TryConfigureStoreShelfContainer(CampusPlacedObject placedObject, StorageContainerModel container)
-        {
-            if (placedObject == null ||
-                CampusFacilityTypeResolver.Resolve(placedObject) != CampusFacilityType.StoreShelf)
-            {
-                return false;
-            }
-
-            CampusCommerceService commerce = CampusCommerceService.Resolve();
-            return commerce != null && commerce.TryPrepareShelfStorage(placedObject, container, out _);
         }
 
         private static void ConfigureObjectStorageContainer(
@@ -116,9 +100,6 @@ namespace NtingCampusMapEditor
             {
                 case CampusRoomType.Office:
                     return 12;
-                case CampusRoomType.Canteen:
-                case CampusRoomType.Store:
-                    return 8;
                 case CampusRoomType.Classroom:
                     return 5;
                 case CampusRoomType.Dormitory:
@@ -155,16 +136,6 @@ namespace NtingCampusMapEditor
             if (!string.IsNullOrWhiteSpace(payload))
             {
                 return "object_storage_" + SanitizeStorageId(payload);
-            }
-
-            if (placedObject != null &&
-                CampusFacilityTypeResolver.Resolve(placedObject) == CampusFacilityType.StoreShelf)
-            {
-                CampusCommerceService commerce = CampusCommerceService.Resolve();
-                if (commerce != null)
-                {
-                    return commerce.ResolveShelfContainerId(placedObject);
-                }
             }
 
             Vector3 position = source.transform.position;

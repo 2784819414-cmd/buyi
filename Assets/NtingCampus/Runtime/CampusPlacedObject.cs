@@ -297,12 +297,6 @@ namespace NtingCampusMapEditor
                 return;
             }
 
-            if (IsCanteenCounterObject())
-            {
-                RemoveCanteenCounterInteractionState();
-                return;
-            }
-
             CampusInteractionAnchorDefaults.EnsureDefaultAnchors(this);
             EnsureUnifiedInteractionHandler();
             ApplyCustomInteractionAnchorState();
@@ -1160,8 +1154,7 @@ namespace NtingCampusMapEditor
 
             handler.IsAvailable = true;
             handler.HideWhenUnavailable = false;
-            ConfigureCanteenInteractionHandler(handler);
-            ConfigureStoreInteractionHandler(handler);
+            ApplyFacilityDefaultAction(handler);
             if (IsStorageContainer)
             {
                 if (string.IsNullOrWhiteSpace(handler.DefaultActionId))
@@ -1178,90 +1171,39 @@ namespace NtingCampusMapEditor
 
         private bool ShouldUseUnifiedInteractionHandler()
         {
-            return IsInteractable || UseCustomInteractionAnchor || IsStorageContainer || IsCanteenInteractionObject() || IsStoreInteractionObject();
+            return IsInteractable ||
+                   UseCustomInteractionAnchor ||
+                   IsStorageContainer ||
+                   UsesFacilityDefaultInteraction();
         }
 
-        private void RemoveCanteenCounterInteractionState()
+        private void ApplyFacilityDefaultAction(CampusSimpleInteractable handler)
         {
-            CampusSimpleInteractable handler = GetComponent<CampusSimpleInteractable>();
-            if (handler != null)
-            {
-                DestroyUnityObject(handler);
-            }
-
-            Transform anchorRoot = transform.Find(CustomInteractionAnchorRootName);
-            if (anchorRoot != null)
-            {
-                DestroyUnityObject(anchorRoot.gameObject);
-            }
-        }
-
-        private void ConfigureCanteenInteractionHandler(CampusSimpleInteractable handler)
-        {
-            if (handler == null || !IsCanteenInteractionObject())
+            if (handler == null || !string.IsNullOrWhiteSpace(handler.DefaultActionId))
             {
                 return;
             }
 
-            CampusFacilityType facilityType = CampusFacilityTypeResolver.Resolve(this);
-            if (facilityType == CampusFacilityType.CanteenFoodBox ||
-                facilityType == CampusFacilityType.CanteenFoodTray)
+            switch (CampusFacilityTypeResolver.Resolve(this))
             {
-                handler.DefaultActionId = CampusInteractionActionIds.InteractTarget;
-                if (string.IsNullOrWhiteSpace(handler.PromptText) || handler.PromptText == CustomInteractionPromptFallback)
-                {
-                    handler.PromptText = CampusInteractionTextCatalog.Get(CampusInteractionTextId.OpenFoodBox);
-                }
-
-                return;
-            }
-
-            if (facilityType == CampusFacilityType.CanteenServingWindow)
-            {
-                handler.DefaultActionId = CampusInteractionActionIds.InteractTarget;
-                if (string.IsNullOrWhiteSpace(handler.PromptText) || handler.PromptText == CustomInteractionPromptFallback)
-                {
-                    handler.PromptText = CampusInteractionTextCatalog.Get(CampusInteractionTextId.ServingWindow);
-                }
-
-                return;
+                case CampusFacilityType.ServiceWindow:
+                    handler.DefaultActionId = CampusInteractionActionIds.CanteenWindow;
+                    break;
+                case CampusFacilityType.WorkerStandPoint:
+                    handler.DefaultActionId = CampusInteractionActionIds.CanteenWorkstation;
+                    break;
             }
         }
 
-        private bool IsCanteenInteractionObject()
+        private bool UsesFacilityDefaultInteraction()
         {
-            CampusFacilityType facilityType = CampusFacilityTypeResolver.Resolve(this);
-            return facilityType == CampusFacilityType.CanteenServingWindow ||
-                   facilityType == CampusFacilityType.CanteenFoodBox ||
-                   facilityType == CampusFacilityType.CanteenFoodTray;
-        }
-
-        private void ConfigureStoreInteractionHandler(CampusSimpleInteractable handler)
-        {
-            if (handler == null || !IsStoreInteractionObject())
+            switch (CampusFacilityTypeResolver.Resolve(this))
             {
-                return;
-            }
-
-            CampusFacilityType facilityType = CampusFacilityTypeResolver.Resolve(this);
-            if (facilityType == CampusFacilityType.StoreShelf)
-            {
-                handler.DefaultActionId = CampusInteractionActionIds.OpenStorage;
-                if (string.IsNullOrWhiteSpace(handler.PromptText) || handler.PromptText == CustomInteractionPromptFallback)
-                {
-                    handler.PromptText = CampusInteractionTextCatalog.Get(CampusInteractionTextId.OpenShelf);
-                }
-
-                return;
-            }
-
-            if (facilityType == CampusFacilityType.StoreCheckout)
-            {
-                handler.DefaultActionId = CampusInteractionActionIds.InteractTarget;
-                if (string.IsNullOrWhiteSpace(handler.PromptText) || handler.PromptText == CustomInteractionPromptFallback)
-                {
-                    handler.PromptText = CampusInteractionTextCatalog.Get(CampusInteractionTextId.Checkout);
-                }
+                case CampusFacilityType.ServiceWindow:
+                case CampusFacilityType.WorkerStandPoint:
+                    return true;
+                default:
+                    return false;
             }
         }
 
@@ -1280,18 +1222,6 @@ namespace NtingCampusMapEditor
             return string.IsNullOrWhiteSpace(promptText) || promptText.Trim() == CustomInteractionPromptFallback
                 ? CampusInteractionTextCatalog.Get(CampusInteractionTextId.Interact)
                 : promptText.Trim();
-        }
-
-        private bool IsStoreInteractionObject()
-        {
-            CampusFacilityType facilityType = CampusFacilityTypeResolver.Resolve(this);
-            return facilityType == CampusFacilityType.StoreShelf ||
-                   facilityType == CampusFacilityType.StoreCheckout;
-        }
-
-        private bool IsCanteenCounterObject()
-        {
-            return CampusFacilityTypeResolver.Resolve(this) == CampusFacilityType.CanteenCounter;
         }
 
         private bool CanEditSceneHierarchy()

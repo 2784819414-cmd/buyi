@@ -47,8 +47,6 @@ namespace NtingCampusMapEditor
             new CampusRuntimeAreaPreset("Corridor", "\u8d70\u5eca", "Corridor", 1),
             new CampusRuntimeAreaPreset("Office", "\u529e\u516c\u5ba4", "Office", 1),
             new CampusRuntimeAreaPreset("CommonActivityZone", "\u516c\u5171\u6d3b\u52a8\u533a", "Common Activity Zone", 1),
-            new CampusRuntimeAreaPreset("Canteen", "\u98df\u5802", "Canteen", 1),
-            new CampusRuntimeAreaPreset("Store", "\u8d85\u5e02", "Store", 1),
             new CampusRuntimeAreaPreset("Outdoor", "\u5ba4\u5916", "Outdoor", 1),
             new CampusRuntimeAreaPreset("Dormitory", "\u5bbf\u820d", "Dormitory", 0),
             new CampusRuntimeAreaPreset("Restroom", "\u536b\u751f\u95f4", "Restroom", 0),
@@ -175,19 +173,7 @@ namespace NtingCampusMapEditor
                 return true;
             }
 
-            if (ContainsToken(key, "\u98df\u5802", "\u9910\u5385", "canteen", "dining"))
-            {
-                presetRoomName = "Canteen";
-                return true;
-            }
-
-            if (ContainsToken(key, "\u8d85\u5e02", "\u5546\u5e97", "\u5c0f\u5356", "shop", "store", "market"))
-            {
-                presetRoomName = "Store";
-                return true;
-            }
-
-            if (ContainsToken(key, "\u5ba4\u5916", "\u6821\u5916", "\u64cd\u573a", "\u5916\u5356", "outdoor", "outside", "delivery"))
+            if (ContainsToken(key, "\u5ba4\u5916", "\u6821\u5916", "\u64cd\u573a", "outdoor", "outside"))
             {
                 presetRoomName = "Outdoor";
                 return true;

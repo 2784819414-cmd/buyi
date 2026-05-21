@@ -6,7 +6,7 @@ namespace NtingCampus.Gameplay.Characters
         void Bind(CampusNpcAiRuntime runtime);
         CampusNpcPersonalProfile BuildProfile();
         void Tick();
-        CampusNpcPlanDecision ChooseIntent();
+        CampusNpcIntent ChooseIntent();
         string BuildInteractiveLine();
         string ResolveIntentLine(CampusNpcIntentKind kind);
     }

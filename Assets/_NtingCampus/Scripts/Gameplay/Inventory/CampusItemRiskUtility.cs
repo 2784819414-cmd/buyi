@@ -37,7 +37,7 @@ namespace NtingCampus.Gameplay.Inventory
             {
                 case StorageContainerAccessPolicy.StaffOnly:
                     return 12;
-                case StorageContainerAccessPolicy.Commerce:
+                case StorageContainerAccessPolicy.ProtectedTransfer:
                     return 8;
                 case StorageContainerAccessPolicy.OwnedPrivate:
                     return 7;

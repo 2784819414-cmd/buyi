@@ -22,12 +22,6 @@ namespace NtingCampusMapEditor
             }
 
             string displayName = ResolveDisplayName(placedObject);
-            if (IsCanteenInteractionObject(placedObject))
-            {
-                RemoveAnchor(placedObject, GenericAnchorName);
-                return;
-            }
-
             if (MatchesObject(placedObject, displayName, CampusObjectNames.DiningTable, CampusObjectNames.LegacyDiningTable))
             {
                 placedObject.IsInteractable = true;
@@ -231,15 +225,6 @@ namespace NtingCampusMapEditor
             }
 
             return fallback;
-        }
-
-        private static bool IsCanteenInteractionObject(CampusPlacedObject placedObject)
-        {
-            CampusFacilityType facilityType = CampusFacilityTypeResolver.Resolve(placedObject);
-            return facilityType == CampusFacilityType.CanteenCounter ||
-                   facilityType == CampusFacilityType.CanteenServingWindow ||
-                   facilityType == CampusFacilityType.CanteenFoodBox ||
-                   facilityType == CampusFacilityType.CanteenFoodTray;
         }
 
         private static void RemoveAnchor(CampusPlacedObject placedObject, string anchorName)

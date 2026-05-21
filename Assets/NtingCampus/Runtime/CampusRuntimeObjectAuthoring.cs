@@ -367,8 +367,7 @@ namespace NtingCampusMapEditor
 
         internal static bool IsStackableFacilityObject(CampusFacilityType facilityType)
         {
-            return facilityType == CampusFacilityType.CanteenServingWindow ||
-                   facilityType == CampusFacilityType.CanteenFoodBox;
+            return false;
         }
 
         internal static void NormalizeStackableFacilityObject(CampusPlacedObject placed, CampusFacilityType facilityType)
@@ -415,64 +414,9 @@ namespace NtingCampusMapEditor
                 return nameof(CampusFacilityType.Podium);
             }
 
-            if (ContainsObjectTypeToken(key, "canteenservingwindow", "canteen_serving_window", "servingwindow", "mealwindow", "foodwindow", "\u6253\u996d\u7a97\u53e3", "\u98df\u5802\u7a97\u53e3"))
-            {
-                return nameof(CampusFacilityType.CanteenServingWindow);
-            }
-
-            if (ContainsObjectTypeToken(key, "canteencounter", "canteen_counter", "foodcounter", "food_counter", "\u98df\u5802\u67dc\u53f0"))
-            {
-                return nameof(CampusFacilityType.CanteenCounter);
-            }
-
-            if (ContainsObjectTypeToken(key, "canteenclerkstand", "canteen_clerk_stand", "canteenbackcounter", "canteen_back_counter", "canteen_staff", "\u5e97\u5458\u7ad9\u4f4d", "\u67dc\u53f0\u540e"))
-            {
-                return nameof(CampusFacilityType.CanteenClerkStandPoint);
-            }
-
-            if (ContainsObjectTypeToken(key, "canteenpickup", "canteen_pickup", "mealpickup", "meal_pickup", "customerpickup", "\u53d6\u9910\u70b9", "\u987e\u5ba2\u53d6\u9910"))
-            {
-                return nameof(CampusFacilityType.CanteenCustomerPickupPoint);
-            }
-
-            if (ContainsObjectTypeToken(key, "canteenqueue", "canteen_queue", "mealqueue", "meal_queue", "\u98df\u5802\u6392\u961f"))
-            {
-                return nameof(CampusFacilityType.CanteenQueuePoint);
-            }
-
-            if (ContainsObjectTypeToken(key, "canteenfoodbox", "canteen_food_box", "readyfoodbox", "ready_food_box", "hotfoodbox", "\u73b0\u6210\u98df\u7269\u7bb1", "\u98df\u5802\u98df\u7269\u7bb1"))
-            {
-                return nameof(CampusFacilityType.CanteenFoodBox);
-            }
-
-            if (ContainsObjectTypeToken(key, "foodtray", "food_tray", "friedchicken", "burger", "oden", "\u6258\u76d8", "\u70b8\u9e21", "\u6c49\u5821", "\u5173\u4e1c\u716e"))
-            {
-                return nameof(CampusFacilityType.CanteenFoodTray);
-            }
-
             if (ContainsObjectTypeToken(key, "diningtable", "dining_table", "\u9910\u684c", "\u5403\u996d"))
             {
                 return nameof(CampusFacilityType.DiningTable);
-            }
-
-            if (ContainsObjectTypeToken(key, "storeshelf", "store_shelf", "shopshelf", "shop_shelf", "snackshelf", "\u8d27\u67b6", "\u96f6\u98df\u67b6"))
-            {
-                return nameof(CampusFacilityType.StoreShelf);
-            }
-
-            if (ContainsObjectTypeToken(key, "storecheckout", "store_checkout", "cashregister", "cash_register", "checkout", "\u6536\u94f6"))
-            {
-                return nameof(CampusFacilityType.StoreCheckout);
-            }
-
-            if (ContainsObjectTypeToken(key, "storequeue", "store_queue", "checkoutqueue", "checkout_queue", "\u6536\u94f6\u961f", "\u8d85\u5e02\u6392\u961f"))
-            {
-                return nameof(CampusFacilityType.StoreQueuePoint);
-            }
-
-            if (ContainsObjectTypeToken(key, "delivery", "takeout", "waimai", "\u5916\u5356"))
-            {
-                return nameof(CampusFacilityType.DeliveryDropPoint);
             }
 
             if (ContainsObjectTypeToken(key, "bulletin", "\u516c\u544a\u680f"))

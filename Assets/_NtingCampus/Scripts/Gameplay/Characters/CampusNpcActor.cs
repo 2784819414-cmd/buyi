@@ -18,6 +18,7 @@ namespace NtingCampus.Gameplay.Characters
         [SerializeField] private CampusNpcAiHost aiHost;
         [SerializeField] private CampusNpcPresentation presentation;
         [SerializeField] private CampusNpcInteractionPresenter interactionPresenter;
+        [SerializeField] private CampusHeldItemVisual heldItemVisual;
 
         private bool actorStackReady;
         private CampusCharacterRuntime configuredRuntime;
@@ -125,6 +126,7 @@ namespace NtingCampus.Gameplay.Characters
             EnsureMotorComponent();
             EnsurePresentationComponent();
             EnsureInteractionPresenterComponent();
+            EnsureHeldItemVisualComponent();
             EnsureAiHostComponent();
             actorStackReady = !HasMissingActorStack();
             ConfigureActorStackIfNeeded(true);
@@ -150,7 +152,8 @@ namespace NtingCampus.Gameplay.Characters
             return motor == null ||
                    aiHost == null ||
                    presentation == null ||
-                   interactionPresenter == null;
+                   interactionPresenter == null ||
+                   heldItemVisual == null;
         }
 
         private void ConfigureActorStackIfNeeded(bool force)
@@ -184,6 +187,7 @@ namespace NtingCampus.Gameplay.Characters
                 motor,
                 interactionPresenter);
             interactionPresenter.Ensure(aiHost);
+            heldItemVisual.RefreshImmediate();
 
             configuredRuntime = runtime;
             configuredBootstrap = bootstrap;
@@ -229,6 +233,19 @@ namespace NtingCampus.Gameplay.Characters
             if (interactionPresenter == null)
             {
                 interactionPresenter = gameObject.AddComponent<CampusNpcInteractionPresenter>();
+            }
+        }
+
+        private void EnsureHeldItemVisualComponent()
+        {
+            if (heldItemVisual == null)
+            {
+                heldItemVisual = GetComponent<CampusHeldItemVisual>();
+            }
+
+            if (heldItemVisual == null)
+            {
+                heldItemVisual = gameObject.AddComponent<CampusHeldItemVisual>();
             }
         }
 

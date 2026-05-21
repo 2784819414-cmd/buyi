@@ -66,18 +66,7 @@ namespace NtingCampus.Gameplay.Schedule
 
             if (data.Role == CampusCharacterRole.Staff)
             {
-                if ((data.StaffDuty & CampusStaffDuty.StoreOwner) != 0 ||
-                    (data.StaffDuty & CampusStaffDuty.BookstoreOwner) != 0)
-                {
-                    return CampusRoomType.Store;
-                }
-
-                if ((data.StaffDuty & CampusStaffDuty.DeliveryWatcher) != 0)
-                {
-                    return CampusRoomType.Outdoor;
-                }
-
-                return CampusRoomType.Canteen;
+                return CampusRoomType.Office;
             }
 
             if (CampusNpcScheduleFacts.IsClassSession(segment))
@@ -88,11 +77,6 @@ namespace NtingCampus.Gameplay.Schedule
             if (CampusNpcScheduleFacts.IsDormWindow(segment))
             {
                 return CampusRoomType.Dormitory;
-            }
-
-            if (CampusNpcScheduleFacts.IsMealPeak(segment))
-            {
-                return CampusRoomType.Canteen;
             }
 
             return CampusRoomType.CommonActivityZone;

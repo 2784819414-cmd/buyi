@@ -7,18 +7,15 @@ namespace NtingCampus.Gameplay.Characters
     public enum CampusCharacterActionKind
     {
         None = 0,
+        NoOp = 1,
         PressInteract = 10,
+        PressInteractionAction = 11,
         PickUpDroppedItem = 20,
         TransferItem = 30,
         TransferItemToFirstFit = 31,
         DropItemToGround = 40,
         OpenInventoryView = 50,
-        RunCommand = 100
-    }
-
-    public interface ICampusCharacterActionCommand
-    {
-        bool TryExecute(CampusCharacterRuntime actor, out StorageTransferResult result);
+        DomainAction = 90
     }
 
     public sealed class CampusCharacterAction
@@ -30,6 +27,8 @@ namespace NtingCampus.Gameplay.Characters
 
         public CampusCharacterActionKind Kind { get; private set; }
         public Object Target { get; private set; }
+        public string ActionId { get; private set; }
+        public string Payload { get; private set; }
         public StorageItemModel Item { get; private set; }
         public StorageContainerModel SourceContainer { get; private set; }
         public StorageContainerModel TargetContainer { get; private set; }
@@ -38,13 +37,43 @@ namespace NtingCampus.Gameplay.Characters
         public int TargetY { get; private set; }
         public bool IncludeBackpack { get; private set; }
         public GameObject GroundDropContext { get; private set; }
-        public ICampusCharacterActionCommand Command { get; private set; }
 
         public static CampusCharacterAction PressInteract(Object target)
         {
             return new CampusCharacterAction(CampusCharacterActionKind.PressInteract)
             {
                 Target = target
+            };
+        }
+
+        public static CampusCharacterAction PressInteractionAction(
+            Object target,
+            string actionId,
+            string payload = null)
+        {
+            return new CampusCharacterAction(CampusCharacterActionKind.PressInteractionAction)
+            {
+                Target = target,
+                ActionId = CampusInteractionActionIds.Normalize(actionId),
+                Payload = payload ?? string.Empty
+            };
+        }
+
+        public static CampusCharacterAction NoOp()
+        {
+            return new CampusCharacterAction(CampusCharacterActionKind.NoOp);
+        }
+
+        public static CampusCharacterAction DomainAction(
+            string actionId,
+            Object target = null,
+            string payload = null)
+        {
+            return new CampusCharacterAction(CampusCharacterActionKind.DomainAction)
+            {
+                Target = target,
+                ActionId = CampusInteractionActionIds.Normalize(actionId),
+                Payload = payload ?? string.Empty
             };
         }
 
@@ -112,12 +141,5 @@ namespace NtingCampus.Gameplay.Characters
             };
         }
 
-        public static CampusCharacterAction RunCommand(ICampusCharacterActionCommand command)
-        {
-            return new CampusCharacterAction(CampusCharacterActionKind.RunCommand)
-            {
-                Command = command
-            };
-        }
     }
 }

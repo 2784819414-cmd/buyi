@@ -1,30 +1,136 @@
-{
-  "Presets": [
-    { "ChineseLabel": "\u95e8", "EnglishLabel": "Door", "FacilityType": "Door", "PrankPayload": "", "RequiredRoomType": "Unknown", "VisualKind": "Envelope", "Color": "#B8B8B8" },
-    { "ChineseLabel": "\u9ed1\u677f", "EnglishLabel": "Blackboard", "FacilityType": "Blackboard", "PrankPayload": "", "RequiredRoomType": "Unknown", "VisualKind": "Envelope", "Color": "#1F755C" },
-    { "ChineseLabel": "\u8bfe\u684c", "EnglishLabel": "Student Desk", "FacilityType": "StudentDesk", "PrankPayload": "", "RequiredRoomType": "Unknown", "VisualKind": "Envelope", "Color": "#428FF5" },
-    { "ChineseLabel": "\u8bb2\u53f0", "EnglishLabel": "Podium", "FacilityType": "Podium", "PrankPayload": "", "RequiredRoomType": "Unknown", "VisualKind": "Envelope", "Color": "#2E61DB" },
-    { "ChineseLabel": "\u529e\u516c\u684c", "EnglishLabel": "Office Desk", "FacilityType": "OfficeDesk", "PrankPayload": "", "RequiredRoomType": "Unknown", "VisualKind": "Envelope", "Color": "#B87A47" },
-    { "ChineseLabel": "\u5e8a", "EnglishLabel": "Bed", "FacilityType": "Bed", "PrankPayload": "", "RequiredRoomType": "Unknown", "VisualKind": "Envelope", "Color": "#8F6BE0" },
-    { "ChineseLabel": "\u516c\u544a\u680f", "EnglishLabel": "Bulletin Board", "FacilityType": "BulletinBoard", "PrankPayload": "", "RequiredRoomType": "Unknown", "VisualKind": "Envelope", "Color": "#E09E3D" },
-    { "ChineseLabel": "\u62db\u52df\u70b9", "EnglishLabel": "Recruitment", "FacilityType": "Recruitment", "PrankPayload": "", "RequiredRoomType": "Unknown", "VisualKind": "Envelope", "Color": "#BD5CE0" },
-    { "ChineseLabel": "\u6d17\u624b\u6c60", "EnglishLabel": "Sink", "FacilityType": "Sink", "PrankPayload": "", "RequiredRoomType": "Unknown", "VisualKind": "Envelope", "Color": "#38ADEB" },
-    { "ChineseLabel": "\u50a8\u7269\u70b9", "EnglishLabel": "Storage", "FacilityType": "Storage", "PrankPayload": "", "RequiredRoomType": "Unknown", "VisualKind": "Envelope", "Color": "#9E8F75" },
-    { "ChineseLabel": "\u98df\u5802\u67dc\u53f0", "EnglishLabel": "Canteen Counter", "FacilityType": "CanteenCounter", "PrankPayload": "", "RequiredRoomType": "Unknown", "VisualKind": "Envelope", "Color": "#2EAEB8" },
-    { "ChineseLabel": "\u6253\u996d\u7a97\u53e3", "EnglishLabel": "Serving Window", "FacilityType": "CanteenServingWindow", "PrankPayload": "", "RequiredRoomType": "Unknown", "VisualKind": "Envelope", "Color": "#29C7C7" },
-    { "ChineseLabel": "\u5e97\u5458\u540e\u53f0\u7ad9\u4f4d", "EnglishLabel": "Clerk Back Stand", "FacilityType": "CanteenClerkStandPoint", "PrankPayload": "", "RequiredRoomType": "Unknown", "VisualKind": "Envelope", "Color": "#1F94AD" },
-    { "ChineseLabel": "\u987e\u5ba2\u53d6\u9910\u70b9", "EnglishLabel": "Customer Pickup", "FacilityType": "CanteenCustomerPickupPoint", "PrankPayload": "", "RequiredRoomType": "Unknown", "VisualKind": "Envelope", "Color": "#7AD19E" },
-    { "ChineseLabel": "\u98df\u5802\u6392\u961f\u70b9", "EnglishLabel": "Canteen Queue", "FacilityType": "CanteenQueuePoint", "PrankPayload": "", "RequiredRoomType": "Unknown", "VisualKind": "Envelope", "Color": "#F2C247" },
-    { "ChineseLabel": "\u6253\u996d\u6258\u76d8", "EnglishLabel": "Food Tray", "FacilityType": "CanteenFoodTray", "PrankPayload": "", "RequiredRoomType": "Unknown", "VisualKind": "Envelope", "Color": "#F5A33D" },
-    { "ChineseLabel": "\u73b0\u6210\u98df\u7269\u7bb1", "EnglishLabel": "Ready Food Box", "FacilityType": "CanteenFoodBox", "PrankPayload": "", "RequiredRoomType": "Unknown", "VisualKind": "Envelope", "Color": "#F08F2E" },
-    { "ChineseLabel": "\u5403\u996d\u533a\u5ea7\u4f4d", "EnglishLabel": "Dining Table", "FacilityType": "DiningTable", "PrankPayload": "", "RequiredRoomType": "Unknown", "VisualKind": "Envelope", "Color": "#8CC247" },
-    { "ChineseLabel": "\u5916\u5356\u653e\u7f6e\u70b9", "EnglishLabel": "Delivery Drop", "FacilityType": "DeliveryDropPoint", "PrankPayload": "", "RequiredRoomType": "Unknown", "VisualKind": "Envelope", "Color": "#528AFB" },
-    { "ChineseLabel": "\u8d85\u5e02\u8d27\u67b6", "EnglishLabel": "Store Shelf", "FacilityType": "StoreShelf", "PrankPayload": "", "RequiredRoomType": "Unknown", "VisualKind": "Envelope", "Color": "#E05CB8" },
-    { "ChineseLabel": "\u8d85\u5e02\u6392\u961f\u70b9", "EnglishLabel": "Store Queue", "FacilityType": "StoreQueuePoint", "PrankPayload": "", "RequiredRoomType": "Unknown", "VisualKind": "Envelope", "Color": "#F07AD1" },
-    { "ChineseLabel": "\u8d85\u5e02\u6536\u94f6\u53f0", "EnglishLabel": "Store Checkout", "FacilityType": "StoreCheckout", "PrankPayload": "", "RequiredRoomType": "Unknown", "VisualKind": "Envelope", "Color": "#C23DA3" },
-    { "ChineseLabel": "\u5077\u70b8\u9e21", "EnglishLabel": "Steal Chicken", "FacilityType": "Unknown", "PrankPayload": "StealFriedChicken", "RequiredRoomType": "Canteen", "VisualKind": "Snack", "Color": "#F28538" },
-    { "ChineseLabel": "\u5077\u6c49\u5821", "EnglishLabel": "Steal Burger", "FacilityType": "Unknown", "PrankPayload": "StealBurger", "RequiredRoomType": "Canteen", "VisualKind": "Snack", "Color": "#E0A33D" },
-    { "ChineseLabel": "\u5077\u5173\u4e1c\u716e", "EnglishLabel": "Steal Oden", "FacilityType": "Unknown", "PrankPayload": "StealOden", "RequiredRoomType": "Canteen", "VisualKind": "Snack", "Color": "#C77AE6" },
-    { "ChineseLabel": "\u5077\u5916\u5356", "EnglishLabel": "Steal Delivery", "FacilityType": "Unknown", "PrankPayload": "StealDelivery", "RequiredRoomType": "Outdoor", "VisualKind": "DeliveryBox", "Color": "#47A8FA" }
-  ]
+﻿{
+    "Presets":  [
+                    {
+                        "ChineseLabel":  "门",
+                        "EnglishLabel":  "Door",
+                        "FacilityType":  "Door",
+                        "Color":  "#B8B8B8"
+                    },
+                    {
+                        "ChineseLabel":  "黑板",
+                        "EnglishLabel":  "Blackboard",
+                        "FacilityType":  "Blackboard",
+                        "Color":  "#1F755C"
+                    },
+                    {
+                        "ChineseLabel":  "课桌",
+                        "EnglishLabel":  "Student Desk",
+                        "FacilityType":  "StudentDesk",
+                        "Color":  "#428FF5"
+                    },
+                    {
+                        "ChineseLabel":  "讲台",
+                        "EnglishLabel":  "Podium",
+                        "FacilityType":  "Podium",
+                        "Color":  "#2E61DB"
+                    },
+                    {
+                        "ChineseLabel":  "办公桌",
+                        "EnglishLabel":  "Office Desk",
+                        "FacilityType":  "OfficeDesk",
+                        "Color":  "#B87A47"
+                    },
+                    {
+                        "ChineseLabel":  "床",
+                        "EnglishLabel":  "Bed",
+                        "FacilityType":  "Bed",
+                        "Color":  "#8F6BE0"
+                    },
+                    {
+                        "ChineseLabel":  "公告栏",
+                        "EnglishLabel":  "Bulletin Board",
+                        "FacilityType":  "BulletinBoard",
+                        "Color":  "#E09E3D"
+                    },
+                    {
+                        "ChineseLabel":  "招募点",
+                        "EnglishLabel":  "Recruitment",
+                        "FacilityType":  "Recruitment",
+                        "Color":  "#BD5CE0"
+                    },
+                    {
+                        "ChineseLabel":  "洗手池",
+                        "EnglishLabel":  "Sink",
+                        "FacilityType":  "Sink",
+                        "Color":  "#38ADEB"
+                    },
+                    {
+                        "ChineseLabel":  "储物点",
+                        "EnglishLabel":  "Storage",
+                        "FacilityType":  "Storage",
+                        "Color":  "#9E8F75"
+                    },
+                    {
+                        "ChineseLabel":  "服务柜台",
+                        "EnglishLabel":  "Service Counter",
+                        "FacilityType":  "ServiceCounter",
+                        "Color":  "#2EAEB8"
+                    },
+                    {
+                        "ChineseLabel":  "服务窗口",
+                        "EnglishLabel":  "Service Window",
+                        "FacilityType":  "ServiceWindow",
+                        "Color":  "#29C7C7"
+                    },
+                    {
+                        "ChineseLabel":  "工作站位",
+                        "EnglishLabel":  "Worker Stand",
+                        "FacilityType":  "WorkerStandPoint",
+                        "Color":  "#1F94AD"
+                    },
+                    {
+                        "ChineseLabel":  "取物点",
+                        "EnglishLabel":  "Pickup Point",
+                        "FacilityType":  "PickupPoint",
+                        "Color":  "#7AD19E"
+                    },
+                    {
+                        "ChineseLabel":  "等候点",
+                        "EnglishLabel":  "Waiting Point",
+                        "FacilityType":  "WaitingPoint",
+                        "Color":  "#F2C247"
+                    },
+                    {
+                        "ChineseLabel":  "成品台面",
+                        "EnglishLabel":  "Ready Surface",
+                        "FacilityType":  "ReadyItemSurface",
+                        "Color":  "#F5A33D"
+                    },
+                    {
+                        "ChineseLabel":  "成品容器",
+                        "EnglishLabel":  "Ready Container",
+                        "FacilityType":  "ReadyItemContainer",
+                        "Color":  "#F08F2E"
+                    },
+                    {
+                        "ChineseLabel":  "吃饭区座位",
+                        "EnglishLabel":  "Dining Table",
+                        "FacilityType":  "DiningTable",
+                        "Color":  "#8CC247"
+                    },
+                    {
+                        "ChineseLabel":  "放置点",
+                        "EnglishLabel":  "Drop Point",
+                        "FacilityType":  "DropPoint",
+                        "Color":  "#528AFB"
+                    },
+                    {
+                        "ChineseLabel":  "货架",
+                        "EnglishLabel":  "Goods Shelf",
+                        "FacilityType":  "GoodsShelf",
+                        "Color":  "#E05CB8"
+                    },
+                    {
+                        "ChineseLabel":  "结算排队点",
+                        "EnglishLabel":  "Checkout Queue",
+                        "FacilityType":  "CheckoutQueuePoint",
+                        "Color":  "#F07AD1"
+                    },
+                    {
+                        "ChineseLabel":  "结算点",
+                        "EnglishLabel":  "Checkout Point",
+                        "FacilityType":  "CheckoutPoint",
+                        "Color":  "#C23DA3"
+                    }
+                ]
 }

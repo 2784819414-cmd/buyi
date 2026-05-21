@@ -106,7 +106,6 @@ namespace NtingCampus.Gameplay.UI
             snapshot.Actors = snapshot.Actors ?? new List<CampusRuntimeGameplayActorSnapshot>();
             snapshot.Rooms = snapshot.Rooms ?? new List<CampusRuntimeGameplayRoomSnapshot>();
             snapshot.Facilities = snapshot.Facilities ?? new List<CampusRuntimeGameplayFacilitySnapshot>();
-            snapshot.PrankSpots = snapshot.PrankSpots ?? new List<CampusRuntimeGameplayPrankSpotSnapshot>();
             for (int i = 0; i < snapshot.Actors.Count; i++)
             {
                 if (snapshot.Actors[i] != null)
@@ -128,14 +127,6 @@ namespace NtingCampus.Gameplay.UI
                 if (snapshot.Facilities[i] != null)
                 {
                     snapshot.Facilities[i].Normalize();
-                }
-            }
-
-            for (int i = 0; i < snapshot.PrankSpots.Count; i++)
-            {
-                if (snapshot.PrankSpots[i] != null)
-                {
-                    snapshot.PrankSpots[i].Normalize();
                 }
             }
         }
@@ -192,47 +183,6 @@ namespace NtingCampus.Gameplay.UI
             }
 
             return clones;
-        }
-
-        public static void MergeRuntimeActorAssignments(List<CampusRuntimeGameplayActorSnapshot> actors)
-        {
-            if (actors == null || actors.Count == 0)
-            {
-                return;
-            }
-
-            Dictionary<string, CampusRuntimeGameplayActorSnapshot> actorsById =
-                new Dictionary<string, CampusRuntimeGameplayActorSnapshot>(StringComparer.OrdinalIgnoreCase);
-            for (int i = 0; i < actors.Count; i++)
-            {
-                CampusRuntimeGameplayActorSnapshot actor = actors[i];
-                if (actor == null || string.IsNullOrWhiteSpace(actor.Id))
-                {
-                    continue;
-                }
-
-                actorsById[actor.Id.Trim()] = actor;
-            }
-
-            CampusCharacterRuntime[] runtimes = UnityEngine.Object.FindObjectsByType<CampusCharacterRuntime>(
-                FindObjectsInactive.Include,
-                FindObjectsSortMode.None);
-            for (int i = 0; i < runtimes.Length; i++)
-            {
-                CampusCharacterData data = runtimes[i] != null ? runtimes[i].Data : null;
-                if (data == null || string.IsNullOrWhiteSpace(data.Id) || !data.Assignments.HasAny())
-                {
-                    continue;
-                }
-
-                if (!actorsById.TryGetValue(data.Id.Trim(), out CampusRuntimeGameplayActorSnapshot actor))
-                {
-                    continue;
-                }
-
-                actor.Assignments = data.Assignments.Clone();
-                actor.Normalize();
-            }
         }
 
         private static Vector3Int NormalizeCell(Vector3Int cell)

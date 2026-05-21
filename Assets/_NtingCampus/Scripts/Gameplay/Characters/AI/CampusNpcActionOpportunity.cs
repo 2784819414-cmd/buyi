@@ -96,6 +96,54 @@ namespace NtingCampus.Gameplay.Characters
 
         public UnityEngine.Object Target => Action != null ? Action.Target : null;
 
+        public static CampusNpcActionOpportunity MoveTo(
+            string actionId,
+            CampusCharacterAction action,
+            Vector3 targetPosition,
+            string roomId,
+            float stopDistance,
+            float score,
+            CampusNpcIntentKind intentKind,
+            string intentLabel,
+            Func<CampusCharacterRuntime, bool> canUse = null)
+        {
+            return new CampusNpcActionOpportunity(
+                actionId,
+                action,
+                targetPosition,
+                roomId,
+                stopDistance,
+                score,
+                intentKind,
+                intentLabel,
+                canUse);
+        }
+
+        public static CampusNpcActionOpportunity HoldAt(
+            string actionId,
+            CampusCharacterAction action,
+            Vector3 targetPosition,
+            string roomId,
+            float score,
+            CampusNpcIntentKind intentKind,
+            string intentLabel,
+            float holdSeconds = 0f,
+            Func<CampusCharacterRuntime, bool> canUse = null)
+        {
+            return new CampusNpcActionOpportunity(
+                actionId,
+                action,
+                targetPosition,
+                roomId,
+                0.02f,
+                score,
+                intentKind,
+                intentLabel,
+                false,
+                holdSeconds,
+                canUse);
+        }
+
         public bool CanUse(CampusCharacterRuntime actor)
         {
             return actor != null && (canUse == null || canUse(actor));

@@ -104,7 +104,7 @@ namespace NtingCampus.Gameplay.Characters
                 runtime,
                 rosterService,
                 classroom,
-                CampusNpcFacilityGroups.StudentDesks,
+                CampusNpcFacilityGroups.Get(CampusNpcFacilityGroups.StudentDesks),
                 peer => peer != null &&
                         peer.Data != null &&
                         peer.Data.Role == CampusCharacterRole.Student &&
@@ -160,7 +160,7 @@ namespace NtingCampus.Gameplay.Characters
                 runtime,
                 rosterService,
                 office,
-                CampusNpcFacilityGroups.OfficeDesks,
+                CampusNpcFacilityGroups.Get(CampusNpcFacilityGroups.OfficeDesks),
                 peer => peer != null &&
                         peer.Data != null &&
                         peer.Data.Role == CampusCharacterRole.Teacher &&

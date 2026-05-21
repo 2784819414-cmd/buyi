@@ -1,7 +1,5 @@
-using System;
 using System.Collections.Generic;
 using System.IO;
-using NtingCampus.Gameplay.Pranks;
 using NtingCampus.Gameplay.Rooms;
 using NtingCampus.Gameplay.UI;
 using UnityEngine;
@@ -24,10 +22,8 @@ namespace NtingCampusMapEditor
 
             snapshot.Rooms = snapshot.Rooms ?? new List<CampusRuntimeGameplayRoomSnapshot>();
             snapshot.Facilities = snapshot.Facilities ?? new List<CampusRuntimeGameplayFacilitySnapshot>();
-            snapshot.PrankSpots = snapshot.PrankSpots ?? new List<CampusRuntimeGameplayPrankSpotSnapshot>();
             CaptureRooms(snapshot.Rooms);
             CaptureFacilities(snapshot.Facilities);
-            CapturePrankSpots(snapshot.PrankSpots, mapRoot);
         }
 
         internal static void CaptureRooms(List<CampusRuntimeGameplayRoomSnapshot> output)
@@ -42,7 +38,7 @@ namespace NtingCampusMapEditor
                 UnityEngine.Object.FindObjectsByType<CampusGameplayRoomMarker>(
                     FindObjectsInactive.Include,
                     FindObjectsSortMode.None);
-            HashSet<string> capturedKeys = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+            HashSet<string> capturedKeys = new HashSet<string>(System.StringComparer.OrdinalIgnoreCase);
             for (int i = 0; i < markers.Length; i++)
             {
                 CampusGameplayRoomMarker marker = markers[i];
@@ -84,7 +80,7 @@ namespace NtingCampusMapEditor
                 UnityEngine.Object.FindObjectsByType<CampusGameplayFacilityMarker>(
                     FindObjectsInactive.Include,
                     FindObjectsSortMode.None);
-            HashSet<string> capturedKeys = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+            HashSet<string> capturedKeys = new HashSet<string>(System.StringComparer.OrdinalIgnoreCase);
             for (int i = 0; i < markers.Length; i++)
             {
                 CampusGameplayFacilityMarker marker = markers[i];
@@ -116,51 +112,6 @@ namespace NtingCampusMapEditor
                     FloorIndex = Mathf.Max(1, marker.FloorIndex),
                     Cell = cell,
                     CountsAsCoreFacility = marker.CountsAsCoreFacility
-                });
-            }
-        }
-
-        internal static void CapturePrankSpots(
-            List<CampusRuntimeGameplayPrankSpotSnapshot> output,
-            CampusMapRoot mapRoot)
-        {
-            if (output == null)
-            {
-                return;
-            }
-
-            output.Clear();
-            CampusPrankInteractionSpot[] spots =
-                UnityEngine.Object.FindObjectsByType<CampusPrankInteractionSpot>(
-                    FindObjectsInactive.Include,
-                    FindObjectsSortMode.None);
-            HashSet<string> capturedKeys = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
-            for (int i = 0; i < spots.Length; i++)
-            {
-                CampusPrankInteractionSpot spot = spots[i];
-                if (spot == null || !TryResolveMarkerCell(spot, mapRoot, out int floorIndex, out Vector3Int cell))
-                {
-                    continue;
-                }
-
-                cell = NormalizeCell(cell);
-                string key = floorIndex + "|" + spot.PrankPayload + "|" + cell + "|" + spot.DisplayName;
-                if (!capturedKeys.Add(key))
-                {
-                    continue;
-                }
-
-                output.Add(new CampusRuntimeGameplayPrankSpotSnapshot
-                {
-                    DisplayName = spot.DisplayName,
-                    Payload = spot.PrankPayload,
-                    RequiredRoomType = spot.RequiredRoomType,
-                    VisualKind = spot.VisualKind,
-                    FloorIndex = Mathf.Max(1, floorIndex),
-                    Cell = cell,
-                    InteractionRadius = spot.InteractionRadius,
-                    AccentColor = spot.AccentColor,
-                    UnsupportedReason = spot.UnsupportedReason
                 });
             }
         }
@@ -260,57 +211,6 @@ namespace NtingCampusMapEditor
             }
         }
 
-        internal static void CaptureRoomPrefabPrankSpots(
-            CampusFloorRoot floor,
-            BoundsInt bounds,
-            Vector3Int originCell,
-            List<CampusRuntimeGameplayPrankSpotSnapshot> output,
-            CampusMapRoot mapRoot)
-        {
-            if (output == null)
-            {
-                return;
-            }
-
-            output.Clear();
-            if (floor == null)
-            {
-                return;
-            }
-
-            CampusPrankInteractionSpot[] spots =
-                UnityEngine.Object.FindObjectsByType<CampusPrankInteractionSpot>(
-                    FindObjectsInactive.Include,
-                    FindObjectsSortMode.None);
-            for (int i = 0; i < spots.Length; i++)
-            {
-                CampusPrankInteractionSpot spot = spots[i];
-                if (spot == null || !TryResolveMarkerCell(spot, mapRoot, out int floorIndex, out Vector3Int cell))
-                {
-                    continue;
-                }
-
-                cell = NormalizeCell(cell);
-                if (floorIndex != floor.FloorIndex || !CellInBounds(bounds, cell))
-                {
-                    continue;
-                }
-
-                output.Add(new CampusRuntimeGameplayPrankSpotSnapshot
-                {
-                    DisplayName = spot.DisplayName,
-                    Payload = spot.PrankPayload,
-                    RequiredRoomType = spot.RequiredRoomType,
-                    VisualKind = spot.VisualKind,
-                    FloorIndex = 0,
-                    Cell = ToRelativeCell(cell, originCell),
-                    InteractionRadius = spot.InteractionRadius,
-                    AccentColor = spot.AccentColor,
-                    UnsupportedReason = spot.UnsupportedReason
-                });
-            }
-        }
-
         internal static void SpawnSceneMarkers(
             CampusRuntimeGameplayOverlaySnapshot snapshot,
             FloorResolver resolveFloor)
@@ -322,7 +222,6 @@ namespace NtingCampusMapEditor
 
             SpawnRooms(snapshot.Rooms, resolveFloor);
             SpawnFacilities(snapshot.Facilities, resolveFloor);
-            SpawnPrankSpots(snapshot.PrankSpots, resolveFloor);
         }
 
         internal static void SpawnRooms(
@@ -417,52 +316,6 @@ namespace NtingCampusMapEditor
             }
         }
 
-        internal static void SpawnPrankSpots(
-            IReadOnlyList<CampusRuntimeGameplayPrankSpotSnapshot> spots,
-            FloorResolver resolveFloor)
-        {
-            if (spots == null || resolveFloor == null)
-            {
-                return;
-            }
-
-            for (int i = 0; i < spots.Count; i++)
-            {
-                CampusRuntimeGameplayPrankSpotSnapshot spot = spots[i];
-                if (spot == null)
-                {
-                    continue;
-                }
-
-                spot.Normalize();
-                CampusFloorRoot floor = resolveFloor(Mathf.Max(1, spot.FloorIndex));
-                if (floor == null || floor.Grid == null || floor.PropsRoot == null)
-                {
-                    continue;
-                }
-
-                Vector3Int cell = NormalizeCell(spot.Cell);
-                GameObject markerObject = CreateMarkerObject(
-                    floor,
-                    cell,
-                    "GameplayPrank_" + SanitizeObjectName(spot.DisplayName) + "_F" + floor.FloorIndex + "_" + cell.x + "_" + cell.y);
-                if (markerObject == null)
-                {
-                    continue;
-                }
-
-                CampusPrankInteractionSpot interactionSpot = markerObject.AddComponent<CampusPrankInteractionSpot>();
-                interactionSpot.Configure(
-                    spot.DisplayName,
-                    spot.Payload,
-                    spot.RequiredRoomType,
-                    spot.VisualKind,
-                    spot.InteractionRadius,
-                    spot.AccentColor,
-                    spot.UnsupportedReason);
-            }
-        }
-
         internal static bool CreateFacilityMarker(
             CampusFloorRoot floor,
             Vector3Int cell,
@@ -497,71 +350,12 @@ namespace NtingCampusMapEditor
             return true;
         }
 
-        internal static bool CreatePrankSpot(
-            CampusFloorRoot floor,
-            Vector3Int cell,
-            string objectLabel,
-            string displayName,
-            string payload,
-            CampusRoomType requiredRoomType,
-            CampusPrankSpotVisualKind visualKind,
-            Color accentColor,
-            string unsupportedReason)
-        {
-            if (floor == null || floor.Grid == null || floor.PropsRoot == null)
-            {
-                return false;
-            }
-
-            Vector3Int normalizedCell = NormalizeCell(cell);
-            string safeLabel = SanitizeObjectName(string.IsNullOrWhiteSpace(objectLabel) ? displayName : objectLabel);
-            GameObject markerObject = CreateMarkerObject(
-                floor,
-                normalizedCell,
-                "GameplayPrank_" + safeLabel + "_F" + floor.FloorIndex + "_" + normalizedCell.x + "_" + normalizedCell.y);
-            if (markerObject == null)
-            {
-                return false;
-            }
-
-            CampusPrankInteractionSpot spot = markerObject.AddComponent<CampusPrankInteractionSpot>();
-            spot.Configure(
-                displayName,
-                payload,
-                requiredRoomType,
-                visualKind,
-                0.95f,
-                accentColor,
-                unsupportedReason);
-
-            floor.MarkUsedBoundsDirty();
-            return true;
-        }
-
-        internal static GameObject CreateMarkerObject(CampusFloorRoot floor, Vector3Int cell, string objectName)
-        {
-            if (floor == null || floor.Grid == null || floor.PropsRoot == null)
-            {
-                return null;
-            }
-
-            Vector3Int normalizedCell = NormalizeCell(cell);
-            GameObject markerObject = new GameObject(objectName);
-            markerObject.transform.SetParent(floor.PropsRoot, false);
-            markerObject.transform.position = floor.Grid.GetCellCenterWorld(normalizedCell);
-
-            CampusRuntimeGameplayOverlayEntity entity =
-                markerObject.AddComponent<CampusRuntimeGameplayOverlayEntity>();
-            entity.Configure(false, floor.FloorIndex, normalizedCell);
-            return markerObject;
-        }
-
         internal static bool EraseMarkersAtCell(
             CampusFloorRoot floor,
             Vector3Int cell,
             bool eraseRooms,
             bool eraseFacilities,
-            bool erasePranks,
+            bool reservedEraseFlag,
             CampusMapRoot mapRoot,
             RuntimeObjectDestroyer destroyObject)
         {
@@ -609,28 +403,6 @@ namespace NtingCampusMapEditor
                         NormalizeCell(marker.Cell) == normalizedCell)
                     {
                         destroyObject(marker.gameObject);
-                        erased = true;
-                    }
-                }
-            }
-
-            if (erasePranks)
-            {
-                CampusPrankInteractionSpot[] prankSpots =
-                    UnityEngine.Object.FindObjectsByType<CampusPrankInteractionSpot>(
-                        FindObjectsInactive.Include,
-                        FindObjectsSortMode.None);
-                for (int i = prankSpots.Length - 1; i >= 0; i--)
-                {
-                    CampusPrankInteractionSpot spot = prankSpots[i];
-                    if (spot == null || !TryResolveMarkerCell(spot, mapRoot, out int floorIndex, out Vector3Int spotCell))
-                    {
-                        continue;
-                    }
-
-                    if (floorIndex == floor.FloorIndex && NormalizeCell(spotCell) == normalizedCell)
-                    {
-                        destroyObject(spot.gameObject);
                         erased = true;
                     }
                 }
@@ -688,25 +460,6 @@ namespace NtingCampusMapEditor
                 }
             }
 
-            CampusPrankInteractionSpot[] prankSpots =
-                UnityEngine.Object.FindObjectsByType<CampusPrankInteractionSpot>(
-                    FindObjectsInactive.Include,
-                    FindObjectsSortMode.None);
-            for (int i = prankSpots.Length - 1; i >= 0; i--)
-            {
-                CampusPrankInteractionSpot spot = prankSpots[i];
-                if (spot == null || !TryResolveMarkerCell(spot, mapRoot, out int floorIndex, out Vector3Int cell))
-                {
-                    continue;
-                }
-
-                if (floorIndex == floor.FloorIndex && CellInBounds(bounds, NormalizeCell(cell)))
-                {
-                    destroyObject(spot.gameObject);
-                    erased = true;
-                }
-            }
-
             if (erased)
             {
                 floor.MarkUsedBoundsDirty();
@@ -735,8 +488,7 @@ namespace NtingCampusMapEditor
                 }
 
                 if (entity.GetComponent<CampusGameplayRoomMarker>() != null ||
-                    entity.GetComponent<CampusGameplayFacilityMarker>() != null ||
-                    entity.GetComponent<CampusPrankInteractionSpot>() != null)
+                    entity.GetComponent<CampusGameplayFacilityMarker>() != null)
                 {
                     destroyObject(entity.gameObject);
                 }
@@ -846,22 +598,22 @@ namespace NtingCampusMapEditor
                    a.yMax > b.yMin;
         }
 
-        private static string SanitizeObjectName(string value)
+        private static GameObject CreateMarkerObject(CampusFloorRoot floor, Vector3Int cell, string objectName)
         {
-            if (string.IsNullOrWhiteSpace(value))
+            if (floor == null || floor.Grid == null || floor.PropsRoot == null)
             {
-                return "_";
+                return null;
             }
 
-            char[] invalid = Path.GetInvalidFileNameChars();
-            string sanitized = value.Trim();
-            for (int i = 0; i < invalid.Length; i++)
-            {
-                sanitized = sanitized.Replace(invalid[i], '_');
-            }
+            Vector3Int normalizedCell = NormalizeCell(cell);
+            GameObject markerObject = new GameObject(objectName);
+            markerObject.transform.SetParent(floor.PropsRoot, false);
+            markerObject.transform.position = floor.Grid.GetCellCenterWorld(normalizedCell);
 
-            sanitized = sanitized.Replace('/', '_').Replace('\\', '_');
-            return string.IsNullOrWhiteSpace(sanitized) ? "_" : sanitized;
+            CampusRuntimeGameplayOverlayEntity entity =
+                markerObject.AddComponent<CampusRuntimeGameplayOverlayEntity>();
+            entity.Configure(false, floor.FloorIndex, normalizedCell);
+            return markerObject;
         }
     }
 }

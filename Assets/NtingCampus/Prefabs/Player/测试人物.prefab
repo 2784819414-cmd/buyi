@@ -687,7 +687,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 244678afed034c30810fe4c8f7a07a1c, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::NtingCampusMapEditor.CampusTestPlayerController
-  MoveSpeed: 3.5
   FloorIndex: 1
   InteractKey: 101
   InteractionForwardOffset: 0.45

@@ -50,7 +50,7 @@ namespace NtingCampus.Gameplay.Characters
 
             if (CampusNpcFacilitySelector.TryChooseUnique(
                     classroom,
-                    CampusNpcFacilityGroups.StudentDesks,
+                    CampusNpcFacilityGroups.Get(CampusNpcFacilityGroups.StudentDesks),
                     studentIndex,
                     out CampusGameplayRoom.FacilityRecord desk))
             {

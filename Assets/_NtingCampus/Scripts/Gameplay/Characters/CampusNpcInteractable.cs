@@ -1,3 +1,4 @@
+using NtingCampus.Gameplay.UI;
 using NtingCampusMapEditor;
 using UnityEngine;
 
@@ -38,8 +39,12 @@ namespace NtingCampus.Gameplay.Characters
 
         public bool TryGetInteractionPrompt(GameObject actor, out CampusInteractionPromptData prompt)
         {
-            string promptText = talkSource != null ? talkSource.ResolveInteractionPrompt(actor) : string.Empty;
-            prompt = CampusInteractionPromptData.Create(string.IsNullOrWhiteSpace(promptText) ? "Talk" : promptText);
+            string promptText = talkSource != null
+                ? talkSource.ResolveInteractionPrompt(actor)
+                : CampusCharacterTextCatalog.FormatTalkPrompt(
+                    CampusLanguageState.CurrentLanguage,
+                    CampusInteractionTextCatalog.Get(CampusInteractionTextId.UnknownActor));
+            prompt = CampusInteractionPromptData.Create(promptText);
             prompt.Anchor = transform;
             prompt.WorldOffset = new Vector3(0f, 0.84f, 0f);
             prompt.Priority = 55;

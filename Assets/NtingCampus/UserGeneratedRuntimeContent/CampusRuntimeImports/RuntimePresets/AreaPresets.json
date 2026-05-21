@@ -1,17 +1,82 @@
-{
-  "Presets": [
-    { "RoomName": "Classroom", "ChineseLabel": "\u6559\u5ba4", "EnglishLabel": "Classroom", "RequiredCount": 2 },
-    { "RoomName": "Corridor", "ChineseLabel": "\u8d70\u5eca", "EnglishLabel": "Corridor", "RequiredCount": 1 },
-    { "RoomName": "Office", "ChineseLabel": "\u529e\u516c\u5ba4", "EnglishLabel": "Office", "RequiredCount": 1 },
-    { "RoomName": "CommonActivityZone", "ChineseLabel": "\u516c\u5171\u6d3b\u52a8\u533a", "EnglishLabel": "Common Activity Zone", "RequiredCount": 1 },
-    { "RoomName": "Canteen", "ChineseLabel": "\u98df\u5802", "EnglishLabel": "Canteen", "RequiredCount": 1 },
-    { "RoomName": "Store", "ChineseLabel": "\u8d85\u5e02", "EnglishLabel": "Store", "RequiredCount": 1 },
-    { "RoomName": "Outdoor", "ChineseLabel": "\u5ba4\u5916", "EnglishLabel": "Outdoor", "RequiredCount": 1 },
-    { "RoomName": "Dormitory", "ChineseLabel": "\u5bbf\u820d", "EnglishLabel": "Dormitory", "RequiredCount": 0 },
-    { "RoomName": "Restroom", "ChineseLabel": "\u536b\u751f\u95f4", "EnglishLabel": "Restroom", "RequiredCount": 0 },
-    { "RoomName": "Library", "ChineseLabel": "\u56fe\u4e66\u9986", "EnglishLabel": "Library", "RequiredCount": 0 },
-    { "RoomName": "Stairwell", "ChineseLabel": "\u697c\u68af\u95f4", "EnglishLabel": "Stairwell", "RequiredCount": 0 },
-    { "RoomName": "HumanResources", "ChineseLabel": "\u4eba\u4e8b\u5904", "EnglishLabel": "Human Resources", "RequiredCount": 0 },
-    { "RoomName": "ShrineRoom", "ChineseLabel": "\u795e\u9f9b\u5ba4", "EnglishLabel": "Shrine Room", "RequiredCount": 0 }
-  ]
+﻿{
+    "Presets":  [
+                    {
+                        "RoomName":  "Classroom",
+                        "ChineseLabel":  "教室",
+                        "EnglishLabel":  "Classroom",
+                        "RequiredCount":  2
+                    },
+                    {
+                        "RoomName":  "Corridor",
+                        "ChineseLabel":  "走廊",
+                        "EnglishLabel":  "Corridor",
+                        "RequiredCount":  1
+                    },
+                    {
+                        "RoomName":  "Office",
+                        "ChineseLabel":  "办公室",
+                        "EnglishLabel":  "Office",
+                        "RequiredCount":  1
+                    },
+                    {
+                        "RoomName":  "CommonActivityZone",
+                        "ChineseLabel":  "公共活动区",
+                        "EnglishLabel":  "Common Activity Zone",
+                        "RequiredCount":  1
+                    },
+                    {
+                        "RoomName":  "ServiceArea",
+                        "ChineseLabel":  "服务区",
+                        "EnglishLabel":  "Service Area",
+                        "RequiredCount":  1
+                    },
+                    {
+                        "RoomName":  "RetailArea",
+                        "ChineseLabel":  "零售区",
+                        "EnglishLabel":  "Retail Area",
+                        "RequiredCount":  1
+                    },
+                    {
+                        "RoomName":  "Outdoor",
+                        "ChineseLabel":  "室外",
+                        "EnglishLabel":  "Outdoor",
+                        "RequiredCount":  1
+                    },
+                    {
+                        "RoomName":  "Dormitory",
+                        "ChineseLabel":  "宿舍",
+                        "EnglishLabel":  "Dormitory",
+                        "RequiredCount":  0
+                    },
+                    {
+                        "RoomName":  "Restroom",
+                        "ChineseLabel":  "卫生间",
+                        "EnglishLabel":  "Restroom",
+                        "RequiredCount":  0
+                    },
+                    {
+                        "RoomName":  "Library",
+                        "ChineseLabel":  "图书馆",
+                        "EnglishLabel":  "Library",
+                        "RequiredCount":  0
+                    },
+                    {
+                        "RoomName":  "Stairwell",
+                        "ChineseLabel":  "楼梯间",
+                        "EnglishLabel":  "Stairwell",
+                        "RequiredCount":  0
+                    },
+                    {
+                        "RoomName":  "HumanResources",
+                        "ChineseLabel":  "人事处",
+                        "EnglishLabel":  "Human Resources",
+                        "RequiredCount":  0
+                    },
+                    {
+                        "RoomName":  "ShrineRoom",
+                        "ChineseLabel":  "神龛室",
+                        "EnglishLabel":  "Shrine Room",
+                        "RequiredCount":  0
+                    }
+                ]
 }

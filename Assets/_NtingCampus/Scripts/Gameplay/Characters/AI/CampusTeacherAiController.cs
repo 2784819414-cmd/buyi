@@ -1,94 +1,18 @@
-using System.Collections.Generic;
-using NtingCampus.Gameplay.Rooms;
-
 namespace NtingCampus.Gameplay.Characters
 {
-    internal sealed class CampusTeacherAiController : ICampusNpcAiController
+    internal sealed class CampusTeacherAiController : CampusRoleNpcAiControllerBase
     {
-        private const float DecisionIntervalSeconds = 0.85f;
+        public override CampusCharacterRole Role => CampusCharacterRole.Teacher;
+        protected override float DecisionIntervalSeconds => 0.85f;
 
-        private readonly List<CampusNpcActionOpportunity> opportunityScratch =
-            new List<CampusNpcActionOpportunity>(4);
-
-        private CampusNpcAiRuntime npc;
-
-        public CampusCharacterRole Role => CampusCharacterRole.Teacher;
-
-        public void Bind(CampusNpcAiRuntime runtime)
+        public override string BuildInteractiveLine()
         {
-            npc = runtime;
-        }
-
-        public CampusNpcPersonalProfile BuildProfile()
-        {
-            CampusNpcPersonalProfile profile = new CampusNpcPersonalProfile();
-            CampusCharacterRuntime runtime = npc != null ? npc.Runtime : null;
-            CampusCharacterData data = npc != null ? npc.Data : null;
-            profile.Reset(data);
-            if (data == null || npc == null || npc.WorldService == null)
-            {
-                return profile;
-            }
-
-            CampusNpcCommonProfileResolver.Build(profile, data, npc.WorldService, npc.RosterService);
-            CampusTeacherProfileResolver.Build(profile, runtime, npc.WorldService, npc.RosterService);
-            return profile;
-        }
-
-        public void Tick()
-        {
-            npc?.TickCurrentIntent();
-            ThinkAndActIfDue();
-        }
-
-        public CampusNpcPlanDecision ChooseIntent()
-        {
-            if (npc == null || npc.Data == null)
-            {
-                return new CampusNpcPlanDecision(CampusNpcIntent.Idle("NoData"));
-            }
-
-            if (npc.Data.State == CampusCharacterState.Punished)
-            {
-                return new CampusNpcPlanDecision(CampusNpcIntentActions.OfficeDesk(npc, "Punished"));
-            }
-
-            if (ShouldContinueCurrentHold())
-            {
-                return new CampusNpcPlanDecision(npc.Mind.CurrentIntent);
-            }
-
-            if (TryChooseRegisteredOpportunity(CampusNpcOpportunityQuery.Required(), out CampusNpcIntent requiredIntent))
-            {
-                return new CampusNpcPlanDecision(requiredIntent);
-            }
-
-            if (CampusNpcScheduleFacts.IsClassSession(npc.Segment))
-            {
-                return new CampusNpcPlanDecision(CampusNpcIntentActions.TeacherPodium(npc, "Teach"));
-            }
-
-            if (CampusNpcScheduleFacts.IsTeacherOfficeWindow(npc.Segment))
-            {
-                return new CampusNpcPlanDecision(CampusNpcIntentActions.OfficeDesk(npc, "Office"));
-            }
-
-            if (TryChooseRegisteredOpportunity(CampusNpcOpportunityQuery.FreeMovement(), out CampusNpcIntent freeIntent))
-            {
-                return new CampusNpcPlanDecision(freeIntent);
-            }
-
-            return new CampusNpcPlanDecision(CampusNpcIntentActions.Common(npc, "TeacherFree"));
-        }
-
-        public string BuildInteractiveLine()
-        {
-            return npc != null && CampusNpcScheduleFacts.IsClassSession(npc.Segment)
+            return Npc != null && CampusNpcScheduleFacts.IsClassSession(Npc.Segment)
                 ? CampusNpcSpeechTextCatalog.Get(CampusNpcSpeechTextId.TeacherClassInProgress)
                 : CampusNpcSpeechTextCatalog.Get(CampusNpcSpeechTextId.TeacherBackOfficeInteractive);
         }
 
-        public string ResolveIntentLine(CampusNpcIntentKind kind)
+        public override string ResolveIntentLine(CampusNpcIntentKind kind)
         {
             switch (kind)
             {
@@ -103,38 +27,32 @@ namespace NtingCampus.Gameplay.Characters
             }
         }
 
-        private void ThinkAndActIfDue()
+        protected override void BuildRoleProfile(
+            CampusNpcPersonalProfile profile,
+            CampusCharacterRuntime runtime,
+            CampusCharacterData data)
         {
-            if (npc == null || !npc.IsDecisionDue)
-            {
-                return;
-            }
-
-            CampusNpcPlanDecision decision = ChooseIntent();
-            npc.ApplyIntent(decision.Intent, ResolveIntentLine);
-            npc.ScheduleNextDecision(DecisionIntervalSeconds);
+            CampusTeacherProfileResolver.Build(profile, runtime, Npc.WorldService, Npc.RosterService);
         }
 
-        private bool ShouldContinueCurrentHold()
+        protected override CampusNpcIntent ChooseRoleIntent()
         {
-            return npc != null &&
-                   npc.Mind != null &&
-                   npc.Mind.CurrentIntent != null &&
-                   !npc.Mind.CurrentIntent.UsesNavigation &&
-                   npc.Mind.CurrentIntent.HoldSeconds > 0f &&
-                   UnityEngine.Time.time < npc.Mind.IntentHoldUntil;
-        }
-
-        private bool TryChooseRegisteredOpportunity(CampusNpcOpportunityQuery query, out CampusNpcIntent intent)
-        {
-            intent = null;
-            if (!CampusNpcOpportunityRegistry.TryChoose(npc, query, opportunityScratch, out CampusNpcActionOpportunity opportunity))
+            if (TryChooseOpportunity(CampusNpcOpportunityQuery.Required(), out CampusNpcIntent requiredIntent))
             {
-                return false;
+                return requiredIntent;
             }
 
-            intent = opportunity.ToIntent();
-            return true;
+            if (CampusNpcEcologyPresetCatalog.TryResolveDefaultIntent(Npc, out CampusNpcIntent configuredIntent))
+            {
+                return configuredIntent;
+            }
+
+            if (TryChooseOpportunity(CampusNpcOpportunityQuery.FreeMovement(), out CampusNpcIntent roamingIntent))
+            {
+                return roamingIntent;
+            }
+
+            return CampusNpcIntentActions.Common(Npc, "TeacherFree");
         }
     }
 }

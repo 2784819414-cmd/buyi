@@ -4,25 +4,14 @@ namespace NtingCampus.Gameplay.Characters
 {
     internal static class CampusNpcFacilityGroups
     {
-        public static readonly CampusFacilityType[] StudentDesks = { CampusFacilityType.StudentDesk };
-        public static readonly CampusFacilityType[] Podiums = { CampusFacilityType.Podium, CampusFacilityType.Blackboard };
-        public static readonly CampusFacilityType[] OfficeDesks = { CampusFacilityType.OfficeDesk, CampusFacilityType.Desk };
-        public static readonly CampusFacilityType[] CanteenWorkstations =
-        {
-            CampusFacilityType.CanteenClerkStandPoint
-        };
+        public const string StudentDesks = "student_desks";
+        public const string Podiums = "podiums";
+        public const string OfficeDesks = "office_desks";
+        public const string Workstations = "workstations";
 
-        public static readonly CampusFacilityType[] StoreWorkstations =
+        public static CampusFacilityType[] Get(string groupId)
         {
-            CampusFacilityType.StoreCheckout
-        };
-
-        public static readonly CampusFacilityType[] DeliveryPoints = { CampusFacilityType.DeliveryDropPoint };
-        public static readonly CampusFacilityType[] Shelves =
-        {
-            CampusFacilityType.StoreShelf,
-            CampusFacilityType.Storage,
-            CampusFacilityType.CanteenFoodTray
-        };
+            return CampusNpcEcologyPresetCatalog.GetFacilityGroup(groupId);
+        }
     }
 }

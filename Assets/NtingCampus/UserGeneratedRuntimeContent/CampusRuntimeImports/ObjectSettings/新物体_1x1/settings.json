@@ -1,6 +1,6 @@
 ﻿{
     "ObjectId": "新物体_1x1",
-    "TypeId": "CanteenServingWindow",
+    "TypeId": "ServiceWindow",
     "DisplayNameOverride": "新物体",
     "OverrideFootprintSize": true,
     "FootprintSize": {

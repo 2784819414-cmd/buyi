@@ -259,16 +259,6 @@ namespace NtingCampusMapEditor
                     return "\u7269\u4f53\u8d44\u6e90\u9762\u677f";
                 case "CampusWallVisualCatalog":
                     return "\u5899\u4f53\u89c6\u89c9\u76ee\u5f55";
-                case "CampusPrankSpot_PassNote":
-                    return "\u4f20\u7eb8\u6761";
-                case "CampusPrankSpot_ConfuseBooks":
-                    return "\u4e71\u6574\u7406\u4e66";
-                case "CampusPrankSpot_StealDelivery":
-                    return "\u5077\u5916\u5356";
-                case "CampusPrankSpot_StealFriedChicken":
-                    return "\u5077\u70b8\u9e21";
-                case "CampusPrankSpot_TwistBottleCaps":
-                    return "\u62e7\u74f6\u76d6";
                 case "Debug_FloorTile":
                     return "\u8c03\u8bd5\u5730\u9762";
                 case "Debug_WallTile":

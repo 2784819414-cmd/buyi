@@ -150,7 +150,8 @@ namespace NtingCampus.Gameplay.Characters
             anchor.ActionId = CampusInteractionActionIds.NpcTalk;
             anchor.Payload = string.Empty;
             anchor.PromptAnchor = speechAnchor;
-            anchor.PromptText = "Talk";
+            anchor.PromptText = string.Empty;
+            anchor.LocalizedPromptText = default;
             anchor.KeyOverride = string.Empty;
             anchor.Priority = 55;
             anchor.IsAvailable = true;

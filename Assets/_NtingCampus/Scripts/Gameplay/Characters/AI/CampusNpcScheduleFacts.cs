@@ -51,15 +51,6 @@ namespace NtingCampus.Gameplay.Characters
                    segment == CampusTimeSegment.DinnerBreak;
         }
 
-        public static bool IsStudentDeliveryOrderWindow(CampusTimeSegment segment)
-        {
-            return segment == CampusTimeSegment.MorningBreak2 ||
-                   segment == CampusTimeSegment.LunchBreak ||
-                   segment == CampusTimeSegment.AfternoonBreak2 ||
-                   segment == CampusTimeSegment.DinnerBreak ||
-                   segment == CampusTimeSegment.EveningBreak1;
-        }
-
         public static bool IsStudentFreeMovementWindow(CampusTimeSegment segment)
         {
             return IsBreak(segment) ||
@@ -82,31 +73,6 @@ namespace NtingCampus.Gameplay.Characters
         public static bool IsTeacherOfficeWindow(CampusTimeSegment segment)
         {
             return !IsClassSession(segment) && !IsDormWindow(segment);
-        }
-
-        public static bool IsCanteenShiftActive(CampusTimeSegment segment)
-        {
-            return segment == CampusTimeSegment.BreakfastPrep ||
-                   segment == CampusTimeSegment.MorningBreak2 ||
-                   segment == CampusTimeSegment.LunchBreak ||
-                   segment == CampusTimeSegment.AfternoonBreak2 ||
-                   segment == CampusTimeSegment.DinnerBreak;
-        }
-
-        public static bool IsStoreOpen(CampusTimeSegment segment)
-        {
-            return IsBreak(segment) ||
-                   segment == CampusTimeSegment.LunchBreak ||
-                   segment == CampusTimeSegment.DinnerBreak ||
-                   segment == CampusTimeSegment.EveningBreak1 ||
-                   segment == CampusTimeSegment.EveningBreak2;
-        }
-
-        public static bool IsStoreStocktakeWindow(CampusTimeSegment segment)
-        {
-            return segment == CampusTimeSegment.EveningStudy1 ||
-                   segment == CampusTimeSegment.EveningStudy2 ||
-                   segment == CampusTimeSegment.EveningStudy3;
         }
 
         public static bool IsStaffOffDuty(CampusTimeSegment segment)

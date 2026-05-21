@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using UnityEngine;
 
 namespace NtingCampus.Gameplay.Characters
 {
@@ -80,7 +81,13 @@ namespace NtingCampus.Gameplay.Characters
 
             scratch.Clear();
             Collect(npc, query, scratch);
-            return CampusNpcActionOpportunitySelector.TryChooseBest(npc, scratch, out selected);
+            bool found = CampusNpcActionOpportunitySelector.TryChooseBest(npc, scratch, out selected);
+            if (found)
+            {
+                MaybeLogSelectedOpportunity(npc, selected);
+            }
+
+            return found;
         }
 
         private static void EnsureBuiltInsRegistered()
@@ -92,6 +99,25 @@ namespace NtingCampus.Gameplay.Characters
 
             builtInsRegistered = true;
             CampusBuiltInNpcOpportunityProviders.Install();
+        }
+
+        private static void MaybeLogSelectedOpportunity(
+            CampusNpcAiRuntime npc,
+            CampusNpcActionOpportunity selected)
+        {
+            if (!CampusNpcEcologyPresetCatalog.EnableSelectionDebug ||
+                npc == null ||
+                npc.Data == null ||
+                selected == null)
+            {
+                return;
+            }
+
+            Debug.Log(
+                "[CampusNpcOpportunity] npc=" + npc.Data.Id +
+                " selected=" + selected.ActionId +
+                " intent=" + selected.DefaultIntentLabel +
+                " score=" + selected.Score.ToString("0.###"));
         }
     }
 }

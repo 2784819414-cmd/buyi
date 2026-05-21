@@ -1,124 +1,140 @@
-{
-  "Presets": [
-    {
-      "ChineseLabel": "\u5b66\u751f",
-      "EnglishLabel": "Student",
-      "ChineseDisplayName": "\u5b66\u751f",
-      "EnglishDisplayName": "Student",
-      "ActorIdPrefix": "student",
-      "Role": "Student",
-      "TeacherDuty": "None",
-      "StaffDuty": "None",
-      "ClassId": "class_1",
-      "Sleepiness": 40,
-      "Mischief": 20,
-      "Traits": [ "Ordinary" ],
-      "Color": "#618FD4"
-    },
-    {
-      "ChineseLabel": "\u6363\u86cb\u5b66\u751f",
-      "EnglishLabel": "Troublemaker",
-      "ChineseDisplayName": "\u6363\u86cb\u5b66\u751f",
-      "EnglishDisplayName": "Troublemaker",
-      "ActorIdPrefix": "student_trouble",
-      "Role": "Student",
-      "TeacherDuty": "None",
-      "StaffDuty": "None",
-      "ClassId": "class_1",
-      "Sleepiness": 28,
-      "Mischief": 68,
-      "Traits": [ "Troublemaker" ],
-      "Color": "#9E6BA8"
-    },
-    {
-      "ChineseLabel": "\u597d\u5b66\u751f",
-      "EnglishLabel": "Good Student",
-      "ChineseDisplayName": "\u597d\u5b66\u751f",
-      "EnglishDisplayName": "GoodStudent",
-      "ActorIdPrefix": "student_good",
-      "Role": "Student",
-      "TeacherDuty": "None",
-      "StaffDuty": "None",
-      "ClassId": "class_1",
-      "Sleepiness": 24,
-      "Mischief": 12,
-      "Traits": [ "GoodStudent" ],
-      "Color": "#6B9E7A"
-    },
-    {
-      "ChineseLabel": "\u8bed\u6587\u8001\u5e08",
-      "EnglishLabel": "World Teacher",
-      "ChineseDisplayName": "\u8bed\u6587\u8001\u5e08",
-      "EnglishDisplayName": "WorldTeacher",
-      "ActorIdPrefix": "teacher_world",
-      "Role": "Teacher",
-      "TeacherDuty": "WorldLanguageTeacher",
-      "StaffDuty": "None",
-      "ClassId": "class_1",
-      "Sleepiness": 10,
-      "Mischief": 0,
-      "Traits": [ "Ordinary" ],
-      "Color": "#7A7A85"
-    },
-    {
-      "ChineseLabel": "\u6570\u5b66\u8001\u5e08",
-      "EnglishLabel": "Math Teacher",
-      "ChineseDisplayName": "\u6570\u5b66\u8001\u5e08",
-      "EnglishDisplayName": "MathTeacher",
-      "ActorIdPrefix": "teacher_math",
-      "Role": "Teacher",
-      "TeacherDuty": "MathTeacher",
-      "StaffDuty": "None",
-      "ClassId": "class_1",
-      "Sleepiness": 10,
-      "Mischief": 0,
-      "Traits": [ "Ordinary" ],
-      "Color": "#6B6B7A"
-    },
-    {
-      "ChineseLabel": "\u98df\u5802\u5e97\u5458",
-      "EnglishLabel": "Canteen Clerk",
-      "ChineseDisplayName": "\u98df\u5802\u5e97\u5458",
-      "EnglishDisplayName": "CanteenClerk",
-      "ActorIdPrefix": "staff_canteen",
-      "Role": "Staff",
-      "TeacherDuty": "None",
-      "StaffDuty": "CanteenClerk",
-      "ClassId": "",
-      "Sleepiness": 10,
-      "Mischief": 0,
-      "Traits": [ "Ordinary" ],
-      "Color": "#A68A52"
-    },
-    {
-      "ChineseLabel": "\u8d85\u5e02\u5e97\u5458",
-      "EnglishLabel": "Store Owner",
-      "ChineseDisplayName": "\u8d85\u5e02\u5e97\u5458",
-      "EnglishDisplayName": "StoreOwner",
-      "ActorIdPrefix": "staff_store",
-      "Role": "Staff",
-      "TeacherDuty": "None",
-      "StaffDuty": "StoreOwner",
-      "ClassId": "",
-      "Sleepiness": 12,
-      "Mischief": 0,
-      "Traits": [ "Ordinary" ],
-      "Color": "#B87552"
-    },
-    {
-      "ChineseLabel": "\u5916\u5356\u770b\u5b88",
-      "EnglishLabel": "Delivery Watcher",
-      "ChineseDisplayName": "\u5916\u5356\u770b\u5b88",
-      "EnglishDisplayName": "DeliveryWatcher",
-      "ActorIdPrefix": "staff_delivery",
-      "Role": "Staff",
-      "TeacherDuty": "None",
-      "StaffDuty": "DeliveryWatcher",
-      "ClassId": "",
-      "Sleepiness": 16,
-      "Mischief": 0,
-      "Traits": [ "Tattletale" ],
-      "Color": "#528AFB"
-    }
-  ]
+﻿{
+    "Presets":  [
+                    {
+                        "ChineseLabel":  "学生",
+                        "EnglishLabel":  "Student",
+                        "ChineseDisplayName":  "学生",
+                        "EnglishDisplayName":  "Student",
+                        "ActorIdPrefix":  "student",
+                        "Role":  "Student",
+                        "TeacherDuty":  "None",
+                        "StaffDuty":  "None",
+                        "ClassId":  "class_1",
+                        "Sleepiness":  40,
+                        "Mischief":  20,
+                        "Traits":  [
+                                       "Ordinary"
+                                   ],
+                        "Color":  "#618FD4"
+                    },
+                    {
+                        "ChineseLabel":  "捣蛋学生",
+                        "EnglishLabel":  "Troublemaker",
+                        "ChineseDisplayName":  "捣蛋学生",
+                        "EnglishDisplayName":  "Troublemaker",
+                        "ActorIdPrefix":  "student_trouble",
+                        "Role":  "Student",
+                        "TeacherDuty":  "None",
+                        "StaffDuty":  "None",
+                        "ClassId":  "class_1",
+                        "Sleepiness":  28,
+                        "Mischief":  68,
+                        "Traits":  [
+                                       "Troublemaker"
+                                   ],
+                        "Color":  "#9E6BA8"
+                    },
+                    {
+                        "ChineseLabel":  "好学生",
+                        "EnglishLabel":  "Good Student",
+                        "ChineseDisplayName":  "好学生",
+                        "EnglishDisplayName":  "GoodStudent",
+                        "ActorIdPrefix":  "student_good",
+                        "Role":  "Student",
+                        "TeacherDuty":  "None",
+                        "StaffDuty":  "None",
+                        "ClassId":  "class_1",
+                        "Sleepiness":  24,
+                        "Mischief":  12,
+                        "Traits":  [
+                                       "GoodStudent"
+                                   ],
+                        "Color":  "#6B9E7A"
+                    },
+                    {
+                        "ChineseLabel":  "语文老师",
+                        "EnglishLabel":  "World Teacher",
+                        "ChineseDisplayName":  "语文老师",
+                        "EnglishDisplayName":  "WorldTeacher",
+                        "ActorIdPrefix":  "teacher_world",
+                        "Role":  "Teacher",
+                        "TeacherDuty":  "WorldLanguageTeacher",
+                        "StaffDuty":  "None",
+                        "ClassId":  "class_1",
+                        "Sleepiness":  10,
+                        "Mischief":  0,
+                        "Traits":  [
+                                       "Ordinary"
+                                   ],
+                        "Color":  "#7A7A85"
+                    },
+                    {
+                        "ChineseLabel":  "数学老师",
+                        "EnglishLabel":  "Math Teacher",
+                        "ChineseDisplayName":  "数学老师",
+                        "EnglishDisplayName":  "MathTeacher",
+                        "ActorIdPrefix":  "teacher_math",
+                        "Role":  "Teacher",
+                        "TeacherDuty":  "MathTeacher",
+                        "StaffDuty":  "None",
+                        "ClassId":  "class_1",
+                        "Sleepiness":  10,
+                        "Mischief":  0,
+                        "Traits":  [
+                                       "Ordinary"
+                                   ],
+                        "Color":  "#6B6B7A"
+                    },
+                    {
+                        "ChineseLabel":  "支援职员",
+                        "EnglishLabel":  "Support Staff",
+                        "ChineseDisplayName":  "支援职员",
+                        "EnglishDisplayName":  "SupportStaff",
+                        "ActorIdPrefix":  "staff_support",
+                        "Role":  "Staff",
+                        "TeacherDuty":  "None",
+                        "StaffDuty":  "SupportStaff",
+                        "ClassId":  "",
+                        "Sleepiness":  10,
+                        "Mischief":  0,
+                        "Traits":  [
+                                       "Ordinary"
+                                   ],
+                        "Color":  "#A68A52"
+                    },
+                    {
+                        "ChineseLabel":  "运营职员",
+                        "EnglishLabel":  "Operations Staff",
+                        "ChineseDisplayName":  "运营职员",
+                        "EnglishDisplayName":  "OperationsStaff",
+                        "ActorIdPrefix":  "staff_operations",
+                        "Role":  "Staff",
+                        "TeacherDuty":  "None",
+                        "StaffDuty":  "OperationsStaff",
+                        "ClassId":  "",
+                        "Sleepiness":  12,
+                        "Mischief":  0,
+                        "Traits":  [
+                                       "Ordinary"
+                                   ],
+                        "Color":  "#B87552"
+                    },
+                    {
+                        "ChineseLabel":  "巡查职员",
+                        "EnglishLabel":  "Patrol Staff",
+                        "ChineseDisplayName":  "巡查职员",
+                        "EnglishDisplayName":  "PatrolStaff",
+                        "ActorIdPrefix":  "staff_patrol",
+                        "Role":  "Staff",
+                        "TeacherDuty":  "None",
+                        "StaffDuty":  "PatrolStaff",
+                        "ClassId":  "",
+                        "Sleepiness":  16,
+                        "Mischief":  0,
+                        "Traits":  [
+                                       "Tattletale"
+                                   ],
+                        "Color":  "#528AFB"
+                    }
+                ]
 }

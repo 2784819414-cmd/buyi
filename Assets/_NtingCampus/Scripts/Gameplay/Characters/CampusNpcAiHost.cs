@@ -29,6 +29,15 @@ namespace NtingCampus.Gameplay.Characters
         private CampusCharacterRole boundRole;
 
         public CampusCharacterRuntime Runtime => runtime;
+        internal CampusNpcAiRuntime AiRuntime
+        {
+            get
+            {
+                BindAiRuntimeIfNeeded();
+                return aiRuntime;
+            }
+        }
+
         public CampusNpcPersonalProfile Profile => profile;
         public CampusNpcIntent ActiveIntent => mind.CurrentIntent;
         public bool IsTalkAvailable => enabled && runtime != null && runtime.Data != null;
@@ -120,7 +129,11 @@ namespace NtingCampus.Gameplay.Characters
 
         public string ResolveInteractionPrompt(GameObject actor)
         {
-            return "Talk";
+            CampusCharacterData data = runtime != null ? runtime.Data : null;
+            string displayName = data != null
+                ? data.GetDisplayName(CampusLanguageState.CurrentLanguage)
+                : CampusInteractionTextCatalog.Get(CampusInteractionTextId.UnknownActor);
+            return CampusCharacterTextCatalog.FormatTalkPrompt(CampusLanguageState.CurrentLanguage, displayName);
         }
 
         public void RequestDecisionSoon()
@@ -142,10 +155,6 @@ namespace NtingCampus.Gameplay.Characters
             }
 
             aiRuntime.SetProfile(profile);
-            if (runtime != null && runtime.Data != null)
-            {
-                runtime.Data.SyncAssignmentsFromProfile(profile);
-            }
         }
 
         private void EnsureAiController()
@@ -230,13 +239,17 @@ namespace NtingCampus.Gameplay.Characters
             CampusCharacterData data = runtime != null ? runtime.Data : null;
             if (data == null)
             {
-                return "...";
+                return CampusCharacterTextCatalog.GetDialogue(
+                    CampusLanguageState.CurrentLanguage,
+                    CampusCharacterDialogueId.Missing);
             }
 
             EnsureAiController();
             return aiController != null
                 ? aiController.BuildInteractiveLine()
-                : "...";
+                : CampusCharacterTextCatalog.GetDialogue(
+                    CampusLanguageState.CurrentLanguage,
+                    CampusCharacterDialogueId.Missing);
         }
 
         private string ResolveAmbientLine()

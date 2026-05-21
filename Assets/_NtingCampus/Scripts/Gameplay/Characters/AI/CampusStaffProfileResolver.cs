@@ -15,185 +15,42 @@ namespace NtingCampus.Gameplay.Characters
                 runtime,
                 rosterService,
                 CampusNpcRosterIndexer.IsStaff);
-            CampusStaffDuty duty = data != null ? data.StaffDuty : CampusStaffDuty.None;
 
-            if ((duty & CampusStaffDuty.StoreOwner) != 0 || (duty & CampusStaffDuty.BookstoreOwner) != 0)
-            {
-                BuildStoreStaffProfile(profile, data, worldService, staffIndex);
-                return;
-            }
-
-            if ((duty & CampusStaffDuty.DeliveryWatcher) != 0)
-            {
-                BuildDeliveryStaffProfile(profile, data, worldService, staffIndex);
-                return;
-            }
-
-            BuildCanteenStaffProfile(profile, data, worldService, staffIndex);
-        }
-
-        private static void BuildCanteenStaffProfile(
-            CampusNpcPersonalProfile profile,
-            CampusCharacterData data,
-            CampusWorldService worldService,
-            int staffIndex)
-        {
             if (CampusNpcFacilitySelector.FindAssigned(
                     worldService,
                     data != null ? data.Assignments.PrimaryWorkstationId : string.Empty,
-                    CampusNpcFacilityGroups.CanteenWorkstations,
+                    CampusNpcFacilityGroups.Get(CampusNpcFacilityGroups.Workstations),
                     out CampusGameplayRoom assignedRoom,
-                    out CampusGameplayRoom.FacilityRecord assignedCounter))
+                    out CampusGameplayRoom.FacilityRecord assignedWorkstation))
             {
                 profile.SetPrimaryWorkstation(
                     assignedRoom,
-                    CampusNpcFacilitySelector.KeyFor(assignedRoom, assignedCounter),
-                    CampusNpcFacilitySelector.PositionOf(assignedCounter));
-                CampusNpcFacilitySelector.AddPositions(
-                    assignedRoom,
-                    CampusNpcFacilityGroups.CanteenWorkstations,
-                    profile.SecondaryWorkstationPositions);
+                    CampusNpcFacilitySelector.KeyFor(assignedRoom, assignedWorkstation),
+                    CampusNpcFacilitySelector.PositionOf(assignedWorkstation));
                 return;
             }
 
-            CampusGameplayRoom canteen = CampusNpcRoomSelector.Choose(
-                CampusNpcRoomSelector.GetRooms(worldService, CampusRoomType.Canteen),
+            CampusGameplayRoom office = CampusNpcRoomSelector.Choose(
+                CampusNpcRoomSelector.GetRooms(worldService, CampusRoomType.Office),
                 data != null ? data.Id : string.Empty,
                 staffIndex);
             if (CampusNpcFacilitySelector.TryChoose(
-                    canteen,
-                    CampusNpcFacilityGroups.CanteenWorkstations,
+                    office,
+                    CampusNpcFacilityGroups.Get(CampusNpcFacilityGroups.Workstations),
                     staffIndex,
-                    out CampusGameplayRoom.FacilityRecord counter))
+                    out CampusGameplayRoom.FacilityRecord workstation))
             {
                 profile.SetPrimaryWorkstation(
-                    canteen,
-                    CampusNpcFacilitySelector.KeyFor(canteen, counter),
-                    CampusNpcFacilitySelector.PositionOf(counter));
-            }
-            else
-            {
-                profile.SetPrimaryWorkstation(
-                    canteen,
-                    string.Empty,
-                    CampusNpcRoomSelector.PointNearCenter(canteen, staffIndex, 0.25f));
-            }
-
-            CampusNpcFacilitySelector.AddPositions(
-                canteen,
-                CampusNpcFacilityGroups.CanteenWorkstations,
-                profile.SecondaryWorkstationPositions);
-        }
-
-        private static void BuildStoreStaffProfile(
-            CampusNpcPersonalProfile profile,
-            CampusCharacterData data,
-            CampusWorldService worldService,
-            int staffIndex)
-        {
-            if (CampusNpcFacilitySelector.FindAssigned(
-                    worldService,
-                    data != null ? data.Assignments.PrimaryWorkstationId : string.Empty,
-                    CampusNpcFacilityGroups.StoreWorkstations,
-                    out CampusGameplayRoom assignedRoom,
-                    out CampusGameplayRoom.FacilityRecord assignedCheckout))
-            {
-                profile.SetPrimaryWorkstation(
-                    assignedRoom,
-                    CampusNpcFacilitySelector.KeyFor(assignedRoom, assignedCheckout),
-                    CampusNpcFacilitySelector.PositionOf(assignedCheckout));
-                CampusNpcFacilitySelector.AddPositions(
-                    assignedRoom,
-                    CampusNpcFacilityGroups.StoreWorkstations,
-                    profile.SecondaryWorkstationPositions);
-                CampusNpcFacilitySelector.AddPositions(
-                    assignedRoom,
-                    CampusNpcFacilityGroups.Shelves,
-                    profile.ShelfPositions);
+                    office,
+                    CampusNpcFacilitySelector.KeyFor(office, workstation),
+                    CampusNpcFacilitySelector.PositionOf(workstation));
                 return;
             }
 
-            CampusGameplayRoom store = CampusNpcRoomSelector.Choose(
-                CampusNpcRoomSelector.GetRooms(worldService, CampusRoomType.Store),
-                data != null ? data.Id : string.Empty,
-                staffIndex);
-            if (CampusNpcFacilitySelector.TryChoose(
-                    store,
-                    CampusNpcFacilityGroups.StoreWorkstations,
-                    staffIndex,
-                    out CampusGameplayRoom.FacilityRecord checkout))
-            {
-                profile.SetPrimaryWorkstation(
-                    store,
-                    CampusNpcFacilitySelector.KeyFor(store, checkout),
-                    CampusNpcFacilitySelector.PositionOf(checkout));
-            }
-            else
-            {
-                profile.SetPrimaryWorkstation(
-                    store,
-                    string.Empty,
-                    CampusNpcRoomSelector.PointNearCenter(store, staffIndex, 0.25f));
-            }
-
-            CampusNpcFacilitySelector.AddPositions(
-                store,
-                CampusNpcFacilityGroups.StoreWorkstations,
-                profile.SecondaryWorkstationPositions);
-            CampusNpcFacilitySelector.AddPositions(
-                store,
-                CampusNpcFacilityGroups.Shelves,
-                profile.ShelfPositions);
-        }
-
-        private static void BuildDeliveryStaffProfile(
-            CampusNpcPersonalProfile profile,
-            CampusCharacterData data,
-            CampusWorldService worldService,
-            int staffIndex)
-        {
-            string assignedPointId = data != null && !string.IsNullOrWhiteSpace(data.Assignments.DeliveryPointId)
-                ? data.Assignments.DeliveryPointId
-                : data != null ? data.Assignments.PrimaryWorkstationId : string.Empty;
-            if (CampusNpcFacilitySelector.FindAssigned(
-                    worldService,
-                    assignedPointId,
-                    CampusNpcFacilityGroups.DeliveryPoints,
-                    out CampusGameplayRoom assignedRoom,
-                    out CampusGameplayRoom.FacilityRecord assignedPoint))
-            {
-                UnityEngine.Vector3 assignedPosition = CampusNpcFacilitySelector.PositionOf(assignedPoint);
-                string key = CampusNpcFacilitySelector.KeyFor(assignedRoom, assignedPoint);
-                profile.SetPrimaryWorkstation(assignedRoom, key, assignedPosition);
-                profile.SetDeliveryPoint(assignedRoom, key, assignedPosition);
-                return;
-            }
-
-            CampusGameplayRoom outdoor = CampusNpcRoomSelector.Choose(
-                CampusNpcRoomSelector.GetRooms(worldService, CampusRoomType.Outdoor),
-                data != null ? data.Id : string.Empty,
-                staffIndex);
-            if (CampusNpcFacilitySelector.TryChoose(
-                    outdoor,
-                    CampusNpcFacilityGroups.DeliveryPoints,
-                    staffIndex,
-                    out CampusGameplayRoom.FacilityRecord point))
-            {
-                profile.SetPrimaryWorkstation(
-                    outdoor,
-                    CampusNpcFacilitySelector.KeyFor(outdoor, point),
-                    CampusNpcFacilitySelector.PositionOf(point));
-                profile.SetDeliveryPoint(
-                    outdoor,
-                    CampusNpcFacilitySelector.KeyFor(outdoor, point),
-                    CampusNpcFacilitySelector.PositionOf(point));
-            }
-            else
-            {
-                UnityEngine.Vector3 fallback = CampusNpcRoomSelector.PointNearCenter(outdoor, staffIndex, 0.25f);
-                profile.SetPrimaryWorkstation(outdoor, string.Empty, fallback);
-                profile.SetDeliveryPoint(outdoor, string.Empty, fallback);
-            }
+            profile.SetPrimaryWorkstation(
+                office,
+                string.Empty,
+                CampusNpcRoomSelector.PointNearCenter(office, staffIndex, 0.25f));
         }
     }
 }

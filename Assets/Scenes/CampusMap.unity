@@ -1082,7 +1082,6 @@ GameObject:
   - component: {fileID: 621872941}
   - component: {fileID: 621872938}
   - component: {fileID: 621872939}
-  - component: {fileID: 621872940}
   m_Layer: 0
   m_Name: NtingCampus_GameplayBootstrap
   m_TagString: Untagged
@@ -1121,7 +1120,6 @@ MonoBehaviour:
   rosterService: {fileID: 0}
   scheduleService: {fileID: 0}
   gameplayEventHub: {fileID: 0}
-  prankService: {fileID: 0}
   sanctionService: {fileID: 0}
   gameState:
     currentMode: 0
@@ -1167,26 +1165,6 @@ MonoBehaviour:
   speedMode: 1
   customTimeScale: 1
   dayNightController: {fileID: 0}
---- !u!114 &621872940
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 621872937}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 234d603710c840a4a3d3ef48f4b721e4, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::NtingCampus.Gameplay.Core.CampusGameplayDebugPanel
-  bootstrap: {fileID: 621872938}
-  prankService: {fileID: 0}
-  sanctionService: {fileID: 0}
-  displayLanguage: 0
-  toggleKey: 290
-  isVisible: 0
-  selectedCharacterId: 
-  scrollPosition: {x: 0, y: 0}
 --- !u!4 &621872941
 Transform:
   m_ObjectHideFlags: 0
@@ -3455,132 +3433,6 @@ MonoBehaviour:
   cell: {x: -6, y: 1, z: 0}
   countsAsCoreFacility: 1
   linkedPlacedObject: {fileID: 0}
---- !u!1 &300000000000001042
-GameObject:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  serializedVersion: 6
-  m_Component:
-  - component: {fileID: 300000000000001043}
-  - component: {fileID: 300000000000001044}
-  - component: {fileID: 300000000000001045}
-  - component: {fileID: 300000000000001046}
-  m_Layer: 0
-  m_Name: PrankSpot_PassNote_Classroom
-  m_TagString: Untagged
-  m_Icon: {fileID: 0}
-  m_NavMeshLayer: 0
-  m_StaticEditorFlags: 0
-  m_IsActive: 1
---- !u!4 &300000000000001043
-Transform:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 300000000000001042}
-  serializedVersion: 2
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: -0.3, y: 0.1, z: 0}
-  m_LocalScale: {x: 1, y: 1, z: 1}
-  m_ConstrainProportionsScale: 0
-  m_Children: []
-  m_Father: {fileID: 1636594257}
-  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!61 &300000000000001044
-BoxCollider2D:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 300000000000001042}
-  m_Enabled: 1
-  serializedVersion: 3
-  m_Density: 1
-  m_Material: {fileID: 0}
-  m_IncludeLayers:
-    serializedVersion: 2
-    m_Bits: 0
-  m_ExcludeLayers:
-    serializedVersion: 2
-    m_Bits: 0
-  m_LayerOverridePriority: 0
-  m_ForceSendLayers:
-    serializedVersion: 2
-    m_Bits: 4294967295
-  m_ForceReceiveLayers:
-    serializedVersion: 2
-    m_Bits: 4294967295
-  m_ContactCaptureLayers:
-    serializedVersion: 2
-    m_Bits: 4294967295
-  m_CallbackLayers:
-    serializedVersion: 2
-    m_Bits: 4294967295
-  m_IsTrigger: 1
-  m_UsedByEffector: 0
-  m_CompositeOperation: 0
-  m_CompositeOrder: 0
-  m_Offset: {x: 0, y: 0.12}
-  m_SpriteTilingProperty:
-    border: {x: 0, y: 0, z: 0, w: 0}
-    pivot: {x: 0.5, y: 0.5}
-    oldSize: {x: 1, y: 1}
-    newSize: {x: 1, y: 1}
-    adaptiveTilingThreshold: 0.5
-    drawMode: 0
-    adaptiveTiling: 0
-  m_AutoTiling: 0
-  m_Size: {x: 1.4, y: 1.4}
-  m_EdgeRadius: 0
---- !u!114 &300000000000001045
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 300000000000001042}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 9c0c8e2fd8a845849a5082d78940f001, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::NtingCampusMapEditor.CampusInteractionAnchor
-  InteractionTarget: {fileID: 300000000000001046}
-  ActionId: prank.execute
-  Payload: campus.prank.pass_note
-  PromptAnchor: {fileID: 0}
-  PromptText: Pass Note Spot
-  KeyOverride: 
-  Icon: {fileID: 0}
-  AccentColor: {r: 0.96, g: 0.79, b: 0.22, a: 1}
-  Priority: 125
-  IsAvailable: 1
-  UnavailableText: 
-  HideWhenUnavailable: 0
-  UseTargetDoorStatePrompt: 0
-  LogInteraction: 0
-  InteractionLogMessage: 
---- !u!114 &300000000000001046
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 300000000000001042}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 8b06217a2cb24d0383fa957f919c5d83, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::NtingCampus.Gameplay.Pranks.CampusPrankInteractionSpot
-  displayName: Pass Note Spot
-  prankPayload: campus.prank.pass_note
-  requiredRoomType: 1
-  visualKind: 0
-  interactionRadius: 0.95
-  accentColor: {r: 0.96, g: 0.79, b: 0.22, a: 1}
-  unsupportedReason: This formal prank is not implemented yet.
 --- !u!1660057539 &9223372036854775807
 SceneRoots:
   m_ObjectHideFlags: 0

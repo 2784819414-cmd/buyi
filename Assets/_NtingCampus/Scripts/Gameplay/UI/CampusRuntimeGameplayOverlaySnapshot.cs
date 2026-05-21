@@ -1,7 +1,6 @@
 using System;
 using System.Collections.Generic;
 using NtingCampus.Gameplay.Characters;
-using NtingCampus.Gameplay.Pranks;
 using NtingCampus.Gameplay.Rooms;
 using UnityEngine;
 
@@ -15,7 +14,6 @@ namespace NtingCampus.Gameplay.UI
         public List<CampusRuntimeGameplayActorSnapshot> Actors = new List<CampusRuntimeGameplayActorSnapshot>();
         public List<CampusRuntimeGameplayRoomSnapshot> Rooms = new List<CampusRuntimeGameplayRoomSnapshot>();
         public List<CampusRuntimeGameplayFacilitySnapshot> Facilities = new List<CampusRuntimeGameplayFacilitySnapshot>();
-        public List<CampusRuntimeGameplayPrankSpotSnapshot> PrankSpots = new List<CampusRuntimeGameplayPrankSpotSnapshot>();
     }
 
     [Serializable]
@@ -108,38 +106,6 @@ namespace NtingCampus.Gameplay.UI
             {
                 Id = CampusGameplayFacilityMarker.BuildStableFacilityId(FloorIndex, FacilityType, Cell);
             }
-        }
-    }
-
-    [Serializable]
-    public sealed class CampusRuntimeGameplayPrankSpotSnapshot
-    {
-        public string DisplayName = string.Empty;
-        public string Payload = CampusPrankPayloadIds.PassNote;
-        public string RequiredRoomTypeId = string.Empty;
-        public CampusRoomType RequiredRoomType = CampusRoomType.Unknown;
-        public string VisualKindId = string.Empty;
-        public CampusPrankSpotVisualKind VisualKind = CampusPrankSpotVisualKind.Envelope;
-        public int FloorIndex = 1;
-        public Vector3Int Cell;
-        public float InteractionRadius = 0.95f;
-        public Color AccentColor = new Color(0.96f, 0.79f, 0.22f, 1f);
-        public string UnsupportedReason =
-            CampusPlayerUiTextCatalog.Get(CampusPlayerUiTextId.OverlayUnsupportedPrankSpot);
-
-        public void Normalize()
-        {
-            DisplayName = string.IsNullOrWhiteSpace(DisplayName) ? string.Empty : DisplayName.Trim();
-            Payload = string.IsNullOrWhiteSpace(Payload) ? CampusPrankPayloadIds.PassNote : Payload.Trim();
-            RequiredRoomType = CampusGameplayOverlayEnumIds.Resolve(RequiredRoomTypeId, RequiredRoomType);
-            VisualKind = CampusGameplayOverlayEnumIds.Resolve(VisualKindId, VisualKind);
-            RequiredRoomTypeId = CampusGameplayOverlayEnumIds.ToId(RequiredRoomType);
-            VisualKindId = CampusGameplayOverlayEnumIds.ToId(VisualKind);
-            FloorIndex = Mathf.Max(1, FloorIndex);
-            InteractionRadius = Mathf.Max(0.05f, InteractionRadius);
-            UnsupportedReason = string.IsNullOrWhiteSpace(UnsupportedReason)
-                ? CampusPlayerUiTextCatalog.Get(CampusPlayerUiTextId.OverlayUnsupportedPrankSpot)
-                : UnsupportedReason.Trim();
         }
     }
 

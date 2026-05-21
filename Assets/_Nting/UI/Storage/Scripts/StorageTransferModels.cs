@@ -20,7 +20,7 @@ namespace Nting.Storage
         OwnedPrivate = 2,
         ProtectedPublic = 3,
         StaffOnly = 4,
-        Commerce = 5,
+        ProtectedTransfer = 5,
         Ground = 6
     }
 
@@ -31,7 +31,7 @@ namespace Nting.Storage
         DropToGround = 2,
         UseItem = 3,
         Pickup = 4,
-        PrankTheft = 5,
+        ScriptedTake = 5,
         SystemSeed = 6,
         InspectionConfiscation = 7
     }

@@ -301,10 +301,10 @@ namespace NtingCampus.Gameplay.Rooms
             });
             rules.Add(new FacilityRule
             {
-                FacilityType = nameof(CampusFacilityType.CanteenFoodBox),
-                TypeIds = new[] { "CanteenFoodBox", "canteen_food_box", "ready_food_box", "hot_food_box" },
-                DisplayNames = new[] { "canteen food box", "ready food box", "\u73b0\u6210\u98df\u7269\u7bb1", "\u98df\u5802\u98df\u7269\u7bb1" },
-                Contains = new[] { "canteen_food_box", "readyfoodbox", "hotfoodbox", "\u73b0\u6210\u98df\u7269\u7bb1", "\u98df\u5802\u98df\u7269\u7bb1" }
+                FacilityType = nameof(CampusFacilityType.ReadyItemContainer),
+                TypeIds = new[] { "ReadyItemContainer", "ready_item_container", "ready_box", "hot_item_container" },
+                DisplayNames = new[] { "ready item container", "ready item box", "\u73b0\u6210\u7269\u54c1\u7bb1", "\u51c6\u5907\u7269\u54c1\u7bb1" },
+                Contains = new[] { "ready_item_container", "readyitembox", "hotitemcontainer", "\u73b0\u6210\u7269\u54c1\u7bb1", "\u51c6\u5907\u7269\u54c1\u7bb1" }
             });
             rules.Add(new FacilityRule
             {
@@ -315,73 +315,73 @@ namespace NtingCampus.Gameplay.Rooms
             });
             rules.Add(new FacilityRule
             {
-                FacilityType = nameof(CampusFacilityType.CanteenServingWindow),
-                TypeIds = new[] { "CanteenServingWindow", "canteen_serving_window", "meal_window", "food_window" },
-                DisplayNames = new[] { "canteen serving window", "meal window", "\u6253\u996d\u7a97\u53e3", "\u98df\u5802\u7a97\u53e3" },
-                Contains = new[] { "canteen_serving_window", "servingwindow", "mealwindow", "foodwindow", "\u6253\u996d\u7a97\u53e3", "\u98df\u5802\u7a97\u53e3" }
+                FacilityType = nameof(CampusFacilityType.ServiceWindow),
+                TypeIds = new[] { "ServiceWindow", "service_window", "pickup_window", "service_counter_window" },
+                DisplayNames = new[] { "service window", "pickup window", "\u670d\u52a1\u7a97\u53e3", "\u53d6\u7269\u7a97\u53e3" },
+                Contains = new[] { "service_window", "servicewindow", "pickupwindow", "\u670d\u52a1\u7a97\u53e3", "\u53d6\u7269\u7a97\u53e3" }
             });
             rules.Add(new FacilityRule
             {
-                FacilityType = nameof(CampusFacilityType.CanteenCounter),
-                TypeIds = new[] { "CanteenCounter", "canteen_counter", "food_counter" },
-                DisplayNames = new[] { "canteen counter", "food counter", "\u98df\u5802\u67dc\u53f0" },
-                Contains = new[] { "canteen_counter", "foodcounter", "malatang", "noodle", "\u98df\u5802\u67dc\u53f0", "\u9ebb\u8fa3\u70eb", "\u9762\u6761" }
+                FacilityType = nameof(CampusFacilityType.ServiceCounter),
+                TypeIds = new[] { "ServiceCounter", "service_counter", "front_counter" },
+                DisplayNames = new[] { "service counter", "front counter", "\u670d\u52a1\u67dc\u53f0" },
+                Contains = new[] { "service_counter", "frontcounter", "\u670d\u52a1\u67dc\u53f0" }
             });
             rules.Add(new FacilityRule
             {
-                FacilityType = nameof(CampusFacilityType.CanteenClerkStandPoint),
-                TypeIds = new[] { "CanteenClerkStandPoint", "canteen_clerk_stand", "canteen_back_counter", "canteen_staff_point" },
-                DisplayNames = new[] { "canteen clerk stand", "canteen staff point", "\u98df\u5802\u5e97\u5458\u7ad9\u4f4d", "\u67dc\u53f0\u540e\u4fa7" },
-                Contains = new[] { "canteen_clerk_stand", "canteenbackcounter", "canteen_staff", "\u5e97\u5458\u7ad9\u4f4d", "\u67dc\u53f0\u540e" }
+                FacilityType = nameof(CampusFacilityType.WorkerStandPoint),
+                TypeIds = new[] { "WorkerStandPoint", "worker_stand_point", "worker_station", "staff_point" },
+                DisplayNames = new[] { "worker stand point", "worker station", "\u5de5\u4f5c\u7ad9\u4f4d", "\u804c\u5458\u7ad9\u4f4d" },
+                Contains = new[] { "worker_stand_point", "workerstation", "staff_point", "\u5de5\u4f5c\u7ad9\u4f4d", "\u804c\u5458\u7ad9\u4f4d" }
             });
             rules.Add(new FacilityRule
             {
-                FacilityType = nameof(CampusFacilityType.CanteenCustomerPickupPoint),
-                TypeIds = new[] { "CanteenCustomerPickupPoint", "canteen_pickup", "canteen_customer_point", "meal_pickup" },
-                DisplayNames = new[] { "canteen pickup", "meal pickup", "\u98df\u5802\u53d6\u9910\u70b9", "\u987e\u5ba2\u53d6\u9910\u70b9" },
-                Contains = new[] { "canteen_pickup", "mealpickup", "customer_pickup", "\u53d6\u9910\u70b9", "\u987e\u5ba2\u53d6\u9910" }
+                FacilityType = nameof(CampusFacilityType.PickupPoint),
+                TypeIds = new[] { "PickupPoint", "pickup_point", "claim_point", "collection_point" },
+                DisplayNames = new[] { "pickup point", "claim point", "\u53d6\u7269\u70b9", "\u9886\u53d6\u70b9" },
+                Contains = new[] { "pickup_point", "claimpoint", "collectionpoint", "\u53d6\u7269\u70b9", "\u9886\u53d6\u70b9" }
             });
             rules.Add(new FacilityRule
             {
-                FacilityType = nameof(CampusFacilityType.CanteenQueuePoint),
-                TypeIds = new[] { "CanteenQueuePoint", "canteen_queue", "meal_queue" },
-                DisplayNames = new[] { "canteen queue", "meal queue", "\u98df\u5802\u6392\u961f\u70b9", "\u6253\u996d\u961f\u5217" },
-                Contains = new[] { "canteen_queue", "mealqueue", "food_queue", "\u98df\u5802\u6392\u961f", "\u6253\u996d\u961f" }
+                FacilityType = nameof(CampusFacilityType.WaitingPoint),
+                TypeIds = new[] { "WaitingPoint", "waiting_point", "queue_point", "line_point" },
+                DisplayNames = new[] { "waiting point", "queue point", "\u7b49\u5f85\u70b9", "\u6392\u961f\u70b9" },
+                Contains = new[] { "waiting_point", "queuepoint", "linepoint", "\u7b49\u5f85\u70b9", "\u6392\u961f\u70b9" }
             });
             rules.Add(new FacilityRule
             {
-                FacilityType = nameof(CampusFacilityType.CanteenFoodTray),
-                TypeIds = new[] { "CanteenFoodTray", "canteen_food", "food_tray", "fried_chicken", "burger", "oden" },
-                DisplayNames = new[] { "canteen food tray", "fried chicken tray", "\u98df\u5802\u83dc\u76d8", "\u70b8\u9e21\u76d8" },
-                Contains = new[] { "canteen_food", "foodtray", "friedchicken", "burger", "oden", "\u70b8\u9e21", "\u6c49\u5821", "\u5173\u4e1c\u716e" }
+                FacilityType = nameof(CampusFacilityType.ReadyItemSurface),
+                TypeIds = new[] { "ReadyItemSurface", "ready_item_surface", "item_tray", "display_tray" },
+                DisplayNames = new[] { "ready item surface", "item tray", "\u7269\u54c1\u6258\u76d8", "\u9648\u5217\u6258\u76d8" },
+                Contains = new[] { "ready_item_surface", "itemtray", "displaytray", "\u7269\u54c1\u6258\u76d8", "\u9648\u5217\u6258\u76d8" }
             });
             rules.Add(new FacilityRule
             {
-                FacilityType = nameof(CampusFacilityType.StoreShelf),
-                TypeIds = new[] { "StoreShelf", "store_shelf", "shop_shelf", "snack_shelf" },
-                DisplayNames = new[] { "store shelf", "shop shelf", "snack shelf", "\u8d85\u5e02\u8d27\u67b6", "\u5c0f\u5356\u90e8\u8d27\u67b6" },
-                Contains = new[] { "store_shelf", "shopshelf", "snackshelf", "goods_shelf", "\u8d27\u67b6", "\u96f6\u98df\u67b6" }
+                FacilityType = nameof(CampusFacilityType.GoodsShelf),
+                TypeIds = new[] { "GoodsShelf", "goods_shelf", "item_shelf", "display_shelf" },
+                DisplayNames = new[] { "goods shelf", "item shelf", "display shelf", "\u7269\u54c1\u8d27\u67b6" },
+                Contains = new[] { "goods_shelf", "itemshelf", "displayshelf", "\u7269\u54c1\u8d27\u67b6", "\u8d27\u67b6" }
             });
             rules.Add(new FacilityRule
             {
-                FacilityType = nameof(CampusFacilityType.StoreCheckout),
-                TypeIds = new[] { "StoreCheckout", "store_checkout", "cash_register", "checkout" },
-                DisplayNames = new[] { "store checkout", "cash register", "checkout counter", "\u8d85\u5e02\u6536\u94f6\u53f0", "\u6536\u94f6\u53f0" },
-                Contains = new[] { "store_checkout", "checkout", "cashregister", "cashier", "\u6536\u94f6", "\u6536\u94f6\u53f0" }
+                FacilityType = nameof(CampusFacilityType.CheckoutPoint),
+                TypeIds = new[] { "CheckoutPoint", "checkout_point", "settlement_point", "cash_register" },
+                DisplayNames = new[] { "checkout point", "settlement point", "cash register", "\u7ed3\u7b97\u70b9" },
+                Contains = new[] { "checkout_point", "settlementpoint", "cashregister", "\u7ed3\u7b97\u70b9", "\u7ed3\u8d26" }
             });
             rules.Add(new FacilityRule
             {
-                FacilityType = nameof(CampusFacilityType.StoreQueuePoint),
-                TypeIds = new[] { "StoreQueuePoint", "store_queue", "checkout_queue" },
-                DisplayNames = new[] { "store queue", "checkout queue", "\u8d85\u5e02\u6392\u961f\u70b9", "\u6536\u94f6\u961f\u5217" },
-                Contains = new[] { "store_queue", "checkout_queue", "cashier_queue", "\u8d85\u5e02\u6392\u961f", "\u6536\u94f6\u961f" }
+                FacilityType = nameof(CampusFacilityType.CheckoutQueuePoint),
+                TypeIds = new[] { "CheckoutQueuePoint", "checkout_queue_point", "checkout_queue", "settlement_queue" },
+                DisplayNames = new[] { "checkout queue point", "settlement queue", "\u7ed3\u7b97\u6392\u961f\u70b9" },
+                Contains = new[] { "checkout_queue_point", "checkoutqueue", "settlementqueue", "\u7ed3\u7b97\u6392\u961f\u70b9" }
             });
             rules.Add(new FacilityRule
             {
-                FacilityType = nameof(CampusFacilityType.DeliveryDropPoint),
-                TypeIds = new[] { "DeliveryDropPoint", "delivery_drop", "delivery", "takeout", "waimai" },
-                DisplayNames = new[] { "delivery drop point", "delivery point", "\u5916\u5356\u70b9", "\u5916\u5356\u653e\u7f6e\u70b9" },
-                Contains = new[] { "delivery", "takeout", "waimai", "\u5916\u5356" }
+                FacilityType = nameof(CampusFacilityType.DropPoint),
+                TypeIds = new[] { "DropPoint", "drop_point", "claim_drop_point", "handoff_point" },
+                DisplayNames = new[] { "drop point", "handoff point", "\u6295\u653e\u70b9", "\u4ea4\u63a5\u70b9" },
+                Contains = new[] { "drop_point", "handoffpoint", "\u6295\u653e\u70b9", "\u4ea4\u63a5\u70b9" }
             });
         }
 

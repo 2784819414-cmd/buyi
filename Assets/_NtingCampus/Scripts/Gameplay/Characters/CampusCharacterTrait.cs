@@ -7,6 +7,6 @@ namespace NtingCampus.Gameplay.Characters
         Troublemaker = 2,
         GoodStudent = 3,
         Tattletale = 4,
-        SecretDeliveryBuyer = 5
+        PrivatePlanner = 5
     }
 }

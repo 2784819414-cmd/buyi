@@ -39,10 +39,7 @@ namespace NtingCampusMapEditor
                 }
                 catch (Exception exception)
                 {
-                    if (logWarning != null)
-                    {
-                        logWarning("Failed to load room prefab '" + files[i] + "': " + exception.Message);
-                    }
+                    logWarning?.Invoke("Failed to load room prefab '" + files[i] + "': " + exception.Message);
                 }
             }
 
@@ -95,7 +92,6 @@ namespace NtingCampusMapEditor
                     (roomPrefab.RoomMarkers != null && roomPrefab.RoomMarkers.Count > 0) ||
                     (roomPrefab.GameplayRooms != null && roomPrefab.GameplayRooms.Count > 0) ||
                     (roomPrefab.GameplayFacilities != null && roomPrefab.GameplayFacilities.Count > 0) ||
-                    (roomPrefab.GameplayPrankSpots != null && roomPrefab.GameplayPrankSpots.Count > 0) ||
                     (roomPrefab.Lights != null && roomPrefab.Lights.Count > 0));
         }
 
@@ -119,7 +115,6 @@ namespace NtingCampusMapEditor
             roomPrefab.RoomMarkers = roomPrefab.RoomMarkers ?? new List<CampusRuntimeRoomSnapshot>();
             roomPrefab.GameplayRooms = roomPrefab.GameplayRooms ?? new List<CampusRuntimeGameplayRoomSnapshot>();
             roomPrefab.GameplayFacilities = roomPrefab.GameplayFacilities ?? new List<CampusRuntimeGameplayFacilitySnapshot>();
-            roomPrefab.GameplayPrankSpots = roomPrefab.GameplayPrankSpots ?? new List<CampusRuntimeGameplayPrankSpotSnapshot>();
             roomPrefab.Lights = roomPrefab.Lights ?? new List<CampusRuntimeRoomLightSnapshot>();
 
             for (int i = 0; i < roomPrefab.GameplayRooms.Count; i++)
@@ -130,11 +125,6 @@ namespace NtingCampusMapEditor
             for (int i = 0; i < roomPrefab.GameplayFacilities.Count; i++)
             {
                 roomPrefab.GameplayFacilities[i]?.Normalize();
-            }
-
-            for (int i = 0; i < roomPrefab.GameplayPrankSpots.Count; i++)
-            {
-                roomPrefab.GameplayPrankSpots[i]?.Normalize();
             }
         }
 
@@ -178,7 +168,6 @@ namespace NtingCampusMapEditor
         public List<CampusRuntimeRoomSnapshot> RoomMarkers = new List<CampusRuntimeRoomSnapshot>();
         public List<CampusRuntimeGameplayRoomSnapshot> GameplayRooms = new List<CampusRuntimeGameplayRoomSnapshot>();
         public List<CampusRuntimeGameplayFacilitySnapshot> GameplayFacilities = new List<CampusRuntimeGameplayFacilitySnapshot>();
-        public List<CampusRuntimeGameplayPrankSpotSnapshot> GameplayPrankSpots = new List<CampusRuntimeGameplayPrankSpotSnapshot>();
         public List<CampusRuntimeRoomLightSnapshot> Lights = new List<CampusRuntimeRoomLightSnapshot>();
 
         [NonSerialized] public string SourcePath;

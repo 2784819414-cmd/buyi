@@ -105,36 +105,6 @@ namespace NtingCampus.Gameplay.Characters
             assignments.Normalize();
         }
 
-        public void SyncAssignmentsFromProfile(CampusNpcPersonalProfile profile)
-        {
-            if (profile == null)
-            {
-                return;
-            }
-
-            CampusCharacterAssignmentData target = Assignments;
-            target.StudentClassroomId = UseResolvedOrPreserve(profile.StudentClassroomId, target.StudentClassroomId);
-            target.StudentDeskId = UseResolvedOrPreserve(profile.StudentDeskKey, target.StudentDeskId);
-            target.TeacherClassroomId = UseResolvedOrPreserve(profile.TeacherClassroomId, target.TeacherClassroomId);
-            target.TeacherPodiumId = UseResolvedOrPreserve(profile.TeacherPodiumKey, target.TeacherPodiumId);
-            target.OfficeRoomId = UseResolvedOrPreserve(profile.OfficeRoomId, target.OfficeRoomId);
-            target.OfficeDeskId = UseResolvedOrPreserve(profile.OfficeDeskKey, target.OfficeDeskId);
-            target.WorkRoomId = UseResolvedOrPreserve(profile.WorkRoomId, target.WorkRoomId);
-            target.PrimaryWorkstationId = UseResolvedOrPreserve(profile.PrimaryWorkstationKey, target.PrimaryWorkstationId);
-            target.DeliveryRoomId = UseResolvedOrPreserve(profile.DeliveryRoomId, target.DeliveryRoomId);
-            target.DeliveryPointId = UseResolvedOrPreserve(profile.DeliveryPointKey, target.DeliveryPointId);
-            target.Normalize();
-        }
-
-        private static string UseResolvedOrPreserve(string resolved, string current)
-        {
-            return !string.IsNullOrWhiteSpace(resolved)
-                ? resolved.Trim()
-                : string.IsNullOrWhiteSpace(current)
-                    ? string.Empty
-                    : current.Trim();
-        }
-
         public void SetCurrentRoom(string roomId)
         {
             currentRoomId = string.IsNullOrWhiteSpace(roomId) ? string.Empty : roomId.Trim();
@@ -226,11 +196,6 @@ namespace NtingCampus.Gameplay.Characters
             if (HasTrait(CampusCharacterTrait.Tattletale))
             {
                 socialEnergy += 6;
-            }
-
-            if (HasTrait(CampusCharacterTrait.SecretDeliveryBuyer))
-            {
-                socialEnergy += 5;
             }
 
             mood = ClampEcologyStat(mood);
@@ -487,11 +452,6 @@ namespace NtingCampus.Gameplay.Characters
                 baseline -= 2;
             }
 
-            if (HasTrait(CampusCharacterTrait.SecretDeliveryBuyer))
-            {
-                baseline += 5;
-            }
-
             return ClampEcologyStat(baseline);
         }
 
@@ -527,11 +487,6 @@ namespace NtingCampus.Gameplay.Characters
             if (HasTrait(CampusCharacterTrait.Tattletale))
             {
                 baseline += 6;
-            }
-
-            if (HasTrait(CampusCharacterTrait.SecretDeliveryBuyer))
-            {
-                baseline += 5;
             }
 
             return ClampEcologyStat(baseline);
@@ -574,8 +529,8 @@ namespace NtingCampus.Gameplay.Characters
         public string OfficeDeskId = string.Empty;
         public string WorkRoomId = string.Empty;
         public string PrimaryWorkstationId = string.Empty;
-        public string DeliveryRoomId = string.Empty;
-        public string DeliveryPointId = string.Empty;
+        public string ClaimRoomId = string.Empty;
+        public string DropPointId = string.Empty;
 
         public bool HasAny()
         {
@@ -588,8 +543,8 @@ namespace NtingCampus.Gameplay.Characters
                    !string.IsNullOrEmpty(OfficeDeskId) ||
                    !string.IsNullOrEmpty(WorkRoomId) ||
                    !string.IsNullOrEmpty(PrimaryWorkstationId) ||
-                   !string.IsNullOrEmpty(DeliveryRoomId) ||
-                   !string.IsNullOrEmpty(DeliveryPointId);
+                   !string.IsNullOrEmpty(ClaimRoomId) ||
+                   !string.IsNullOrEmpty(DropPointId);
         }
 
         public CampusCharacterAssignmentData Clone()
@@ -604,8 +559,8 @@ namespace NtingCampus.Gameplay.Characters
                 OfficeDeskId = OfficeDeskId,
                 WorkRoomId = WorkRoomId,
                 PrimaryWorkstationId = PrimaryWorkstationId,
-                DeliveryRoomId = DeliveryRoomId,
-                DeliveryPointId = DeliveryPointId
+                ClaimRoomId = ClaimRoomId,
+                DropPointId = DropPointId
             };
             clone.Normalize();
             return clone;
@@ -621,8 +576,8 @@ namespace NtingCampus.Gameplay.Characters
             OfficeDeskId = NormalizeId(OfficeDeskId);
             WorkRoomId = NormalizeId(WorkRoomId);
             PrimaryWorkstationId = NormalizeId(PrimaryWorkstationId);
-            DeliveryRoomId = NormalizeId(DeliveryRoomId);
-            DeliveryPointId = NormalizeId(DeliveryPointId);
+            ClaimRoomId = NormalizeId(ClaimRoomId);
+            DropPointId = NormalizeId(DropPointId);
         }
 
         private static string NormalizeId(string value)

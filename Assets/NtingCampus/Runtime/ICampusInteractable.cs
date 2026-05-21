@@ -18,9 +18,10 @@ namespace NtingCampusMapEditor
         public const string OpenStorage = "campus.storage.open";
         public const string ToggleDoor = "campus.door.toggle";
         public const string InteractTarget = "campus.interact.target";
-        public const string PrankExecute = "campus.prank.execute";
         public const string NpcTalk = "campus.npc.talk";
         public const string PickupStorageItem = "campus.storage.pickup";
+        public const string CanteenWindow = "campus.canteen.window";
+        public const string CanteenWorkstation = "campus.canteen.workstation";
 
         public static bool Equals(string actionId, string expected)
         {

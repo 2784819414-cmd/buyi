@@ -303,9 +303,8 @@ namespace NtingCampus.Gameplay.Characters
                 bootstrap.GameState.AddTeacherAlertness(4);
             }
 
-            bootstrap.EventLog?.AddLog(CampusNpcEcologyTextCatalog.Format(
-                CampusNpcEcologyTextId.VisibleStolenItemLog,
-                npc.Runtime.CharacterId,
+            bootstrap.EventLog?.AddLog(StorageTextCatalog.Format(
+                StorageTextId.MovedItem,
                 observation.ItemDisplayName));
         }
 
@@ -443,15 +442,15 @@ namespace NtingCampus.Gameplay.Characters
         {
             if (item == null)
             {
-                return CampusNpcEcologyTextCatalog.Get(CampusNpcEcologyTextId.ItemFallback);
+                return StorageTextCatalog.Get(StorageTextId.ItemFallback);
             }
 
             string displayName = item.GetDisplayName();
-            return !string.IsNullOrWhiteSpace(displayName)
+                return !string.IsNullOrWhiteSpace(displayName)
                 ? displayName
                 : !string.IsNullOrWhiteSpace(item.DefinitionId)
                     ? item.DefinitionId
-                    : CampusNpcEcologyTextCatalog.Get(CampusNpcEcologyTextId.ItemFallback);
+                    : StorageTextCatalog.Get(StorageTextId.ItemFallback);
         }
 
         private readonly struct CampusNpcInventoryObservation

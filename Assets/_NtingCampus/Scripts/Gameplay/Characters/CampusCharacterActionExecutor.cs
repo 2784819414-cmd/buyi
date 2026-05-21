@@ -1,4 +1,5 @@
 using Nting.Storage;
+using NtingCampus.Gameplay.Core;
 using NtingCampus.Gameplay.Inventory;
 using NtingCampusMapEditor;
 using UnityEngine;
@@ -20,6 +21,10 @@ namespace NtingCampus.Gameplay.Characters
 
             switch (action.Kind)
             {
+                case CampusCharacterActionKind.NoOp:
+                    result = new StorageTransferResult(true, false, false, string.Empty, string.Empty);
+                    return true;
+
                 case CampusCharacterActionKind.PressInteract:
                     if (TryPressInteract(actor, action.Target))
                     {
@@ -28,6 +33,14 @@ namespace NtingCampus.Gameplay.Characters
                     }
 
                     return false;
+
+                case CampusCharacterActionKind.PressInteractionAction:
+                    return TryPressInteractionAction(
+                        actor,
+                        action.Target,
+                        action.ActionId,
+                        action.Payload,
+                        out result);
 
                 case CampusCharacterActionKind.PickUpDroppedItem:
                     return action.Target is CampusDroppedStorageItem droppedItem &&
@@ -69,9 +82,14 @@ namespace NtingCampus.Gameplay.Characters
                     result = new StorageTransferResult(opened, false, false, message, string.Empty);
                     return opened;
 
-                case CampusCharacterActionKind.RunCommand:
-                    return action.Command != null &&
-                           action.Command.TryExecute(actor, out result);
+                case CampusCharacterActionKind.DomainAction:
+                    return CampusCharacterActionRegistry.TryExecute(
+                        new CampusCharacterActionContext(
+                            actor,
+                            action.ActionId,
+                            action.Payload,
+                            action.Target),
+                        out result);
 
                 default:
                     return false;
@@ -117,6 +135,67 @@ namespace NtingCampus.Gameplay.Characters
             return actor != null &&
                    droppedItem != null &&
                    droppedItem.TryPickup(actor, out result);
+        }
+
+        private static bool TryPressInteractionAction(
+            CampusCharacterRuntime actor,
+            Object target,
+            string actionId,
+            string payload,
+            out StorageTransferResult result)
+        {
+            result = StorageTransferResult.Fail(string.Empty);
+            if (actor == null || target == null || string.IsNullOrWhiteSpace(actionId))
+            {
+                return false;
+            }
+
+            if (!TryResolveInteractionTarget(target, out CampusInteractionAnchor anchor, out Component directTarget))
+            {
+                return false;
+            }
+
+            bool succeeded = CampusGameplayActionService.TryExecuteShared(new CampusGameplayActionRequest(
+                actor.gameObject,
+                actionId,
+                payload,
+                anchor,
+                directTarget,
+                "character_action"));
+            result = new StorageTransferResult(succeeded, false, false, string.Empty, string.Empty);
+            return succeeded;
+        }
+
+        private static bool TryResolveInteractionTarget(
+            Object target,
+            out CampusInteractionAnchor anchor,
+            out Component directTarget)
+        {
+            anchor = null;
+            directTarget = null;
+            if (target is CampusInteractionAnchor directAnchor)
+            {
+                anchor = directAnchor;
+                directTarget = directAnchor.InteractionTarget as Component;
+                return directTarget != null || anchor != null;
+            }
+
+            if (target is Component component)
+            {
+                directTarget = component;
+                return true;
+            }
+
+            if (target is GameObject gameObject)
+            {
+                anchor = gameObject.GetComponent<CampusInteractionAnchor>();
+                directTarget = anchor != null
+                    ? anchor.InteractionTarget as Component
+                    : gameObject.GetComponent<Component>();
+                return directTarget != null || anchor != null;
+            }
+
+            return false;
         }
 
         private static bool TryFindInteractable(Object target, out ICampusInteractable interactable)

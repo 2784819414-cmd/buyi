@@ -10,16 +10,12 @@ namespace NtingCampusMapEditor
         OpenDoor = 2,
         CloseDoor = 3,
         OpenObject = 4,
-        OpenFoodBox = 5,
-        ServingWindow = 6,
-        OpenShelf = 7,
-        Checkout = 8,
-        PickupItem = 9,
-        UnknownActor = 10,
-        InteractedWithLog = 11,
-        DroppedItem = 12,
-        SitDown = 13,
-        SitDownObjectLog = 14
+        PickupItem = 5,
+        UnknownActor = 6,
+        InteractedWithLog = 7,
+        DroppedItem = 8,
+        SitDown = 9,
+        SitDownObjectLog = 10
     }
 
     public static class CampusInteractionTextCatalog
@@ -36,24 +32,21 @@ namespace NtingCampusMapEditor
             public string English { get; }
         }
 
-        private static readonly Dictionary<CampusInteractionTextId, Entry> Entries = new Dictionary<CampusInteractionTextId, Entry>
-        {
-            { CampusInteractionTextId.Interact, new Entry("交互", "Interact") },
-            { CampusInteractionTextId.InteractWith, new Entry("交互 {0}", "Interact {0}") },
-            { CampusInteractionTextId.OpenDoor, new Entry("开门", "Open Door") },
-            { CampusInteractionTextId.CloseDoor, new Entry("关门", "Close Door") },
-            { CampusInteractionTextId.OpenObject, new Entry("打开 {0}", "Open {0}") },
-            { CampusInteractionTextId.OpenFoodBox, new Entry("打开食物箱", "Open Food Box") },
-            { CampusInteractionTextId.ServingWindow, new Entry("窗口", "Window") },
-            { CampusInteractionTextId.OpenShelf, new Entry("打开货架", "Open Shelf") },
-            { CampusInteractionTextId.Checkout, new Entry("结账", "Checkout") },
-            { CampusInteractionTextId.PickupItem, new Entry("拾取 {0}", "Pick up {0}") },
-            { CampusInteractionTextId.UnknownActor, new Entry("未知角色", "Unknown Actor") },
-            { CampusInteractionTextId.InteractedWithLog, new Entry("{0} 交互了 {1}。", "{0} interacted with {1}.") },
-            { CampusInteractionTextId.DroppedItem, new Entry("掉落物", "Dropped Item") },
-            { CampusInteractionTextId.SitDown, new Entry("坐下", "Sit") },
-            { CampusInteractionTextId.SitDownObjectLog, new Entry("坐下 {0}", "Sat at {0}") }
-        };
+        private static readonly Dictionary<CampusInteractionTextId, Entry> Entries =
+            new Dictionary<CampusInteractionTextId, Entry>
+            {
+                { CampusInteractionTextId.Interact, new Entry("交互", "Interact") },
+                { CampusInteractionTextId.InteractWith, new Entry("交互 {0}", "Interact {0}") },
+                { CampusInteractionTextId.OpenDoor, new Entry("开门", "Open Door") },
+                { CampusInteractionTextId.CloseDoor, new Entry("关门", "Close Door") },
+                { CampusInteractionTextId.OpenObject, new Entry("打开 {0}", "Open {0}") },
+                { CampusInteractionTextId.PickupItem, new Entry("拾取 {0}", "Pick up {0}") },
+                { CampusInteractionTextId.UnknownActor, new Entry("未知角色", "Unknown Actor") },
+                { CampusInteractionTextId.InteractedWithLog, new Entry("{0} 与 {1} 交互。", "{0} interacted with {1}.") },
+                { CampusInteractionTextId.DroppedItem, new Entry("掉落物", "Dropped Item") },
+                { CampusInteractionTextId.SitDown, new Entry("坐下", "Sit") },
+                { CampusInteractionTextId.SitDownObjectLog, new Entry("坐下 {0}", "Sat at {0}") }
+            };
 
         public static string Get(CampusInteractionTextId id)
         {

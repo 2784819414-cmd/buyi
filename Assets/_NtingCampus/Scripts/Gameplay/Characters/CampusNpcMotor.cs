@@ -12,15 +12,13 @@ namespace NtingCampus.Gameplay.Characters
         [SerializeField] private CampusWorldService worldService;
         [SerializeField] private CampusCharacterBodyController bodyController;
         [SerializeField] private CampusGridNavigationAgent navigationAgent;
-        [SerializeField, Min(0.2f)] private float walkSpeed = 1.35f;
         [SerializeField] private int personalSeed;
-        [SerializeField] private float personalSpeedMultiplier = 1f;
         [SerializeField] private int cachedRuntimeFloorIndex = 1;
         [SerializeField] private float nextRuntimeFloorRefreshTime;
 
         public CampusCharacterBodyController BodyController => bodyController;
         public CampusGridNavigationAgent NavigationAgent => navigationAgent;
-        public float MoveSpeed => walkSpeed * ResolvePersonalSpeedMultiplier();
+        public float MoveSpeed => CampusCharacterMovementTuning.ResolveNpcMoveSpeed(ResolvePersonalSeed());
         public int FloorIndex => ResolveRuntimeFloorIndex();
         public int PersonalSeed => ResolvePersonalSeed();
 
@@ -156,16 +154,6 @@ namespace NtingCampus.Gameplay.Characters
             }
 
             return personalSeed;
-        }
-
-        private float ResolvePersonalSpeedMultiplier()
-        {
-            if (personalSpeedMultiplier <= 0f)
-            {
-                personalSpeedMultiplier = Mathf.Lerp(0.9f, 1.12f, CampusNpcStableIds.PositiveModulo(ResolvePersonalSeed(), 100) / 99f);
-            }
-
-            return personalSpeedMultiplier;
         }
     }
 }

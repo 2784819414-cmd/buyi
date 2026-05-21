@@ -105,39 +105,37 @@ namespace NtingCampus.Gameplay.UI
         GoodStudent = 89,
         Tattletale = 90,
         Staff = 91,
-        CanteenClerk = 92,
-        DeliveryWatcher = 93,
-        SecretDeliveryBuyer = 94,
-        Ecology = 95,
+        StaffSupport = 92,
+        StaffPatrol = 93,
+        PrivatePlanner = 94,
+        SocialModel = 95,
         Mood = 96,
         Social = 97,
         Relationships = 98,
         Possessions = 99,
         FormalMainline = 100,
-        ClassroomLoopServiceMissing = 101,
-        ClassroomLoop = 102,
+        StudyLoop = 102,
         ActiveClassroom = 103,
         DistractedTeacher = 104,
         DozeSneakCaughtToday = 105,
         ForceSleepyDistraction = 106,
-        PrankServiceMissing = 107,
-        Prompt = 108,
-        DailyPassNoteCount = 109,
-        CanteenTheftCount = 110,
-        Clerk = 111,
-        DeliveryTheftCount = 112,
-        Order = 113,
-        SanctionServiceMissing = 114,
-        LastSanction = 115,
-        NpcEcologyMissing = 116,
-        NpcEcology = 117,
-        GossipEcologyEventsToday = 118,
-        CommerceMissing = 119,
-        Commerce = 120,
-        MealsStorePurchasesToday = 121,
-        StoreShelvesUnpaidThefts = 122,
-        Canteen = 123,
-        Delivery = 124
+        Prompt = 107,
+        DailyPassNoteCount = 108,
+        ProtectedItemCount = 109,
+        StaffMember = 110,
+        ClaimedItemCount = 111,
+        Request = 112,
+        SanctionServiceMissing = 113,
+        LastSanction = 114,
+        NpcBehaviorMissing = 115,
+        NpcBehavior = 116,
+        GossipEventsToday = 117,
+        TradeRulesMissing = 118,
+        TradeRules = 119,
+        ProtectedTransfersToday = 120,
+        UnpaidTransfers = 121,
+        ServiceArea = 122,
+        DropArea = 123
     }
 
     public enum CampusRuntimeEditorTextId
@@ -376,39 +374,37 @@ namespace NtingCampus.Gameplay.UI
             { CampusGameplayDebugTextId.GoodStudent, new TextEntry("\u597d\u5b66\u751f", "Good Student") },
             { CampusGameplayDebugTextId.Tattletale, new TextEntry("\u7231\u6253\u5c0f\u62a5\u544a", "Tattletale") },
             { CampusGameplayDebugTextId.Staff, new TextEntry("\u804c\u5458", "Staff") },
-            { CampusGameplayDebugTextId.CanteenClerk, new TextEntry("\u98df\u5802\u5e97\u5458", "Canteen Clerk") },
-            { CampusGameplayDebugTextId.DeliveryWatcher, new TextEntry("\u5916\u5356\u70b9\u770b\u7ba1", "Delivery Watcher") },
-            { CampusGameplayDebugTextId.SecretDeliveryBuyer, new TextEntry("\u5077\u70b9\u5916\u5356", "Secret Delivery Buyer") },
-            { CampusGameplayDebugTextId.Ecology, new TextEntry("\u751f\u6001", "Ecology") },
+            { CampusGameplayDebugTextId.StaffSupport, new TextEntry("\u5c97\u4f4d\u804c\u5458", "Support Staff") },
+            { CampusGameplayDebugTextId.StaffPatrol, new TextEntry("\u5de1\u89c6\u804c\u5458", "Patrol Staff") },
+            { CampusGameplayDebugTextId.PrivatePlanner, new TextEntry("\u79c1\u4e0b\u5b89\u6392", "Private Planner") },
+            { CampusGameplayDebugTextId.SocialModel, new TextEntry("\u793e\u4f1a\u6a21\u578b", "Social Model") },
             { CampusGameplayDebugTextId.Mood, new TextEntry("\u5fc3\u60c5", "Mood") },
             { CampusGameplayDebugTextId.Social, new TextEntry("\u793e\u4ea4", "Social") },
             { CampusGameplayDebugTextId.Relationships, new TextEntry("\u5173\u7cfb", "Relationships") },
             { CampusGameplayDebugTextId.Possessions, new TextEntry("\u6301\u6709\u7269", "Possessions") },
             { CampusGameplayDebugTextId.FormalMainline, new TextEntry("\u6b63\u5f0f\u4e3b\u7ebf", "Formal Mainline") },
-            { CampusGameplayDebugTextId.ClassroomLoopServiceMissing, new TextEntry("\u8bfe\u5802\u95ed\u73af\u670d\u52a1\uff1a\u65e0", "ClassroomLoopService: none") },
-            { CampusGameplayDebugTextId.ClassroomLoop, new TextEntry("\u8bfe\u5802\u95ed\u73af", "Classroom Loop") },
+            { CampusGameplayDebugTextId.StudyLoop, new TextEntry("\u5b66\u4e60\u95ed\u73af", "Study Loop") },
             { CampusGameplayDebugTextId.ActiveClassroom, new TextEntry("\u6d3b\u52a8\u6559\u5ba4", "Active Classroom") },
             { CampusGameplayDebugTextId.DistractedTeacher, new TextEntry("\u5206\u5fc3\u8001\u5e08", "Distracted Teacher") },
             { CampusGameplayDebugTextId.DozeSneakCaughtToday, new TextEntry("\u4eca\u65e5\u7761\u7740/\u6e9c\u8d70/\u88ab\u6293", "Doze/Sneak/Caught Today") },
             { CampusGameplayDebugTextId.ForceSleepyDistraction, new TextEntry("\u5f3a\u5236\u56f0\u5026\u5206\u5fc3", "Force Sleepy Distraction") },
-            { CampusGameplayDebugTextId.PrankServiceMissing, new TextEntry("\u6076\u4f5c\u5267\u670d\u52a1\uff1a\u65e0", "PrankService: none") },
             { CampusGameplayDebugTextId.Prompt, new TextEntry("\u63d0\u793a", "Prompt") },
             { CampusGameplayDebugTextId.DailyPassNoteCount, new TextEntry("\u4eca\u65e5\u4f20\u7eb8\u6761\u6b21\u6570", "Daily Pass Note Count") },
-            { CampusGameplayDebugTextId.CanteenTheftCount, new TextEntry("\u98df\u5802\u5077\u53d6\u6b21\u6570", "Canteen Theft Count") },
-            { CampusGameplayDebugTextId.Clerk, new TextEntry("\u5e97\u5458", "Clerk") },
-            { CampusGameplayDebugTextId.DeliveryTheftCount, new TextEntry("\u5916\u5356\u5077\u53d6\u6b21\u6570", "Delivery Theft Count") },
-            { CampusGameplayDebugTextId.Order, new TextEntry("\u8ba2\u5355", "Order") },
+            { CampusGameplayDebugTextId.ProtectedItemCount, new TextEntry("\u53d7\u4fdd\u62a4\u7269\u54c1\u6b21\u6570", "Protected Item Count") },
+            { CampusGameplayDebugTextId.StaffMember, new TextEntry("\u804c\u5458", "Staff Member") },
+            { CampusGameplayDebugTextId.ClaimedItemCount, new TextEntry("\u5df2\u8ba4\u9886\u7269\u54c1\u6b21\u6570", "Claimed Item Count") },
+            { CampusGameplayDebugTextId.Request, new TextEntry("\u8bf7\u6c42", "Request") },
             { CampusGameplayDebugTextId.SanctionServiceMissing, new TextEntry("\u5904\u5206\u670d\u52a1\uff1a\u65e0", "SanctionService: none") },
             { CampusGameplayDebugTextId.LastSanction, new TextEntry("\u4e0a\u6b21\u5904\u5206", "Last Sanction") },
-            { CampusGameplayDebugTextId.NpcEcologyMissing, new TextEntry("NPC \u751f\u6001\uff1a\u65e0", "NPC Ecology: none") },
-            { CampusGameplayDebugTextId.NpcEcology, new TextEntry("NPC \u751f\u6001", "NPC Ecology") },
-            { CampusGameplayDebugTextId.GossipEcologyEventsToday, new TextEntry("\u4eca\u65e5\u4f20\u95fb/\u751f\u6001\u4e8b\u4ef6", "Gossip/Ecology Events Today") },
-            { CampusGameplayDebugTextId.CommerceMissing, new TextEntry("\u4ea4\u6613\u670d\u52a1\uff1a\u65e0", "Commerce: none") },
-            { CampusGameplayDebugTextId.Commerce, new TextEntry("\u4ea4\u6613", "Commerce") },
-            { CampusGameplayDebugTextId.MealsStorePurchasesToday, new TextEntry("\u4eca\u65e5\u9910\u98df/\u5546\u5e97\u8d2d\u4e70", "Meals/Store Purchases Today") },
-            { CampusGameplayDebugTextId.StoreShelvesUnpaidThefts, new TextEntry("\u8d27\u67b6/\u672a\u4ed8/\u5077\u7a83", "Store Shelves/Unpaid/Thefts") },
-            { CampusGameplayDebugTextId.Canteen, new TextEntry("\u98df\u5802", "Canteen") },
-            { CampusGameplayDebugTextId.Delivery, new TextEntry("\u5916\u5356", "Delivery") }
+            { CampusGameplayDebugTextId.NpcBehaviorMissing, new TextEntry("NPC \u884c\u4e3a\uff1a\u65e0", "NPC Behavior: none") },
+            { CampusGameplayDebugTextId.NpcBehavior, new TextEntry("NPC \u884c\u4e3a", "NPC Behavior") },
+            { CampusGameplayDebugTextId.GossipEventsToday, new TextEntry("\u4eca\u65e5\u4f20\u95fb/\u793e\u4ea4\u4e8b\u4ef6", "Gossip/Social Events Today") },
+            { CampusGameplayDebugTextId.TradeRulesMissing, new TextEntry("\u4ea4\u6613\u89c4\u5219\uff1a\u65e0", "Trade Rules: none") },
+            { CampusGameplayDebugTextId.TradeRules, new TextEntry("\u4ea4\u6613\u89c4\u5219", "Trade Rules") },
+            { CampusGameplayDebugTextId.ProtectedTransfersToday, new TextEntry("\u4eca\u65e5\u53d7\u4fdd\u62a4\u8f6c\u79fb", "Protected Transfers Today") },
+            { CampusGameplayDebugTextId.UnpaidTransfers, new TextEntry("\u672a\u7ed3\u7b97\u8f6c\u79fb", "Unpaid Transfers") },
+            { CampusGameplayDebugTextId.ServiceArea, new TextEntry("\u670d\u52a1\u533a", "Service Area") },
+            { CampusGameplayDebugTextId.DropArea, new TextEntry("\u6295\u653e\u533a", "Drop Area") }
         };
 
         public static string Get(CampusDisplayLanguage language, CampusGameplayDebugTextId id)
@@ -476,10 +472,7 @@ namespace NtingCampus.Gameplay.UI
                 return Get(language, CampusGameplayDebugTextId.None);
             }
 
-            List<string> names = new();
-            AppendStaffFlagName(names, language, duty, CampusStaffDuty.CanteenClerk, CampusGameplayDebugTextId.CanteenClerk);
-            AppendStaffFlagName(names, language, duty, CampusStaffDuty.DeliveryWatcher, CampusGameplayDebugTextId.DeliveryWatcher);
-            return names.Count > 0 ? string.Join(", ", names) : duty.ToString();
+            return Get(language, CampusGameplayDebugTextId.StaffSupport);
         }
 
         public static string FormatTeacherDuty(CampusDisplayLanguage language, CampusTeacherDuty duty)
@@ -522,7 +515,7 @@ namespace NtingCampus.Gameplay.UI
                 CampusCharacterTrait.Troublemaker => Get(language, CampusGameplayDebugTextId.Troublemaker),
                 CampusCharacterTrait.GoodStudent => Get(language, CampusGameplayDebugTextId.GoodStudent),
                 CampusCharacterTrait.Tattletale => Get(language, CampusGameplayDebugTextId.Tattletale),
-                CampusCharacterTrait.SecretDeliveryBuyer => Get(language, CampusGameplayDebugTextId.SecretDeliveryBuyer),
+                CampusCharacterTrait.PrivatePlanner => Get(language, CampusGameplayDebugTextId.PrivatePlanner),
                 _ => trait.ToString()
             };
         }
@@ -557,20 +550,6 @@ namespace NtingCampus.Gameplay.UI
             names.Add(Get(language, textId));
         }
 
-        private static void AppendStaffFlagName(
-            List<string> names,
-            CampusDisplayLanguage language,
-            CampusStaffDuty actual,
-            CampusStaffDuty flag,
-            CampusGameplayDebugTextId textId)
-        {
-            if ((actual & flag) != flag)
-            {
-                return;
-            }
-
-            names.Add(Get(language, textId));
-        }
     }
 
     public static class CampusRuntimeEditorTextCatalog

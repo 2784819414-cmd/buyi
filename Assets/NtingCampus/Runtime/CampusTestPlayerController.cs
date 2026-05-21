@@ -2,6 +2,7 @@ using UnityEngine;
 #if ENABLE_INPUT_SYSTEM
 using UnityEngine.InputSystem;
 #endif
+using NtingCampus.Gameplay.Characters;
 
 namespace NtingCampusMapEditor
 {
@@ -15,7 +16,7 @@ namespace NtingCampusMapEditor
             FreeMove
         }
 
-        public float MoveSpeed = 3.5f;
+        public float MoveSpeed => CampusCharacterMovementTuning.ResolvePlayerMoveSpeed();
         public int FloorIndex = 1;
         public KeyCode InteractKey = KeyCode.E;
         public float InteractionForwardOffset = 0.28f;

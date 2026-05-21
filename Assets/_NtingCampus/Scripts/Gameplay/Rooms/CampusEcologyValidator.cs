@@ -1,7 +1,6 @@
 using System;
 using System.Collections.Generic;
 using NtingCampus.Gameplay.Characters;
-using NtingCampus.Gameplay.Schedule;
 using UnityEngine;
 
 namespace NtingCampus.Gameplay.Rooms
@@ -76,26 +75,23 @@ namespace NtingCampus.Gameplay.Rooms
 
         private static void ValidateRooms(CampusWorldFacts facts, List<ValidationIssue> issues)
         {
-            RequireRoom(facts, issues, CampusRoomType.Classroom, true, "NPC classes need at least one classroom.");
-
             bool hasStudents = facts.CountActors(CampusCharacterRole.Student) > 0;
             bool hasTeachers = facts.CountActors(CampusCharacterRole.Teacher) > 0;
             bool hasStaff = facts.CountActors(CampusCharacterRole.Staff) > 0;
 
+            if (hasStudents || hasTeachers)
+            {
+                RequireRoom(facts, issues, CampusRoomType.Classroom, true, "Characters with class duties need at least one classroom.");
+            }
+
+            if (hasTeachers || hasStaff)
+            {
+                RequireRoom(facts, issues, CampusRoomType.Office, false, "Teachers and staff work better with at least one office room.");
+            }
+
             if (hasStudents)
             {
-                RequireRoom(facts, issues, CampusRoomType.Dormitory, false, "Student dorm behavior has no dormitory room.");
-                RequireRoom(facts, issues, CampusRoomType.Outdoor, false, "Student delivery behavior has no outdoor room.");
-            }
-
-            if (hasTeachers)
-            {
-                RequireRoom(facts, issues, CampusRoomType.Office, true, "Teachers need an office room for office behavior.");
-            }
-
-            if (hasStaff)
-            {
-                RequireRoom(facts, issues, CampusRoomType.Canteen, false, "Canteen staff fallback needs a canteen room.");
+                RequireRoom(facts, issues, CampusRoomType.Dormitory, false, "Students have no dormitory fallback room.");
             }
 
             if (facts.CountRooms(CampusRoomType.CommonActivityZone) == 0 &&
@@ -104,7 +100,7 @@ namespace NtingCampus.Gameplay.Rooms
                 issues.Add(new ValidationIssue(
                     Severity.Warning,
                     string.Empty,
-                    "NPC free-roam behavior needs a CommonActivityZone or Corridor fallback."));
+                    "NPC free movement needs a CommonActivityZone or Corridor fallback."));
             }
         }
 
@@ -124,7 +120,7 @@ namespace NtingCampus.Gameplay.Rooms
                     issues.Add(new ValidationIssue(
                         Severity.Warning,
                         facility.FacilityId,
-                        "Facility type is Unknown and cannot drive NPC behavior."));
+                        "Facility type is Unknown and cannot be targeted reliably."));
                 }
 
                 ValidateFacilityTypeSource(facility, issues);
@@ -241,117 +237,9 @@ namespace NtingCampus.Gameplay.Rooms
 
         private static void ValidateAssignments(CampusWorldFacts facts, List<ValidationIssue> issues)
         {
-            CampusClassroomValidator.Validate(facts, issues);
-            ValidateTeacherOfficeAssignments(facts, issues);
-            ValidateStaffAssignments(facts, issues);
-            ValidateAssignmentReferences(facts, issues);
-        }
-
-        private static void ValidateTeacherOfficeAssignments(CampusWorldFacts facts, List<ValidationIssue> issues)
-        {
             Dictionary<string, List<string>> officeDeskOwners =
                 new Dictionary<string, List<string>>(StringComparer.OrdinalIgnoreCase);
 
-            for (int i = 0; i < facts.Actors.Count; i++)
-            {
-                CampusWorldFacts.ActorFact actor = facts.Actors[i];
-                if (actor == null || actor.Role != CampusCharacterRole.Teacher)
-                {
-                    continue;
-                }
-
-                CampusCharacterAssignmentData assignments = actor.Assignments;
-                string officeDeskId = assignments != null ? assignments.OfficeDeskId : string.Empty;
-
-                if (string.IsNullOrWhiteSpace(officeDeskId))
-                {
-                    issues.Add(new ValidationIssue(
-                        Severity.Warning,
-                        actor.ActorId,
-                        "Teacher has no explicit OfficeDeskId."));
-                }
-                else
-                {
-                    AddOwner(officeDeskOwners, officeDeskId, actor.ActorId);
-                    ValidateFacilityType(
-                        facts,
-                        issues,
-                        actor.ActorId,
-                        officeDeskId,
-                        "OfficeDeskId",
-                        CampusFacilityType.OfficeDesk,
-                        CampusFacilityType.Desk);
-                }
-            }
-
-            ReportDuplicateOwners(issues, officeDeskOwners, "OfficeDeskId is assigned to multiple teachers.");
-        }
-
-        private static void ValidateStaffAssignments(CampusWorldFacts facts, List<ValidationIssue> issues)
-        {
-            for (int i = 0; i < facts.Actors.Count; i++)
-            {
-                CampusWorldFacts.ActorFact actor = facts.Actors[i];
-                if (actor == null || actor.Role != CampusCharacterRole.Staff)
-                {
-                    continue;
-                }
-
-                CampusStaffDuty duty = actor.StaffDuty;
-                CampusCharacterAssignmentData assignments = actor.Assignments;
-                string workstationId = assignments != null ? assignments.PrimaryWorkstationId : string.Empty;
-                if ((duty & CampusStaffDuty.StoreOwner) != 0 || (duty & CampusStaffDuty.BookstoreOwner) != 0)
-                {
-                    RequireRoom(facts, issues, CampusRoomType.Store, true, "Store staff exists but there is no Store room.");
-                    ValidateFacilityType(
-                        facts,
-                        issues,
-                        actor.ActorId,
-                        workstationId,
-                        "PrimaryWorkstationId",
-                        CampusFacilityType.StoreCheckout);
-                    if (facts.CountFacilities(CampusFacilityType.StoreShelf) == 0 &&
-                        facts.CountFacilities(CampusFacilityType.Storage) == 0)
-                    {
-                        issues.Add(new ValidationIssue(
-                            Severity.Warning,
-                            actor.ActorId,
-                            "Store staff cannot audit shelves because there is no StoreShelf or Storage facility."));
-                    }
-
-                    continue;
-                }
-
-                if ((duty & CampusStaffDuty.DeliveryWatcher) != 0)
-                {
-                    string deliveryId = assignments != null && !string.IsNullOrWhiteSpace(assignments.DeliveryPointId)
-                        ? assignments.DeliveryPointId
-                        : workstationId;
-                    ValidateFacilityType(
-                        facts,
-                        issues,
-                        actor.ActorId,
-                        deliveryId,
-                        "DeliveryPointId",
-                        CampusFacilityType.DeliveryDropPoint);
-                    continue;
-                }
-
-                ValidateFacilityType(
-                    facts,
-                    issues,
-                    actor.ActorId,
-                    workstationId,
-                    "PrimaryWorkstationId",
-                    CampusFacilityType.CanteenServingWindow,
-                    CampusFacilityType.CanteenClerkStandPoint,
-                    CampusFacilityType.CanteenCounter,
-                    CampusFacilityType.CanteenCustomerPickupPoint);
-            }
-        }
-
-        private static void ValidateAssignmentReferences(CampusWorldFacts facts, List<ValidationIssue> issues)
-        {
             for (int i = 0; i < facts.Actors.Count; i++)
             {
                 CampusWorldFacts.ActorFact actor = facts.Actors[i];
@@ -361,10 +249,48 @@ namespace NtingCampus.Gameplay.Rooms
                     continue;
                 }
 
+                ValidateRoomReference(facts, issues, actor.ActorId, "StudentClassroomId", assignments.StudentClassroomId);
+                ValidateRoomReference(facts, issues, actor.ActorId, "TeacherClassroomId", assignments.TeacherClassroomId);
                 ValidateRoomReference(facts, issues, actor.ActorId, "OfficeRoomId", assignments.OfficeRoomId);
                 ValidateRoomReference(facts, issues, actor.ActorId, "WorkRoomId", assignments.WorkRoomId);
-                ValidateRoomReference(facts, issues, actor.ActorId, "DeliveryRoomId", assignments.DeliveryRoomId);
+
+                ValidateFacilityReference(
+                    facts,
+                    issues,
+                    actor.ActorId,
+                    "StudentDeskId",
+                    assignments.StudentDeskId,
+                    CampusFacilityType.StudentDesk);
+                ValidateFacilityReference(
+                    facts,
+                    issues,
+                    actor.ActorId,
+                    "TeacherPodiumId",
+                    assignments.TeacherPodiumId,
+                    CampusFacilityType.Podium,
+                    CampusFacilityType.Blackboard);
+                ValidateFacilityReference(
+                    facts,
+                    issues,
+                    actor.ActorId,
+                    "OfficeDeskId",
+                    assignments.OfficeDeskId,
+                    CampusFacilityType.OfficeDesk,
+                    CampusFacilityType.Desk);
+                ValidateFacilityReference(
+                    facts,
+                    issues,
+                    actor.ActorId,
+                    "PrimaryWorkstationId",
+                    assignments.PrimaryWorkstationId);
+
+                if (actor.Role == CampusCharacterRole.Teacher && !string.IsNullOrWhiteSpace(assignments.OfficeDeskId))
+                {
+                    AddOwner(officeDeskOwners, assignments.OfficeDeskId, actor.ActorId);
+                }
             }
+
+            ReportDuplicateOwners(issues, officeDeskOwners, "OfficeDeskId is assigned to multiple teachers.");
         }
 
         private static void ValidateRoomReference(
@@ -388,20 +314,16 @@ namespace NtingCampus.Gameplay.Rooms
             }
         }
 
-        private static void ValidateFacilityType(
+        private static void ValidateFacilityReference(
             CampusWorldFacts facts,
             List<ValidationIssue> issues,
             string actorId,
-            string facilityId,
             string fieldName,
+            string facilityId,
             params CampusFacilityType[] allowedTypes)
         {
             if (string.IsNullOrWhiteSpace(facilityId))
             {
-                issues.Add(new ValidationIssue(
-                    Severity.Warning,
-                    actorId,
-                    fieldName + " is empty."));
                 return;
             }
 
@@ -411,6 +333,11 @@ namespace NtingCampus.Gameplay.Rooms
                     Severity.Error,
                     actorId,
                     fieldName + " references a missing facility: " + facilityId + "."));
+                return;
+            }
+
+            if (allowedTypes == null || allowedTypes.Length == 0)
+            {
                 return;
             }
 

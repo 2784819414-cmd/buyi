@@ -30,41 +30,6 @@ namespace NtingCampus.Gameplay.Characters
                 data != null ? data.Id : string.Empty,
                 peerIndex);
             profile.SetCommonRoom(common, CampusNpcRoomSelector.PointNearCenter(common, peerIndex, 0.55f));
-
-            CampusGameplayRoom deliveryRoom = CampusNpcRoomSelector.Choose(
-                CampusNpcRoomSelector.GetRooms(worldService, CampusRoomType.Outdoor),
-                data != null ? data.Id : string.Empty,
-                peerIndex);
-            if (CampusNpcFacilitySelector.FindAssigned(
-                    worldService,
-                    data != null ? data.Assignments.DeliveryPointId : string.Empty,
-                    CampusNpcFacilityGroups.DeliveryPoints,
-                    out CampusGameplayRoom assignedDeliveryRoom,
-                    out CampusGameplayRoom.FacilityRecord assignedDeliveryPoint))
-            {
-                profile.SetDeliveryPoint(
-                    assignedDeliveryRoom,
-                    CampusNpcFacilitySelector.KeyFor(assignedDeliveryRoom, assignedDeliveryPoint),
-                    CampusNpcFacilitySelector.PositionOf(assignedDeliveryPoint));
-            }
-            else if (CampusNpcFacilitySelector.TryChoose(
-                         deliveryRoom,
-                         CampusNpcFacilityGroups.DeliveryPoints,
-                         peerIndex,
-                         out CampusGameplayRoom.FacilityRecord deliveryPoint))
-            {
-                profile.SetDeliveryPoint(
-                    deliveryRoom,
-                    CampusNpcFacilitySelector.KeyFor(deliveryRoom, deliveryPoint),
-                    CampusNpcFacilitySelector.PositionOf(deliveryPoint));
-            }
-            else
-            {
-                profile.SetDeliveryPoint(
-                    deliveryRoom,
-                    string.Empty,
-                    CampusNpcRoomSelector.PointNearCenter(deliveryRoom, peerIndex, 0.25f));
-            }
         }
     }
 }

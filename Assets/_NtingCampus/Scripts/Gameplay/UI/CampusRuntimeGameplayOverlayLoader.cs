@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.IO;
 using NtingCampus.Gameplay.Characters;
 using NtingCampus.Gameplay.Core;
-using NtingCampus.Gameplay.Pranks;
 using NtingCampus.Gameplay.Rooms;
 using NtingCampusMapEditor;
 using UnityEngine;
@@ -59,29 +58,30 @@ namespace NtingCampus.Gameplay.UI
 
             PurgeSceneAuthoredActors();
 
-            string overlayPath = CampusRuntimeGameplayOverlayStore.GetPathForMapPath(mapPath);
-            if (!File.Exists(overlayPath))
+            string overlayPath;
+            CampusRuntimeGameplayOverlaySnapshot snapshot;
+            string readError;
+            if (!CampusRuntimeGameplayOverlayWorkflow.TryLoadExistingSnapshot(
+                    mapPath,
+                    out overlayPath,
+                    out snapshot,
+                    out readError))
             {
+                if (!string.IsNullOrWhiteSpace(readError))
+                {
+                    throw new InvalidOperationException(readError);
+                }
+
                 WriteLog(CampusPlayerUiTextCatalog.Format(
                     CampusPlayerUiTextId.GameplayOverlayMissing,
                     Path.GetFileName(mapPath)));
                 return;
             }
 
-            CampusRuntimeGameplayOverlaySnapshot snapshot;
-            string readError;
-            if (!CampusRuntimeGameplayOverlayStore.TryReadSnapshot(mapPath, out snapshot, out readError))
-            {
-                throw new InvalidOperationException(string.IsNullOrWhiteSpace(readError)
-                    ? "Gameplay overlay JSON is invalid: " + overlayPath
-                    : readError);
-            }
-
             HideRuntimeRoomMarkerVisuals();
             Transform host = EnsureGeneratedOverlayRoot();
             SpawnRooms(snapshot, host);
             SpawnFacilities(snapshot, host);
-            SpawnPrankSpots(snapshot, host);
             SpawnActors(snapshot, host);
             int actorCount = snapshot.Actors != null ? snapshot.Actors.Count : 0;
             int facilityCount = snapshot.Facilities != null ? snapshot.Facilities.Count : 0;
@@ -235,45 +235,6 @@ namespace NtingCampus.Gameplay.UI
 
                 BindActor(actorObject, actor, isPlayerActor);
                 PositionActor(actorObject, actor);
-            }
-        }
-
-        private void SpawnPrankSpots(CampusRuntimeGameplayOverlaySnapshot snapshot, Transform host)
-        {
-            if (snapshot == null || snapshot.PrankSpots == null)
-            {
-                return;
-            }
-
-            for (int i = 0; i < snapshot.PrankSpots.Count; i++)
-            {
-                CampusRuntimeGameplayPrankSpotSnapshot spot = snapshot.PrankSpots[i];
-                if (spot == null)
-                {
-                    continue;
-                }
-
-                CampusFloorRoot floor = mapRoot != null ? mapRoot.GetFloor(Mathf.Max(1, spot.FloorIndex)) : null;
-                Vector3 worldPosition = ResolveWorldPosition(floor, spot.Cell);
-                GameObject spotObject = new GameObject(string.IsNullOrWhiteSpace(spot.DisplayName)
-                    ? "RuntimePrankSpot"
-                    : spot.DisplayName);
-                spotObject.transform.SetParent(host, false);
-                spotObject.transform.position = worldPosition;
-
-                CampusRuntimeGameplayOverlayEntity entity =
-                    spotObject.AddComponent<CampusRuntimeGameplayOverlayEntity>();
-                entity.Configure(false, spot.FloorIndex, spot.Cell);
-
-                CampusPrankInteractionSpot interactionSpot = spotObject.AddComponent<CampusPrankInteractionSpot>();
-                interactionSpot.Configure(
-                    spot.DisplayName,
-                    spot.Payload,
-                    spot.RequiredRoomType,
-                    spot.VisualKind,
-                    spot.InteractionRadius,
-                    spot.AccentColor,
-                    spot.UnsupportedReason);
             }
         }
 

@@ -61,11 +61,7 @@ namespace NtingCampus.Gameplay.Characters
         public int PersonalSeed => runtime != null ? runtime.PersonalSeed : 1;
         public Vector3 Position => Runtime != null ? Runtime.transform.position : Vector3.zero;
         public bool HasMindState => runtime != null && runtime.Mind != null;
-        public CampusNpcDeliveryState DeliveryState => HasMindState ? runtime.Mind.DeliveryState : CampusNpcDeliveryState.None;
         public float IntentHoldUntil => HasMindState ? runtime.Mind.IntentHoldUntil : -1f;
-        public float DeliveryReadyAt => HasMindState ? runtime.Mind.DeliveryReadyAt : -1f;
-        public float NextDeliveryOrderAllowedAt => HasMindState ? runtime.Mind.NextDeliveryOrderAllowedAt : -1f;
-        public float NextStoreVisitAllowedAt => HasMindState ? runtime.Mind.NextStoreVisitAllowedAt : -1f;
 
         internal CampusNpcAiRuntime RuntimeState => runtime;
     }

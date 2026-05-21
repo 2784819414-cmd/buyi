@@ -1,0 +1,138 @@
+{
+  "EnableSelectionDebug": false,
+  "FacilityGroups": [
+    {
+      "Id": "student_desks",
+      "FacilityTypes": [ "StudentDesk" ]
+    },
+    {
+      "Id": "podiums",
+      "FacilityTypes": [ "Podium", "Blackboard" ]
+    },
+    {
+      "Id": "office_desks",
+      "FacilityTypes": [ "OfficeDesk", "Desk" ]
+    },
+    {
+      "Id": "workstations",
+      "FacilityTypes": [ "OfficeDesk", "Desk", "Storage" ]
+    },
+    {
+      "Id": "service_windows",
+      "FacilityTypes": [ "ServiceWindow" ]
+    },
+    {
+      "Id": "worker_stands",
+      "FacilityTypes": [ "WorkerStandPoint" ]
+    }
+  ],
+  "RolePlans": [
+    {
+      "Id": "student_class_session",
+      "Role": "Student",
+      "ScheduleWindow": "ClassSession",
+      "TargetKind": "StudentDesk",
+      "IntentKind": "AttendAssignedDesk",
+      "IntentLabel": "Class",
+      "StopDistance": 0.16,
+      "RoomTargetRadius": 0.25
+    },
+    {
+      "Id": "student_dorm_window",
+      "Role": "Student",
+      "ScheduleWindow": "DormWindow",
+      "TargetKind": "Dorm",
+      "IntentKind": "RestInDorm",
+      "IntentLabel": "Dorm",
+      "StopDistance": 0.22,
+      "RoomTargetRadius": 0.35
+    },
+    {
+      "Id": "teacher_class_session",
+      "Role": "Teacher",
+      "ScheduleWindow": "ClassSession",
+      "TargetKind": "TeacherPodium",
+      "IntentKind": "TeachAssignedClass",
+      "IntentLabel": "Teach",
+      "StopDistance": 0.18,
+      "RoomTargetRadius": 0.2
+    },
+    {
+      "Id": "teacher_office_window",
+      "Role": "Teacher",
+      "ScheduleWindow": "TeacherOfficeWindow",
+      "TargetKind": "OfficeDesk",
+      "IntentKind": "ReturnToOfficeDesk",
+      "IntentLabel": "Office",
+      "StopDistance": 0.18,
+      "RoomTargetRadius": 0.25
+    }
+  ],
+  "Opportunities": [
+    {
+      "Id": "student_break_roam_corridor",
+      "Purpose": "FreeMovement",
+      "Role": "Student",
+      "ScheduleWindow": "Break",
+      "TargetKind": "RoomType",
+      "RoomType": "Corridor",
+      "IntentKind": "Roam",
+      "IntentLabel": "BreakRoam",
+      "ActionMode": "NoOp",
+      "Score": 20
+    },
+    {
+      "Id": "student_free_common_area",
+      "Purpose": "FreeMovement",
+      "Role": "Student",
+      "ScheduleWindow": "StudentFreeMovement",
+      "TargetKind": "Common",
+      "IntentKind": "Roam",
+      "IntentLabel": "CommonArea",
+      "ActionMode": "NoOp",
+      "Score": 15
+    },
+    {
+      "Id": "staff_duty_workstation",
+      "Purpose": "Duty",
+      "Role": "Staff",
+      "ScheduleWindow": "Always",
+      "TargetKind": "PrimaryWorkstation",
+      "IntentKind": "AttendPrimaryWorkstation",
+      "IntentLabel": "StaffDuty",
+      "ActionMode": "NoOp",
+      "Score": 50
+    },
+    {
+      "Id": "student_meal_window",
+      "Purpose": "FreeMovement",
+      "Role": "Student",
+      "ScheduleWindow": "MealPeak",
+      "TargetKind": "RoomFacility",
+      "RoomType": "ServiceArea",
+      "FacilityGroupId": "service_windows",
+      "IntentKind": "Roam",
+      "IntentLabel": "MealWindow",
+      "ActionMode": "PressInteractionAction",
+      "ActionId": "campus.canteen.window",
+      "StopDistance": 0.18,
+      "Score": 35
+    },
+    {
+      "Id": "staff_support_meal_window",
+      "Purpose": "Duty",
+      "Role": "Staff",
+      "StaffDuties": [ "SupportStaff" ],
+      "ScheduleWindow": "MealPeak",
+      "TargetKind": "RoomFacility",
+      "RoomType": "ServiceArea",
+      "FacilityGroupId": "worker_stands",
+      "IntentKind": "AttendPrimaryWorkstation",
+      "IntentLabel": "ServeMeal",
+      "ActionMode": "PressInteractionAction",
+      "ActionId": "campus.canteen.workstation",
+      "StopDistance": 0.16,
+      "Score": 70
+    }
+  ]
+}
