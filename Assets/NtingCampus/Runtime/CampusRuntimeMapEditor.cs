@@ -141,6 +141,7 @@ namespace NtingCampusMapEditor
         [SerializeField] private int selectedGameplayPresetIndex;
         [SerializeField] private int selectedGameplayActorPresetIndex;
         [SerializeField] private int selectedWallProfileIndex;
+        [SerializeField] private string selectedFacilityOwnerId = string.Empty;
         [SerializeField] private int brushSize = 1;
         [SerializeField] private int rotation90;
         [SerializeField] private int stairTargetFloorIndex = 2;
@@ -182,6 +183,8 @@ namespace NtingCampusMapEditor
         private bool suppressPlayerSaveScheduling;
         private bool importLibraryMigrationChecked;
         private bool gameplayActorCacheInitialized;
+        private bool roomMarkerCountCacheDirty = true;
+        private bool editableLightCacheDirty = true;
         private float playerSaveDueTime;
         private float nextSceneReferenceRetryTime;
         private Vector3Int rectangleStartCell;
@@ -255,6 +258,8 @@ namespace NtingCampusMapEditor
         private readonly Dictionary<string, Texture2D> importedTextureCache = new Dictionary<string, Texture2D>(StringComparer.OrdinalIgnoreCase);
         private readonly Dictionary<string, long> importedTextureRevisionCache = new Dictionary<string, long>(StringComparer.OrdinalIgnoreCase);
         private readonly Dictionary<string, Sprite> runtimeObjectSpriteCache = new Dictionary<string, Sprite>(StringComparer.OrdinalIgnoreCase);
+        private readonly Dictionary<string, int> roomMarkerCountsByName = new Dictionary<string, int>(StringComparer.OrdinalIgnoreCase);
+        private readonly List<Light2D> editableLights = new List<Light2D>();
         private readonly List<string> pendingDroppedPaths = new List<string>();
         private readonly List<string> undoSnapshots = new List<string>();
         private readonly List<string> redoSnapshots = new List<string>();
@@ -339,6 +344,10 @@ namespace NtingCampusMapEditor
             {
                 HideAllRoomMarkerSpriteRenderersOnce();
             }
+            else
+            {
+                RefreshOpenPanelCaches(true);
+            }
 
             EnsureAreaDefinitionsAvailable(true);
             if (string.IsNullOrWhiteSpace(activeImportLabel))
@@ -394,6 +403,7 @@ namespace NtingCampusMapEditor
                 {
                     MarkSceneReferencesDirty();
                     RefreshSceneReferencesIfNeeded(true);
+                    RefreshOpenPanelCaches(true);
                 }
                 else
                 {
@@ -415,6 +425,7 @@ namespace NtingCampusMapEditor
             }
 
             RefreshSceneReferencesIfNeeded();
+            RefreshOpenPanelCaches(false);
             EnsureFileDropBridge();
             ProcessPendingDroppedPaths();
             HandleShortcuts();
@@ -1233,6 +1244,7 @@ namespace NtingCampusMapEditor
 
             stairTargetFloorIndex = Mathf.Max(1, stairTargetFloorIndex);
             sceneReferencesDirty = false;
+            InvalidateOpenPanelCaches();
             if (Application.isPlaying)
             {
                 nextSceneReferenceRetryTime = Time.unscaledTime + SceneReferenceRetryInterval;
@@ -2267,6 +2279,7 @@ namespace NtingCampusMapEditor
             marker.Cell = cell;
             marker.HideMarkerVisual = false;
             AddRoomMarkerVisual(markerObject, floor);
+            InvalidateRoomMarkerCountCache();
             floor.MarkUsedBoundsDirty();
             SchedulePlayerMapSave();
             if (rebuildGameplayRooms)
@@ -2401,12 +2414,20 @@ namespace NtingCampusMapEditor
                 return;
             }
 
+            string ownerFacilityId = string.Empty;
+            if (!TryResolveGameplayMarkerOwnerFacilityId(preset, floor.FloorIndex, out ownerFacilityId))
+            {
+                SetStatus(Tr("\u8bf7\u5148\u4e3a\u5f53\u524d\u670d\u52a1\u7ad9\u652f\u6491\u70b9\u9009\u62e9\u6240\u5c5e\u670d\u52a1\u7a97\u53e3\u3002", "Select an owner service window for this support point first."));
+                return;
+            }
+
             EraseGameplayMarkersAtCell(floor, cell, false, true, false, false);
             if (!CampusRuntimeGameplayOverlayAuthoring.CreateFacilityMarker(
                     floor,
                     cell,
                     GetGameplayPresetDisplayName(preset),
-                    preset.FacilityType))
+                    preset.FacilityType,
+                    ownerFacilityId))
             {
                 return;
             }
@@ -2850,6 +2871,8 @@ namespace NtingCampusMapEditor
             {
                 List<CampusRuntimeGameplayFacilitySnapshot> shiftedFacilities =
                     new List<CampusRuntimeGameplayFacilitySnapshot>(roomPrefab.GameplayFacilities.Count);
+                Dictionary<string, string> shiftedFacilityIdsBySourceId =
+                    new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
                 for (int i = 0; i < roomPrefab.GameplayFacilities.Count; i++)
                 {
                     CampusRuntimeGameplayFacilitySnapshot source = roomPrefab.GameplayFacilities[i];
@@ -2860,18 +2883,40 @@ namespace NtingCampusMapEditor
 
                     Vector3Int absoluteCell =
                         CampusRuntimeRoomPrefabAuthoring.ToAbsoluteCell(anchorCell, source.Cell);
+                    string shiftedFacilityId = CampusGameplayFacilityMarker.BuildStableFacilityId(
+                        floor.FloorIndex,
+                        source.FacilityType,
+                        absoluteCell);
+                    if (!string.IsNullOrWhiteSpace(source.Id))
+                    {
+                        shiftedFacilityIdsBySourceId[source.Id] = shiftedFacilityId;
+                    }
+
                     shiftedFacilities.Add(new CampusRuntimeGameplayFacilitySnapshot
                     {
-                        Id = CampusGameplayFacilityMarker.BuildStableFacilityId(
-                            floor.FloorIndex,
-                            source.FacilityType,
-                            absoluteCell),
+                        Id = shiftedFacilityId,
+                        OwnerFacilityId = source.OwnerFacilityId,
+                        ServiceStationId = source.ServiceStationId,
                         DisplayName = source.DisplayName,
                         FacilityType = source.FacilityType,
                         FloorIndex = floor.FloorIndex,
                         Cell = absoluteCell,
                         CountsAsCoreFacility = source.CountsAsCoreFacility
                     });
+                }
+
+                for (int i = 0; i < shiftedFacilities.Count; i++)
+                {
+                    CampusRuntimeGameplayFacilitySnapshot shifted = shiftedFacilities[i];
+                    if (shifted == null || string.IsNullOrWhiteSpace(shifted.OwnerFacilityId))
+                    {
+                        continue;
+                    }
+
+                    if (shiftedFacilityIdsBySourceId.TryGetValue(shifted.OwnerFacilityId, out string shiftedOwnerId))
+                    {
+                        shifted.OwnerFacilityId = shiftedOwnerId;
+                    }
                 }
 
                 CampusRuntimeGameplayOverlayAuthoring.SpawnFacilities(shiftedFacilities, EnsureFloor);
@@ -2973,6 +3018,7 @@ namespace NtingCampusMapEditor
             }
 
             selectedLight = light;
+            InvalidateEditableLightCache();
             SchedulePlayerMapSave();
             SetStatus(Tr("\u5df2\u653e\u7f6e\u706f\u5149\u3002", "Placed light."));
         }
@@ -3105,6 +3151,11 @@ namespace NtingCampusMapEditor
                 }
             }
 
+            if (erased)
+            {
+                InvalidateRoomMarkerCountCache();
+            }
+
             return erased;
         }
 
@@ -3152,6 +3203,7 @@ namespace NtingCampusMapEditor
                     }
 
                     DestroyRuntimeObject(light.gameObject);
+                    InvalidateEditableLightCache();
                 }
             }
         }
@@ -4680,6 +4732,8 @@ namespace NtingCampusMapEditor
                     AddRoomMarkerVisual(markerObject, floor);
                 }
             }
+
+            InvalidateRoomMarkerCountCache();
         }
 
         private void CaptureLights(List<CampusRuntimeLightSnapshot> output)
@@ -4804,6 +4858,7 @@ namespace NtingCampusMapEditor
                 light.falloffIntensity = lightSnapshot.FalloffIntensity;
             }
 
+            InvalidateEditableLightCache();
             return light;
         }
 
@@ -4874,6 +4929,7 @@ namespace NtingCampusMapEditor
             }
 
             selectedLight = null;
+            InvalidateEditableLightCache();
         }
 
         private void ClearRuntimeEditableLights()
@@ -4891,6 +4947,7 @@ namespace NtingCampusMapEditor
             }
 
             selectedLight = null;
+            InvalidateEditableLightCache();
         }
 
         private static bool IsManagedSceneLight(Light2D light)
@@ -5071,6 +5128,7 @@ namespace NtingCampusMapEditor
             height += roomNames.Count == 0 ? 66f : roomNames.Count * 40f;
             height += 12f + (roomNames.Count > 0 ? 42f : 0f) + 70f;
             height += 34f + 40f + Mathf.CeilToInt(pointCount / 2f) * 38f + 18f;
+            height += GetGameplayOwnerSelectionHeight();
             height += 34f + 40f + Mathf.CeilToInt(actorCount / 2f) * 38f + 164f;
             height += 96f;
             return height;
@@ -5093,16 +5151,7 @@ namespace NtingCampusMapEditor
 
         private float GetLightingContentHeight(float width)
         {
-            Light2D[] lights = FindObjectsByType<Light2D>(FindObjectsInactive.Include, FindObjectsSortMode.None);
-            int editableLightCount = 0;
-            for (int i = 0; i < lights.Length; i++)
-            {
-                if (IsRuntimeEditableLight(lights[i]))
-                {
-                    editableLightCount++;
-                }
-            }
-
+            int editableLightCount = GetEditableLights().Count;
             float height = 34f + 40f * 2f + 6f + 44f + 30f + 92f + 30f * 5f + 128f + 130f + 34f + editableLightCount * 38f;
             if (selectedLight != null)
             {
@@ -5327,7 +5376,7 @@ namespace NtingCampusMapEditor
             for (int i = 0; i < roomNames.Count; i++)
             {
                 Rect rowRect = new Rect(0f, y, viewRect.width, 34f);
-                int count = CountRoomMarkers(roomNames[i]);
+                int count = GetRoomMarkerCount(roomNames[i]);
                 int required = roomRequiredCounts[i];
                 if (GUI.Button(rowRect, GUIContent.none, i == selectedRoomIndex ? selectedButtonStyle : buttonStyle))
                 {
@@ -5343,12 +5392,13 @@ namespace NtingCampusMapEditor
             GUI.Label(new Rect(0f, y, viewRect.width, 48f), Tr("\u533a\u57df\u68c0\u67e5\u6e05\u5355\u4f1a\u5b9e\u65f6\u7edf\u8ba1\u8fd0\u884c\u65f6\u6807\u8bb0\uff0c\u5e76\u968f JSON \u5bfc\u51fa\u3002", "The area checklist counts runtime area markers in real time and is included in exported JSON."), mutedStyle);
             y += 58f;
 
-            GUI.Label(new Rect(0f, y, viewRect.width, 26f), Tr("\u8bbe\u65bd\u70b9", "Facility Points"), headerStyle);
+            GUI.Label(new Rect(0f, y, viewRect.width, 26f), Tr("\u670d\u52a1\u7ad9\u70b9", "Service Station Points"), headerStyle);
             y += 34f;
             DrawModeButtonRow(ref y, viewRect.width,
                 new CampusRuntimeBrushMode[] { CampusRuntimeBrushMode.PlaceGameplayMarker, CampusRuntimeBrushMode.EraseGameplayMarker },
-                new string[] { Tr("\u653e\u7f6e\u8bbe\u65bd\u70b9", "Place Facility Point"), Tr("\u5220\u9664\u8bbe\u65bd\u70b9", "Erase Facility Point") });
+                new string[] { Tr("\u653e\u7f6e\u670d\u52a1\u7ad9\u70b9", "Place Service Station Point"), Tr("\u5220\u9664\u670d\u52a1\u7ad9\u70b9", "Erase Service Station Point") });
             DrawGameplayPresetSection(ref y, viewRect.width);
+            DrawGameplayOwnerSelectionSection(ref y, viewRect.width);
 
             GUI.Label(new Rect(0f, y, viewRect.width, 26f), Tr("\u89d2\u8272", "Actors"), headerStyle);
             y += 34f;
@@ -5362,7 +5412,7 @@ namespace NtingCampusMapEditor
             Rect noteRect = new Rect(0f, y, viewRect.width, 76f);
             GUI.Label(
                 noteRect,
-                Tr("\u533a\u57df\u4fdd\u5b58\u5728\u5730\u56fe JSON\uff0c\u8bbe\u65bd\u70b9\u548c NPC \u4fdd\u5b58\u5728\u540c\u76ee\u5f55\u7684 .gameplay.json\u3002\u5148\u6846\u9009\u533a\u57df\uff0c\u518d\u653e\u7f6e\u8bbe\u65bd\u70b9\u548c NPC\u3002", "Areas are saved in the map JSON. Facility points and NPCs are saved next to the map as .gameplay.json. Box areas first, then place facility points and NPCs."),
+                Tr("\u533a\u57df\u4fdd\u5b58\u5728\u5730\u56fe JSON\uff0c\u670d\u52a1\u7ad9\u70b9\u548c NPC \u4fdd\u5b58\u5728\u540c\u76ee\u5f55\u7684 .gameplay.json\u3002\u663e\u5f0f\u670d\u52a1\u7ad9\u70b9\u53ea\u7528\u4e8e\u670d\u52a1\u7ad9\u62d3\u6251\uff1a\u5148\u653e\u670d\u52a1\u7a97\u53e3\uff0c\u518d\u4e3a\u5176\u914d\u64cd\u4f5c\u5458\u4f4d\u3001\u987e\u5ba2\u4f4d\u548c\u6392\u961f\u4f4d\u3002", "Areas are saved in the map JSON. Service station points and NPCs are saved next to the map as .gameplay.json. Explicit service station points are only for service topology: place a service window first, then attach operator, customer, and queue slots to it."),
                 mutedStyle);
             y += 84f;
 
@@ -5512,11 +5562,11 @@ namespace NtingCampusMapEditor
 
             GUI.Label(new Rect(0f, y, viewRect.width, 26f), Tr("\u573a\u666f\u70b9\u5149\u6e90", "Point Lights In Scene"), headerStyle);
             y += 34f;
-            Light2D[] lights = FindObjectsByType<Light2D>(FindObjectsInactive.Include, FindObjectsSortMode.None);
-            for (int i = 0; i < lights.Length; i++)
+            IReadOnlyList<Light2D> lights = GetEditableLights();
+            for (int i = 0; i < lights.Count; i++)
             {
                 Light2D light = lights[i];
-                if (!IsRuntimeEditableLight(light))
+                if (light == null)
                 {
                     continue;
                 }
@@ -5705,7 +5755,7 @@ namespace NtingCampusMapEditor
 
             for (int i = 0; i < roomNames.Count; i++)
             {
-                int count = CountRoomMarkers(roomNames[i]);
+                int count = GetRoomMarkerCount(roomNames[i]);
                 int required = roomRequiredCounts[i];
                 string label = GetAreaPresetLabel(roomNames[i]);
                 string value = count + "/" + required;
@@ -6660,6 +6710,72 @@ namespace NtingCampusMapEditor
             }
 
             y += 10f;
+        }
+
+        private void DrawGameplayOwnerSelectionSection(ref float y, float width)
+        {
+            CampusRuntimeGameplayMarkerPreset preset = GetSelectedGameplayPreset();
+            if (preset == null || !preset.RequiresOwnerFacility)
+            {
+                return;
+            }
+
+            GUI.Label(new Rect(0f, y, width, 26f), Tr("\u6240\u5c5e\u670d\u52a1\u7a97\u53e3", "Owner Service Window"), headerStyle);
+            y += 34f;
+
+            List<CampusGameplayFacilityMarker> candidates =
+                CollectGameplayFacilityOwnerCandidates(preset, Mathf.Max(1, selectedFloorIndex));
+            if (candidates.Count == 0)
+            {
+                GUI.Label(
+                    new Rect(0f, y, width, 58f),
+                    Tr("\u5f53\u524d\u697c\u5c42\u8fd8\u6ca1\u6709\u53ef\u6302\u63a5\u7684\u670d\u52a1\u7a97\u53e3\u3002\u5148\u653e\u4e00\u4e2a\u670d\u52a1\u7a97\u53e3\uff0c\u518d\u653e\u652f\u6491\u70b9\u3002", "No service window is available on the current floor yet. Place a service window first, then place support points."),
+                    mutedStyle);
+                y += 66f;
+                selectedFacilityOwnerId = string.Empty;
+                return;
+            }
+
+            string normalizedSelectedOwnerId =
+                CampusGameplayFacilityMarker.NormalizeFacilityId(selectedFacilityOwnerId);
+            bool hasSelectedOwner = false;
+            for (int i = 0; i < candidates.Count; i++)
+            {
+                CampusGameplayFacilityMarker candidate = candidates[i];
+                string candidateFacilityId = ResolveGameplayFacilityMarkerId(candidate);
+                bool isSelected =
+                    !string.IsNullOrEmpty(normalizedSelectedOwnerId) &&
+                    string.Equals(
+                        candidateFacilityId,
+                        normalizedSelectedOwnerId,
+                        StringComparison.OrdinalIgnoreCase);
+                if (isSelected)
+                {
+                    hasSelectedOwner = true;
+                }
+
+                Rect rowRect = new Rect(0f, y, width, 30f);
+                if (GUI.Button(rowRect, GetGameplayFacilityOwnerLabel(candidate), isSelected ? selectedButtonStyle : buttonStyle))
+                {
+                    selectedFacilityOwnerId = candidateFacilityId;
+                    hasSelectedOwner = true;
+                }
+
+                y += 36f;
+            }
+
+            if (!hasSelectedOwner)
+            {
+                selectedFacilityOwnerId = string.Empty;
+            }
+
+            GUI.Label(
+                new Rect(0f, y, width, 40f),
+                string.IsNullOrWhiteSpace(selectedFacilityOwnerId)
+                    ? Tr("\u5f53\u524d\u652f\u6491\u70b9\u4f1a\u628a OwnerFacilityId \u5199\u5230 .gameplay.json\uff0c\u6240\u4ee5\u5fc5\u987b\u5148\u9009\u4e00\u4e2a\u6240\u5c5e\u670d\u52a1\u7a97\u53e3\u3002", "Support points write OwnerFacilityId into .gameplay.json, so you must choose an owner service window first.")
+                    : Tr("\u5f53\u524d\u6240\u5c5e\u670d\u52a1\u7a97\u53e3\u5df2\u9009\u4e2d\u3002", "The owner service window is selected."),
+                mutedStyle);
+            y += 48f;
         }
 
         private void DrawGameplayActorPresetSection(ref float y, float width)
@@ -8725,6 +8841,8 @@ namespace NtingCampusMapEditor
                     DestroyRuntimeObject(marker.gameObject);
                 }
             }
+
+            InvalidateRoomMarkerCountCache();
         }
 
         private void ClearRoomDefinitions()
@@ -8741,28 +8859,118 @@ namespace NtingCampusMapEditor
                     DestroyRuntimeObject(markers[i].gameObject);
                 }
             }
+
+            InvalidateRoomMarkerCountCache();
         }
 
-        private int CountRoomMarkers(string roomName)
+        private int GetRoomMarkerCount(string roomName)
         {
             if (!CampusRuntimeAreaPresetCatalog.TryResolveRoomName(roomName, out string targetRoomName))
             {
                 return 0;
             }
 
+            EnsureRoomMarkerCountCache();
+            int count;
+            if (roomMarkerCountsByName.TryGetValue(targetRoomName, out count))
+            {
+                return count;
+            }
+
+            return 0;
+        }
+
+        private void RefreshOpenPanelCaches(bool force)
+        {
+            if (!isOpen)
+            {
+                return;
+            }
+
+            if (force || roomMarkerCountCacheDirty)
+            {
+                RebuildRoomMarkerCountCache();
+            }
+
+            if (force || editableLightCacheDirty)
+            {
+                RebuildEditableLightCache();
+            }
+        }
+
+        private void InvalidateOpenPanelCaches()
+        {
+            InvalidateRoomMarkerCountCache();
+            InvalidateEditableLightCache();
+        }
+
+        private void InvalidateRoomMarkerCountCache()
+        {
+            roomMarkerCountCacheDirty = true;
+        }
+
+        private void EnsureRoomMarkerCountCache()
+        {
+            if (roomMarkerCountCacheDirty)
+            {
+                RebuildRoomMarkerCountCache();
+            }
+        }
+
+        private void RebuildRoomMarkerCountCache()
+        {
+            roomMarkerCountsByName.Clear();
             CampusRuntimeRoomMarker[] markers = FindObjectsByType<CampusRuntimeRoomMarker>(FindObjectsInactive.Include, FindObjectsSortMode.None);
-            int count = 0;
             for (int i = 0; i < markers.Length; i++)
             {
-                if (markers[i] != null &&
-                    CampusRuntimeAreaPresetCatalog.TryResolveRoomName(markers[i].RoomName, out string markerRoomName) &&
-                    string.Equals(markerRoomName, targetRoomName, StringComparison.OrdinalIgnoreCase))
+                CampusRuntimeRoomMarker marker = markers[i];
+                if (marker == null || !CampusRuntimeAreaPresetCatalog.TryResolveRoomName(marker.RoomName, out string markerRoomName))
                 {
-                    count++;
+                    continue;
+                }
+
+                int count;
+                roomMarkerCountsByName.TryGetValue(markerRoomName, out count);
+                roomMarkerCountsByName[markerRoomName] = count + 1;
+            }
+
+            roomMarkerCountCacheDirty = false;
+        }
+
+        private void InvalidateEditableLightCache()
+        {
+            editableLightCacheDirty = true;
+        }
+
+        private IReadOnlyList<Light2D> GetEditableLights()
+        {
+            if (editableLightCacheDirty)
+            {
+                RebuildEditableLightCache();
+            }
+
+            return editableLights;
+        }
+
+        private void RebuildEditableLightCache()
+        {
+            editableLights.Clear();
+            Light2D[] lights = FindObjectsByType<Light2D>(FindObjectsInactive.Include, FindObjectsSortMode.None);
+            for (int i = 0; i < lights.Length; i++)
+            {
+                Light2D light = lights[i];
+                if (IsRuntimeEditableLight(light))
+                {
+                    editableLights.Add(light);
                 }
             }
 
-            return count;
+            if (selectedLight != null && !editableLights.Contains(selectedLight))
+            {
+                selectedLight = null;
+            }
+
+            editableLightCacheDirty = false;
         }
 
         private string GetSelectedRoomName()
@@ -8820,7 +9028,7 @@ namespace NtingCampusMapEditor
         {
             if (preset == null)
             {
-                return Tr("\u533a\u57df\u70b9\u4f4d", "Area Point");
+                return Tr("\u670d\u52a1\u7ad9\u70b9", "Service Station Point");
             }
 
             return Tr(preset.ChineseLabel, preset.EnglishLabel);
@@ -8830,10 +9038,174 @@ namespace NtingCampusMapEditor
         {
             if (preset == null)
             {
-                return Tr("\u533a\u57df\u70b9\u4f4d", "Area Point");
+                return Tr("\u670d\u52a1\u7ad9\u70b9", "Service Station Point");
             }
 
             return Tr(preset.ChineseDisplayName, preset.EnglishDisplayName);
+        }
+
+        private float GetGameplayOwnerSelectionHeight()
+        {
+            CampusRuntimeGameplayMarkerPreset preset = GetSelectedGameplayPreset();
+            if (preset == null || !preset.RequiresOwnerFacility)
+            {
+                return 0f;
+            }
+
+            int ownerCount = CollectGameplayFacilityOwnerCandidates(
+                preset,
+                Mathf.Max(1, selectedFloorIndex)).Count;
+            return 34f + (ownerCount == 0 ? 66f : ownerCount * 36f + 48f);
+        }
+
+        private bool TryResolveGameplayMarkerOwnerFacilityId(
+            CampusRuntimeGameplayMarkerPreset preset,
+            int floorIndex,
+            out string ownerFacilityId)
+        {
+            ownerFacilityId = string.Empty;
+            if (preset == null || !preset.RequiresOwnerFacility)
+            {
+                return true;
+            }
+
+            List<CampusGameplayFacilityMarker> candidates =
+                CollectGameplayFacilityOwnerCandidates(preset, Mathf.Max(1, floorIndex));
+            if (candidates.Count == 0)
+            {
+                selectedFacilityOwnerId = string.Empty;
+                return false;
+            }
+
+            string normalizedSelectedOwnerId =
+                CampusGameplayFacilityMarker.NormalizeFacilityId(selectedFacilityOwnerId);
+            for (int i = 0; i < candidates.Count; i++)
+            {
+                string candidateFacilityId = ResolveGameplayFacilityMarkerId(candidates[i]);
+                if (string.Equals(
+                        candidateFacilityId,
+                        normalizedSelectedOwnerId,
+                        StringComparison.OrdinalIgnoreCase))
+                {
+                    ownerFacilityId = candidateFacilityId;
+                    return true;
+                }
+            }
+
+            selectedFacilityOwnerId = string.Empty;
+            return false;
+        }
+
+        private List<CampusGameplayFacilityMarker> CollectGameplayFacilityOwnerCandidates(
+            CampusRuntimeGameplayMarkerPreset preset,
+            int floorIndex)
+        {
+            List<CampusGameplayFacilityMarker> results = new List<CampusGameplayFacilityMarker>();
+            if (preset == null || !preset.RequiresOwnerFacility)
+            {
+                return results;
+            }
+
+            CampusGameplayFacilityMarker[] markers =
+                FindObjectsByType<CampusGameplayFacilityMarker>(FindObjectsInactive.Include, FindObjectsSortMode.None);
+            HashSet<string> capturedIds = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+            for (int i = 0; i < markers.Length; i++)
+            {
+                CampusGameplayFacilityMarker marker = markers[i];
+                if (marker == null ||
+                    marker.FloorIndex != floorIndex ||
+                    !preset.AcceptsOwnerFacilityType(marker.FacilityType))
+                {
+                    continue;
+                }
+
+                string facilityId = ResolveGameplayFacilityMarkerId(marker);
+                if (string.IsNullOrEmpty(facilityId) || !capturedIds.Add(facilityId))
+                {
+                    continue;
+                }
+
+                results.Add(marker);
+            }
+
+            results.Sort(CompareGameplayFacilityOwnerCandidates);
+            return results;
+        }
+
+        private static int CompareGameplayFacilityOwnerCandidates(
+            CampusGameplayFacilityMarker left,
+            CampusGameplayFacilityMarker right)
+        {
+            if (left == null && right == null)
+            {
+                return 0;
+            }
+
+            if (left == null)
+            {
+                return 1;
+            }
+
+            if (right == null)
+            {
+                return -1;
+            }
+
+            int xCompare = left.Cell.x.CompareTo(right.Cell.x);
+            if (xCompare != 0)
+            {
+                return xCompare;
+            }
+
+            int yCompare = left.Cell.y.CompareTo(right.Cell.y);
+            if (yCompare != 0)
+            {
+                return yCompare;
+            }
+
+            return string.Compare(
+                ResolveGameplayFacilityMarkerId(left),
+                ResolveGameplayFacilityMarkerId(right),
+                StringComparison.OrdinalIgnoreCase);
+        }
+
+        private string GetGameplayFacilityOwnerLabel(CampusGameplayFacilityMarker marker)
+        {
+            if (marker == null)
+            {
+                return Tr("\u670d\u52a1\u7a97\u53e3", "Service Window");
+            }
+
+            string displayName = !string.IsNullOrWhiteSpace(marker.DisplayName)
+                ? marker.DisplayName.Trim()
+                : ResolveGameplayFacilityTypeLabel(marker.FacilityType);
+            return displayName + " (" + marker.Cell.x + ", " + marker.Cell.y + ")";
+        }
+
+        private string ResolveGameplayFacilityTypeLabel(CampusFacilityType facilityType)
+        {
+            return CampusRuntimeGameplayMarkerPresetCatalog.TryGetPreset(
+                       facilityType,
+                       out CampusRuntimeGameplayMarkerPreset preset) &&
+                   preset != null
+                ? GetGameplayPresetLabel(preset)
+                : facilityType.ToString();
+        }
+
+        private static string ResolveGameplayFacilityMarkerId(CampusGameplayFacilityMarker marker)
+        {
+            if (marker == null)
+            {
+                return string.Empty;
+            }
+
+            string facilityId = CampusGameplayFacilityMarker.NormalizeFacilityId(marker.FacilityId);
+            return !string.IsNullOrEmpty(facilityId)
+                ? facilityId
+                : CampusGameplayFacilityMarker.BuildStableFacilityId(
+                    marker.FloorIndex,
+                    marker.FacilityType,
+                    marker.Cell);
         }
 
         private string GetGameplayActorPresetLabel(CampusRuntimeGameplayActorPreset preset)

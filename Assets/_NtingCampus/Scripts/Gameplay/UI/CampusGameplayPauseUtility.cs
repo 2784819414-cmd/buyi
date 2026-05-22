@@ -7,14 +7,12 @@ namespace NtingCampus.Gameplay.UI
 {
     internal readonly struct CampusGameplayPauseState
     {
-        public CampusGameplayPauseState(bool autoAdvance, CampusTimeSpeedMode speedMode)
+        public CampusGameplayPauseState(bool autoAdvance)
         {
             AutoAdvance = autoAdvance;
-            SpeedMode = speedMode;
         }
 
         public bool AutoAdvance { get; }
-        public CampusTimeSpeedMode SpeedMode { get; }
     }
 
     internal static class CampusGameplayPauseUtility
@@ -23,15 +21,13 @@ namespace NtingCampus.Gameplay.UI
         {
             if (bootstrap == null || bootstrap.TimeController == null)
             {
-                return new CampusGameplayPauseState(true, CampusTimeSpeedMode.Normal);
+                return new CampusGameplayPauseState(true);
             }
 
             CampusGameplayPauseState state = new CampusGameplayPauseState(
-                GetPrivateBool(bootstrap.TimeController, "autoAdvance", true),
-                bootstrap.TimeController.SpeedMode);
+                bootstrap.TimeController.AutoAdvanceEnabled);
 
-            SetPrivateBool(bootstrap.TimeController, "autoAdvance", false);
-            bootstrap.TimeController.SetSpeedMode(CampusTimeSpeedMode.Paused);
+            bootstrap.TimeController.SetAutoAdvanceEnabled(false);
             ApplyPlayerGameplayInput(bootstrap, false);
             return state;
         }
@@ -43,8 +39,7 @@ namespace NtingCampus.Gameplay.UI
                 return;
             }
 
-            SetPrivateBool(bootstrap.TimeController, "autoAdvance", state.AutoAdvance);
-            bootstrap.TimeController.SetSpeedMode(state.SpeedMode);
+            bootstrap.TimeController.SetAutoAdvanceEnabled(state.AutoAdvance);
             ApplyPlayerGameplayInput(bootstrap, true);
         }
 
@@ -78,18 +73,6 @@ namespace NtingCampus.Gameplay.UI
                     method.Invoke(component, new object[] { enabled });
                 }
             }
-        }
-
-        private static bool GetPrivateBool(object target, string fieldName, bool fallback)
-        {
-            FieldInfo field = target.GetType().GetField(fieldName, BindingFlags.Instance | BindingFlags.NonPublic);
-            return field != null ? (bool)field.GetValue(target) : fallback;
-        }
-
-        private static void SetPrivateBool(object target, string fieldName, bool value)
-        {
-            FieldInfo field = target.GetType().GetField(fieldName, BindingFlags.Instance | BindingFlags.NonPublic);
-            field?.SetValue(target, value);
         }
     }
 }

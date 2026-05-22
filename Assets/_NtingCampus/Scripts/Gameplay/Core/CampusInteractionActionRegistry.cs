@@ -163,6 +163,26 @@ namespace NtingCampus.Gameplay.Core
             return request.Anchor != null ? request.Anchor.GetComponentInParent<CampusPlacedObject>() : null;
         }
 
+        private static CampusPlacedObject ResolveSourceObject(UnityEngine.Object target)
+        {
+            if (target is CampusPlacedObject placedObject)
+            {
+                return placedObject;
+            }
+
+            if (target is Component component)
+            {
+                return component.GetComponent<CampusPlacedObject>() ?? component.GetComponentInParent<CampusPlacedObject>();
+            }
+
+            if (target is GameObject gameObject)
+            {
+                return gameObject.GetComponent<CampusPlacedObject>() ?? gameObject.GetComponentInParent<CampusPlacedObject>();
+            }
+
+            return null;
+        }
+
         private static void EnsureBuiltInsRegistered()
         {
             if (builtInsRegistered)

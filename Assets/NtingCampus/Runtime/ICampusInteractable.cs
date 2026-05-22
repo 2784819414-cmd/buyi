@@ -20,8 +20,8 @@ namespace NtingCampusMapEditor
         public const string InteractTarget = "campus.interact.target";
         public const string NpcTalk = "campus.npc.talk";
         public const string PickupStorageItem = "campus.storage.pickup";
+        public const string ServiceWindowUse = "campus.facility.service_window.use";
         public const string CanteenWindow = "campus.canteen.window";
-        public const string CanteenWorkstation = "campus.canteen.workstation";
 
         public static bool Equals(string actionId, string expected)
         {
@@ -35,7 +35,10 @@ namespace NtingCampusMapEditor
                 return string.Empty;
             }
 
-            return actionId.Trim();
+            string normalized = actionId.Trim();
+            return string.Equals(normalized, CanteenWindow, System.StringComparison.OrdinalIgnoreCase)
+                ? ServiceWindowUse
+                : normalized;
         }
     }
 }

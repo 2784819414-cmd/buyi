@@ -44,33 +44,15 @@ namespace NtingCampusMapEditor
 
         internal static Color ResolveFacilityColor(CampusFacilityType facilityType)
         {
-            switch (facilityType)
+            if (CampusRuntimeGameplayMarkerPresetCatalog.TryGetPreset(
+                    facilityType,
+                    out CampusRuntimeGameplayMarkerPreset preset) &&
+                preset != null)
             {
-                case CampusFacilityType.Door:
-                    return new Color(0.72f, 0.72f, 0.72f, 1f);
-                case CampusFacilityType.Blackboard:
-                    return new Color(0.12f, 0.46f, 0.36f, 1f);
-                case CampusFacilityType.StudentDesk:
-                    return new Color(0.26f, 0.56f, 0.96f, 1f);
-                case CampusFacilityType.Podium:
-                    return new Color(0.18f, 0.38f, 0.86f, 1f);
-                case CampusFacilityType.OfficeDesk:
-                    return new Color(0.72f, 0.48f, 0.28f, 1f);
-                case CampusFacilityType.Bed:
-                    return new Color(0.56f, 0.42f, 0.88f, 1f);
-                case CampusFacilityType.BulletinBoard:
-                    return new Color(0.88f, 0.62f, 0.24f, 1f);
-                case CampusFacilityType.Recruitment:
-                    return new Color(0.74f, 0.36f, 0.88f, 1f);
-                case CampusFacilityType.Sink:
-                    return new Color(0.22f, 0.68f, 0.92f, 1f);
-                case CampusFacilityType.Storage:
-                    return new Color(0.62f, 0.56f, 0.46f, 1f);
-                case CampusFacilityType.DiningTable:
-                    return new Color(0.55f, 0.76f, 0.28f, 1f);
-                default:
-                    return new Color(0.78f, 0.78f, 0.78f, 1f);
+                return preset.Color;
             }
+
+            return new Color(0.78f, 0.78f, 0.78f, 1f);
         }
 
         internal static Color ResolveActorColor(CampusRuntimeGameplayActorSnapshot actor)

@@ -427,6 +427,7 @@ namespace NtingCampusMapEditor
             return clone;
         }
 
+
         private void ConfigureCustomInteractionAnchor(Transform root, string anchorName, CampusPlacedObjectInteractionAnchor data, int index)
         {
             Transform anchorTransform = root.Find(anchorName);
@@ -1187,10 +1188,7 @@ namespace NtingCampusMapEditor
             switch (CampusFacilityTypeResolver.Resolve(this))
             {
                 case CampusFacilityType.ServiceWindow:
-                    handler.DefaultActionId = CampusInteractionActionIds.CanteenWindow;
-                    break;
-                case CampusFacilityType.WorkerStandPoint:
-                    handler.DefaultActionId = CampusInteractionActionIds.CanteenWorkstation;
+                    handler.DefaultActionId = CampusInteractionActionIds.ServiceWindowUse;
                     break;
             }
         }
@@ -1200,7 +1198,6 @@ namespace NtingCampusMapEditor
             switch (CampusFacilityTypeResolver.Resolve(this))
             {
                 case CampusFacilityType.ServiceWindow:
-                case CampusFacilityType.WorkerStandPoint:
                     return true;
                 default:
                     return false;

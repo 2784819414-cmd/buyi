@@ -88,6 +88,8 @@ namespace NtingCampus.Gameplay.UI
     public sealed class CampusRuntimeGameplayFacilitySnapshot
     {
         public string Id = string.Empty;
+        public string OwnerFacilityId = string.Empty;
+        public string ServiceStationId = string.Empty;
         public string DisplayName = string.Empty;
         public string FacilityTypeId = string.Empty;
         public CampusFacilityType FacilityType = CampusFacilityType.Unknown;
@@ -98,6 +100,8 @@ namespace NtingCampus.Gameplay.UI
         public void Normalize()
         {
             FloorIndex = Mathf.Max(1, FloorIndex);
+            OwnerFacilityId = CampusGameplayFacilityMarker.NormalizeOwnerFacilityId(OwnerFacilityId);
+            ServiceStationId = CampusGameplayFacilityMarker.NormalizeLegacyServiceStationId(ServiceStationId);
             DisplayName = string.IsNullOrWhiteSpace(DisplayName) ? string.Empty : DisplayName.Trim();
             FacilityType = CampusGameplayOverlayEnumIds.Resolve(FacilityTypeId, FacilityType);
             FacilityTypeId = CampusGameplayOverlayEnumIds.ToId(FacilityType);

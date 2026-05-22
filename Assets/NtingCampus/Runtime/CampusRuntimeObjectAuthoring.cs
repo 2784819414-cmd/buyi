@@ -327,16 +327,12 @@ namespace NtingCampusMapEditor
                 return CampusFacilityType.Unknown;
             }
 
-            CampusFacilityType resolved = CampusFacilityTypeResolver.Resolve(placed);
-            if (resolved != CampusFacilityType.Unknown)
+            if (CampusPlacedObjectConceptResolver.TryResolveFacility(placed, out CampusFacilityTypeResolution facilityResolution))
             {
-                return resolved;
+                return facilityResolution.FacilityType;
             }
 
-            string inferredTypeId = InferObjectTypeId(placed.ObjectId, placed.DisplayName, placed.IsStorageContainer);
-            return TryParseFacilityType(inferredTypeId, out CampusFacilityType inferred)
-                ? inferred
-                : CampusFacilityType.Unknown;
+            return CampusFacilityType.Unknown;
         }
 
         internal static CampusFacilityType ResolveFacilityType(

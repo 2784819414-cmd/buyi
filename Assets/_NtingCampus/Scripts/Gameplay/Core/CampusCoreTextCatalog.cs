@@ -9,7 +9,10 @@ namespace NtingCampus.Gameplay.Core
         EmptyEvent = 1,
         SwitchedStudentBodyMode = 2,
         SwitchedGodViewMode = 3,
-        EventRecorded = 4
+        EventRecorded = 4,
+        TestTimeAdjusted = 5,
+        TestTimePaused = 6,
+        TestTimeResumed = 7
     }
 
     public static class CampusCoreTextCatalog
@@ -32,7 +35,10 @@ namespace NtingCampus.Gameplay.Core
             { CampusCoreTextId.EmptyEvent, new Entry("（空事件）", "(empty event)") },
             { CampusCoreTextId.SwitchedStudentBodyMode, new Entry("[系统] 已切换到学生身体模式。", "[System] Switched to student body mode.") },
             { CampusCoreTextId.SwitchedGodViewMode, new Entry("[系统] 已切换到神视角模式。", "[System] Switched to god view mode.") },
-            { CampusCoreTextId.EventRecorded, new Entry("[事件] {0}", "[Event] {0}") }
+            { CampusCoreTextId.EventRecorded, new Entry("[事件] {0}", "[Event] {0}") },
+            { CampusCoreTextId.TestTimeAdjusted, new Entry("[测试] 时间已调整为 {0} {1}（{2}）。", "[Test] Time adjusted to {0} {1} ({2}).") },
+            { CampusCoreTextId.TestTimePaused, new Entry("[测试] 时间已暂停。", "[Test] Time paused.") },
+            { CampusCoreTextId.TestTimeResumed, new Entry("[测试] 时间已恢复为 {0}。", "[Test] Time resumed as {0}.") }
         };
 
         public static string Get(CampusCoreTextId id)

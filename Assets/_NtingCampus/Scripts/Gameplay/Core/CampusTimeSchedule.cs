@@ -135,6 +135,41 @@ namespace NtingCampus.Gameplay.Core
         }
 
         /// <summary>
+        /// 规范化为当天分钟数。
+        /// </summary>
+        public static int NormalizeMinuteOfDay(int minuteOfDay)
+        {
+            return ((minuteOfDay % MinutesPerDay) + MinutesPerDay) % MinutesPerDay;
+        }
+
+        /// <summary>
+        /// 根据当天分钟数解析所在时段和时段内已过分钟数。
+        /// </summary>
+        public static bool TryResolveSegmentAtMinute(
+            int minuteOfDay,
+            out CampusTimeSegment segment,
+            out float elapsedMinutes)
+        {
+            int normalizedMinute = NormalizeMinuteOfDay(minuteOfDay);
+            for (int i = 0; i < SegmentInfos.Length; i++)
+            {
+                SegmentInfo info = SegmentInfos[i];
+                if (!ContainsMinute(info, normalizedMinute))
+                {
+                    continue;
+                }
+
+                segment = info.Segment;
+                elapsedMinutes = ResolveElapsedMinutes(info, normalizedMinute);
+                return true;
+            }
+
+            segment = CampusTimeSegment.WakeUp;
+            elapsedMinutes = 0f;
+            return false;
+        }
+
+        /// <summary>
         /// 获取时段变化日志文本。
         /// </summary>
         public static string GetSegmentLogMessage(CampusTimeSegment segment, string dateText)
@@ -229,6 +264,29 @@ namespace NtingCampus.Gameplay.Core
             }
 
             throw new ArgumentOutOfRangeException(nameof(segment), segment, "Unknown campus time segment.");
+        }
+
+        private static bool ContainsMinute(SegmentInfo info, int minuteOfDay)
+        {
+            if (info.StartMinute == info.EndMinute)
+            {
+                return true;
+            }
+
+            return info.StartMinute < info.EndMinute
+                ? minuteOfDay >= info.StartMinute && minuteOfDay < info.EndMinute
+                : minuteOfDay >= info.StartMinute || minuteOfDay < info.EndMinute;
+        }
+
+        private static float ResolveElapsedMinutes(SegmentInfo info, int minuteOfDay)
+        {
+            int elapsed = minuteOfDay - info.StartMinute;
+            if (elapsed < 0)
+            {
+                elapsed += MinutesPerDay;
+            }
+
+            return elapsed;
         }
 
         private readonly struct SegmentInfo

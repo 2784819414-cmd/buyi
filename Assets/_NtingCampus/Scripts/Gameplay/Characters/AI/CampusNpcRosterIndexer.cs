@@ -171,6 +171,57 @@ namespace NtingCampus.Gameplay.Characters
                 out record);
         }
 
+        public static bool TryResolveUniqueStaffPrimaryWorkstation(
+            CampusCharacterRuntime runtime,
+            CampusRosterService rosterService,
+            CampusWorldService worldService,
+            CampusGameplayRoom workRoom,
+            CampusFacilityType[] facilityTypes,
+            CampusStaffDuty staffDutyMask,
+            out CampusGameplayRoom.FacilityRecord record)
+        {
+            return TryResolveUniqueFacility(
+                runtime,
+                rosterService,
+                workRoom,
+                facilityTypes,
+                peer => peer != null &&
+                        peer.Data != null &&
+                        BelongsToStaffCohort(peer.Data, staffDutyMask) &&
+                        CampusNpcRoomSelector.SameRoom(
+                            ResolveStaffWorkRoom(peer, rosterService, worldService),
+                            workRoom),
+                peer => peer != null && peer.Data != null && peer.Data.Assignments != null
+                    ? peer.Data.Assignments.PrimaryWorkstationId
+                    : string.Empty,
+                out record);
+        }
+
+        public static bool TryResolveUniqueStaffServiceWindow(
+            CampusCharacterRuntime runtime,
+            CampusRosterService rosterService,
+            CampusWorldService worldService,
+            CampusGameplayRoom workRoom,
+            CampusStaffDuty staffDutyMask,
+            out CampusGameplayRoom.FacilityRecord record)
+        {
+            return TryResolveUniqueFacility(
+                runtime,
+                rosterService,
+                workRoom,
+                CampusNpcFacilityGroups.Get(CampusNpcFacilityGroups.ServiceWindows),
+                peer => peer != null &&
+                        peer.Data != null &&
+                        BelongsToStaffCohort(peer.Data, staffDutyMask) &&
+                        CampusNpcRoomSelector.SameRoom(
+                            ResolveStaffWorkRoom(peer, rosterService, worldService),
+                            workRoom),
+                peer => peer != null && peer.Data != null && peer.Data.Assignments != null
+                    ? peer.Data.Assignments.ServiceWindowId
+                    : string.Empty,
+                out record);
+        }
+
         public static bool IsTeacher(CampusCharacterRuntime owner, CampusCharacterRuntime peer)
         {
             return peer != null && peer.Data != null && peer.Data.Role == CampusCharacterRole.Teacher;
@@ -322,6 +373,78 @@ namespace NtingCampus.Gameplay.Characters
 
             int teacherIndex = PeerIndex(runtime, rosterService, IsTeacher);
             return CampusNpcRoomSelector.Choose(offices, data != null ? data.Id : string.Empty, teacherIndex);
+        }
+
+        private static CampusGameplayRoom ResolveStaffWorkRoom(
+            CampusCharacterRuntime runtime,
+            CampusRosterService rosterService,
+            CampusWorldService worldService)
+        {
+            CampusCharacterData data = runtime != null ? runtime.Data : null;
+            CampusCharacterAssignmentData assignments = data != null ? data.Assignments : null;
+            bool isSupportStaff = data != null && (data.StaffDuty & CampusStaffDuty.SupportStaff) != 0;
+
+            CampusGameplayRoom assignedRoom = CampusNpcRoomSelector.ResolveAssigned(
+                worldService,
+                assignments != null ? assignments.WorkRoomId : string.Empty,
+                CampusRoomType.Unknown);
+            if (assignedRoom != null)
+            {
+                return assignedRoom;
+            }
+
+            if (isSupportStaff &&
+                CampusNpcFacilitySelector.FindAssigned(
+                    worldService,
+                    assignments != null ? assignments.ServiceWindowId : string.Empty,
+                    CampusNpcFacilityGroups.Get(CampusNpcFacilityGroups.ServiceWindows),
+                    out CampusGameplayRoom serviceWindowRoom,
+                    out _))
+            {
+                return serviceWindowRoom;
+            }
+
+            CampusFacilityType[] facilityTypes = ResolveStaffWorkstationFacilityTypes(data);
+            if (CampusNpcFacilitySelector.FindAssigned(
+                    worldService,
+                    assignments != null ? assignments.PrimaryWorkstationId : string.Empty,
+                    facilityTypes,
+                    out CampusGameplayRoom workstationRoom,
+                    out _))
+            {
+                return workstationRoom;
+            }
+
+            CampusRoomType roomType = ResolveStaffWorkRoomType(data);
+            List<CampusGameplayRoom> rooms = CampusNpcRoomSelector.GetRooms(worldService, roomType);
+            int staffIndex = PeerIndex(runtime, rosterService, IsStaff);
+            return CampusNpcRoomSelector.Choose(rooms, data != null ? data.Id : string.Empty, staffIndex);
+        }
+
+        private static CampusFacilityType[] ResolveStaffWorkstationFacilityTypes(CampusCharacterData data)
+        {
+            return data != null && (data.StaffDuty & CampusStaffDuty.SupportStaff) != 0
+                ? CampusNpcFacilityGroups.Get(CampusNpcFacilityGroups.WorkerStands)
+                : CampusNpcFacilityGroups.Get(CampusNpcFacilityGroups.Workstations);
+        }
+
+        private static CampusRoomType ResolveStaffWorkRoomType(CampusCharacterData data)
+        {
+            return data != null && (data.StaffDuty & CampusStaffDuty.SupportStaff) != 0
+                ? CampusRoomType.ServiceArea
+                : CampusRoomType.Office;
+        }
+
+        private static bool BelongsToStaffCohort(CampusCharacterData data, CampusStaffDuty staffDutyMask)
+        {
+            if (data == null || data.Role != CampusCharacterRole.Staff)
+            {
+                return false;
+            }
+
+            return staffDutyMask == CampusStaffDuty.None
+                ? true
+                : (data.StaffDuty & staffDutyMask) != 0;
         }
     }
 }

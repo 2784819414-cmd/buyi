@@ -21,6 +21,8 @@ namespace NtingCampus.Gameplay.Core
         [SerializeField] private CampusTimeSpeedMode speedMode = CampusTimeSpeedMode.Normal;
         [SerializeField, Range(0f, 200f)] private float customTimeScale = 1f;
         [SerializeField] private CampusDayNightController dayNightController;
+        [SerializeField] private CampusTimeSpeedMode lastActiveSpeedMode = CampusTimeSpeedMode.Normal;
+        [SerializeField, Range(0f, 200f)] private float lastActiveCustomTimeScale = 1f;
 
         private bool isInitialized;
 
@@ -40,6 +42,8 @@ namespace NtingCampus.Gameplay.Core
         public float SegmentProgress01 => SegmentDurationMinutes <= 0f ? 1f : Mathf.Clamp01(segmentElapsedMinutes / SegmentDurationMinutes);
         public float TimeScale => ResolveTimeScale();
         public CampusTimeSpeedMode SpeedMode => speedMode;
+        public bool AutoAdvanceEnabled => autoAdvance;
+        public bool IsTimePaused => speedMode == CampusTimeSpeedMode.Paused;
         public bool IsNightFree => currentSegment == CampusTimeSegment.NightFree;
         public bool AllowsNightFreeAction => IsNightFree;
 
@@ -52,6 +56,7 @@ namespace NtingCampus.Gameplay.Core
             currentSegment = initialSegment;
             segmentElapsedMinutes = 0f;
             isInitialized = true;
+            RememberActiveSpeedSettings(speedMode);
             SyncDayNightClock();
 
             if (writeInitialSegmentLog)
@@ -62,6 +67,11 @@ namespace NtingCampus.Gameplay.Core
 
         public void SetSpeedMode(CampusTimeSpeedMode mode)
         {
+            if (mode != CampusTimeSpeedMode.Paused)
+            {
+                RememberActiveSpeedSettings(mode);
+            }
+
             speedMode = mode;
             if (speedMode == CampusTimeSpeedMode.Custom)
             {
@@ -73,6 +83,143 @@ namespace NtingCampus.Gameplay.Core
         {
             customTimeScale = Mathf.Clamp(scale, 0f, 200f);
             speedMode = CampusTimeSpeedMode.Custom;
+            RememberActiveSpeedSettings(CampusTimeSpeedMode.Custom);
+        }
+
+        public void SetAutoAdvanceEnabled(bool enabled)
+        {
+            autoAdvance = enabled;
+        }
+
+        public void TogglePauseTime(bool writeLog)
+        {
+            if (IsTimePaused)
+            {
+                ResumeTime(writeLog);
+                return;
+            }
+
+            PauseTime(writeLog);
+        }
+
+        public void PauseTime(bool writeLog)
+        {
+            EnsureInitialized();
+            if (IsTimePaused)
+            {
+                return;
+            }
+
+            RememberActiveSpeedSettings(speedMode);
+
+            speedMode = CampusTimeSpeedMode.Paused;
+            if (writeLog)
+            {
+                WriteTimePauseLog();
+            }
+        }
+
+        public void ResumeTime(bool writeLog)
+        {
+            EnsureInitialized();
+            if (!IsTimePaused)
+            {
+                return;
+            }
+
+            CampusTimeSpeedMode resumeMode = lastActiveSpeedMode == CampusTimeSpeedMode.Paused
+                ? CampusTimeSpeedMode.Normal
+                : lastActiveSpeedMode;
+            speedMode = resumeMode;
+            if (resumeMode == CampusTimeSpeedMode.Custom)
+            {
+                customTimeScale = Mathf.Clamp(lastActiveCustomTimeScale, 0f, 200f);
+            }
+
+            if (writeLog)
+            {
+                WriteTimeResumeLog();
+            }
+        }
+
+        public bool TrySetDateAndClock(
+            int year,
+            int month,
+            int day,
+            int hour,
+            int minute,
+            bool writeLog,
+            out string errorMessage)
+        {
+            errorMessage = string.Empty;
+            if (hour < 0 || hour > 23)
+            {
+                errorMessage = CampusPlayerUiTextCatalog.Get(CampusPlayerUiTextId.TimeTestInvalidHour);
+                return false;
+            }
+
+            if (minute < 0 || minute > 59)
+            {
+                errorMessage = CampusPlayerUiTextCatalog.Get(CampusPlayerUiTextId.TimeTestInvalidMinute);
+                return false;
+            }
+
+            CampusGameDate targetDate = new CampusGameDate(year, month, day);
+            if (targetDate.Year != year || targetDate.Month != month || targetDate.Day != day)
+            {
+                errorMessage = CampusPlayerUiTextCatalog.Get(CampusPlayerUiTextId.TimeTestInvalidDate);
+                return false;
+            }
+
+            SetDateAndClock(targetDate, hour * 60 + minute, writeLog);
+            return true;
+        }
+
+        public void SetDateAndClock(CampusGameDate targetDate, int minuteOfDay, bool writeLog)
+        {
+            EnsureInitialized();
+
+            CampusGameDate normalizedDate = targetDate;
+            normalizedDate.Set(targetDate.Year, targetDate.Month, targetDate.Day);
+            int normalizedMinute = CampusTimeSchedule.NormalizeMinuteOfDay(minuteOfDay);
+            if (!CampusTimeSchedule.TryResolveSegmentAtMinute(
+                    normalizedMinute,
+                    out CampusTimeSegment targetSegment,
+                    out float targetElapsedMinutes))
+            {
+                return;
+            }
+
+            CampusGameDate previousDate = currentDate;
+            CampusTimeSegment previousSegment = currentSegment;
+            int previousDayCount = bootstrap != null && bootstrap.GameState != null
+                ? bootstrap.GameState.Day
+                : 1;
+
+            currentDate = normalizedDate;
+            currentSegment = targetSegment;
+            segmentElapsedMinutes = Mathf.Clamp(
+                targetElapsedMinutes,
+                0f,
+                Mathf.Max(0f, SegmentDurationMinutes));
+
+            ApplyAdjustedDayCount(previousDate, previousDayCount, normalizedDate);
+            SyncDayNightClock();
+
+            if (!AreSameDate(previousDate, normalizedDate))
+            {
+                GameDateChanged?.Invoke(currentDate);
+            }
+
+            if (previousSegment != currentSegment)
+            {
+                SegmentChanged?.Invoke(previousSegment, currentSegment);
+            }
+
+            if (writeLog)
+            {
+                WriteTimeAdjustmentLog();
+            }
         }
 
         public void AdvanceMinutes(float minutes)
@@ -146,6 +293,7 @@ namespace NtingCampus.Gameplay.Core
             NormalizeDates();
             segmentElapsedMinutes = Mathf.Max(0f, segmentElapsedMinutes);
             customTimeScale = Mathf.Clamp(customTimeScale, 0f, 200f);
+            lastActiveCustomTimeScale = Mathf.Clamp(lastActiveCustomTimeScale, 0f, 200f);
         }
 
         private void EnsureInitialized()
@@ -281,6 +429,47 @@ namespace NtingCampus.Gameplay.Core
             eventLog.AddLog(CampusTimeSchedule.GetSegmentLogMessage(CampusLanguageState.CurrentLanguage, segment, CurrentDateText));
         }
 
+        private void WriteTimeAdjustmentLog()
+        {
+            CampusEventLog eventLog = bootstrap != null ? bootstrap.EventLog : null;
+            if (eventLog == null)
+            {
+                return;
+            }
+
+            eventLog.AddLog(CampusCoreTextCatalog.Format(
+                CampusCoreTextId.TestTimeAdjusted,
+                CurrentDateText,
+                CurrentClockText,
+                CurrentSegmentName));
+        }
+
+        private void WriteTimePauseLog()
+        {
+            CampusEventLog eventLog = bootstrap != null ? bootstrap.EventLog : null;
+            if (eventLog == null)
+            {
+                return;
+            }
+
+            eventLog.AddLog(CampusCoreTextCatalog.Get(CampusCoreTextId.TestTimePaused));
+        }
+
+        private void WriteTimeResumeLog()
+        {
+            CampusEventLog eventLog = bootstrap != null ? bootstrap.EventLog : null;
+            if (eventLog == null)
+            {
+                return;
+            }
+
+            eventLog.AddLog(CampusCoreTextCatalog.Format(
+                CampusCoreTextId.TestTimeResumed,
+                CampusGameplayDebugTextCatalog.FormatSpeedMode(
+                    CampusLanguageState.CurrentLanguage,
+                    speedMode)));
+        }
+
         private void AdvanceToNextSchoolDay()
         {
             // Calendar date and gameplay day count advance together at the school-day boundary.
@@ -291,6 +480,38 @@ namespace NtingCampus.Gameplay.Core
             }
 
             GameDateChanged?.Invoke(currentDate);
+        }
+
+        private void ApplyAdjustedDayCount(CampusGameDate previousDate, int previousDayCount, CampusGameDate targetDate)
+        {
+            if (bootstrap == null || bootstrap.GameState == null)
+            {
+                return;
+            }
+
+            int dayDelta = (targetDate.ToDateTime() - previousDate.ToDateTime()).Days;
+            bootstrap.GameState.SetDay(previousDayCount + dayDelta);
+        }
+
+        private void RememberActiveSpeedSettings(CampusTimeSpeedMode mode)
+        {
+            if (mode == CampusTimeSpeedMode.Paused)
+            {
+                return;
+            }
+
+            lastActiveSpeedMode = mode;
+            if (mode == CampusTimeSpeedMode.Custom)
+            {
+                lastActiveCustomTimeScale = Mathf.Clamp(customTimeScale, 0f, 200f);
+            }
+        }
+
+        private static bool AreSameDate(CampusGameDate left, CampusGameDate right)
+        {
+            return left.Year == right.Year &&
+                   left.Month == right.Month &&
+                   left.Day == right.Day;
         }
     }
 }

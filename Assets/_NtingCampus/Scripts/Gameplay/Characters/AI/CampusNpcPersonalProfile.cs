@@ -24,6 +24,8 @@ namespace NtingCampus.Gameplay.Characters
         public Vector3 OfficeDeskPosition;
 
         public string WorkRoomId = string.Empty;
+        public string PrimaryServiceWindowKey = string.Empty;
+        public Vector3 PrimaryServiceWindowPosition;
         public string PrimaryWorkstationKey = string.Empty;
         public Vector3 PrimaryWorkstationPosition;
 
@@ -36,6 +38,7 @@ namespace NtingCampus.Gameplay.Characters
         public bool HasStudentDesk => !string.IsNullOrWhiteSpace(StudentDeskKey);
         public bool HasTeacherPodium => !string.IsNullOrWhiteSpace(TeacherPodiumKey);
         public bool HasOfficeDesk => !string.IsNullOrWhiteSpace(OfficeDeskKey);
+        public bool HasPrimaryServiceWindow => !string.IsNullOrWhiteSpace(PrimaryServiceWindowKey);
         public bool HasPrimaryWorkstation => !string.IsNullOrWhiteSpace(PrimaryWorkstationKey);
 
         public void Reset(CampusCharacterData data)
@@ -53,6 +56,8 @@ namespace NtingCampus.Gameplay.Characters
             OfficeDeskKey = string.Empty;
             OfficeDeskPosition = Vector3.zero;
             WorkRoomId = string.Empty;
+            PrimaryServiceWindowKey = string.Empty;
+            PrimaryServiceWindowPosition = Vector3.zero;
             PrimaryWorkstationKey = string.Empty;
             PrimaryWorkstationPosition = Vector3.zero;
             DormRoomId = string.Empty;
@@ -87,6 +92,13 @@ namespace NtingCampus.Gameplay.Characters
             WorkRoomId = room != null ? room.RoomId : string.Empty;
             PrimaryWorkstationKey = key ?? string.Empty;
             PrimaryWorkstationPosition = position;
+        }
+
+        public void SetPrimaryServiceWindow(CampusGameplayRoom room, string key, Vector3 position)
+        {
+            WorkRoomId = room != null ? room.RoomId : string.Empty;
+            PrimaryServiceWindowKey = key ?? string.Empty;
+            PrimaryServiceWindowPosition = position;
         }
 
         public void SetDorm(CampusGameplayRoom room, Vector3 position)

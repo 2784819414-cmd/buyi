@@ -1,5 +1,4 @@
 using System;
-using System.Collections.Generic;
 using Nting.Storage;
 using UnityEngine;
 
@@ -7,8 +6,6 @@ namespace NtingCampus.Gameplay.Characters
 {
     public sealed class CampusNpcActionOpportunity
     {
-        private readonly Func<CampusCharacterRuntime, bool> canUse;
-
         public CampusNpcActionOpportunity(
             string actionId,
             CampusCharacterAction action,
@@ -16,7 +13,7 @@ namespace NtingCampus.Gameplay.Characters
             string roomId,
             float stopDistance,
             float score,
-            Func<CampusCharacterRuntime, bool> canUse = null)
+            string targetId = "")
             : this(
                 actionId,
                 action,
@@ -26,7 +23,11 @@ namespace NtingCampus.Gameplay.Characters
                 score,
                 CampusNpcIntentKind.Roam,
                 actionId,
-                canUse)
+                true,
+                0f,
+                0f,
+                false,
+                targetId)
         {
         }
 
@@ -39,7 +40,7 @@ namespace NtingCampus.Gameplay.Characters
             float score,
             CampusNpcIntentKind defaultIntentKind,
             string defaultIntentLabel,
-            Func<CampusCharacterRuntime, bool> canUse = null)
+            string targetId = "")
             : this(
                 actionId,
                 action,
@@ -51,7 +52,9 @@ namespace NtingCampus.Gameplay.Characters
                 defaultIntentLabel,
                 true,
                 0f,
-                canUse)
+                0f,
+                false,
+                targetId)
         {
         }
 
@@ -66,7 +69,9 @@ namespace NtingCampus.Gameplay.Characters
             string defaultIntentLabel,
             bool usesNavigation,
             float holdSeconds,
-            Func<CampusCharacterRuntime, bool> canUse = null)
+            float arrivalHoldSeconds,
+            bool requireExactDestination,
+            string targetId = "")
         {
             ActionId = string.IsNullOrWhiteSpace(actionId) ? string.Empty : actionId.Trim();
             Action = action;
@@ -80,7 +85,9 @@ namespace NtingCampus.Gameplay.Characters
                 : defaultIntentLabel.Trim();
             UsesNavigation = usesNavigation;
             HoldSeconds = Mathf.Max(0f, holdSeconds);
-            this.canUse = canUse;
+            ArrivalHoldSeconds = Mathf.Max(0f, arrivalHoldSeconds);
+            RequireExactDestination = requireExactDestination;
+            TargetId = string.IsNullOrWhiteSpace(targetId) ? string.Empty : targetId.Trim();
         }
 
         public string ActionId { get; }
@@ -93,6 +100,9 @@ namespace NtingCampus.Gameplay.Characters
         public string DefaultIntentLabel { get; }
         public bool UsesNavigation { get; }
         public float HoldSeconds { get; }
+        public float ArrivalHoldSeconds { get; }
+        public bool RequireExactDestination { get; }
+        public string TargetId { get; }
 
         public UnityEngine.Object Target => Action != null ? Action.Target : null;
 
@@ -105,7 +115,8 @@ namespace NtingCampus.Gameplay.Characters
             float score,
             CampusNpcIntentKind intentKind,
             string intentLabel,
-            Func<CampusCharacterRuntime, bool> canUse = null)
+            bool requireExactDestination = false,
+            string targetId = "")
         {
             return new CampusNpcActionOpportunity(
                 actionId,
@@ -116,7 +127,40 @@ namespace NtingCampus.Gameplay.Characters
                 score,
                 intentKind,
                 intentLabel,
-                canUse);
+                true,
+                0f,
+                0f,
+                requireExactDestination,
+                targetId);
+        }
+
+        public static CampusNpcActionOpportunity MoveToAndHold(
+            string actionId,
+            CampusCharacterAction action,
+            Vector3 targetPosition,
+            string roomId,
+            float stopDistance,
+            float score,
+            CampusNpcIntentKind intentKind,
+            string intentLabel,
+            float arrivalHoldSeconds,
+            bool requireExactDestination = false,
+            string targetId = "")
+        {
+            return new CampusNpcActionOpportunity(
+                actionId,
+                action,
+                targetPosition,
+                roomId,
+                stopDistance,
+                score,
+                intentKind,
+                intentLabel,
+                true,
+                0f,
+                arrivalHoldSeconds,
+                requireExactDestination,
+                targetId);
         }
 
         public static CampusNpcActionOpportunity HoldAt(
@@ -128,7 +172,7 @@ namespace NtingCampus.Gameplay.Characters
             CampusNpcIntentKind intentKind,
             string intentLabel,
             float holdSeconds = 0f,
-            Func<CampusCharacterRuntime, bool> canUse = null)
+            string targetId = "")
         {
             return new CampusNpcActionOpportunity(
                 actionId,
@@ -141,17 +185,14 @@ namespace NtingCampus.Gameplay.Characters
                 intentLabel,
                 false,
                 holdSeconds,
-                canUse);
-        }
-
-        public bool CanUse(CampusCharacterRuntime actor)
-        {
-            return actor != null && (canUse == null || canUse(actor));
+                0f,
+                false,
+                targetId);
         }
 
         public bool TryExecute(CampusCharacterRuntime actor)
         {
-            if (!CanUse(actor))
+            if (actor == null)
             {
                 return false;
             }
@@ -167,7 +208,8 @@ namespace NtingCampus.Gameplay.Characters
                     label,
                     RoomId,
                     TargetPosition,
-                    StopDistance)
+                    StopDistance,
+                    RequireExactDestination)
                 : CampusNpcIntent.Hold(kind, label, HoldSeconds);
             if (!UsesNavigation)
             {
@@ -183,48 +225,6 @@ namespace NtingCampus.Gameplay.Characters
         public CampusNpcIntent ToIntent()
         {
             return ToIntent(DefaultIntentKind, DefaultIntentLabel);
-        }
-    }
-
-    internal static class CampusNpcActionOpportunitySelector
-    {
-        public static bool TryChooseBest(
-            CampusNpcAiRuntime npc,
-            List<CampusNpcActionOpportunity> opportunities,
-            out CampusNpcActionOpportunity selected)
-        {
-            selected = null;
-            if (npc == null || npc.Runtime == null || opportunities == null || opportunities.Count == 0)
-            {
-                return false;
-            }
-
-            float bestScore = float.MinValue;
-            for (int i = 0; i < opportunities.Count; i++)
-            {
-                CampusNpcActionOpportunity opportunity = opportunities[i];
-                if (opportunity == null || !opportunity.CanUse(npc.Runtime))
-                {
-                    continue;
-                }
-
-                float score = opportunity.Score + ResolveStableTieBreak(npc, opportunity);
-                if (selected == null || score > bestScore)
-                {
-                    selected = opportunity;
-                    bestScore = score;
-                }
-            }
-
-            return selected != null;
-        }
-
-        private static float ResolveStableTieBreak(
-            CampusNpcAiRuntime npc,
-            CampusNpcActionOpportunity opportunity)
-        {
-            string key = (opportunity != null ? opportunity.ActionId : string.Empty) + ":" + (npc != null ? npc.PersonalSeed : 0);
-            return CampusNpcStableIds.PositiveModulo(CampusNpcStableIds.Hash(key), 1000) * 0.0001f;
         }
     }
 }

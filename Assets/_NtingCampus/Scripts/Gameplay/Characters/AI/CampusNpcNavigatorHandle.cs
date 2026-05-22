@@ -41,7 +41,11 @@ namespace NtingCampus.Gameplay.Characters
                 return;
             }
 
-            navigationAgent.SetDestination(intent.TargetPosition, intent.StopDistance, intent.Label);
+            navigationAgent.SetDestination(
+                intent.TargetPosition,
+                intent.StopDistance,
+                intent.Label,
+                intent.RequireExactDestination);
         }
 
         public void Clear()

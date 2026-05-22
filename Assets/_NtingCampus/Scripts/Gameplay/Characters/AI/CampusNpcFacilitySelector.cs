@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using NtingCampus.Gameplay.Rooms;
+using NtingCampusMapEditor;
 using UnityEngine;
 
 namespace NtingCampus.Gameplay.Characters
@@ -264,5 +265,6 @@ namespace NtingCampus.Gameplay.Characters
                 ? yCompare
                 : string.Compare(left.DisplayName, right.DisplayName, StringComparison.OrdinalIgnoreCase);
         }
+
     }
 }

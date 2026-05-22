@@ -130,9 +130,8 @@ namespace NtingCampusMapEditor
             CampusPlacedObject placed = worldItem.AddComponent<CampusPlacedObject>();
             placed.FloorIndex = floor.FloorIndex;
             placed.ObjectId = BuildObjectId(item);
-            placed.TypeId = item != null && !string.IsNullOrWhiteSpace(item.DefinitionId)
-                ? item.DefinitionId.Trim()
-                : string.Empty;
+            // Inventory items own their identity on CampusDroppedStorageItem, not on facility TypeId.
+            placed.TypeId = string.Empty;
             placed.DisplayNameOverride = item.DisplayName;
             placed.LocalizedDisplayNameOverride = item.LocalizedDisplayName;
             placed.Cell = cell;

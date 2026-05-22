@@ -5,17 +5,10 @@ namespace NtingCampus.Gameplay.Canteen
     internal enum CampusCanteenTextId
     {
         OrderMealPrompt = 0,
-        WaitMealPrompt = 1,
-        TakeMealPrompt = 2,
-        ServeMealPrompt = 3,
-        OrderedMealLog = 4,
-        WaitingMealLog = 5,
-        TookMealLog = 6,
-        PreparedMealLog = 7,
-        WorkstationIdlePrompt = 8,
-        WorkstationIdleLog = 9,
-        HandsFullLog = 10,
-        WindowBusyLog = 11
+        WindowInactivePrompt = 1,
+        OrderedMealLog = 2,
+        HandsFullLog = 3,
+        WindowInactiveLog = 4
     }
 
     internal static class CampusCanteenTextCatalog
@@ -30,17 +23,10 @@ namespace NtingCampus.Gameplay.Canteen
             return id switch
             {
                 CampusCanteenTextId.OrderMealPrompt => Localize(language, "点餐", "Order Meal"),
-                CampusCanteenTextId.WaitMealPrompt => Localize(language, "等餐", "Wait For Meal"),
-                CampusCanteenTextId.TakeMealPrompt => Localize(language, "取餐", "Take Meal"),
-                CampusCanteenTextId.ServeMealPrompt => Localize(language, "出餐", "Serve Meal"),
-                CampusCanteenTextId.OrderedMealLog => Localize(language, "已下单，等待出餐。", "Order placed. Waiting for service."),
-                CampusCanteenTextId.WaitingMealLog => Localize(language, "正在等待出餐。", "Waiting for the meal."),
-                CampusCanteenTextId.TookMealLog => Localize(language, "已取餐。", "Meal collected."),
-                CampusCanteenTextId.PreparedMealLog => Localize(language, "已将餐品放到取餐点。", "Meal placed on the pickup point."),
-                CampusCanteenTextId.WorkstationIdlePrompt => Localize(language, "值守", "Stand By"),
-                CampusCanteenTextId.WorkstationIdleLog => Localize(language, "当前没有待处理的餐单。", "No pending meal right now."),
+                CampusCanteenTextId.WindowInactivePrompt => Localize(language, "窗口未开", "Window Closed"),
+                CampusCanteenTextId.OrderedMealLog => Localize(language, "已取到餐品。", "Meal received."),
                 CampusCanteenTextId.HandsFullLog => Localize(language, "手上已有别的物品。", "Hands are already occupied."),
-                CampusCanteenTextId.WindowBusyLog => Localize(language, "这个窗口正在服务其他人。", "This window is serving someone else."),
+                CampusCanteenTextId.WindowInactiveLog => Localize(language, "窗口当前没有店员值守。", "No clerk is covering the window right now."),
                 _ => string.Empty
             };
         }

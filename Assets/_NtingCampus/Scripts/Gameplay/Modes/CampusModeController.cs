@@ -76,7 +76,7 @@ namespace NtingCampus.Gameplay.Modes
 
             if (CampusInteractionInput.WasKeyPressed(pauseKey))
             {
-                bootstrap.TimeController.SetSpeedMode(CampusTimeSpeedMode.Paused);
+                bootstrap.TimeController.TogglePauseTime(true);
             }
 
             if (CampusInteractionInput.WasKeyPressed(normalSpeedKey))

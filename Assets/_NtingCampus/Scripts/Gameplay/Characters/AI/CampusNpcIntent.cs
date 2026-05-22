@@ -13,6 +13,7 @@ namespace NtingCampus.Gameplay.Characters
         public float StopDistance = 0.14f;
         public float HoldSeconds;
         public bool UsesNavigation = true;
+        public bool RequireExactDestination;
         [NonSerialized] internal CampusNpcActionOpportunity ActionOpportunity;
 
         public static CampusNpcIntent Idle(string label)
@@ -31,7 +32,8 @@ namespace NtingCampus.Gameplay.Characters
             string label,
             string roomId,
             Vector3 targetPosition,
-            float stopDistance = 0.14f)
+            float stopDistance = 0.14f,
+            bool requireExactDestination = false)
         {
             return new CampusNpcIntent
             {
@@ -40,7 +42,8 @@ namespace NtingCampus.Gameplay.Characters
                 RoomId = roomId ?? string.Empty,
                 TargetPosition = targetPosition,
                 StopDistance = Mathf.Max(0.02f, stopDistance),
-                UsesNavigation = true
+                UsesNavigation = true,
+                RequireExactDestination = requireExactDestination
             };
         }
 
@@ -70,6 +73,7 @@ namespace NtingCampus.Gameplay.Characters
                    string.Equals(RoomId ?? string.Empty, other.RoomId ?? string.Empty, StringComparison.OrdinalIgnoreCase) &&
                    string.Equals(ResolveActionId(ActionOpportunity), ResolveActionId(other.ActionOpportunity), StringComparison.OrdinalIgnoreCase) &&
                    Vector2.SqrMagnitude((Vector2)(TargetPosition - other.TargetPosition)) <= 0.04f &&
+                   RequireExactDestination == other.RequireExactDestination &&
                    Mathf.Abs(StopDistance - other.StopDistance) <= 0.03f;
         }
 

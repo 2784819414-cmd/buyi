@@ -21,11 +21,12 @@ namespace NtingCampus.Gameplay.Rooms
                 new HashSet<string>(StringComparer.OrdinalIgnoreCase);
             HashSet<CampusPlacedObject> handledPlacedObjects = new HashSet<CampusPlacedObject>();
 
-            AssignExplicitFacilities(overlayLoader, findRoomByCell, registeredFacilityIds, handledPlacedObjects);
+            AssignExplicitFacilities(mapRoot, overlayLoader, findRoomByCell, registeredFacilityIds, handledPlacedObjects);
             AssignPlacedObjectFacilities(mapRoot, findRoomByCell, registeredFacilityIds, handledPlacedObjects);
         }
 
         private static void AssignExplicitFacilities(
+            CampusMapRoot mapRoot,
             CampusRuntimeGameplayOverlayLoader overlayLoader,
             Func<int, UnityEngine.Vector3Int, CampusGameplayRoom> findRoomByCell,
             HashSet<string> registeredFacilityIds,
@@ -67,15 +68,35 @@ namespace NtingCampus.Gameplay.Rooms
                 if (facilityMarker.LinkedPlacedObject != null)
                 {
                     handledPlacedObjects.Add(facilityMarker.LinkedPlacedObject);
-                    room.AddFacility(
+                    room.AddLinkedFacility(
                         facilityMarker.LinkedPlacedObject,
                         CampusFacilityTypeResolution.ExplicitMarker(facilityMarker.FacilityType),
-                        facilityId);
+                        facilityId,
+                        ResolveOwnerFacilityId(facilityMarker, facilityMarker.LinkedPlacedObject),
+                        facilityMarker.LegacyServiceStationId,
+                        facilityMarker.DisplayName,
+                        facilityMarker.Cell);
+                    continue;
+                }
+
+                if (TryResolvePlacedObject(mapRoot, facilityMarker, out CampusPlacedObject placedObject))
+                {
+                    handledPlacedObjects.Add(placedObject);
+                    room.AddLinkedFacility(
+                        placedObject,
+                        CampusFacilityTypeResolution.ExplicitMarker(facilityMarker.FacilityType),
+                        facilityId,
+                        ResolveOwnerFacilityId(facilityMarker, placedObject),
+                        facilityMarker.LegacyServiceStationId,
+                        facilityMarker.DisplayName,
+                        facilityMarker.Cell);
                     continue;
                 }
 
                 room.AddExplicitFacility(
                     facilityId,
+                    facilityMarker.OwnerFacilityId,
+                    facilityMarker.LegacyServiceStationId,
                     facilityMarker.DisplayName,
                     facilityMarker.FacilityType,
                     facilityMarker.Cell);
@@ -117,8 +138,11 @@ namespace NtingCampus.Gameplay.Rooms
                         continue;
                     }
 
-                    CampusFacilityTypeResolution resolution =
-                        CampusFacilityTypeResolver.ResolveDetailed(placedObject);
+                    if (!CampusPlacedObjectConceptResolver.TryResolveFacility(placedObject, out CampusFacilityTypeResolution resolution))
+                    {
+                        continue;
+                    }
+
                     string facilityId = CampusGameplayFacilityMarker.BuildStableFacilityId(
                         placedObject.FloorIndex,
                         resolution.FacilityType,
@@ -131,6 +155,80 @@ namespace NtingCampus.Gameplay.Rooms
                     room.AddFacility(placedObject, resolution);
                 }
             }
+        }
+
+        private static bool TryResolvePlacedObject(
+            CampusMapRoot mapRoot,
+            CampusGameplayFacilityMarker facilityMarker,
+            out CampusPlacedObject placedObject)
+        {
+            placedObject = null;
+            if (mapRoot == null || facilityMarker == null)
+            {
+                return false;
+            }
+
+            CampusFloorRoot floor = mapRoot.GetFloor(facilityMarker.FloorIndex);
+            if (floor == null || floor.PropsRoot == null)
+            {
+                return false;
+            }
+
+            CampusPlacedObject[] candidates = floor.PropsRoot.GetComponentsInChildren<CampusPlacedObject>(true);
+            for (int i = 0; i < candidates.Length; i++)
+            {
+                CampusPlacedObject candidate = candidates[i];
+                if (candidate == null ||
+                    candidate.FloorIndex != facilityMarker.FloorIndex ||
+                    candidate.Cell != facilityMarker.Cell)
+                {
+                    continue;
+                }
+
+                if (!CampusPlacedObjectConceptResolver.TryResolveFacility(candidate, out CampusFacilityTypeResolution resolution) ||
+                    resolution.FacilityType != facilityMarker.FacilityType)
+                {
+                    continue;
+                }
+
+                placedObject = candidate;
+                return true;
+            }
+
+            return false;
+        }
+
+        private static string ResolveOwnerFacilityId(
+            CampusGameplayFacilityMarker facilityMarker,
+            CampusPlacedObject placedObject)
+        {
+            string explicitOwnerId =
+                CampusGameplayFacilityMarker.NormalizeOwnerFacilityId(
+                    facilityMarker != null ? facilityMarker.OwnerFacilityId : string.Empty);
+            if (!string.IsNullOrEmpty(explicitOwnerId))
+            {
+                return explicitOwnerId;
+            }
+
+            if (facilityMarker == null ||
+                placedObject == null ||
+                facilityMarker.FacilityType == CampusFacilityType.ServiceWindow)
+            {
+                return string.Empty;
+            }
+
+            if (!CampusPlacedObjectConceptResolver.TryResolveFacility(
+                    placedObject,
+                    out CampusFacilityTypeResolution ownerResolution) ||
+                ownerResolution.FacilityType != CampusFacilityType.ServiceWindow)
+            {
+                return string.Empty;
+            }
+
+            return CampusGameplayFacilityMarker.BuildStableFacilityId(
+                placedObject.FloorIndex,
+                ownerResolution.FacilityType,
+                placedObject.Cell);
         }
     }
 }

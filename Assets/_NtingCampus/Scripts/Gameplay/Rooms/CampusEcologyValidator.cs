@@ -142,6 +142,8 @@ namespace NtingCampus.Gameplay.Rooms
                         "Duplicate facility id. Actor bindings may resolve to the wrong target."));
                 }
             }
+
+            ValidateSupportStaffStations(facts, issues);
         }
 
         private static void ValidateFacilityTypeSource(
@@ -239,6 +241,8 @@ namespace NtingCampus.Gameplay.Rooms
         {
             Dictionary<string, List<string>> officeDeskOwners =
                 new Dictionary<string, List<string>>(StringComparer.OrdinalIgnoreCase);
+            Dictionary<string, List<string>> serviceWindowOwners =
+                new Dictionary<string, List<string>>(StringComparer.OrdinalIgnoreCase);
 
             for (int i = 0; i < facts.Actors.Count; i++)
             {
@@ -281,6 +285,13 @@ namespace NtingCampus.Gameplay.Rooms
                     facts,
                     issues,
                     actor.ActorId,
+                    "ServiceWindowId",
+                    assignments.ServiceWindowId,
+                    CampusFacilityType.ServiceWindow);
+                ValidateFacilityReference(
+                    facts,
+                    issues,
+                    actor.ActorId,
                     "PrimaryWorkstationId",
                     assignments.PrimaryWorkstationId);
 
@@ -288,9 +299,229 @@ namespace NtingCampus.Gameplay.Rooms
                 {
                     AddOwner(officeDeskOwners, assignments.OfficeDeskId, actor.ActorId);
                 }
+
+                if (actor.Role == CampusCharacterRole.Staff &&
+                    (actor.StaffDuty & CampusStaffDuty.SupportStaff) != 0 &&
+                    !string.IsNullOrWhiteSpace(assignments.ServiceWindowId))
+                {
+                    AddOwner(serviceWindowOwners, assignments.ServiceWindowId, actor.ActorId);
+                }
             }
 
             ReportDuplicateOwners(issues, officeDeskOwners, "OfficeDeskId is assigned to multiple teachers.");
+            ReportDuplicateOwners(issues, serviceWindowOwners, "ServiceWindowId is assigned to multiple support staff.");
+        }
+
+        private static void ValidateSupportStaffStations(CampusWorldFacts facts, List<ValidationIssue> issues)
+        {
+            Dictionary<string, Dictionary<string, ServiceStationTopology>> stationsByRoom =
+                new Dictionary<string, Dictionary<string, ServiceStationTopology>>(StringComparer.OrdinalIgnoreCase);
+            Dictionary<string, Dictionary<string, string>> ownerIdByLegacyStationIdByRoom =
+                new Dictionary<string, Dictionary<string, string>>(StringComparer.OrdinalIgnoreCase);
+
+            for (int i = 0; i < facts.Facilities.Count; i++)
+            {
+                CampusWorldFacts.FacilityFact facility = facts.Facilities[i];
+                if (facility == null ||
+                    facility.RoomType != CampusRoomType.ServiceArea ||
+                    facility.FacilityType != CampusFacilityType.ServiceWindow)
+                {
+                    continue;
+                }
+
+                string roomId = CampusWorldFacts.NormalizeId(facility.RoomId);
+                string ownerFacilityId = CampusWorldFacts.NormalizeId(facility.FacilityId);
+                if (string.IsNullOrEmpty(ownerFacilityId))
+                {
+                    continue;
+                }
+
+                ServiceStationTopology topology = GetOrCreateStationTopology(stationsByRoom, roomId, ownerFacilityId);
+                topology.Record(facility.FacilityType);
+                stationsByRoom[roomId][ownerFacilityId] = topology;
+
+                string legacyStationId =
+                    CampusGameplayFacilityMarker.NormalizeLegacyServiceStationId(facility.ServiceStationId);
+                if (!string.IsNullOrEmpty(legacyStationId))
+                {
+                    if (!ownerIdByLegacyStationIdByRoom.TryGetValue(roomId, out Dictionary<string, string> ownersByLegacyId))
+                    {
+                        ownersByLegacyId = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
+                        ownerIdByLegacyStationIdByRoom[roomId] = ownersByLegacyId;
+                    }
+
+                    ownersByLegacyId[legacyStationId] = ownerFacilityId;
+                }
+            }
+
+            for (int i = 0; i < facts.Facilities.Count; i++)
+            {
+                CampusWorldFacts.FacilityFact facility = facts.Facilities[i];
+                if (facility == null ||
+                    facility.RoomType != CampusRoomType.ServiceArea ||
+                    !IsServiceStationFacility(facility.FacilityType) ||
+                    facility.FacilityType == CampusFacilityType.ServiceWindow)
+                {
+                    continue;
+                }
+
+                string roomId = CampusWorldFacts.NormalizeId(facility.RoomId);
+                string ownerFacilityId = CampusWorldFacts.NormalizeId(facility.OwnerFacilityId);
+                if (string.IsNullOrEmpty(ownerFacilityId) &&
+                    ownerIdByLegacyStationIdByRoom.TryGetValue(roomId, out Dictionary<string, string> ownersByLegacyId))
+                {
+                    string legacyStationId =
+                        CampusGameplayFacilityMarker.NormalizeLegacyServiceStationId(facility.ServiceStationId);
+                    if (!string.IsNullOrEmpty(legacyStationId) &&
+                        ownersByLegacyId.TryGetValue(legacyStationId, out string migratedOwnerFacilityId))
+                    {
+                        ownerFacilityId = migratedOwnerFacilityId;
+                    }
+                }
+
+                if (string.IsNullOrEmpty(ownerFacilityId))
+                {
+                    issues.Add(new ValidationIssue(
+                        Severity.Warning,
+                        string.IsNullOrWhiteSpace(facility.FacilityId) ? roomId : facility.FacilityId,
+                        "ServiceArea support points must declare OwnerFacilityId that references a ServiceWindow."));
+                    continue;
+                }
+
+                if (!facts.TryGetFacility(ownerFacilityId, out CampusWorldFacts.FacilityFact ownerFacility))
+                {
+                    issues.Add(new ValidationIssue(
+                        Severity.Error,
+                        string.IsNullOrWhiteSpace(facility.FacilityId) ? ownerFacilityId : facility.FacilityId,
+                        "OwnerFacilityId references a missing facility: " + ownerFacilityId + "."));
+                    continue;
+                }
+
+                if (ownerFacility.FacilityType != CampusFacilityType.ServiceWindow)
+                {
+                    issues.Add(new ValidationIssue(
+                        Severity.Error,
+                        string.IsNullOrWhiteSpace(facility.FacilityId) ? ownerFacilityId : facility.FacilityId,
+                        "OwnerFacilityId must reference a ServiceWindow."));
+                    continue;
+                }
+
+                if (!string.Equals(ownerFacility.RoomId, roomId, StringComparison.OrdinalIgnoreCase))
+                {
+                    issues.Add(new ValidationIssue(
+                        Severity.Error,
+                        string.IsNullOrWhiteSpace(facility.FacilityId) ? ownerFacilityId : facility.FacilityId,
+                        "OwnerFacilityId must reference a ServiceWindow in the same room."));
+                    continue;
+                }
+
+                ServiceStationTopology topology = GetOrCreateStationTopology(stationsByRoom, roomId, ownerFacilityId);
+                topology.Record(facility.FacilityType);
+                stationsByRoom[roomId][ownerFacilityId] = topology;
+            }
+
+            int operationalStationCount = 0;
+            foreach (CampusWorldFacts.RoomFact room in facts.Rooms)
+            {
+                if (room == null || room.RoomType != CampusRoomType.ServiceArea)
+                {
+                    continue;
+                }
+
+                string roomId = CampusWorldFacts.NormalizeId(room.RoomId);
+                if (!stationsByRoom.TryGetValue(roomId, out Dictionary<string, ServiceStationTopology> stations))
+                {
+                    continue;
+                }
+
+                foreach (KeyValuePair<string, ServiceStationTopology> pair in stations)
+                {
+                    string ownerFacilityId = pair.Key;
+                    ServiceStationTopology topology = pair.Value;
+                    if (topology.ServiceWindowCount != 1)
+                    {
+                        issues.Add(new ValidationIssue(
+                            Severity.Error,
+                            ownerFacilityId,
+                            "Each service window station needs exactly one ServiceWindow owner."));
+                    }
+
+                    if (topology.WorkerStandCount != 1)
+                    {
+                        issues.Add(new ValidationIssue(
+                            Severity.Error,
+                            ownerFacilityId,
+                            "Each service window station needs exactly one WorkerStandPoint."));
+                    }
+
+                    if (topology.PickupPointCount != 1)
+                    {
+                        issues.Add(new ValidationIssue(
+                            Severity.Warning,
+                            ownerFacilityId,
+                            "Each service window station should expose exactly one PickupPoint for customer targeting."));
+                    }
+
+                    if (topology.ServiceWindowCount == 1 && topology.WorkerStandCount == 1)
+                    {
+                        operationalStationCount++;
+                    }
+                }
+            }
+
+            int supportStaffCount = 0;
+            for (int i = 0; i < facts.Actors.Count; i++)
+            {
+                CampusWorldFacts.ActorFact actor = facts.Actors[i];
+                if (actor != null &&
+                    actor.Role == CampusCharacterRole.Staff &&
+                    (actor.StaffDuty & CampusStaffDuty.SupportStaff) != 0)
+                {
+                    supportStaffCount++;
+                }
+            }
+
+            if (supportStaffCount > operationalStationCount)
+            {
+                issues.Add(new ValidationIssue(
+                    Severity.Warning,
+                    CampusRoomType.ServiceArea.ToString(),
+                    "SupportStaff count exceeds operational service station count. Extra support staff will not receive a meal-duty station."));
+            }
+        }
+
+        private static bool IsServiceStationFacility(CampusFacilityType facilityType)
+        {
+            switch (facilityType)
+            {
+                case CampusFacilityType.ServiceWindow:
+                case CampusFacilityType.WorkerStandPoint:
+                case CampusFacilityType.PickupPoint:
+                case CampusFacilityType.WaitingPoint:
+                case CampusFacilityType.DropPoint:
+                    return true;
+                default:
+                    return false;
+            }
+        }
+
+        private static ServiceStationTopology GetOrCreateStationTopology(
+            Dictionary<string, Dictionary<string, ServiceStationTopology>> stationsByRoom,
+            string roomId,
+            string ownerFacilityId)
+        {
+            if (!stationsByRoom.TryGetValue(roomId, out Dictionary<string, ServiceStationTopology> stations))
+            {
+                stations = new Dictionary<string, ServiceStationTopology>(StringComparer.OrdinalIgnoreCase);
+                stationsByRoom[roomId] = stations;
+            }
+
+            if (!stations.TryGetValue(ownerFacilityId, out ServiceStationTopology topology))
+            {
+                topology = new ServiceStationTopology();
+            }
+
+            return topology;
         }
 
         private static void ValidateRoomReference(
@@ -388,6 +619,49 @@ namespace NtingCampus.Gameplay.Rooms
             }
 
             owners.Add(actorId);
+        }
+
+        private static void AddCount(Dictionary<string, int> countsById, string id)
+        {
+            string normalizedId = CampusWorldFacts.NormalizeId(id);
+            if (string.IsNullOrEmpty(normalizedId))
+            {
+                return;
+            }
+
+            countsById.TryGetValue(normalizedId, out int count);
+            countsById[normalizedId] = count + 1;
+        }
+
+        private static int GetCount(Dictionary<string, int> countsById, string id)
+        {
+            string normalizedId = CampusWorldFacts.NormalizeId(id);
+            return countsById.TryGetValue(normalizedId, out int count)
+                ? count
+                : 0;
+        }
+
+        private struct ServiceStationTopology
+        {
+            public int ServiceWindowCount;
+            public int WorkerStandCount;
+            public int PickupPointCount;
+
+            public void Record(CampusFacilityType facilityType)
+            {
+                switch (facilityType)
+                {
+                    case CampusFacilityType.ServiceWindow:
+                        ServiceWindowCount++;
+                        break;
+                    case CampusFacilityType.WorkerStandPoint:
+                        WorkerStandCount++;
+                        break;
+                    case CampusFacilityType.PickupPoint:
+                        PickupPointCount++;
+                        break;
+                }
+            }
         }
 
         private static void ReportDuplicateOwners(

@@ -1,6 +1,8 @@
 using System;
 using System.Collections.Generic;
 using NtingCampus.Gameplay.Characters;
+using NtingCampus.Gameplay.Core;
+using NtingCampusMapEditor;
 using UnityEngine;
 
 namespace NtingCampus.Gameplay.Rooms
@@ -23,6 +25,8 @@ namespace NtingCampus.Gameplay.Rooms
         public sealed class FacilityFact
         {
             public string FacilityId = string.Empty;
+            public string OwnerFacilityId = string.Empty;
+            public string ServiceStationId = string.Empty;
             public string DisplayName = string.Empty;
             public CampusFacilityType FacilityType = CampusFacilityType.Unknown;
             public CampusFacilityTypeSource FacilityTypeSource = CampusFacilityTypeSource.Unknown;
@@ -226,6 +230,8 @@ namespace NtingCampus.Gameplay.Rooms
             FacilityFact fact = new FacilityFact
             {
                 FacilityId = NormalizeId(facility.FacilityId),
+                OwnerFacilityId = NormalizeId(facility.OwnerFacilityId),
+                ServiceStationId = NormalizeId(facility.LegacyServiceStationId),
                 DisplayName = string.IsNullOrWhiteSpace(facility.DisplayName)
                     ? facility.FacilityType.ToString()
                     : facility.DisplayName.Trim(),
@@ -273,6 +279,71 @@ namespace NtingCampus.Gameplay.Rooms
             {
                 actorsById.Add(fact.ActorId, fact);
             }
+        }
+    }
+
+    internal static class CampusFacilityActivationFacts
+    {
+        public static bool HasNearbyQualifiedNpc(
+            CampusPlacedObject sourceObject,
+            float activationRadius,
+            Func<CampusCharacterRuntime, bool> qualifiesNpc)
+        {
+            if (sourceObject == null || qualifiesNpc == null)
+            {
+                return false;
+            }
+
+            CampusGameBootstrap bootstrap = CampusGameBootstrap.Instance;
+            CampusWorldService worldService = bootstrap != null ? bootstrap.WorldService : null;
+            CampusRosterService rosterService = bootstrap != null ? bootstrap.RosterService : null;
+            IReadOnlyList<CampusCharacterRuntime> runtimes = rosterService != null
+                ? rosterService.Runtimes
+                : Array.Empty<CampusCharacterRuntime>();
+            float radius = Mathf.Max(0.05f, activationRadius);
+            float radiusSqr = radius * radius;
+            int targetFloorIndex = Mathf.Max(1, sourceObject.FloorIndex);
+            Vector3 targetPosition = sourceObject.transform.position;
+
+            for (int i = 0; i < runtimes.Count; i++)
+            {
+                CampusCharacterRuntime runtime = runtimes[i];
+                if (!MatchesQualifiedNpc(worldService, runtime, targetFloorIndex, qualifiesNpc))
+                {
+                    continue;
+                }
+
+                if (Vector2.SqrMagnitude((Vector2)(runtime.transform.position - targetPosition)) <= radiusSqr)
+                {
+                    return true;
+                }
+            }
+
+            return false;
+        }
+
+        private static bool MatchesQualifiedNpc(
+            CampusWorldService worldService,
+            CampusCharacterRuntime runtime,
+            int targetFloorIndex,
+            Func<CampusCharacterRuntime, bool> qualifiesNpc)
+        {
+            if (runtime == null ||
+                runtime.Data == null ||
+                runtime.Data.IsPlayerControlled ||
+                !qualifiesNpc(runtime))
+            {
+                return false;
+            }
+
+            CampusGameplayRoom currentRoom = worldService != null ? worldService.FindRoomForRuntime(runtime) : null;
+            if (currentRoom != null)
+            {
+                return currentRoom.FloorIndex == targetFloorIndex;
+            }
+
+            CampusSceneCharacterDefinition sceneCharacter = runtime.GetComponent<CampusSceneCharacterDefinition>();
+            return sceneCharacter == null || Mathf.Max(1, sceneCharacter.FloorIndex) == targetFloorIndex;
         }
     }
 }

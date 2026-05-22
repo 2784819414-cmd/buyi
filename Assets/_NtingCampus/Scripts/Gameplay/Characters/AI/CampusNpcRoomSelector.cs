@@ -32,6 +32,38 @@ namespace NtingCampus.Gameplay.Characters
             return rooms[index];
         }
 
+        public static CampusGameplayRoom ChooseNearest(
+            List<CampusGameplayRoom> rooms,
+            Vector3 origin,
+            string preferredRoomId = "")
+        {
+            CampusGameplayRoom best = null;
+            float bestDistanceSqr = float.MaxValue;
+            for (int i = 0; i < rooms.Count; i++)
+            {
+                CampusGameplayRoom room = rooms[i];
+                if (room == null)
+                {
+                    continue;
+                }
+
+                if (!string.IsNullOrWhiteSpace(preferredRoomId) &&
+                    string.Equals(room.RoomId, preferredRoomId, StringComparison.OrdinalIgnoreCase))
+                {
+                    return room;
+                }
+
+                float distanceSqr = (room.WorldCenter - origin).sqrMagnitude;
+                if (best == null || distanceSqr < bestDistanceSqr)
+                {
+                    best = room;
+                    bestDistanceSqr = distanceSqr;
+                }
+            }
+
+            return best;
+        }
+
         public static CampusGameplayRoom ResolveAssigned(
             CampusWorldService worldService,
             string roomId,
@@ -74,7 +106,7 @@ namespace NtingCampus.Gameplay.Characters
                 return false;
             }
 
-            return string.Equals(RoomKey(left), RoomKey(right), StringComparison.OrdinalIgnoreCase);
+            return string.Equals(left.RoomId, right.RoomId, StringComparison.OrdinalIgnoreCase);
         }
 
         private static int CompareRooms(CampusGameplayRoom left, CampusGameplayRoom right)

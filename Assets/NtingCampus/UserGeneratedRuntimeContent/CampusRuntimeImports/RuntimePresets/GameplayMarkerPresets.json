@@ -1,136 +1,44 @@
-﻿{
-    "Presets":  [
-                    {
-                        "ChineseLabel":  "门",
-                        "EnglishLabel":  "Door",
-                        "FacilityType":  "Door",
-                        "Color":  "#B8B8B8"
-                    },
-                    {
-                        "ChineseLabel":  "黑板",
-                        "EnglishLabel":  "Blackboard",
-                        "FacilityType":  "Blackboard",
-                        "Color":  "#1F755C"
-                    },
-                    {
-                        "ChineseLabel":  "课桌",
-                        "EnglishLabel":  "Student Desk",
-                        "FacilityType":  "StudentDesk",
-                        "Color":  "#428FF5"
-                    },
-                    {
-                        "ChineseLabel":  "讲台",
-                        "EnglishLabel":  "Podium",
-                        "FacilityType":  "Podium",
-                        "Color":  "#2E61DB"
-                    },
-                    {
-                        "ChineseLabel":  "办公桌",
-                        "EnglishLabel":  "Office Desk",
-                        "FacilityType":  "OfficeDesk",
-                        "Color":  "#B87A47"
-                    },
-                    {
-                        "ChineseLabel":  "床",
-                        "EnglishLabel":  "Bed",
-                        "FacilityType":  "Bed",
-                        "Color":  "#8F6BE0"
-                    },
-                    {
-                        "ChineseLabel":  "公告栏",
-                        "EnglishLabel":  "Bulletin Board",
-                        "FacilityType":  "BulletinBoard",
-                        "Color":  "#E09E3D"
-                    },
-                    {
-                        "ChineseLabel":  "招募点",
-                        "EnglishLabel":  "Recruitment",
-                        "FacilityType":  "Recruitment",
-                        "Color":  "#BD5CE0"
-                    },
-                    {
-                        "ChineseLabel":  "洗手池",
-                        "EnglishLabel":  "Sink",
-                        "FacilityType":  "Sink",
-                        "Color":  "#38ADEB"
-                    },
-                    {
-                        "ChineseLabel":  "储物点",
-                        "EnglishLabel":  "Storage",
-                        "FacilityType":  "Storage",
-                        "Color":  "#9E8F75"
-                    },
-                    {
-                        "ChineseLabel":  "服务柜台",
-                        "EnglishLabel":  "Service Counter",
-                        "FacilityType":  "ServiceCounter",
-                        "Color":  "#2EAEB8"
-                    },
-                    {
-                        "ChineseLabel":  "服务窗口",
-                        "EnglishLabel":  "Service Window",
-                        "FacilityType":  "ServiceWindow",
-                        "Color":  "#29C7C7"
-                    },
-                    {
-                        "ChineseLabel":  "工作站位",
-                        "EnglishLabel":  "Worker Stand",
-                        "FacilityType":  "WorkerStandPoint",
-                        "Color":  "#1F94AD"
-                    },
-                    {
-                        "ChineseLabel":  "取物点",
-                        "EnglishLabel":  "Pickup Point",
-                        "FacilityType":  "PickupPoint",
-                        "Color":  "#7AD19E"
-                    },
-                    {
-                        "ChineseLabel":  "等候点",
-                        "EnglishLabel":  "Waiting Point",
-                        "FacilityType":  "WaitingPoint",
-                        "Color":  "#F2C247"
-                    },
-                    {
-                        "ChineseLabel":  "成品台面",
-                        "EnglishLabel":  "Ready Surface",
-                        "FacilityType":  "ReadyItemSurface",
-                        "Color":  "#F5A33D"
-                    },
-                    {
-                        "ChineseLabel":  "成品容器",
-                        "EnglishLabel":  "Ready Container",
-                        "FacilityType":  "ReadyItemContainer",
-                        "Color":  "#F08F2E"
-                    },
-                    {
-                        "ChineseLabel":  "吃饭区座位",
-                        "EnglishLabel":  "Dining Table",
-                        "FacilityType":  "DiningTable",
-                        "Color":  "#8CC247"
-                    },
-                    {
-                        "ChineseLabel":  "放置点",
-                        "EnglishLabel":  "Drop Point",
-                        "FacilityType":  "DropPoint",
-                        "Color":  "#528AFB"
-                    },
-                    {
-                        "ChineseLabel":  "货架",
-                        "EnglishLabel":  "Goods Shelf",
-                        "FacilityType":  "GoodsShelf",
-                        "Color":  "#E05CB8"
-                    },
-                    {
-                        "ChineseLabel":  "结算排队点",
-                        "EnglishLabel":  "Checkout Queue",
-                        "FacilityType":  "CheckoutQueuePoint",
-                        "Color":  "#F07AD1"
-                    },
-                    {
-                        "ChineseLabel":  "结算点",
-                        "EnglishLabel":  "Checkout Point",
-                        "FacilityType":  "CheckoutPoint",
-                        "Color":  "#C23DA3"
-                    }
-                ]
+{
+    "Presets": [
+        {
+            "ChineseLabel": "服务窗口",
+            "EnglishLabel": "Service Window",
+            "FacilityType": "ServiceWindow",
+            "Color": "#29C7C7",
+            "RequiresOwnerFacility": false,
+            "OwnerFacilityTypes": []
+        },
+        {
+            "ChineseLabel": "操作员位",
+            "EnglishLabel": "Operator Slot",
+            "FacilityType": "WorkerStandPoint",
+            "Color": "#1F94AD",
+            "RequiresOwnerFacility": true,
+            "OwnerFacilityTypes": [ "ServiceWindow" ]
+        },
+        {
+            "ChineseLabel": "顾客位",
+            "EnglishLabel": "Customer Slot",
+            "FacilityType": "PickupPoint",
+            "Color": "#7AD19E",
+            "RequiresOwnerFacility": true,
+            "OwnerFacilityTypes": [ "ServiceWindow" ]
+        },
+        {
+            "ChineseLabel": "排队位",
+            "EnglishLabel": "Queue Slot",
+            "FacilityType": "WaitingPoint",
+            "Color": "#F2C247",
+            "RequiresOwnerFacility": true,
+            "OwnerFacilityTypes": [ "ServiceWindow" ]
+        },
+        {
+            "ChineseLabel": "放置位",
+            "EnglishLabel": "Drop Slot",
+            "FacilityType": "DropPoint",
+            "Color": "#528AFB",
+            "RequiresOwnerFacility": true,
+            "OwnerFacilityTypes": [ "ServiceWindow" ]
+        }
+    ]
 }

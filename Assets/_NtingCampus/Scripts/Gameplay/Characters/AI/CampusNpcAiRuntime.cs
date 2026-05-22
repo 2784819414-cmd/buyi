@@ -45,6 +45,9 @@ namespace NtingCampus.Gameplay.Characters
         public CampusCharacterFacingState FacingState => facingState;
         public CampusNpcMindState Mind { get; private set; }
         public CampusTimeSegment Segment { get; private set; } = CampusTimeSegment.MorningClass1;
+        public int CurrentClockMinute => timeController != null
+            ? Mathf.FloorToInt(Mathf.Repeat(timeController.CurrentGameHour * 60f, 24f * 60f))
+            : CampusTimeSchedule.GetStartMinute(Segment);
         public float Time { get; private set; }
         public int PersonalSeed => resolvePersonalSeed != null ? resolvePersonalSeed() : 1;
         public bool IsDecisionDue => UnityEngine.Time.time >= nextDecisionTime;

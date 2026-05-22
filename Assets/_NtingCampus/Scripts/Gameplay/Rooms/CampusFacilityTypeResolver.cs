@@ -6,6 +6,55 @@ using UnityEngine;
 
 namespace NtingCampus.Gameplay.Rooms
 {
+    public enum CampusPlacedObjectConceptKind
+    {
+        Prop = 0,
+        Facility = 1,
+        PickupItem = 2
+    }
+
+    public readonly struct CampusPlacedObjectConceptResolution
+    {
+        public CampusPlacedObjectConceptResolution(
+            CampusPlacedObjectConceptKind conceptKind,
+            CampusFacilityTypeResolution facilityResolution)
+        {
+            ConceptKind = conceptKind;
+            FacilityResolution = facilityResolution;
+        }
+
+        public CampusPlacedObjectConceptKind ConceptKind { get; }
+        public CampusFacilityTypeResolution FacilityResolution { get; }
+        public bool IsFacility => ConceptKind == CampusPlacedObjectConceptKind.Facility;
+
+        public static CampusPlacedObjectConceptResolution Prop()
+        {
+            return new CampusPlacedObjectConceptResolution(
+                CampusPlacedObjectConceptKind.Prop,
+                new CampusFacilityTypeResolution(
+                    CampusFacilityType.Unknown,
+                    CampusFacilityTypeSource.Unknown,
+                    string.Empty));
+        }
+
+        public static CampusPlacedObjectConceptResolution PickupItem()
+        {
+            return new CampusPlacedObjectConceptResolution(
+                CampusPlacedObjectConceptKind.PickupItem,
+                new CampusFacilityTypeResolution(
+                    CampusFacilityType.Unknown,
+                    CampusFacilityTypeSource.Unknown,
+                    string.Empty));
+        }
+
+        public static CampusPlacedObjectConceptResolution Facility(CampusFacilityTypeResolution facilityResolution)
+        {
+            return new CampusPlacedObjectConceptResolution(
+                CampusPlacedObjectConceptKind.Facility,
+                facilityResolution);
+        }
+    }
+
     public enum CampusFacilityTypeSource
     {
         Unknown = 0,
@@ -44,6 +93,59 @@ namespace NtingCampus.Gameplay.Rooms
         }
     }
 
+    // A placed object is only the scene shell. Facility and pickup-item meaning are derived here.
+    public static class CampusPlacedObjectConceptResolver
+    {
+        public static CampusPlacedObjectConceptResolution Resolve(CampusPlacedObject placedObject)
+        {
+            if (placedObject == null)
+            {
+                return CampusPlacedObjectConceptResolution.Prop();
+            }
+
+            if (IsPickupItem(placedObject))
+            {
+                return CampusPlacedObjectConceptResolution.PickupItem();
+            }
+
+            CampusFacilityTypeResolution facilityResolution =
+                CampusFacilityTypeResolver.ResolveDetailed(placedObject);
+            return IsFacilityCandidate(facilityResolution)
+                ? CampusPlacedObjectConceptResolution.Facility(facilityResolution)
+                : CampusPlacedObjectConceptResolution.Prop();
+        }
+
+        public static bool TryResolveFacility(
+            CampusPlacedObject placedObject,
+            out CampusFacilityTypeResolution facilityResolution)
+        {
+            CampusPlacedObjectConceptResolution concept = Resolve(placedObject);
+            facilityResolution = concept.FacilityResolution;
+            return concept.IsFacility;
+        }
+
+        public static bool IsPickupItem(CampusPlacedObject placedObject)
+        {
+            return placedObject != null &&
+                   placedObject.GetComponent<CampusDroppedStorageItem>() != null;
+        }
+
+        private static bool IsFacilityCandidate(CampusFacilityTypeResolution facilityResolution)
+        {
+            switch (facilityResolution.Source)
+            {
+                case CampusFacilityTypeSource.ExplicitTypeId:
+                case CampusFacilityTypeSource.StorageFallback:
+                case CampusFacilityTypeSource.LegacyInference:
+                case CampusFacilityTypeSource.UnknownTypeId:
+                    return true;
+
+                default:
+                    return false;
+            }
+        }
+    }
+
     public static class CampusFacilityTypeResolver
     {
         private const string RuleFileRelativePath =
@@ -68,6 +170,14 @@ namespace NtingCampus.Gameplay.Rooms
         public static CampusFacilityTypeResolution ResolveDetailed(CampusPlacedObject placedObject)
         {
             if (placedObject == null)
+            {
+                return new CampusFacilityTypeResolution(
+                    CampusFacilityType.Unknown,
+                    CampusFacilityTypeSource.Unknown,
+                    string.Empty);
+            }
+
+            if (CampusPlacedObjectConceptResolver.IsPickupItem(placedObject))
             {
                 return new CampusFacilityTypeResolution(
                     CampusFacilityType.Unknown,
@@ -317,8 +427,8 @@ namespace NtingCampus.Gameplay.Rooms
             {
                 FacilityType = nameof(CampusFacilityType.ServiceWindow),
                 TypeIds = new[] { "ServiceWindow", "service_window", "pickup_window", "service_counter_window" },
-                DisplayNames = new[] { "service window", "pickup window", "\u670d\u52a1\u7a97\u53e3", "\u53d6\u7269\u7a97\u53e3" },
-                Contains = new[] { "service_window", "servicewindow", "pickupwindow", "\u670d\u52a1\u7a97\u53e3", "\u53d6\u7269\u7a97\u53e3" }
+                DisplayNames = new[] { "service window", "pickup window", "\u670d\u52a1\u7a97\u53e3", "\u6253\u996d\u7a97\u53e3", "\u53d6\u7269\u7a97\u53e3" },
+                Contains = new[] { "service_window", "servicewindow", "pickupwindow", "\u670d\u52a1\u7a97\u53e3", "\u6253\u996d\u7a97\u53e3", "\u53d6\u7269\u7a97\u53e3" }
             });
             rules.Add(new FacilityRule
             {

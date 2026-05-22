@@ -14,6 +14,8 @@ namespace NtingCampusMapEditor
         public readonly CampusRoomType RoomType;
         public readonly CampusFacilityType FacilityType;
         public readonly Color Color;
+        public readonly bool RequiresOwnerFacility;
+        public readonly CampusFacilityType[] AllowedOwnerFacilityTypes;
 
         private CampusRuntimeGameplayMarkerPreset(
             string chineseLabel,
@@ -22,7 +24,9 @@ namespace NtingCampusMapEditor
             string englishDisplayName,
             CampusRoomType roomType,
             CampusFacilityType facilityType,
-            Color color)
+            Color color,
+            bool requiresOwnerFacility,
+            CampusFacilityType[] allowedOwnerFacilityTypes)
         {
             ChineseLabel = chineseLabel;
             EnglishLabel = englishLabel;
@@ -31,13 +35,17 @@ namespace NtingCampusMapEditor
             RoomType = roomType;
             FacilityType = facilityType;
             Color = color;
+            RequiresOwnerFacility = requiresOwnerFacility;
+            AllowedOwnerFacilityTypes = allowedOwnerFacilityTypes ?? Array.Empty<CampusFacilityType>();
         }
 
         public static CampusRuntimeGameplayMarkerPreset FacilityPoint(
             string chineseLabel,
             string englishLabel,
             CampusFacilityType facilityType,
-            Color color)
+            Color color,
+            bool requiresOwnerFacility = false,
+            CampusFacilityType[] allowedOwnerFacilityTypes = null)
         {
             return new CampusRuntimeGameplayMarkerPreset(
                 chineseLabel,
@@ -46,7 +54,27 @@ namespace NtingCampusMapEditor
                 englishLabel,
                 CampusRoomType.Unknown,
                 facilityType,
-                color);
+                color,
+                requiresOwnerFacility,
+                allowedOwnerFacilityTypes);
+        }
+
+        public bool AcceptsOwnerFacilityType(CampusFacilityType facilityType)
+        {
+            if (!RequiresOwnerFacility || AllowedOwnerFacilityTypes == null)
+            {
+                return false;
+            }
+
+            for (int i = 0; i < AllowedOwnerFacilityTypes.Length; i++)
+            {
+                if (AllowedOwnerFacilityTypes[i] == facilityType)
+                {
+                    return true;
+                }
+            }
+
+            return false;
         }
     }
 
@@ -67,63 +95,60 @@ namespace NtingCampusMapEditor
             }
         }
 
+        internal static bool TryGetPreset(
+            CampusFacilityType facilityType,
+            out CampusRuntimeGameplayMarkerPreset preset)
+        {
+            CampusRuntimeGameplayMarkerPreset[] presets = Presets;
+            for (int i = 0; i < presets.Length; i++)
+            {
+                CampusRuntimeGameplayMarkerPreset candidate = presets[i];
+                if (candidate != null && candidate.FacilityType == facilityType)
+                {
+                    preset = candidate;
+                    return true;
+                }
+            }
+
+            preset = null;
+            return false;
+        }
+
         private static readonly CampusRuntimeGameplayMarkerPreset[] BuiltInPresets =
         {
             CampusRuntimeGameplayMarkerPreset.FacilityPoint(
-                "\u95e8",
-                "Door",
-                CampusFacilityType.Door,
-                new Color(0.72f, 0.72f, 0.72f, 1f)),
+                "\u670d\u52a1\u7a97\u53e3",
+                "Service Window",
+                CampusFacilityType.ServiceWindow,
+                new Color(0.16f, 0.78f, 0.78f, 1f)),
             CampusRuntimeGameplayMarkerPreset.FacilityPoint(
-                "\u9ed1\u677f",
-                "Blackboard",
-                CampusFacilityType.Blackboard,
-                new Color(0.12f, 0.46f, 0.36f, 1f)),
+                "\u64cd\u4f5c\u5458\u4f4d",
+                "Operator Slot",
+                CampusFacilityType.WorkerStandPoint,
+                new Color(0.16f, 0.58f, 0.67f, 1f),
+                true,
+                new[] { CampusFacilityType.ServiceWindow }),
             CampusRuntimeGameplayMarkerPreset.FacilityPoint(
-                "\u8bfe\u684c",
-                "Student Desk",
-                CampusFacilityType.StudentDesk,
-                new Color(0.26f, 0.56f, 0.96f, 1f)),
+                "\u987e\u5ba2\u4f4d",
+                "Customer Slot",
+                CampusFacilityType.PickupPoint,
+                new Color(0.48f, 0.82f, 0.62f, 1f),
+                true,
+                new[] { CampusFacilityType.ServiceWindow }),
             CampusRuntimeGameplayMarkerPreset.FacilityPoint(
-                "\u8bb2\u53f0",
-                "Podium",
-                CampusFacilityType.Podium,
-                new Color(0.18f, 0.38f, 0.86f, 1f)),
+                "\u6392\u961f\u4f4d",
+                "Queue Slot",
+                CampusFacilityType.WaitingPoint,
+                new Color(0.95f, 0.76f, 0.28f, 1f),
+                true,
+                new[] { CampusFacilityType.ServiceWindow }),
             CampusRuntimeGameplayMarkerPreset.FacilityPoint(
-                "\u529e\u516c\u684c",
-                "Office Desk",
-                CampusFacilityType.OfficeDesk,
-                new Color(0.72f, 0.48f, 0.28f, 1f)),
-            CampusRuntimeGameplayMarkerPreset.FacilityPoint(
-                "\u5e8a",
-                "Bed",
-                CampusFacilityType.Bed,
-                new Color(0.56f, 0.42f, 0.88f, 1f)),
-            CampusRuntimeGameplayMarkerPreset.FacilityPoint(
-                "\u516c\u544a\u680f",
-                "Bulletin Board",
-                CampusFacilityType.BulletinBoard,
-                new Color(0.88f, 0.62f, 0.24f, 1f)),
-            CampusRuntimeGameplayMarkerPreset.FacilityPoint(
-                "\u62db\u52df\u70b9",
-                "Recruitment",
-                CampusFacilityType.Recruitment,
-                new Color(0.74f, 0.36f, 0.88f, 1f)),
-            CampusRuntimeGameplayMarkerPreset.FacilityPoint(
-                "\u6d17\u624b\u6c60",
-                "Sink",
-                CampusFacilityType.Sink,
-                new Color(0.22f, 0.68f, 0.92f, 1f)),
-            CampusRuntimeGameplayMarkerPreset.FacilityPoint(
-                "\u50a8\u7269\u70b9",
-                "Storage",
-                CampusFacilityType.Storage,
-                new Color(0.62f, 0.56f, 0.46f, 1f)),
-            CampusRuntimeGameplayMarkerPreset.FacilityPoint(
-                "\u5403\u996d\u533a\u5ea7\u4f4d",
-                "Dining Table",
-                CampusFacilityType.DiningTable,
-                new Color(0.55f, 0.76f, 0.28f, 1f))
+                "\u653e\u7f6e\u4f4d",
+                "Drop Slot",
+                CampusFacilityType.DropPoint,
+                new Color(0.32f, 0.54f, 0.98f, 1f),
+                true,
+                new[] { CampusFacilityType.ServiceWindow })
         };
 
         private static CampusRuntimeGameplayMarkerPreset[] LoadPresets()
@@ -164,11 +189,15 @@ namespace NtingCampusMapEditor
                         continue;
                     }
 
+                    CampusFacilityType[] ownerFacilityTypes = ParseFacilityTypes(record.OwnerFacilityTypes);
+
                     loaded.Add(CampusRuntimeGameplayMarkerPreset.FacilityPoint(
                         chinese,
                         english,
                         facilityType,
-                        color));
+                        color,
+                        record.RequiresOwnerFacility,
+                        ownerFacilityTypes));
                 }
 
                 return loaded.Count > 0 ? loaded.ToArray() : BuiltInPresets;
@@ -188,6 +217,26 @@ namespace NtingCampusMapEditor
                 : fallback;
         }
 
+        private static CampusFacilityType[] ParseFacilityTypes(string[] values)
+        {
+            if (values == null || values.Length == 0)
+            {
+                return Array.Empty<CampusFacilityType>();
+            }
+
+            List<CampusFacilityType> result = new List<CampusFacilityType>();
+            for (int i = 0; i < values.Length; i++)
+            {
+                CampusFacilityType parsed = ParseEnum(values[i], CampusFacilityType.Unknown);
+                if (parsed != CampusFacilityType.Unknown)
+                {
+                    result.Add(parsed);
+                }
+            }
+
+            return result.Count > 0 ? result.ToArray() : Array.Empty<CampusFacilityType>();
+        }
+
         [Serializable]
         private sealed class GameplayMarkerPresetFile
         {
@@ -201,6 +250,8 @@ namespace NtingCampusMapEditor
             public string EnglishLabel = string.Empty;
             public string FacilityType = string.Empty;
             public string Color = string.Empty;
+            public bool RequiresOwnerFacility = false;
+            public string[] OwnerFacilityTypes = Array.Empty<string>();
         }
     }
 }

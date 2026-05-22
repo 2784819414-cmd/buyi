@@ -1,7 +1,7 @@
 ﻿{
     "ObjectId": "新物体_1x1",
     "TypeId": "ServiceWindow",
-    "DisplayNameOverride": "新物体",
+    "DisplayNameOverride": "窗口",
     "OverrideFootprintSize": true,
     "FootprintSize": {
         "x": 1,

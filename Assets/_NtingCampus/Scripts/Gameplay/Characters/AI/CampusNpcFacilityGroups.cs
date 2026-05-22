@@ -8,6 +8,8 @@ namespace NtingCampus.Gameplay.Characters
         public const string Podiums = "podiums";
         public const string OfficeDesks = "office_desks";
         public const string Workstations = "workstations";
+        public const string ServiceWindows = "service_windows";
+        public const string WorkerStands = "worker_stands";
 
         public static CampusFacilityType[] Get(string groupId)
         {

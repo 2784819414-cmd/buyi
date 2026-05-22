@@ -1,1971 +1,1989 @@
 ﻿{
-    "Schema":  "NtingCampusGameplayOverlay.v1",
-    "MapName":  "校园地图根节点",
-    "Actors":  [
-                   {
-                       "Id":  "player_lixiaonao",
-                       "DisplayName":  "LiXiaonao",
-                       "LocalizedDisplayName":  {
-                                                    "chinese":  "李小闹",
-                                                    "english":  "LiXiaonao"
-                                                },
-                       "RoleId":  "Student",
-                       "Role":  0,
-                       "TeacherDutyId":  "None",
-                       "TeacherDuty":  0,
-                       "StaffDutyId":  "None",
-                       "StaffDuty":  0,
-                       "ClassId":  "class_1",
-                       "InitialStateId":  "Normal",
-                       "InitialState":  0,
-                       "IsPlayerControlled":  true,
-                       "FloorIndex":  1,
-                       "Cell":  {
-                                    "x":  -2,
-                                    "y":  -18,
-                                    "z":  0
-                                },
-                       "Sleepiness":  25,
-                       "Mischief":  35,
-                       "TraitIds":  [
-                                        "Troublemaker"
-                                    ],
-                       "Traits":  [
-                                      2
-                                  ],
-                       "Assignments":  {
-                                           "StudentClassroomId":  "",
-                                           "StudentDeskId":  "",
-                                           "TeacherClassroomId":  "",
-                                           "TeacherPodiumId":  "",
-                                           "OfficeRoomId":  "",
-                                           "OfficeDeskId":  "",
-                                           "WorkRoomId":  "",
-                                           "PrimaryWorkstationId":  "",
-                                           "ClaimRoomId":  "",
-                                           "DropPointId":  ""
-                                       }
-                   },
-                   {
-                       "Id":  "student_sunxiaotao",
-                       "DisplayName":  "SunXiaotao",
-                       "LocalizedDisplayName":  {
-                                                    "chinese":  "孙小桃",
-                                                    "english":  "SunXiaotao"
-                                                },
-                       "RoleId":  "Student",
-                       "Role":  0,
-                       "TeacherDutyId":  "None",
-                       "TeacherDuty":  0,
-                       "StaffDutyId":  "None",
-                       "StaffDuty":  0,
-                       "ClassId":  "class_1",
-                       "InitialStateId":  "Normal",
-                       "InitialState":  0,
-                       "IsPlayerControlled":  false,
-                       "FloorIndex":  1,
-                       "Cell":  {
-                                    "x":  -1,
-                                    "y":  -18,
-                                    "z":  0
-                                },
-                       "Sleepiness":  20,
-                       "Mischief":  30,
-                       "TraitIds":  [
-                                        "GoodStudent"
-                                    ],
-                       "Traits":  [
-                                      3
-                                  ],
-                       "Assignments":  {
-                                           "StudentClassroomId":  "classroom_f1_1",
-                                           "StudentDeskId":  "facility_f1_StudentDesk_-10_-14",
-                                           "TeacherClassroomId":  "",
-                                           "TeacherPodiumId":  "",
-                                           "OfficeRoomId":  "",
-                                           "OfficeDeskId":  "",
-                                           "WorkRoomId":  "",
-                                           "PrimaryWorkstationId":  "",
-                                           "ClaimRoomId":  "",
-                                           "DropPointId":  ""
-                                       }
-                   },
-                   {
-                       "Id":  "student_qiaomianmian",
-                       "DisplayName":  "QiaoMianmian",
-                       "LocalizedDisplayName":  {
-                                                    "chinese":  "乔绵绵",
-                                                    "english":  "QiaoMianmian"
-                                                },
-                       "RoleId":  "Student",
-                       "Role":  0,
-                       "TeacherDutyId":  "None",
-                       "TeacherDuty":  0,
-                       "StaffDutyId":  "None",
-                       "StaffDuty":  0,
-                       "ClassId":  "class_1",
-                       "InitialStateId":  "Normal",
-                       "InitialState":  0,
-                       "IsPlayerControlled":  false,
-                       "FloorIndex":  1,
-                       "Cell":  {
-                                    "x":  0,
-                                    "y":  -18,
-                                    "z":  0
-                                },
-                       "Sleepiness":  45,
-                       "Mischief":  18,
-                       "TraitIds":  [
-                                        "Tattletale"
-                                    ],
-                       "Traits":  [
-                                      4
-                                  ],
-                       "Assignments":  {
-                                           "StudentClassroomId":  "classroom_f1_1",
-                                           "StudentDeskId":  "facility_f1_StudentDesk_-16_-14",
-                                           "TeacherClassroomId":  "",
-                                           "TeacherPodiumId":  "",
-                                           "OfficeRoomId":  "",
-                                           "OfficeDeskId":  "",
-                                           "WorkRoomId":  "",
-                                           "PrimaryWorkstationId":  "",
-                                           "ClaimRoomId":  "",
-                                           "DropPointId":  ""
-                                       }
-                   },
-                   {
-                       "Id":  "student_xuaiying",
-                       "DisplayName":  "XuAiying",
-                       "LocalizedDisplayName":  {
-                                                    "chinese":  "徐爱英",
-                                                    "english":  "XuAiying"
-                                                },
-                       "RoleId":  "Student",
-                       "Role":  0,
-                       "TeacherDutyId":  "None",
-                       "TeacherDuty":  0,
-                       "StaffDutyId":  "None",
-                       "StaffDuty":  0,
-                       "ClassId":  "class_1",
-                       "InitialStateId":  "Normal",
-                       "InitialState":  0,
-                       "IsPlayerControlled":  false,
-                       "FloorIndex":  1,
-                       "Cell":  {
-                                    "x":  1,
-                                    "y":  -18,
-                                    "z":  0
-                                },
-                       "Sleepiness":  62,
-                       "Mischief":  14,
-                       "TraitIds":  [
-                                        "Sleepyhead"
-                                    ],
-                       "Traits":  [
-                                      1
-                                  ],
-                       "Assignments":  {
-                                           "StudentClassroomId":  "classroom_f1_1",
-                                           "StudentDeskId":  "facility_f1_StudentDesk_-16_-8",
-                                           "TeacherClassroomId":  "",
-                                           "TeacherPodiumId":  "",
-                                           "OfficeRoomId":  "",
-                                           "OfficeDeskId":  "",
-                                           "WorkRoomId":  "",
-                                           "PrimaryWorkstationId":  "",
-                                           "ClaimRoomId":  "",
-                                           "DropPointId":  ""
-                                       }
-                   },
-                   {
-                       "Id":  "student_luowan",
-                       "DisplayName":  "LuoWan",
-                       "LocalizedDisplayName":  {
-                                                    "chinese":  "罗晚",
-                                                    "english":  "LuoWan"
-                                                },
-                       "RoleId":  "Student",
-                       "Role":  0,
-                       "TeacherDutyId":  "None",
-                       "TeacherDuty":  0,
-                       "StaffDutyId":  "None",
-                       "StaffDuty":  0,
-                       "ClassId":  "class_2",
-                       "InitialStateId":  "Normal",
-                       "InitialState":  0,
-                       "IsPlayerControlled":  false,
-                       "FloorIndex":  1,
-                       "Cell":  {
-                                    "x":  2,
-                                    "y":  -18,
-                                    "z":  0
-                                },
-                       "Sleepiness":  28,
-                       "Mischief":  68,
-                       "TraitIds":  [
-                                        "Troublemaker"
-                                    ],
-                       "Traits":  [
-                                      2
-                                  ],
-                       "Assignments":  {
-                                           "StudentClassroomId":  "classroom_f1_1",
-                                           "StudentDeskId":  "facility_f1_StudentDesk_-16_-11",
-                                           "TeacherClassroomId":  "",
-                                           "TeacherPodiumId":  "",
-                                           "OfficeRoomId":  "",
-                                           "OfficeDeskId":  "",
-                                           "WorkRoomId":  "",
-                                           "PrimaryWorkstationId":  "",
-                                           "ClaimRoomId":  "",
-                                           "DropPointId":  ""
-                                       }
-                   },
-                   {
-                       "Id":  "student_shenmeng",
-                       "DisplayName":  "ShenMeng",
-                       "LocalizedDisplayName":  {
-                                                    "chinese":  "沈梦",
-                                                    "english":  "ShenMeng"
-                                                },
-                       "RoleId":  "Student",
-                       "Role":  0,
-                       "TeacherDutyId":  "None",
-                       "TeacherDuty":  0,
-                       "StaffDutyId":  "None",
-                       "StaffDuty":  0,
-                       "ClassId":  "class_2",
-                       "InitialStateId":  "Normal",
-                       "InitialState":  0,
-                       "IsPlayerControlled":  false,
-                       "FloorIndex":  1,
-                       "Cell":  {
-                                    "x":  -2,
-                                    "y":  -17,
-                                    "z":  0
-                                },
-                       "Sleepiness":  35,
-                       "Mischief":  22,
-                       "TraitIds":  [
-                                        "Ordinary"
-                                    ],
-                       "Traits":  [
-                                      0
-                                  ],
-                       "Assignments":  {
-                                           "StudentClassroomId":  "classroom_f1_1",
-                                           "StudentDeskId":  "facility_f1_StudentDesk_-10_-5",
-                                           "TeacherClassroomId":  "",
-                                           "TeacherPodiumId":  "",
-                                           "OfficeRoomId":  "",
-                                           "OfficeDeskId":  "",
-                                           "WorkRoomId":  "",
-                                           "PrimaryWorkstationId":  "",
-                                           "ClaimRoomId":  "",
-                                           "DropPointId":  ""
-                                       }
-                   },
-                   {
-                       "Id":  "student_heyulu",
-                       "DisplayName":  "HeYulu",
-                       "LocalizedDisplayName":  {
-                                                    "chinese":  "何雨露",
-                                                    "english":  "HeYulu"
-                                                },
-                       "RoleId":  "Student",
-                       "Role":  0,
-                       "TeacherDutyId":  "None",
-                       "TeacherDuty":  0,
-                       "StaffDutyId":  "None",
-                       "StaffDuty":  0,
-                       "ClassId":  "class_2",
-                       "InitialStateId":  "Normal",
-                       "InitialState":  0,
-                       "IsPlayerControlled":  false,
-                       "FloorIndex":  1,
-                       "Cell":  {
-                                    "x":  -1,
-                                    "y":  -17,
-                                    "z":  0
-                                },
-                       "Sleepiness":  50,
-                       "Mischief":  25,
-                       "TraitIds":  [
-                                        "Sleepyhead"
-                                    ],
-                       "Traits":  [
-                                      1
-                                  ],
-                       "Assignments":  {
-                                           "StudentClassroomId":  "classroom_f1_1",
-                                           "StudentDeskId":  "facility_f1_StudentDesk_-7_-11",
-                                           "TeacherClassroomId":  "",
-                                           "TeacherPodiumId":  "",
-                                           "OfficeRoomId":  "",
-                                           "OfficeDeskId":  "",
-                                           "WorkRoomId":  "",
-                                           "PrimaryWorkstationId":  "",
-                                           "ClaimRoomId":  "",
-                                           "DropPointId":  ""
-                                       }
-                   },
-                   {
-                       "Id":  "student_zhouxin",
-                       "DisplayName":  "ZhouXin",
-                       "LocalizedDisplayName":  {
-                                                    "chinese":  "周欣",
-                                                    "english":  "ZhouXin"
-                                                },
-                       "RoleId":  "Student",
-                       "Role":  0,
-                       "TeacherDutyId":  "None",
-                       "TeacherDuty":  0,
-                       "StaffDutyId":  "None",
-                       "StaffDuty":  0,
-                       "ClassId":  "class_2",
-                       "InitialStateId":  "Normal",
-                       "InitialState":  0,
-                       "IsPlayerControlled":  false,
-                       "FloorIndex":  1,
-                       "Cell":  {
-                                    "x":  0,
-                                    "y":  -17,
-                                    "z":  0
-                                },
-                       "Sleepiness":  24,
-                       "Mischief":  44,
-                       "TraitIds":  [
-                                        "Troublemaker"
-                                    ],
-                       "Traits":  [
-                                      2
-                                  ],
-                       "Assignments":  {
-                                           "StudentClassroomId":  "classroom_f1_1",
-                                           "StudentDeskId":  "facility_f1_StudentDesk_-16_-5",
-                                           "TeacherClassroomId":  "",
-                                           "TeacherPodiumId":  "",
-                                           "OfficeRoomId":  "",
-                                           "OfficeDeskId":  "",
-                                           "WorkRoomId":  "",
-                                           "PrimaryWorkstationId":  "",
-                                           "ClaimRoomId":  "",
-                                           "DropPointId":  ""
-                                       }
-                   },
-                   {
-                       "Id":  "student_pengzihao",
-                       "DisplayName":  "PengZihao",
-                       "LocalizedDisplayName":  {
-                                                    "chinese":  "彭子豪",
-                                                    "english":  "PengZihao"
-                                                },
-                       "RoleId":  "Student",
-                       "Role":  0,
-                       "TeacherDutyId":  "None",
-                       "TeacherDuty":  0,
-                       "StaffDutyId":  "None",
-                       "StaffDuty":  0,
-                       "ClassId":  "class_2",
-                       "InitialStateId":  "Normal",
-                       "InitialState":  0,
-                       "IsPlayerControlled":  false,
-                       "FloorIndex":  1,
-                       "Cell":  {
-                                    "x":  1,
-                                    "y":  -17,
-                                    "z":  0
-                                },
-                       "Sleepiness":  22,
-                       "Mischief":  12,
-                       "TraitIds":  [
-                                        "GoodStudent"
-                                    ],
-                       "Traits":  [
-                                      3
-                                  ],
-                       "Assignments":  {
-                                           "StudentClassroomId":  "classroom_f1_1",
-                                           "StudentDeskId":  "facility_f1_StudentDesk_-10_-8",
-                                           "TeacherClassroomId":  "",
-                                           "TeacherPodiumId":  "",
-                                           "OfficeRoomId":  "",
-                                           "OfficeDeskId":  "",
-                                           "WorkRoomId":  "",
-                                           "PrimaryWorkstationId":  "",
-                                           "ClaimRoomId":  "",
-                                           "DropPointId":  ""
-                                       }
-                   },
-                   {
-                       "Id":  "student_linshuang",
-                       "DisplayName":  "LinShuang",
-                       "LocalizedDisplayName":  {
-                                                    "chinese":  "林霜",
-                                                    "english":  "LinShuang"
-                                                },
-                       "RoleId":  "Student",
-                       "Role":  0,
-                       "TeacherDutyId":  "None",
-                       "TeacherDuty":  0,
-                       "StaffDutyId":  "None",
-                       "StaffDuty":  0,
-                       "ClassId":  "class_3",
-                       "InitialStateId":  "Normal",
-                       "InitialState":  0,
-                       "IsPlayerControlled":  false,
-                       "FloorIndex":  1,
-                       "Cell":  {
-                                    "x":  2,
-                                    "y":  -17,
-                                    "z":  0
-                                },
-                       "Sleepiness":  40,
-                       "Mischief":  20,
-                       "TraitIds":  [
-                                        "Tattletale"
-                                    ],
-                       "Traits":  [
-                                      4
-                                  ],
-                       "Assignments":  {
-                                           "StudentClassroomId":  "classroom_f1_1",
-                                           "StudentDeskId":  "facility_f1_StudentDesk_-13_-14",
-                                           "TeacherClassroomId":  "",
-                                           "TeacherPodiumId":  "",
-                                           "OfficeRoomId":  "",
-                                           "OfficeDeskId":  "",
-                                           "WorkRoomId":  "",
-                                           "PrimaryWorkstationId":  "",
-                                           "ClaimRoomId":  "",
-                                           "DropPointId":  ""
-                                       }
-                   },
-                   {
-                       "Id":  "student_tangyue",
-                       "DisplayName":  "TangYue",
-                       "LocalizedDisplayName":  {
-                                                    "chinese":  "唐月",
-                                                    "english":  "TangYue"
-                                                },
-                       "RoleId":  "Student",
-                       "Role":  0,
-                       "TeacherDutyId":  "None",
-                       "TeacherDuty":  0,
-                       "StaffDutyId":  "None",
-                       "StaffDuty":  0,
-                       "ClassId":  "class_3",
-                       "InitialStateId":  "Normal",
-                       "InitialState":  0,
-                       "IsPlayerControlled":  false,
-                       "FloorIndex":  1,
-                       "Cell":  {
-                                    "x":  -2,
-                                    "y":  -16,
-                                    "z":  0
-                                },
-                       "Sleepiness":  31,
-                       "Mischief":  26,
-                       "TraitIds":  [
-                                        "Ordinary"
-                                    ],
-                       "Traits":  [
-                                      0
-                                  ],
-                       "Assignments":  {
-                                           "StudentClassroomId":  "classroom_f1_1",
-                                           "StudentDeskId":  "facility_f1_StudentDesk_-10_-11",
-                                           "TeacherClassroomId":  "",
-                                           "TeacherPodiumId":  "",
-                                           "OfficeRoomId":  "",
-                                           "OfficeDeskId":  "",
-                                           "WorkRoomId":  "",
-                                           "PrimaryWorkstationId":  "",
-                                           "ClaimRoomId":  "",
-                                           "DropPointId":  ""
-                                       }
-                   },
-                   {
-                       "Id":  "student_wuyan",
-                       "DisplayName":  "WuYan",
-                       "LocalizedDisplayName":  {
-                                                    "chinese":  "吴妍",
-                                                    "english":  "WuYan"
-                                                },
-                       "RoleId":  "Student",
-                       "Role":  0,
-                       "TeacherDutyId":  "None",
-                       "TeacherDuty":  0,
-                       "StaffDutyId":  "None",
-                       "StaffDuty":  0,
-                       "ClassId":  "class_3",
-                       "InitialStateId":  "Normal",
-                       "InitialState":  0,
-                       "IsPlayerControlled":  false,
-                       "FloorIndex":  1,
-                       "Cell":  {
-                                    "x":  -1,
-                                    "y":  -16,
-                                    "z":  0
-                                },
-                       "Sleepiness":  66,
-                       "Mischief":  16,
-                       "TraitIds":  [
-                                        "Sleepyhead"
-                                    ],
-                       "Traits":  [
-                                      1
-                                  ],
-                       "Assignments":  {
-                                           "StudentClassroomId":  "classroom_f1_1",
-                                           "StudentDeskId":  "facility_f1_StudentDesk_-13_-8",
-                                           "TeacherClassroomId":  "",
-                                           "TeacherPodiumId":  "",
-                                           "OfficeRoomId":  "",
-                                           "OfficeDeskId":  "",
-                                           "WorkRoomId":  "",
-                                           "PrimaryWorkstationId":  "",
-                                           "ClaimRoomId":  "",
-                                           "DropPointId":  ""
-                                       }
-                   },
-                   {
-                       "Id":  "student_gaojin",
-                       "DisplayName":  "GaoJin",
-                       "LocalizedDisplayName":  {
-                                                    "chinese":  "高晋",
-                                                    "english":  "GaoJin"
-                                                },
-                       "RoleId":  "Student",
-                       "Role":  0,
-                       "TeacherDutyId":  "None",
-                       "TeacherDuty":  0,
-                       "StaffDutyId":  "None",
-                       "StaffDuty":  0,
-                       "ClassId":  "class_3",
-                       "InitialStateId":  "Normal",
-                       "InitialState":  0,
-                       "IsPlayerControlled":  false,
-                       "FloorIndex":  1,
-                       "Cell":  {
-                                    "x":  0,
-                                    "y":  -16,
-                                    "z":  0
-                                },
-                       "Sleepiness":  19,
-                       "Mischief":  58,
-                       "TraitIds":  [
-                                        "Troublemaker"
-                                    ],
-                       "Traits":  [
-                                      2
-                                  ],
-                       "Assignments":  {
-                                           "StudentClassroomId":  "classroom_f1_1",
-                                           "StudentDeskId":  "facility_f1_StudentDesk_-13_-11",
-                                           "TeacherClassroomId":  "",
-                                           "TeacherPodiumId":  "",
-                                           "OfficeRoomId":  "",
-                                           "OfficeDeskId":  "",
-                                           "WorkRoomId":  "",
-                                           "PrimaryWorkstationId":  "",
-                                           "ClaimRoomId":  "",
-                                           "DropPointId":  ""
-                                       }
-                   },
-                   {
-                       "Id":  "student_cenya",
-                       "DisplayName":  "CenYa",
-                       "LocalizedDisplayName":  {
-                                                    "chinese":  "岑雅",
-                                                    "english":  "CenYa"
-                                                },
-                       "RoleId":  "Student",
-                       "Role":  0,
-                       "TeacherDutyId":  "None",
-                       "TeacherDuty":  0,
-                       "StaffDutyId":  "None",
-                       "StaffDuty":  0,
-                       "ClassId":  "class_3",
-                       "InitialStateId":  "Normal",
-                       "InitialState":  0,
-                       "IsPlayerControlled":  false,
-                       "FloorIndex":  1,
-                       "Cell":  {
-                                    "x":  1,
-                                    "y":  -16,
-                                    "z":  0
-                                },
-                       "Sleepiness":  18,
-                       "Mischief":  14,
-                       "TraitIds":  [
-                                        "GoodStudent"
-                                    ],
-                       "Traits":  [
-                                      3
-                                  ],
-                       "Assignments":  {
-                                           "StudentClassroomId":  "classroom_f1_1",
-                                           "StudentDeskId":  "facility_f1_StudentDesk_-7_-14",
-                                           "TeacherClassroomId":  "",
-                                           "TeacherPodiumId":  "",
-                                           "OfficeRoomId":  "",
-                                           "OfficeDeskId":  "",
-                                           "WorkRoomId":  "",
-                                           "PrimaryWorkstationId":  "",
-                                           "ClaimRoomId":  "",
-                                           "DropPointId":  ""
-                                       }
-                   },
-                   {
-                       "Id":  "teacher_linyuwen",
-                       "DisplayName":  "LinYuwen",
-                       "LocalizedDisplayName":  {
-                                                    "chinese":  "林语文",
-                                                    "english":  "LinYuwen"
-                                                },
-                       "RoleId":  "Teacher",
-                       "Role":  1,
-                       "TeacherDutyId":  "WorldLanguageTeacher",
-                       "TeacherDuty":  1,
-                       "StaffDutyId":  "None",
-                       "StaffDuty":  0,
-                       "ClassId":  "class_1",
-                       "InitialStateId":  "Normal",
-                       "InitialState":  0,
-                       "IsPlayerControlled":  false,
-                       "FloorIndex":  1,
-                       "Cell":  {
-                                    "x":  2,
-                                    "y":  -16,
-                                    "z":  0
-                                },
-                       "Sleepiness":  8,
-                       "Mischief":  0,
-                       "TraitIds":  [
-                                        "Ordinary"
-                                    ],
-                       "Traits":  [
-                                      0
-                                  ],
-                       "Assignments":  {
-                                           "StudentClassroomId":  "",
-                                           "StudentDeskId":  "",
-                                           "TeacherClassroomId":  "classroom_f1_1",
-                                           "TeacherPodiumId":  "facility_f1_Podium_-13_-2",
-                                           "OfficeRoomId":  "",
-                                           "OfficeDeskId":  "",
-                                           "WorkRoomId":  "",
-                                           "PrimaryWorkstationId":  "",
-                                           "ClaimRoomId":  "",
-                                           "DropPointId":  ""
-                                       }
-                   },
-                   {
-                       "Id":  "teacher_zhouxin",
-                       "DisplayName":  "ZhouXinTeacher",
-                       "LocalizedDisplayName":  {
-                                                    "chinese":  "周欣老师",
-                                                    "english":  "ZhouXinTeacher"
-                                                },
-                       "RoleId":  "Teacher",
-                       "Role":  1,
-                       "TeacherDutyId":  "MathTeacher, PatrolDirector",
-                       "TeacherDuty":  10,
-                       "StaffDutyId":  "None",
-                       "StaffDuty":  0,
-                       "ClassId":  "class_2",
-                       "InitialStateId":  "Normal",
-                       "InitialState":  0,
-                       "IsPlayerControlled":  false,
-                       "FloorIndex":  1,
-                       "Cell":  {
-                                    "x":  -2,
-                                    "y":  -15,
-                                    "z":  0
-                                },
-                       "Sleepiness":  10,
-                       "Mischief":  0,
-                       "TraitIds":  [
-                                        "Ordinary"
-                                    ],
-                       "Traits":  [
-                                      0
-                                  ],
-                       "Assignments":  {
-                                           "StudentClassroomId":  "",
-                                           "StudentDeskId":  "",
-                                           "TeacherClassroomId":  "classroom_f1_1",
-                                           "TeacherPodiumId":  "facility_f1_Podium_-13_-2",
-                                           "OfficeRoomId":  "",
-                                           "OfficeDeskId":  "",
-                                           "WorkRoomId":  "",
-                                           "PrimaryWorkstationId":  "",
-                                           "ClaimRoomId":  "",
-                                           "DropPointId":  ""
-                                       }
-                   },
-                   {
-                       "Id":  "teacher_suqin",
-                       "DisplayName":  "SuQin",
-                       "LocalizedDisplayName":  {
-                                                    "chinese":  "苏琴",
-                                                    "english":  "SuQin"
-                                                },
-                       "RoleId":  "Teacher",
-                       "Role":  1,
-                       "TeacherDutyId":  "WorldLanguageTeacher, HomeroomTeacher",
-                       "TeacherDuty":  5,
-                       "StaffDutyId":  "None",
-                       "StaffDuty":  0,
-                       "ClassId":  "class_3",
-                       "InitialStateId":  "Normal",
-                       "InitialState":  0,
-                       "IsPlayerControlled":  false,
-                       "FloorIndex":  1,
-                       "Cell":  {
-                                    "x":  0,
-                                    "y":  -15,
-                                    "z":  0
-                                },
-                       "Sleepiness":  12,
-                       "Mischief":  0,
-                       "TraitIds":  [
-                                        "Ordinary"
-                                    ],
-                       "Traits":  [
-                                      0
-                                  ],
-                       "Assignments":  {
-                                           "StudentClassroomId":  "",
-                                           "StudentDeskId":  "",
-                                           "TeacherClassroomId":  "classroom_f1_1",
-                                           "TeacherPodiumId":  "facility_f1_Podium_-13_-2",
-                                           "OfficeRoomId":  "",
-                                           "OfficeDeskId":  "",
-                                           "WorkRoomId":  "",
-                                           "PrimaryWorkstationId":  "",
-                                           "ClaimRoomId":  "",
-                                           "DropPointId":  ""
-                                       }
-                   },
-                   {
-                       "Id":  "staff_support_1",
-                       "DisplayName":  "SupportStaff1",
-                       "LocalizedDisplayName":  {
-                                                    "chinese":  "后勤职员1",
-                                                    "english":  "SupportStaff1"
-                                                },
-                       "RoleId":  "Staff",
-                       "Role":  2,
-                       "TeacherDutyId":  "None",
-                       "TeacherDuty":  0,
-                       "StaffDutyId":  "SupportStaff",
-                       "StaffDuty":  1,
-                       "ClassId":  "class_1",
-                       "InitialStateId":  "Normal",
-                       "InitialState":  0,
-                       "IsPlayerControlled":  false,
-                       "FloorIndex":  1,
-                       "Cell":  {
-                                    "x":  42,
-                                    "y":  4,
-                                    "z":  0
-                                },
-                       "Sleepiness":  10,
-                       "Mischief":  0,
-                       "TraitIds":  [
-                                        "Ordinary"
-                                    ],
-                       "Traits":  [
-                                      0
-                                  ],
-                       "Assignments":  {
-                                           "StudentClassroomId":  "",
-                                           "StudentDeskId":  "",
-                                           "TeacherClassroomId":  "",
-                                           "TeacherPodiumId":  "",
-                                           "OfficeRoomId":  "",
-                                           "OfficeDeskId":  "",
-                                           "WorkRoomId":  "",
-                                           "PrimaryWorkstationId":  "",
-                                           "ClaimRoomId":  "",
-                                           "DropPointId":  ""
-                                       }
-                   },
-                   {
-                       "Id":  "staff_support_2",
-                       "DisplayName":  "SupportStaff2",
-                       "LocalizedDisplayName":  {
-                                                    "chinese":  "后勤职员2",
-                                                    "english":  "SupportStaff2"
-                                                },
-                       "RoleId":  "Staff",
-                       "Role":  2,
-                       "TeacherDutyId":  "None",
-                       "TeacherDuty":  0,
-                       "StaffDutyId":  "SupportStaff",
-                       "StaffDuty":  1,
-                       "ClassId":  "class_1",
-                       "InitialStateId":  "Normal",
-                       "InitialState":  0,
-                       "IsPlayerControlled":  false,
-                       "FloorIndex":  1,
-                       "Cell":  {
-                                    "x":  44,
-                                    "y":  4,
-                                    "z":  0
-                                },
-                       "Sleepiness":  10,
-                       "Mischief":  0,
-                       "TraitIds":  [
-                                        "Ordinary"
-                                    ],
-                       "Traits":  [
-                                      0
-                                  ],
-                       "Assignments":  {
-                                           "StudentClassroomId":  "",
-                                           "StudentDeskId":  "",
-                                           "TeacherClassroomId":  "",
-                                           "TeacherPodiumId":  "",
-                                           "OfficeRoomId":  "",
-                                           "OfficeDeskId":  "",
-                                           "WorkRoomId":  "",
-                                           "PrimaryWorkstationId":  "",
-                                           "ClaimRoomId":  "",
-                                           "DropPointId":  ""
-                                       }
-                   },
-                   {
-                       "Id":  "staff_support_3",
-                       "DisplayName":  "SupportStaff3",
-                       "LocalizedDisplayName":  {
-                                                    "chinese":  "后勤职员3",
-                                                    "english":  "SupportStaff3"
-                                                },
-                       "RoleId":  "Staff",
-                       "Role":  2,
-                       "TeacherDutyId":  "None",
-                       "TeacherDuty":  0,
-                       "StaffDutyId":  "SupportStaff",
-                       "StaffDuty":  1,
-                       "ClassId":  "class_1",
-                       "InitialStateId":  "Normal",
-                       "InitialState":  0,
-                       "IsPlayerControlled":  false,
-                       "FloorIndex":  1,
-                       "Cell":  {
-                                    "x":  48,
-                                    "y":  4,
-                                    "z":  0
-                                },
-                       "Sleepiness":  10,
-                       "Mischief":  0,
-                       "TraitIds":  [
-                                        "Ordinary"
-                                    ],
-                       "Traits":  [
-                                      0
-                                  ],
-                       "Assignments":  {
-                                           "StudentClassroomId":  "",
-                                           "StudentDeskId":  "",
-                                           "TeacherClassroomId":  "",
-                                           "TeacherPodiumId":  "",
-                                           "OfficeRoomId":  "",
-                                           "OfficeDeskId":  "",
-                                           "WorkRoomId":  "",
-                                           "PrimaryWorkstationId":  "",
-                                           "ClaimRoomId":  "",
-                                           "DropPointId":  ""
-                                       }
-                   },
-                   {
-                       "Id":  "staff_support_4",
-                       "DisplayName":  "SupportStaff4",
-                       "LocalizedDisplayName":  {
-                                                    "chinese":  "后勤职员4",
-                                                    "english":  "SupportStaff4"
-                                                },
-                       "RoleId":  "Staff",
-                       "Role":  2,
-                       "TeacherDutyId":  "None",
-                       "TeacherDuty":  0,
-                       "StaffDutyId":  "SupportStaff",
-                       "StaffDuty":  1,
-                       "ClassId":  "class_1",
-                       "InitialStateId":  "Normal",
-                       "InitialState":  0,
-                       "IsPlayerControlled":  false,
-                       "FloorIndex":  1,
-                       "Cell":  {
-                                    "x":  46,
-                                    "y":  4,
-                                    "z":  0
-                                },
-                       "Sleepiness":  10,
-                       "Mischief":  0,
-                       "TraitIds":  [
-                                        "Ordinary"
-                                    ],
-                       "Traits":  [
-                                      0
-                                  ],
-                       "Assignments":  {
-                                           "StudentClassroomId":  "",
-                                           "StudentDeskId":  "",
-                                           "TeacherClassroomId":  "",
-                                           "TeacherPodiumId":  "",
-                                           "OfficeRoomId":  "",
-                                           "OfficeDeskId":  "",
-                                           "WorkRoomId":  "",
-                                           "PrimaryWorkstationId":  "",
-                                           "ClaimRoomId":  "",
-                                           "DropPointId":  ""
-                                       }
-                   },
-                   {
-                       "Id":  "staff_support_5",
-                       "DisplayName":  "SupportStaff5",
-                       "LocalizedDisplayName":  {
-                                                    "chinese":  "后勤职员5",
-                                                    "english":  "SupportStaff5"
-                                                },
-                       "RoleId":  "Staff",
-                       "Role":  2,
-                       "TeacherDutyId":  "None",
-                       "TeacherDuty":  0,
-                       "StaffDutyId":  "SupportStaff",
-                       "StaffDuty":  1,
-                       "ClassId":  "class_1",
-                       "InitialStateId":  "Normal",
-                       "InitialState":  0,
-                       "IsPlayerControlled":  false,
-                       "FloorIndex":  1,
-                       "Cell":  {
-                                    "x":  50,
-                                    "y":  4,
-                                    "z":  0
-                                },
-                       "Sleepiness":  10,
-                       "Mischief":  0,
-                       "TraitIds":  [
-                                        "Ordinary"
-                                    ],
-                       "Traits":  [
-                                      0
-                                  ],
-                       "Assignments":  {
-                                           "StudentClassroomId":  "",
-                                           "StudentDeskId":  "",
-                                           "TeacherClassroomId":  "",
-                                           "TeacherPodiumId":  "",
-                                           "OfficeRoomId":  "",
-                                           "OfficeDeskId":  "",
-                                           "WorkRoomId":  "",
-                                           "PrimaryWorkstationId":  "",
-                                           "ClaimRoomId":  "",
-                                           "DropPointId":  ""
-                                       }
-                   },
-                   {
-                       "Id":  "staff_support_6",
-                       "DisplayName":  "SupportStaff6",
-                       "LocalizedDisplayName":  {
-                                                    "chinese":  "后勤职员6",
-                                                    "english":  "SupportStaff6"
-                                                },
-                       "RoleId":  "Staff",
-                       "Role":  2,
-                       "TeacherDutyId":  "None",
-                       "TeacherDuty":  0,
-                       "StaffDutyId":  "SupportStaff",
-                       "StaffDuty":  1,
-                       "ClassId":  "class_1",
-                       "InitialStateId":  "Normal",
-                       "InitialState":  0,
-                       "IsPlayerControlled":  false,
-                       "FloorIndex":  1,
-                       "Cell":  {
-                                    "x":  52,
-                                    "y":  4,
-                                    "z":  0
-                                },
-                       "Sleepiness":  10,
-                       "Mischief":  0,
-                       "TraitIds":  [
-                                        "Ordinary"
-                                    ],
-                       "Traits":  [
-                                      0
-                                  ],
-                       "Assignments":  {
-                                           "StudentClassroomId":  "",
-                                           "StudentDeskId":  "",
-                                           "TeacherClassroomId":  "",
-                                           "TeacherPodiumId":  "",
-                                           "OfficeRoomId":  "",
-                                           "OfficeDeskId":  "",
-                                           "WorkRoomId":  "",
-                                           "PrimaryWorkstationId":  "",
-                                           "ClaimRoomId":  "",
-                                           "DropPointId":  ""
-                                       }
-                   },
-                   {
-                       "Id":  "staff_support_7",
-                       "DisplayName":  "SupportStaff7",
-                       "LocalizedDisplayName":  {
-                                                    "chinese":  "后勤职员7",
-                                                    "english":  "SupportStaff7"
-                                                },
-                       "RoleId":  "Staff",
-                       "Role":  2,
-                       "TeacherDutyId":  "None",
-                       "TeacherDuty":  0,
-                       "StaffDutyId":  "SupportStaff",
-                       "StaffDuty":  1,
-                       "ClassId":  "class_1",
-                       "InitialStateId":  "Normal",
-                       "InitialState":  0,
-                       "IsPlayerControlled":  false,
-                       "FloorIndex":  1,
-                       "Cell":  {
-                                    "x":  54,
-                                    "y":  4,
-                                    "z":  0
-                                },
-                       "Sleepiness":  10,
-                       "Mischief":  0,
-                       "TraitIds":  [
-                                        "Ordinary"
-                                    ],
-                       "Traits":  [
-                                      0
-                                  ],
-                       "Assignments":  {
-                                           "StudentClassroomId":  "",
-                                           "StudentDeskId":  "",
-                                           "TeacherClassroomId":  "",
-                                           "TeacherPodiumId":  "",
-                                           "OfficeRoomId":  "",
-                                           "OfficeDeskId":  "",
-                                           "WorkRoomId":  "",
-                                           "PrimaryWorkstationId":  "",
-                                           "ClaimRoomId":  "",
-                                           "DropPointId":  ""
-                                       }
-                   },
-                   {
-                       "Id":  "staff_support_8",
-                       "DisplayName":  "SupportStaff8",
-                       "LocalizedDisplayName":  {
-                                                    "chinese":  "后勤职员8",
-                                                    "english":  "SupportStaff8"
-                                                },
-                       "RoleId":  "Staff",
-                       "Role":  2,
-                       "TeacherDutyId":  "None",
-                       "TeacherDuty":  0,
-                       "StaffDutyId":  "SupportStaff",
-                       "StaffDuty":  1,
-                       "ClassId":  "class_1",
-                       "InitialStateId":  "Normal",
-                       "InitialState":  0,
-                       "IsPlayerControlled":  false,
-                       "FloorIndex":  1,
-                       "Cell":  {
-                                    "x":  56,
-                                    "y":  4,
-                                    "z":  0
-                                },
-                       "Sleepiness":  10,
-                       "Mischief":  0,
-                       "TraitIds":  [
-                                        "Ordinary"
-                                    ],
-                       "Traits":  [
-                                      0
-                                  ],
-                       "Assignments":  {
-                                           "StudentClassroomId":  "",
-                                           "StudentDeskId":  "",
-                                           "TeacherClassroomId":  "",
-                                           "TeacherPodiumId":  "",
-                                           "OfficeRoomId":  "",
-                                           "OfficeDeskId":  "",
-                                           "WorkRoomId":  "",
-                                           "PrimaryWorkstationId":  "",
-                                           "ClaimRoomId":  "",
-                                           "DropPointId":  ""
-                                       }
-                   }
-               ],
-    "Rooms":  [
-
-              ],
-    "Facilities":  [
-                       {
-                           "Id":  "facility_f1_PickupPoint_50_1",
-                           "DisplayName":  "顾客取餐点",
-                           "FacilityTypeId":  "PickupPoint",
-                           "FacilityType":  26,
-                           "FloorIndex":  1,
-                           "Cell":  {
-                                        "x":  50,
-                                        "y":  1,
-                                        "z":  0
-                                    },
-                           "CountsAsCoreFacility":  true
-                       },
-                       {
-                           "Id":  "facility_f1_WaitingPoint_48_-3",
-                           "DisplayName":  "等待点",
-                           "FacilityTypeId":  "WaitingPoint",
-                           "FacilityType":  21,
-                           "FloorIndex":  1,
-                           "Cell":  {
-                                        "x":  48,
-                                        "y":  -3,
-                                        "z":  0
-                                    },
-                           "CountsAsCoreFacility":  true
-                       },
-                       {
-                           "Id":  "facility_f1_WaitingPoint_44_-1",
-                           "DisplayName":  "等待点",
-                           "FacilityTypeId":  "WaitingPoint",
-                           "FacilityType":  21,
-                           "FloorIndex":  1,
-                           "Cell":  {
-                                        "x":  44,
-                                        "y":  -1,
-                                        "z":  0
-                                    },
-                           "CountsAsCoreFacility":  true
-                       },
-                       {
-                           "Id":  "facility_f1_WaitingPoint_42_0",
-                           "DisplayName":  "等待点",
-                           "FacilityTypeId":  "WaitingPoint",
-                           "FacilityType":  21,
-                           "FloorIndex":  1,
-                           "Cell":  {
-                                        "x":  42,
-                                        "y":  0,
-                                        "z":  0
-                                    },
-                           "CountsAsCoreFacility":  true
-                       },
-                       {
-                           "Id":  "facility_f1_DropPoint_29_-23",
-                           "DisplayName":  "放置点",
-                           "FacilityTypeId":  "DropPoint",
-                           "FacilityType":  20,
-                           "FloorIndex":  1,
-                           "Cell":  {
-                                        "x":  29,
-                                        "y":  -23,
-                                        "z":  0
-                                    },
-                           "CountsAsCoreFacility":  true
-                       },
-                       {
-                           "Id":  "facility_f1_WorkerStandPoint_50_3",
-                           "DisplayName":  "工作站位",
-                           "FacilityTypeId":  "WorkerStandPoint",
-                           "FacilityType":  25,
-                           "FloorIndex":  1,
-                           "Cell":  {
-                                        "x":  50,
-                                        "y":  3,
-                                        "z":  0
-                                    },
-                           "CountsAsCoreFacility":  true
-                       },
-                       {
-                           "Id":  "facility_f1_PickupPoint_44_1",
-                           "DisplayName":  "顾客取餐点",
-                           "FacilityTypeId":  "PickupPoint",
-                           "FacilityType":  26,
-                           "FloorIndex":  1,
-                           "Cell":  {
-                                        "x":  44,
-                                        "y":  1,
-                                        "z":  0
-                                    },
-                           "CountsAsCoreFacility":  true
-                       },
-                       {
-                           "Id":  "facility_f1_WaitingPoint_54_0",
-                           "DisplayName":  "等待点",
-                           "FacilityTypeId":  "WaitingPoint",
-                           "FacilityType":  21,
-                           "FloorIndex":  1,
-                           "Cell":  {
-                                        "x":  54,
-                                        "y":  0,
-                                        "z":  0
-                                    },
-                           "CountsAsCoreFacility":  true
-                       },
-                       {
-                           "Id":  "facility_f1_WaitingPoint_56_0",
-                           "DisplayName":  "等待点",
-                           "FacilityTypeId":  "WaitingPoint",
-                           "FacilityType":  21,
-                           "FloorIndex":  1,
-                           "Cell":  {
-                                        "x":  56,
-                                        "y":  0,
-                                        "z":  0
-                                    },
-                           "CountsAsCoreFacility":  true
-                       },
-                       {
-                           "Id":  "facility_f1_WorkerStandPoint_54_3",
-                           "DisplayName":  "工作站位",
-                           "FacilityTypeId":  "WorkerStandPoint",
-                           "FacilityType":  25,
-                           "FloorIndex":  1,
-                           "Cell":  {
-                                        "x":  54,
-                                        "y":  3,
-                                        "z":  0
-                                    },
-                           "CountsAsCoreFacility":  true
-                       },
-                       {
-                           "Id":  "facility_f1_ServiceWindow_48_2",
-                           "DisplayName":  "打饭窗口",
-                           "FacilityTypeId":  "ServiceWindow",
-                           "FacilityType":  27,
-                           "FloorIndex":  1,
-                           "Cell":  {
-                                        "x":  48,
-                                        "y":  2,
-                                        "z":  0
-                                    },
-                           "CountsAsCoreFacility":  true
-                       },
-                       {
-                           "Id":  "facility_f1_WaitingPoint_42_-3",
-                           "DisplayName":  "等待点",
-                           "FacilityTypeId":  "WaitingPoint",
-                           "FacilityType":  21,
-                           "FloorIndex":  1,
-                           "Cell":  {
-                                        "x":  42,
-                                        "y":  -3,
-                                        "z":  0
-                                    },
-                           "CountsAsCoreFacility":  true
-                       },
-                       {
-                           "Id":  "facility_f1_WaitingPoint_52_-2",
-                           "DisplayName":  "等待点",
-                           "FacilityTypeId":  "WaitingPoint",
-                           "FacilityType":  21,
-                           "FloorIndex":  1,
-                           "Cell":  {
-                                        "x":  52,
-                                        "y":  -2,
-                                        "z":  0
-                                    },
-                           "CountsAsCoreFacility":  true
-                       },
-                       {
-                           "Id":  "facility_f1_ServiceWindow_44_2",
-                           "DisplayName":  "打饭窗口",
-                           "FacilityTypeId":  "ServiceWindow",
-                           "FacilityType":  27,
-                           "FloorIndex":  1,
-                           "Cell":  {
-                                        "x":  44,
-                                        "y":  2,
-                                        "z":  0
-                                    },
-                           "CountsAsCoreFacility":  true
-                       },
-                       {
-                           "Id":  "facility_f1_WorkerStandPoint_44_3",
-                           "DisplayName":  "工作站位",
-                           "FacilityTypeId":  "WorkerStandPoint",
-                           "FacilityType":  25,
-                           "FloorIndex":  1,
-                           "Cell":  {
-                                        "x":  44,
-                                        "y":  3,
-                                        "z":  0
-                                    },
-                           "CountsAsCoreFacility":  true
-                       },
-                       {
-                           "Id":  "facility_f1_DropPoint_17_-23",
-                           "DisplayName":  "放置点",
-                           "FacilityTypeId":  "DropPoint",
-                           "FacilityType":  20,
-                           "FloorIndex":  1,
-                           "Cell":  {
-                                        "x":  17,
-                                        "y":  -23,
-                                        "z":  0
-                                    },
-                           "CountsAsCoreFacility":  true
-                       },
-                       {
-                           "Id":  "facility_f1_WorkerStandPoint_52_3",
-                           "DisplayName":  "工作站位",
-                           "FacilityTypeId":  "WorkerStandPoint",
-                           "FacilityType":  25,
-                           "FloorIndex":  1,
-                           "Cell":  {
-                                        "x":  52,
-                                        "y":  3,
-                                        "z":  0
-                                    },
-                           "CountsAsCoreFacility":  true
-                       },
-                       {
-                           "Id":  "facility_f1_WaitingPoint_50_0",
-                           "DisplayName":  "等待点",
-                           "FacilityTypeId":  "WaitingPoint",
-                           "FacilityType":  21,
-                           "FloorIndex":  1,
-                           "Cell":  {
-                                        "x":  50,
-                                        "y":  0,
-                                        "z":  0
-                                    },
-                           "CountsAsCoreFacility":  true
-                       },
-                       {
-                           "Id":  "facility_f1_WaitingPoint_50_-2",
-                           "DisplayName":  "等待点",
-                           "FacilityTypeId":  "WaitingPoint",
-                           "FacilityType":  21,
-                           "FloorIndex":  1,
-                           "Cell":  {
-                                        "x":  50,
-                                        "y":  -2,
-                                        "z":  0
-                                    },
-                           "CountsAsCoreFacility":  true
-                       },
-                       {
-                           "Id":  "facility_f1_WorkerStandPoint_42_3",
-                           "DisplayName":  "工作站位",
-                           "FacilityTypeId":  "WorkerStandPoint",
-                           "FacilityType":  25,
-                           "FloorIndex":  1,
-                           "Cell":  {
-                                        "x":  42,
-                                        "y":  3,
-                                        "z":  0
-                                    },
-                           "CountsAsCoreFacility":  true
-                       },
-                       {
-                           "Id":  "facility_f1_ServiceWindow_50_2",
-                           "DisplayName":  "打饭窗口",
-                           "FacilityTypeId":  "ServiceWindow",
-                           "FacilityType":  27,
-                           "FloorIndex":  1,
-                           "Cell":  {
-                                        "x":  50,
-                                        "y":  2,
-                                        "z":  0
-                                    },
-                           "CountsAsCoreFacility":  true
-                       },
-                       {
-                           "Id":  "facility_f1_WaitingPoint_42_-1",
-                           "DisplayName":  "等待点",
-                           "FacilityTypeId":  "WaitingPoint",
-                           "FacilityType":  21,
-                           "FloorIndex":  1,
-                           "Cell":  {
-                                        "x":  42,
-                                        "y":  -1,
-                                        "z":  0
-                                    },
-                           "CountsAsCoreFacility":  true
-                       },
-                       {
-                           "Id":  "facility_f1_WorkerStandPoint_48_3",
-                           "DisplayName":  "工作站位",
-                           "FacilityTypeId":  "WorkerStandPoint",
-                           "FacilityType":  25,
-                           "FloorIndex":  1,
-                           "Cell":  {
-                                        "x":  48,
-                                        "y":  3,
-                                        "z":  0
-                                    },
-                           "CountsAsCoreFacility":  true
-                       },
-                       {
-                           "Id":  "facility_f1_WaitingPoint_56_-3",
-                           "DisplayName":  "等待点",
-                           "FacilityTypeId":  "WaitingPoint",
-                           "FacilityType":  21,
-                           "FloorIndex":  1,
-                           "Cell":  {
-                                        "x":  56,
-                                        "y":  -3,
-                                        "z":  0
-                                    },
-                           "CountsAsCoreFacility":  true
-                       },
-                       {
-                           "Id":  "facility_f1_WaitingPoint_46_0",
-                           "DisplayName":  "等待点",
-                           "FacilityTypeId":  "WaitingPoint",
-                           "FacilityType":  21,
-                           "FloorIndex":  1,
-                           "Cell":  {
-                                        "x":  46,
-                                        "y":  0,
-                                        "z":  0
-                                    },
-                           "CountsAsCoreFacility":  true
-                       },
-                       {
-                           "Id":  "facility_f1_WaitingPoint_54_-1",
-                           "DisplayName":  "等待点",
-                           "FacilityTypeId":  "WaitingPoint",
-                           "FacilityType":  21,
-                           "FloorIndex":  1,
-                           "Cell":  {
-                                        "x":  54,
-                                        "y":  -1,
-                                        "z":  0
-                                    },
-                           "CountsAsCoreFacility":  true
-                       },
-                       {
-                           "Id":  "facility_f1_PickupPoint_46_1",
-                           "DisplayName":  "顾客取餐点",
-                           "FacilityTypeId":  "PickupPoint",
-                           "FacilityType":  26,
-                           "FloorIndex":  1,
-                           "Cell":  {
-                                        "x":  46,
-                                        "y":  1,
-                                        "z":  0
-                                    },
-                           "CountsAsCoreFacility":  true
-                       },
-                       {
-                           "Id":  "facility_f1_WaitingPoint_52_-3",
-                           "DisplayName":  "等待点",
-                           "FacilityTypeId":  "WaitingPoint",
-                           "FacilityType":  21,
-                           "FloorIndex":  1,
-                           "Cell":  {
-                                        "x":  52,
-                                        "y":  -3,
-                                        "z":  0
-                                    },
-                           "CountsAsCoreFacility":  true
-                       },
-                       {
-                           "Id":  "facility_f1_WaitingPoint_46_-3",
-                           "DisplayName":  "等待点",
-                           "FacilityTypeId":  "WaitingPoint",
-                           "FacilityType":  21,
-                           "FloorIndex":  1,
-                           "Cell":  {
-                                        "x":  46,
-                                        "y":  -3,
-                                        "z":  0
-                                    },
-                           "CountsAsCoreFacility":  true
-                       },
-                       {
-                           "Id":  "facility_f1_WaitingPoint_54_-3",
-                           "DisplayName":  "等待点",
-                           "FacilityTypeId":  "WaitingPoint",
-                           "FacilityType":  21,
-                           "FloorIndex":  1,
-                           "Cell":  {
-                                        "x":  54,
-                                        "y":  -3,
-                                        "z":  0
-                                    },
-                           "CountsAsCoreFacility":  true
-                       },
-                       {
-                           "Id":  "facility_f1_WaitingPoint_50_-3",
-                           "DisplayName":  "等待点",
-                           "FacilityTypeId":  "WaitingPoint",
-                           "FacilityType":  21,
-                           "FloorIndex":  1,
-                           "Cell":  {
-                                        "x":  50,
-                                        "y":  -3,
-                                        "z":  0
-                                    },
-                           "CountsAsCoreFacility":  true
-                       },
-                       {
-                           "Id":  "facility_f1_ServiceWindow_52_2",
-                           "DisplayName":  "打饭窗口",
-                           "FacilityTypeId":  "ServiceWindow",
-                           "FacilityType":  27,
-                           "FloorIndex":  1,
-                           "Cell":  {
-                                        "x":  52,
-                                        "y":  2,
-                                        "z":  0
-                                    },
-                           "CountsAsCoreFacility":  true
-                       },
-                       {
-                           "Id":  "facility_f1_WaitingPoint_44_-2",
-                           "DisplayName":  "等待点",
-                           "FacilityTypeId":  "WaitingPoint",
-                           "FacilityType":  21,
-                           "FloorIndex":  1,
-                           "Cell":  {
-                                        "x":  44,
-                                        "y":  -2,
-                                        "z":  0
-                                    },
-                           "CountsAsCoreFacility":  true
-                       },
-                       {
-                           "Id":  "facility_f1_PickupPoint_42_1",
-                           "DisplayName":  "顾客取餐点",
-                           "FacilityTypeId":  "PickupPoint",
-                           "FacilityType":  26,
-                           "FloorIndex":  1,
-                           "Cell":  {
-                                        "x":  42,
-                                        "y":  1,
-                                        "z":  0
-                                    },
-                           "CountsAsCoreFacility":  true
-                       },
-                       {
-                           "Id":  "facility_f1_WaitingPoint_54_-2",
-                           "DisplayName":  "等待点",
-                           "FacilityTypeId":  "WaitingPoint",
-                           "FacilityType":  21,
-                           "FloorIndex":  1,
-                           "Cell":  {
-                                        "x":  54,
-                                        "y":  -2,
-                                        "z":  0
-                                    },
-                           "CountsAsCoreFacility":  true
-                       },
-                       {
-                           "Id":  "facility_f1_WaitingPoint_48_-1",
-                           "DisplayName":  "等待点",
-                           "FacilityTypeId":  "WaitingPoint",
-                           "FacilityType":  21,
-                           "FloorIndex":  1,
-                           "Cell":  {
-                                        "x":  48,
-                                        "y":  -1,
-                                        "z":  0
-                                    },
-                           "CountsAsCoreFacility":  true
-                       },
-                       {
-                           "Id":  "facility_f1_WaitingPoint_52_-1",
-                           "DisplayName":  "等待点",
-                           "FacilityTypeId":  "WaitingPoint",
-                           "FacilityType":  21,
-                           "FloorIndex":  1,
-                           "Cell":  {
-                                        "x":  52,
-                                        "y":  -1,
-                                        "z":  0
-                                    },
-                           "CountsAsCoreFacility":  true
-                       },
-                       {
-                           "Id":  "facility_f1_WaitingPoint_56_-1",
-                           "DisplayName":  "等待点",
-                           "FacilityTypeId":  "WaitingPoint",
-                           "FacilityType":  21,
-                           "FloorIndex":  1,
-                           "Cell":  {
-                                        "x":  56,
-                                        "y":  -1,
-                                        "z":  0
-                                    },
-                           "CountsAsCoreFacility":  true
-                       },
-                       {
-                           "Id":  "facility_f1_DropPoint_25_-23",
-                           "DisplayName":  "放置点",
-                           "FacilityTypeId":  "DropPoint",
-                           "FacilityType":  20,
-                           "FloorIndex":  1,
-                           "Cell":  {
-                                        "x":  25,
-                                        "y":  -23,
-                                        "z":  0
-                                    },
-                           "CountsAsCoreFacility":  true
-                       },
-                       {
-                           "Id":  "facility_f1_PickupPoint_56_1",
-                           "DisplayName":  "顾客取餐点",
-                           "FacilityTypeId":  "PickupPoint",
-                           "FacilityType":  26,
-                           "FloorIndex":  1,
-                           "Cell":  {
-                                        "x":  56,
-                                        "y":  1,
-                                        "z":  0
-                                    },
-                           "CountsAsCoreFacility":  true
-                       },
-                       {
-                           "Id":  "facility_f1_WaitingPoint_50_-1",
-                           "DisplayName":  "等待点",
-                           "FacilityTypeId":  "WaitingPoint",
-                           "FacilityType":  21,
-                           "FloorIndex":  1,
-                           "Cell":  {
-                                        "x":  50,
-                                        "y":  -1,
-                                        "z":  0
-                                    },
-                           "CountsAsCoreFacility":  true
-                       },
-                       {
-                           "Id":  "facility_f1_WaitingPoint_48_0",
-                           "DisplayName":  "等待点",
-                           "FacilityTypeId":  "WaitingPoint",
-                           "FacilityType":  21,
-                           "FloorIndex":  1,
-                           "Cell":  {
-                                        "x":  48,
-                                        "y":  0,
-                                        "z":  0
-                                    },
-                           "CountsAsCoreFacility":  true
-                       },
-                       {
-                           "Id":  "facility_f1_PickupPoint_54_1",
-                           "DisplayName":  "顾客取餐点",
-                           "FacilityTypeId":  "PickupPoint",
-                           "FacilityType":  26,
-                           "FloorIndex":  1,
-                           "Cell":  {
-                                        "x":  54,
-                                        "y":  1,
-                                        "z":  0
-                                    },
-                           "CountsAsCoreFacility":  true
-                       },
-                       {
-                           "Id":  "facility_f1_WaitingPoint_48_-2",
-                           "DisplayName":  "等待点",
-                           "FacilityTypeId":  "WaitingPoint",
-                           "FacilityType":  21,
-                           "FloorIndex":  1,
-                           "Cell":  {
-                                        "x":  48,
-                                        "y":  -2,
-                                        "z":  0
-                                    },
-                           "CountsAsCoreFacility":  true
-                       },
-                       {
-                           "Id":  "facility_f1_PickupPoint_52_1",
-                           "DisplayName":  "顾客取餐点",
-                           "FacilityTypeId":  "PickupPoint",
-                           "FacilityType":  26,
-                           "FloorIndex":  1,
-                           "Cell":  {
-                                        "x":  52,
-                                        "y":  1,
-                                        "z":  0
-                                    },
-                           "CountsAsCoreFacility":  true
-                       },
-                       {
-                           "Id":  "facility_f1_ServiceWindow_46_2",
-                           "DisplayName":  "打饭窗口",
-                           "FacilityTypeId":  "ServiceWindow",
-                           "FacilityType":  27,
-                           "FloorIndex":  1,
-                           "Cell":  {
-                                        "x":  46,
-                                        "y":  2,
-                                        "z":  0
-                                    },
-                           "CountsAsCoreFacility":  true
-                       },
-                       {
-                           "Id":  "facility_f1_WorkerStandPoint_56_3",
-                           "DisplayName":  "工作站位",
-                           "FacilityTypeId":  "WorkerStandPoint",
-                           "FacilityType":  25,
-                           "FloorIndex":  1,
-                           "Cell":  {
-                                        "x":  56,
-                                        "y":  3,
-                                        "z":  0
-                                    },
-                           "CountsAsCoreFacility":  true
-                       },
-                       {
-                           "Id":  "facility_f1_WaitingPoint_46_-1",
-                           "DisplayName":  "等待点",
-                           "FacilityTypeId":  "WaitingPoint",
-                           "FacilityType":  21,
-                           "FloorIndex":  1,
-                           "Cell":  {
-                                        "x":  46,
-                                        "y":  -1,
-                                        "z":  0
-                                    },
-                           "CountsAsCoreFacility":  true
-                       },
-                       {
-                           "Id":  "facility_f1_WorkerStandPoint_46_3",
-                           "DisplayName":  "工作站位",
-                           "FacilityTypeId":  "WorkerStandPoint",
-                           "FacilityType":  25,
-                           "FloorIndex":  1,
-                           "Cell":  {
-                                        "x":  46,
-                                        "y":  3,
-                                        "z":  0
-                                    },
-                           "CountsAsCoreFacility":  true
-                       },
-                       {
-                           "Id":  "facility_f1_ServiceWindow_54_2",
-                           "DisplayName":  "打饭窗口",
-                           "FacilityTypeId":  "ServiceWindow",
-                           "FacilityType":  27,
-                           "FloorIndex":  1,
-                           "Cell":  {
-                                        "x":  54,
-                                        "y":  2,
-                                        "z":  0
-                                    },
-                           "CountsAsCoreFacility":  true
-                       },
-                       {
-                           "Id":  "facility_f1_WaitingPoint_52_0",
-                           "DisplayName":  "等待点",
-                           "FacilityTypeId":  "WaitingPoint",
-                           "FacilityType":  21,
-                           "FloorIndex":  1,
-                           "Cell":  {
-                                        "x":  52,
-                                        "y":  0,
-                                        "z":  0
-                                    },
-                           "CountsAsCoreFacility":  true
-                       },
-                       {
-                           "Id":  "facility_f1_WaitingPoint_42_-2",
-                           "DisplayName":  "等待点",
-                           "FacilityTypeId":  "WaitingPoint",
-                           "FacilityType":  21,
-                           "FloorIndex":  1,
-                           "Cell":  {
-                                        "x":  42,
-                                        "y":  -2,
-                                        "z":  0
-                                    },
-                           "CountsAsCoreFacility":  true
-                       },
-                       {
-                           "Id":  "facility_f1_WaitingPoint_56_-2",
-                           "DisplayName":  "等待点",
-                           "FacilityTypeId":  "WaitingPoint",
-                           "FacilityType":  21,
-                           "FloorIndex":  1,
-                           "Cell":  {
-                                        "x":  56,
-                                        "y":  -2,
-                                        "z":  0
-                                    },
-                           "CountsAsCoreFacility":  true
-                       },
-                       {
-                           "Id":  "facility_f1_DropPoint_23_-23",
-                           "DisplayName":  "放置点",
-                           "FacilityTypeId":  "DropPoint",
-                           "FacilityType":  20,
-                           "FloorIndex":  1,
-                           "Cell":  {
-                                        "x":  23,
-                                        "y":  -23,
-                                        "z":  0
-                                    },
-                           "CountsAsCoreFacility":  true
-                       },
-                       {
-                           "Id":  "facility_f1_DropPoint_15_-23",
-                           "DisplayName":  "放置点",
-                           "FacilityTypeId":  "DropPoint",
-                           "FacilityType":  20,
-                           "FloorIndex":  1,
-                           "Cell":  {
-                                        "x":  15,
-                                        "y":  -23,
-                                        "z":  0
-                                    },
-                           "CountsAsCoreFacility":  true
-                       },
-                       {
-                           "Id":  "facility_f1_DropPoint_19_-23",
-                           "DisplayName":  "放置点",
-                           "FacilityTypeId":  "DropPoint",
-                           "FacilityType":  20,
-                           "FloorIndex":  1,
-                           "Cell":  {
-                                        "x":  19,
-                                        "y":  -23,
-                                        "z":  0
-                                    },
-                           "CountsAsCoreFacility":  true
-                       },
-                       {
-                           "Id":  "facility_f1_PickupPoint_48_1",
-                           "DisplayName":  "顾客取餐点",
-                           "FacilityTypeId":  "PickupPoint",
-                           "FacilityType":  26,
-                           "FloorIndex":  1,
-                           "Cell":  {
-                                        "x":  48,
-                                        "y":  1,
-                                        "z":  0
-                                    },
-                           "CountsAsCoreFacility":  true
-                       },
-                       {
-                           "Id":  "facility_f1_DropPoint_27_-23",
-                           "DisplayName":  "放置点",
-                           "FacilityTypeId":  "DropPoint",
-                           "FacilityType":  20,
-                           "FloorIndex":  1,
-                           "Cell":  {
-                                        "x":  27,
-                                        "y":  -23,
-                                        "z":  0
-                                    },
-                           "CountsAsCoreFacility":  true
-                       },
-                       {
-                           "Id":  "facility_f1_DropPoint_13_-23",
-                           "DisplayName":  "放置点",
-                           "FacilityTypeId":  "DropPoint",
-                           "FacilityType":  20,
-                           "FloorIndex":  1,
-                           "Cell":  {
-                                        "x":  13,
-                                        "y":  -23,
-                                        "z":  0
-                                    },
-                           "CountsAsCoreFacility":  true
-                       },
-                       {
-                           "Id":  "facility_f1_DropPoint_21_-23",
-                           "DisplayName":  "放置点",
-                           "FacilityTypeId":  "DropPoint",
-                           "FacilityType":  20,
-                           "FloorIndex":  1,
-                           "Cell":  {
-                                        "x":  21,
-                                        "y":  -23,
-                                        "z":  0
-                                    },
-                           "CountsAsCoreFacility":  true
-                       },
-                       {
-                           "Id":  "facility_f1_WaitingPoint_44_0",
-                           "DisplayName":  "等待点",
-                           "FacilityTypeId":  "WaitingPoint",
-                           "FacilityType":  21,
-                           "FloorIndex":  1,
-                           "Cell":  {
-                                        "x":  44,
-                                        "y":  0,
-                                        "z":  0
-                                    },
-                           "CountsAsCoreFacility":  true
-                       },
-                       {
-                           "Id":  "facility_f1_ServiceWindow_42_2",
-                           "DisplayName":  "打饭窗口",
-                           "FacilityTypeId":  "ServiceWindow",
-                           "FacilityType":  27,
-                           "FloorIndex":  1,
-                           "Cell":  {
-                                        "x":  42,
-                                        "y":  2,
-                                        "z":  0
-                                    },
-                           "CountsAsCoreFacility":  true
-                       },
-                       {
-                           "Id":  "facility_f1_WaitingPoint_46_-2",
-                           "DisplayName":  "等待点",
-                           "FacilityTypeId":  "WaitingPoint",
-                           "FacilityType":  21,
-                           "FloorIndex":  1,
-                           "Cell":  {
-                                        "x":  46,
-                                        "y":  -2,
-                                        "z":  0
-                                    },
-                           "CountsAsCoreFacility":  true
-                       },
-                       {
-                           "Id":  "facility_f1_DropPoint_21_-6",
-                           "DisplayName":  "放置点",
-                           "FacilityTypeId":  "DropPoint",
-                           "FacilityType":  20,
-                           "FloorIndex":  1,
-                           "Cell":  {
-                                        "x":  21,
-                                        "y":  -6,
-                                        "z":  0
-                                    },
-                           "CountsAsCoreFacility":  true
-                       },
-                       {
-                           "Id":  "facility_f1_WaitingPoint_44_-3",
-                           "DisplayName":  "等待点",
-                           "FacilityTypeId":  "WaitingPoint",
-                           "FacilityType":  21,
-                           "FloorIndex":  1,
-                           "Cell":  {
-                                        "x":  44,
-                                        "y":  -3,
-                                        "z":  0
-                                    },
-                           "CountsAsCoreFacility":  true
-                       },
-                       {
-                           "Id":  "facility_f1_DropPoint_32_17",
-                           "DisplayName":  "放置点",
-                           "FacilityTypeId":  "DropPoint",
-                           "FacilityType":  20,
-                           "FloorIndex":  1,
-                           "Cell":  {
-                                        "x":  32,
-                                        "y":  17,
-                                        "z":  0
-                                    },
-                           "CountsAsCoreFacility":  true
-                       }
-                   ]
+    "Schema": "NtingCampusGameplayOverlay.v1",
+    "MapName": "校园地图根节点",
+    "Actors": [
+        {
+            "Id": "player_lixiaonao",
+            "DisplayName": "LiXiaonao",
+            "LocalizedDisplayName": {
+                "chinese": "李小闹",
+                "english": "LiXiaonao"
+            },
+            "RoleId": "Student",
+            "Role": 0,
+            "TeacherDutyId": "None",
+            "TeacherDuty": 0,
+            "StaffDutyId": "None",
+            "StaffDuty": 0,
+            "ClassId": "class_1",
+            "InitialStateId": "Normal",
+            "InitialState": 0,
+            "IsPlayerControlled": true,
+            "FloorIndex": 1,
+            "Cell": {
+                "x": -2,
+                "y": -18,
+                "z": 0
+            },
+            "Sleepiness": 25,
+            "Mischief": 35,
+            "TraitIds": [
+                "Troublemaker"
+            ],
+            "Traits": [
+                2
+            ],
+            "Assignments": {
+                "StudentClassroomId": "",
+                "StudentDeskId": "",
+                "TeacherClassroomId": "",
+                "TeacherPodiumId": "",
+                "OfficeRoomId": "",
+                "OfficeDeskId": "",
+                "WorkRoomId": "",
+                "ServiceWindowId": "",
+                "PrimaryWorkstationId": "",
+                "ClaimRoomId": "",
+                "DropPointId": ""
+            }
+        },
+        {
+            "Id": "student_sunxiaotao",
+            "DisplayName": "SunXiaotao",
+            "LocalizedDisplayName": {
+                "chinese": "孙小桃",
+                "english": "SunXiaotao"
+            },
+            "RoleId": "Student",
+            "Role": 0,
+            "TeacherDutyId": "None",
+            "TeacherDuty": 0,
+            "StaffDutyId": "None",
+            "StaffDuty": 0,
+            "ClassId": "class_1",
+            "InitialStateId": "Normal",
+            "InitialState": 0,
+            "IsPlayerControlled": false,
+            "FloorIndex": 1,
+            "Cell": {
+                "x": -1,
+                "y": -18,
+                "z": 0
+            },
+            "Sleepiness": 20,
+            "Mischief": 30,
+            "TraitIds": [
+                "GoodStudent"
+            ],
+            "Traits": [
+                3
+            ],
+            "Assignments": {
+                "StudentClassroomId": "classroom_f1_1",
+                "StudentDeskId": "facility_f1_StudentDesk_-10_-14",
+                "TeacherClassroomId": "",
+                "TeacherPodiumId": "",
+                "OfficeRoomId": "",
+                "OfficeDeskId": "",
+                "WorkRoomId": "",
+                "ServiceWindowId": "",
+                "PrimaryWorkstationId": "",
+                "ClaimRoomId": "",
+                "DropPointId": ""
+            }
+        },
+        {
+            "Id": "student_qiaomianmian",
+            "DisplayName": "QiaoMianmian",
+            "LocalizedDisplayName": {
+                "chinese": "乔绵绵",
+                "english": "QiaoMianmian"
+            },
+            "RoleId": "Student",
+            "Role": 0,
+            "TeacherDutyId": "None",
+            "TeacherDuty": 0,
+            "StaffDutyId": "None",
+            "StaffDuty": 0,
+            "ClassId": "class_1",
+            "InitialStateId": "Normal",
+            "InitialState": 0,
+            "IsPlayerControlled": false,
+            "FloorIndex": 1,
+            "Cell": {
+                "x": 0,
+                "y": -18,
+                "z": 0
+            },
+            "Sleepiness": 45,
+            "Mischief": 18,
+            "TraitIds": [
+                "Tattletale"
+            ],
+            "Traits": [
+                4
+            ],
+            "Assignments": {
+                "StudentClassroomId": "classroom_f1_1",
+                "StudentDeskId": "facility_f1_StudentDesk_-16_-14",
+                "TeacherClassroomId": "",
+                "TeacherPodiumId": "",
+                "OfficeRoomId": "",
+                "OfficeDeskId": "",
+                "WorkRoomId": "",
+                "ServiceWindowId": "",
+                "PrimaryWorkstationId": "",
+                "ClaimRoomId": "",
+                "DropPointId": ""
+            }
+        },
+        {
+            "Id": "student_xuaiying",
+            "DisplayName": "XuAiying",
+            "LocalizedDisplayName": {
+                "chinese": "徐爱英",
+                "english": "XuAiying"
+            },
+            "RoleId": "Student",
+            "Role": 0,
+            "TeacherDutyId": "None",
+            "TeacherDuty": 0,
+            "StaffDutyId": "None",
+            "StaffDuty": 0,
+            "ClassId": "class_1",
+            "InitialStateId": "Normal",
+            "InitialState": 0,
+            "IsPlayerControlled": false,
+            "FloorIndex": 1,
+            "Cell": {
+                "x": 1,
+                "y": -18,
+                "z": 0
+            },
+            "Sleepiness": 62,
+            "Mischief": 14,
+            "TraitIds": [
+                "Sleepyhead"
+            ],
+            "Traits": [
+                1
+            ],
+            "Assignments": {
+                "StudentClassroomId": "classroom_f1_1",
+                "StudentDeskId": "facility_f1_StudentDesk_-16_-8",
+                "TeacherClassroomId": "",
+                "TeacherPodiumId": "",
+                "OfficeRoomId": "",
+                "OfficeDeskId": "",
+                "WorkRoomId": "",
+                "ServiceWindowId": "",
+                "PrimaryWorkstationId": "",
+                "ClaimRoomId": "",
+                "DropPointId": ""
+            }
+        },
+        {
+            "Id": "student_luowan",
+            "DisplayName": "LuoWan",
+            "LocalizedDisplayName": {
+                "chinese": "罗晚",
+                "english": "LuoWan"
+            },
+            "RoleId": "Student",
+            "Role": 0,
+            "TeacherDutyId": "None",
+            "TeacherDuty": 0,
+            "StaffDutyId": "None",
+            "StaffDuty": 0,
+            "ClassId": "class_2",
+            "InitialStateId": "Normal",
+            "InitialState": 0,
+            "IsPlayerControlled": false,
+            "FloorIndex": 1,
+            "Cell": {
+                "x": 2,
+                "y": -18,
+                "z": 0
+            },
+            "Sleepiness": 28,
+            "Mischief": 68,
+            "TraitIds": [
+                "Troublemaker"
+            ],
+            "Traits": [
+                2
+            ],
+            "Assignments": {
+                "StudentClassroomId": "classroom_f1_1",
+                "StudentDeskId": "facility_f1_StudentDesk_-16_-11",
+                "TeacherClassroomId": "",
+                "TeacherPodiumId": "",
+                "OfficeRoomId": "",
+                "OfficeDeskId": "",
+                "WorkRoomId": "",
+                "ServiceWindowId": "",
+                "PrimaryWorkstationId": "",
+                "ClaimRoomId": "",
+                "DropPointId": ""
+            }
+        },
+        {
+            "Id": "student_shenmeng",
+            "DisplayName": "ShenMeng",
+            "LocalizedDisplayName": {
+                "chinese": "沈梦",
+                "english": "ShenMeng"
+            },
+            "RoleId": "Student",
+            "Role": 0,
+            "TeacherDutyId": "None",
+            "TeacherDuty": 0,
+            "StaffDutyId": "None",
+            "StaffDuty": 0,
+            "ClassId": "class_2",
+            "InitialStateId": "Normal",
+            "InitialState": 0,
+            "IsPlayerControlled": false,
+            "FloorIndex": 1,
+            "Cell": {
+                "x": -2,
+                "y": -17,
+                "z": 0
+            },
+            "Sleepiness": 35,
+            "Mischief": 22,
+            "TraitIds": [
+                "Ordinary"
+            ],
+            "Traits": [
+                0
+            ],
+            "Assignments": {
+                "StudentClassroomId": "classroom_f1_1",
+                "StudentDeskId": "facility_f1_StudentDesk_-10_-5",
+                "TeacherClassroomId": "",
+                "TeacherPodiumId": "",
+                "OfficeRoomId": "",
+                "OfficeDeskId": "",
+                "WorkRoomId": "",
+                "ServiceWindowId": "",
+                "PrimaryWorkstationId": "",
+                "ClaimRoomId": "",
+                "DropPointId": ""
+            }
+        },
+        {
+            "Id": "student_heyulu",
+            "DisplayName": "HeYulu",
+            "LocalizedDisplayName": {
+                "chinese": "何雨露",
+                "english": "HeYulu"
+            },
+            "RoleId": "Student",
+            "Role": 0,
+            "TeacherDutyId": "None",
+            "TeacherDuty": 0,
+            "StaffDutyId": "None",
+            "StaffDuty": 0,
+            "ClassId": "class_2",
+            "InitialStateId": "Normal",
+            "InitialState": 0,
+            "IsPlayerControlled": false,
+            "FloorIndex": 1,
+            "Cell": {
+                "x": -1,
+                "y": -17,
+                "z": 0
+            },
+            "Sleepiness": 50,
+            "Mischief": 25,
+            "TraitIds": [
+                "Sleepyhead"
+            ],
+            "Traits": [
+                1
+            ],
+            "Assignments": {
+                "StudentClassroomId": "classroom_f1_1",
+                "StudentDeskId": "facility_f1_StudentDesk_-7_-11",
+                "TeacherClassroomId": "",
+                "TeacherPodiumId": "",
+                "OfficeRoomId": "",
+                "OfficeDeskId": "",
+                "WorkRoomId": "",
+                "ServiceWindowId": "",
+                "PrimaryWorkstationId": "",
+                "ClaimRoomId": "",
+                "DropPointId": ""
+            }
+        },
+        {
+            "Id": "student_zhouxin",
+            "DisplayName": "ZhouXin",
+            "LocalizedDisplayName": {
+                "chinese": "周欣",
+                "english": "ZhouXin"
+            },
+            "RoleId": "Student",
+            "Role": 0,
+            "TeacherDutyId": "None",
+            "TeacherDuty": 0,
+            "StaffDutyId": "None",
+            "StaffDuty": 0,
+            "ClassId": "class_2",
+            "InitialStateId": "Normal",
+            "InitialState": 0,
+            "IsPlayerControlled": false,
+            "FloorIndex": 1,
+            "Cell": {
+                "x": 0,
+                "y": -17,
+                "z": 0
+            },
+            "Sleepiness": 24,
+            "Mischief": 44,
+            "TraitIds": [
+                "Troublemaker"
+            ],
+            "Traits": [
+                2
+            ],
+            "Assignments": {
+                "StudentClassroomId": "classroom_f1_1",
+                "StudentDeskId": "facility_f1_StudentDesk_-16_-5",
+                "TeacherClassroomId": "",
+                "TeacherPodiumId": "",
+                "OfficeRoomId": "",
+                "OfficeDeskId": "",
+                "WorkRoomId": "",
+                "ServiceWindowId": "",
+                "PrimaryWorkstationId": "",
+                "ClaimRoomId": "",
+                "DropPointId": ""
+            }
+        },
+        {
+            "Id": "student_pengzihao",
+            "DisplayName": "PengZihao",
+            "LocalizedDisplayName": {
+                "chinese": "彭子豪",
+                "english": "PengZihao"
+            },
+            "RoleId": "Student",
+            "Role": 0,
+            "TeacherDutyId": "None",
+            "TeacherDuty": 0,
+            "StaffDutyId": "None",
+            "StaffDuty": 0,
+            "ClassId": "class_2",
+            "InitialStateId": "Normal",
+            "InitialState": 0,
+            "IsPlayerControlled": false,
+            "FloorIndex": 1,
+            "Cell": {
+                "x": 1,
+                "y": -17,
+                "z": 0
+            },
+            "Sleepiness": 22,
+            "Mischief": 12,
+            "TraitIds": [
+                "GoodStudent"
+            ],
+            "Traits": [
+                3
+            ],
+            "Assignments": {
+                "StudentClassroomId": "classroom_f1_1",
+                "StudentDeskId": "facility_f1_StudentDesk_-10_-8",
+                "TeacherClassroomId": "",
+                "TeacherPodiumId": "",
+                "OfficeRoomId": "",
+                "OfficeDeskId": "",
+                "WorkRoomId": "",
+                "ServiceWindowId": "",
+                "PrimaryWorkstationId": "",
+                "ClaimRoomId": "",
+                "DropPointId": ""
+            }
+        },
+        {
+            "Id": "student_linshuang",
+            "DisplayName": "LinShuang",
+            "LocalizedDisplayName": {
+                "chinese": "林霜",
+                "english": "LinShuang"
+            },
+            "RoleId": "Student",
+            "Role": 0,
+            "TeacherDutyId": "None",
+            "TeacherDuty": 0,
+            "StaffDutyId": "None",
+            "StaffDuty": 0,
+            "ClassId": "class_3",
+            "InitialStateId": "Normal",
+            "InitialState": 0,
+            "IsPlayerControlled": false,
+            "FloorIndex": 1,
+            "Cell": {
+                "x": 2,
+                "y": -17,
+                "z": 0
+            },
+            "Sleepiness": 40,
+            "Mischief": 20,
+            "TraitIds": [
+                "Tattletale"
+            ],
+            "Traits": [
+                4
+            ],
+            "Assignments": {
+                "StudentClassroomId": "classroom_f1_1",
+                "StudentDeskId": "facility_f1_StudentDesk_-13_-14",
+                "TeacherClassroomId": "",
+                "TeacherPodiumId": "",
+                "OfficeRoomId": "",
+                "OfficeDeskId": "",
+                "WorkRoomId": "",
+                "ServiceWindowId": "",
+                "PrimaryWorkstationId": "",
+                "ClaimRoomId": "",
+                "DropPointId": ""
+            }
+        },
+        {
+            "Id": "student_tangyue",
+            "DisplayName": "TangYue",
+            "LocalizedDisplayName": {
+                "chinese": "唐月",
+                "english": "TangYue"
+            },
+            "RoleId": "Student",
+            "Role": 0,
+            "TeacherDutyId": "None",
+            "TeacherDuty": 0,
+            "StaffDutyId": "None",
+            "StaffDuty": 0,
+            "ClassId": "class_3",
+            "InitialStateId": "Normal",
+            "InitialState": 0,
+            "IsPlayerControlled": false,
+            "FloorIndex": 1,
+            "Cell": {
+                "x": -2,
+                "y": -16,
+                "z": 0
+            },
+            "Sleepiness": 31,
+            "Mischief": 26,
+            "TraitIds": [
+                "Ordinary"
+            ],
+            "Traits": [
+                0
+            ],
+            "Assignments": {
+                "StudentClassroomId": "classroom_f1_1",
+                "StudentDeskId": "facility_f1_StudentDesk_-10_-11",
+                "TeacherClassroomId": "",
+                "TeacherPodiumId": "",
+                "OfficeRoomId": "",
+                "OfficeDeskId": "",
+                "WorkRoomId": "",
+                "ServiceWindowId": "",
+                "PrimaryWorkstationId": "",
+                "ClaimRoomId": "",
+                "DropPointId": ""
+            }
+        },
+        {
+            "Id": "student_wuyan",
+            "DisplayName": "WuYan",
+            "LocalizedDisplayName": {
+                "chinese": "吴妍",
+                "english": "WuYan"
+            },
+            "RoleId": "Student",
+            "Role": 0,
+            "TeacherDutyId": "None",
+            "TeacherDuty": 0,
+            "StaffDutyId": "None",
+            "StaffDuty": 0,
+            "ClassId": "class_3",
+            "InitialStateId": "Normal",
+            "InitialState": 0,
+            "IsPlayerControlled": false,
+            "FloorIndex": 1,
+            "Cell": {
+                "x": -1,
+                "y": -16,
+                "z": 0
+            },
+            "Sleepiness": 66,
+            "Mischief": 16,
+            "TraitIds": [
+                "Sleepyhead"
+            ],
+            "Traits": [
+                1
+            ],
+            "Assignments": {
+                "StudentClassroomId": "classroom_f1_1",
+                "StudentDeskId": "facility_f1_StudentDesk_-13_-8",
+                "TeacherClassroomId": "",
+                "TeacherPodiumId": "",
+                "OfficeRoomId": "",
+                "OfficeDeskId": "",
+                "WorkRoomId": "",
+                "ServiceWindowId": "",
+                "PrimaryWorkstationId": "",
+                "ClaimRoomId": "",
+                "DropPointId": ""
+            }
+        },
+        {
+            "Id": "student_gaojin",
+            "DisplayName": "GaoJin",
+            "LocalizedDisplayName": {
+                "chinese": "高晋",
+                "english": "GaoJin"
+            },
+            "RoleId": "Student",
+            "Role": 0,
+            "TeacherDutyId": "None",
+            "TeacherDuty": 0,
+            "StaffDutyId": "None",
+            "StaffDuty": 0,
+            "ClassId": "class_3",
+            "InitialStateId": "Normal",
+            "InitialState": 0,
+            "IsPlayerControlled": false,
+            "FloorIndex": 1,
+            "Cell": {
+                "x": 0,
+                "y": -16,
+                "z": 0
+            },
+            "Sleepiness": 19,
+            "Mischief": 58,
+            "TraitIds": [
+                "Troublemaker"
+            ],
+            "Traits": [
+                2
+            ],
+            "Assignments": {
+                "StudentClassroomId": "classroom_f1_1",
+                "StudentDeskId": "facility_f1_StudentDesk_-13_-11",
+                "TeacherClassroomId": "",
+                "TeacherPodiumId": "",
+                "OfficeRoomId": "",
+                "OfficeDeskId": "",
+                "WorkRoomId": "",
+                "ServiceWindowId": "",
+                "PrimaryWorkstationId": "",
+                "ClaimRoomId": "",
+                "DropPointId": ""
+            }
+        },
+        {
+            "Id": "student_cenya",
+            "DisplayName": "CenYa",
+            "LocalizedDisplayName": {
+                "chinese": "岑雅",
+                "english": "CenYa"
+            },
+            "RoleId": "Student",
+            "Role": 0,
+            "TeacherDutyId": "None",
+            "TeacherDuty": 0,
+            "StaffDutyId": "None",
+            "StaffDuty": 0,
+            "ClassId": "class_3",
+            "InitialStateId": "Normal",
+            "InitialState": 0,
+            "IsPlayerControlled": false,
+            "FloorIndex": 1,
+            "Cell": {
+                "x": 1,
+                "y": -16,
+                "z": 0
+            },
+            "Sleepiness": 18,
+            "Mischief": 14,
+            "TraitIds": [
+                "GoodStudent"
+            ],
+            "Traits": [
+                3
+            ],
+            "Assignments": {
+                "StudentClassroomId": "classroom_f1_1",
+                "StudentDeskId": "facility_f1_StudentDesk_-7_-14",
+                "TeacherClassroomId": "",
+                "TeacherPodiumId": "",
+                "OfficeRoomId": "",
+                "OfficeDeskId": "",
+                "WorkRoomId": "",
+                "ServiceWindowId": "",
+                "PrimaryWorkstationId": "",
+                "ClaimRoomId": "",
+                "DropPointId": ""
+            }
+        },
+        {
+            "Id": "teacher_linyuwen",
+            "DisplayName": "LinYuwen",
+            "LocalizedDisplayName": {
+                "chinese": "林语文",
+                "english": "LinYuwen"
+            },
+            "RoleId": "Teacher",
+            "Role": 1,
+            "TeacherDutyId": "WorldLanguageTeacher",
+            "TeacherDuty": 1,
+            "StaffDutyId": "None",
+            "StaffDuty": 0,
+            "ClassId": "class_1",
+            "InitialStateId": "Normal",
+            "InitialState": 0,
+            "IsPlayerControlled": false,
+            "FloorIndex": 1,
+            "Cell": {
+                "x": 2,
+                "y": -16,
+                "z": 0
+            },
+            "Sleepiness": 8,
+            "Mischief": 0,
+            "TraitIds": [
+                "Ordinary"
+            ],
+            "Traits": [
+                0
+            ],
+            "Assignments": {
+                "StudentClassroomId": "",
+                "StudentDeskId": "",
+                "TeacherClassroomId": "classroom_f1_1",
+                "TeacherPodiumId": "facility_f1_Podium_-13_-2",
+                "OfficeRoomId": "",
+                "OfficeDeskId": "",
+                "WorkRoomId": "",
+                "ServiceWindowId": "",
+                "PrimaryWorkstationId": "",
+                "ClaimRoomId": "",
+                "DropPointId": ""
+            }
+        },
+        {
+            "Id": "teacher_zhouxin",
+            "DisplayName": "ZhouXinTeacher",
+            "LocalizedDisplayName": {
+                "chinese": "周欣老师",
+                "english": "ZhouXinTeacher"
+            },
+            "RoleId": "Teacher",
+            "Role": 1,
+            "TeacherDutyId": "MathTeacher, PatrolDirector",
+            "TeacherDuty": 10,
+            "StaffDutyId": "None",
+            "StaffDuty": 0,
+            "ClassId": "class_2",
+            "InitialStateId": "Normal",
+            "InitialState": 0,
+            "IsPlayerControlled": false,
+            "FloorIndex": 1,
+            "Cell": {
+                "x": -2,
+                "y": -15,
+                "z": 0
+            },
+            "Sleepiness": 10,
+            "Mischief": 0,
+            "TraitIds": [
+                "Ordinary"
+            ],
+            "Traits": [
+                0
+            ],
+            "Assignments": {
+                "StudentClassroomId": "",
+                "StudentDeskId": "",
+                "TeacherClassroomId": "classroom_f1_1",
+                "TeacherPodiumId": "facility_f1_Podium_-13_-2",
+                "OfficeRoomId": "",
+                "OfficeDeskId": "",
+                "WorkRoomId": "",
+                "ServiceWindowId": "",
+                "PrimaryWorkstationId": "",
+                "ClaimRoomId": "",
+                "DropPointId": ""
+            }
+        },
+        {
+            "Id": "teacher_suqin",
+            "DisplayName": "SuQin",
+            "LocalizedDisplayName": {
+                "chinese": "苏琴",
+                "english": "SuQin"
+            },
+            "RoleId": "Teacher",
+            "Role": 1,
+            "TeacherDutyId": "WorldLanguageTeacher, HomeroomTeacher",
+            "TeacherDuty": 5,
+            "StaffDutyId": "None",
+            "StaffDuty": 0,
+            "ClassId": "class_3",
+            "InitialStateId": "Normal",
+            "InitialState": 0,
+            "IsPlayerControlled": false,
+            "FloorIndex": 1,
+            "Cell": {
+                "x": 0,
+                "y": -15,
+                "z": 0
+            },
+            "Sleepiness": 12,
+            "Mischief": 0,
+            "TraitIds": [
+                "Ordinary"
+            ],
+            "Traits": [
+                0
+            ],
+            "Assignments": {
+                "StudentClassroomId": "",
+                "StudentDeskId": "",
+                "TeacherClassroomId": "classroom_f1_1",
+                "TeacherPodiumId": "facility_f1_Podium_-13_-2",
+                "OfficeRoomId": "",
+                "OfficeDeskId": "",
+                "WorkRoomId": "",
+                "ServiceWindowId": "",
+                "PrimaryWorkstationId": "",
+                "ClaimRoomId": "",
+                "DropPointId": ""
+            }
+        },
+        {
+            "Id": "staff_support_1",
+            "DisplayName": "SupportStaff1",
+            "LocalizedDisplayName": {
+                "chinese": "后勤职员1",
+                "english": "SupportStaff1"
+            },
+            "RoleId": "Staff",
+            "Role": 2,
+            "TeacherDutyId": "None",
+            "TeacherDuty": 0,
+            "StaffDutyId": "SupportStaff",
+            "StaffDuty": 1,
+            "ClassId": "class_1",
+            "InitialStateId": "Normal",
+            "InitialState": 0,
+            "IsPlayerControlled": false,
+            "FloorIndex": 1,
+            "Cell": {
+                "x": 42,
+                "y": 4,
+                "z": 0
+            },
+            "Sleepiness": 10,
+            "Mischief": 0,
+            "TraitIds": [
+                "Ordinary"
+            ],
+            "Traits": [
+                0
+            ],
+            "Assignments": {
+                "StudentClassroomId": "",
+                "StudentDeskId": "",
+                "TeacherClassroomId": "",
+                "TeacherPodiumId": "",
+                "OfficeRoomId": "",
+                "OfficeDeskId": "",
+                "WorkRoomId": "",
+                "ServiceWindowId": "facility_f1_ServiceWindow_42_2",
+                "PrimaryWorkstationId": "facility_f1_WorkerStandPoint_42_3",
+                "ClaimRoomId": "",
+                "DropPointId": ""
+            }
+        },
+        {
+            "Id": "staff_support_2",
+            "DisplayName": "SupportStaff2",
+            "LocalizedDisplayName": {
+                "chinese": "后勤职员2",
+                "english": "SupportStaff2"
+            },
+            "RoleId": "Staff",
+            "Role": 2,
+            "TeacherDutyId": "None",
+            "TeacherDuty": 0,
+            "StaffDutyId": "SupportStaff",
+            "StaffDuty": 1,
+            "ClassId": "class_1",
+            "InitialStateId": "Normal",
+            "InitialState": 0,
+            "IsPlayerControlled": false,
+            "FloorIndex": 1,
+            "Cell": {
+                "x": 44,
+                "y": 4,
+                "z": 0
+            },
+            "Sleepiness": 10,
+            "Mischief": 0,
+            "TraitIds": [
+                "Ordinary"
+            ],
+            "Traits": [
+                0
+            ],
+            "Assignments": {
+                "StudentClassroomId": "",
+                "StudentDeskId": "",
+                "TeacherClassroomId": "",
+                "TeacherPodiumId": "",
+                "OfficeRoomId": "",
+                "OfficeDeskId": "",
+                "WorkRoomId": "",
+                "ServiceWindowId": "facility_f1_ServiceWindow_44_2",
+                "PrimaryWorkstationId": "facility_f1_WorkerStandPoint_44_3",
+                "ClaimRoomId": "",
+                "DropPointId": ""
+            }
+        },
+        {
+            "Id": "staff_support_3",
+            "DisplayName": "SupportStaff3",
+            "LocalizedDisplayName": {
+                "chinese": "后勤职员3",
+                "english": "SupportStaff3"
+            },
+            "RoleId": "Staff",
+            "Role": 2,
+            "TeacherDutyId": "None",
+            "TeacherDuty": 0,
+            "StaffDutyId": "SupportStaff",
+            "StaffDuty": 1,
+            "ClassId": "class_1",
+            "InitialStateId": "Normal",
+            "InitialState": 0,
+            "IsPlayerControlled": false,
+            "FloorIndex": 1,
+            "Cell": {
+                "x": 48,
+                "y": 4,
+                "z": 0
+            },
+            "Sleepiness": 10,
+            "Mischief": 0,
+            "TraitIds": [
+                "Ordinary"
+            ],
+            "Traits": [
+                0
+            ],
+            "Assignments": {
+                "StudentClassroomId": "",
+                "StudentDeskId": "",
+                "TeacherClassroomId": "",
+                "TeacherPodiumId": "",
+                "OfficeRoomId": "",
+                "OfficeDeskId": "",
+                "WorkRoomId": "",
+                "ServiceWindowId": "facility_f1_ServiceWindow_48_2",
+                "PrimaryWorkstationId": "facility_f1_WorkerStandPoint_48_3",
+                "ClaimRoomId": "",
+                "DropPointId": ""
+            }
+        },
+        {
+            "Id": "staff_support_4",
+            "DisplayName": "SupportStaff4",
+            "LocalizedDisplayName": {
+                "chinese": "后勤职员4",
+                "english": "SupportStaff4"
+            },
+            "RoleId": "Staff",
+            "Role": 2,
+            "TeacherDutyId": "None",
+            "TeacherDuty": 0,
+            "StaffDutyId": "SupportStaff",
+            "StaffDuty": 1,
+            "ClassId": "class_1",
+            "InitialStateId": "Normal",
+            "InitialState": 0,
+            "IsPlayerControlled": false,
+            "FloorIndex": 1,
+            "Cell": {
+                "x": 46,
+                "y": 4,
+                "z": 0
+            },
+            "Sleepiness": 10,
+            "Mischief": 0,
+            "TraitIds": [
+                "Ordinary"
+            ],
+            "Traits": [
+                0
+            ],
+            "Assignments": {
+                "StudentClassroomId": "",
+                "StudentDeskId": "",
+                "TeacherClassroomId": "",
+                "TeacherPodiumId": "",
+                "OfficeRoomId": "",
+                "OfficeDeskId": "",
+                "WorkRoomId": "",
+                "ServiceWindowId": "facility_f1_ServiceWindow_46_2",
+                "PrimaryWorkstationId": "facility_f1_WorkerStandPoint_46_3",
+                "ClaimRoomId": "",
+                "DropPointId": ""
+            }
+        },
+        {
+            "Id": "staff_support_5",
+            "DisplayName": "SupportStaff5",
+            "LocalizedDisplayName": {
+                "chinese": "后勤职员5",
+                "english": "SupportStaff5"
+            },
+            "RoleId": "Staff",
+            "Role": 2,
+            "TeacherDutyId": "None",
+            "TeacherDuty": 0,
+            "StaffDutyId": "SupportStaff",
+            "StaffDuty": 1,
+            "ClassId": "class_1",
+            "InitialStateId": "Normal",
+            "InitialState": 0,
+            "IsPlayerControlled": false,
+            "FloorIndex": 1,
+            "Cell": {
+                "x": 50,
+                "y": 4,
+                "z": 0
+            },
+            "Sleepiness": 10,
+            "Mischief": 0,
+            "TraitIds": [
+                "Ordinary"
+            ],
+            "Traits": [
+                0
+            ],
+            "Assignments": {
+                "StudentClassroomId": "",
+                "StudentDeskId": "",
+                "TeacherClassroomId": "",
+                "TeacherPodiumId": "",
+                "OfficeRoomId": "",
+                "OfficeDeskId": "",
+                "WorkRoomId": "",
+                "ServiceWindowId": "facility_f1_ServiceWindow_50_2",
+                "PrimaryWorkstationId": "facility_f1_WorkerStandPoint_50_3",
+                "ClaimRoomId": "",
+                "DropPointId": ""
+            }
+        },
+        {
+            "Id": "staff_support_6",
+            "DisplayName": "SupportStaff6",
+            "LocalizedDisplayName": {
+                "chinese": "后勤职员6",
+                "english": "SupportStaff6"
+            },
+            "RoleId": "Staff",
+            "Role": 2,
+            "TeacherDutyId": "None",
+            "TeacherDuty": 0,
+            "StaffDutyId": "SupportStaff",
+            "StaffDuty": 1,
+            "ClassId": "class_1",
+            "InitialStateId": "Normal",
+            "InitialState": 0,
+            "IsPlayerControlled": false,
+            "FloorIndex": 1,
+            "Cell": {
+                "x": 52,
+                "y": 4,
+                "z": 0
+            },
+            "Sleepiness": 10,
+            "Mischief": 0,
+            "TraitIds": [
+                "Ordinary"
+            ],
+            "Traits": [
+                0
+            ],
+            "Assignments": {
+                "StudentClassroomId": "",
+                "StudentDeskId": "",
+                "TeacherClassroomId": "",
+                "TeacherPodiumId": "",
+                "OfficeRoomId": "",
+                "OfficeDeskId": "",
+                "WorkRoomId": "",
+                "ServiceWindowId": "facility_f1_ServiceWindow_52_2",
+                "PrimaryWorkstationId": "facility_f1_WorkerStandPoint_52_3",
+                "ClaimRoomId": "",
+                "DropPointId": ""
+            }
+        },
+        {
+            "Id": "staff_support_7",
+            "DisplayName": "SupportStaff7",
+            "LocalizedDisplayName": {
+                "chinese": "后勤职员7",
+                "english": "SupportStaff7"
+            },
+            "RoleId": "Staff",
+            "Role": 2,
+            "TeacherDutyId": "None",
+            "TeacherDuty": 0,
+            "StaffDutyId": "SupportStaff",
+            "StaffDuty": 1,
+            "ClassId": "class_1",
+            "InitialStateId": "Normal",
+            "InitialState": 0,
+            "IsPlayerControlled": false,
+            "FloorIndex": 1,
+            "Cell": {
+                "x": 54,
+                "y": 4,
+                "z": 0
+            },
+            "Sleepiness": 10,
+            "Mischief": 0,
+            "TraitIds": [
+                "Ordinary"
+            ],
+            "Traits": [
+                0
+            ],
+            "Assignments": {
+                "StudentClassroomId": "",
+                "StudentDeskId": "",
+                "TeacherClassroomId": "",
+                "TeacherPodiumId": "",
+                "OfficeRoomId": "",
+                "OfficeDeskId": "",
+                "WorkRoomId": "",
+                "ServiceWindowId": "facility_f1_ServiceWindow_54_2",
+                "PrimaryWorkstationId": "facility_f1_WorkerStandPoint_54_3",
+                "ClaimRoomId": "",
+                "DropPointId": ""
+            }
+        },
+        {
+            "Id": "staff_support_8",
+            "DisplayName": "SupportStaff8",
+            "LocalizedDisplayName": {
+                "chinese": "后勤职员8",
+                "english": "SupportStaff8"
+            },
+            "RoleId": "Staff",
+            "Role": 2,
+            "TeacherDutyId": "None",
+            "TeacherDuty": 0,
+            "StaffDutyId": "SupportStaff",
+            "StaffDuty": 1,
+            "ClassId": "class_1",
+            "InitialStateId": "Normal",
+            "InitialState": 0,
+            "IsPlayerControlled": false,
+            "FloorIndex": 1,
+            "Cell": {
+                "x": 56,
+                "y": 4,
+                "z": 0
+            },
+            "Sleepiness": 10,
+            "Mischief": 0,
+            "TraitIds": [
+                "Ordinary"
+            ],
+            "Traits": [
+                0
+            ],
+            "Assignments": {
+                "StudentClassroomId": "",
+                "StudentDeskId": "",
+                "TeacherClassroomId": "",
+                "TeacherPodiumId": "",
+                "OfficeRoomId": "",
+                "OfficeDeskId": "",
+                "WorkRoomId": "",
+                "ServiceWindowId": "facility_f1_ServiceWindow_56_2",
+                "PrimaryWorkstationId": "facility_f1_WorkerStandPoint_56_3",
+                "ClaimRoomId": "",
+                "DropPointId": ""
+            }
+        }
+    ],
+    "Rooms": [],
+    "Facilities": [
+        {
+            "Id": "facility_f1_WaitingPoint_54_0",
+            "OwnerFacilityId": "facility_f1_ServiceWindow_54_2",
+            "ServiceStationId": "canteen_station_54",
+            "DisplayName": "等待点",
+            "FacilityTypeId": "WaitingPoint",
+            "FacilityType": 21,
+            "FloorIndex": 1,
+            "Cell": {
+                "x": 54,
+                "y": 0,
+                "z": 0
+            },
+            "CountsAsCoreFacility": true
+        },
+        {
+            "Id": "facility_f1_WaitingPoint_52_0",
+            "OwnerFacilityId": "facility_f1_ServiceWindow_52_2",
+            "ServiceStationId": "canteen_station_52",
+            "DisplayName": "等待点",
+            "FacilityTypeId": "WaitingPoint",
+            "FacilityType": 21,
+            "FloorIndex": 1,
+            "Cell": {
+                "x": 52,
+                "y": 0,
+                "z": 0
+            },
+            "CountsAsCoreFacility": true
+        },
+        {
+            "Id": "facility_f1_DropPoint_32_17",
+            "OwnerFacilityId": "",
+            "ServiceStationId": "",
+            "DisplayName": "放置点",
+            "FacilityTypeId": "DropPoint",
+            "FacilityType": 20,
+            "FloorIndex": 1,
+            "Cell": {
+                "x": 32,
+                "y": 17,
+                "z": 0
+            },
+            "CountsAsCoreFacility": true
+        },
+        {
+            "Id": "facility_f1_PickupPoint_46_1",
+            "OwnerFacilityId": "facility_f1_ServiceWindow_46_2",
+            "ServiceStationId": "canteen_station_46",
+            "DisplayName": "顾客取餐点",
+            "FacilityTypeId": "PickupPoint",
+            "FacilityType": 26,
+            "FloorIndex": 1,
+            "Cell": {
+                "x": 46,
+                "y": 1,
+                "z": 0
+            },
+            "CountsAsCoreFacility": true
+        },
+        {
+            "Id": "facility_f1_WaitingPoint_46_-1",
+            "OwnerFacilityId": "facility_f1_ServiceWindow_46_2",
+            "ServiceStationId": "canteen_station_46",
+            "DisplayName": "等待点",
+            "FacilityTypeId": "WaitingPoint",
+            "FacilityType": 21,
+            "FloorIndex": 1,
+            "Cell": {
+                "x": 46,
+                "y": -1,
+                "z": 0
+            },
+            "CountsAsCoreFacility": true
+        },
+        {
+            "Id": "facility_f1_WaitingPoint_44_-2",
+            "OwnerFacilityId": "facility_f1_ServiceWindow_44_2",
+            "ServiceStationId": "canteen_station_44",
+            "DisplayName": "等待点",
+            "FacilityTypeId": "WaitingPoint",
+            "FacilityType": 21,
+            "FloorIndex": 1,
+            "Cell": {
+                "x": 44,
+                "y": -2,
+                "z": 0
+            },
+            "CountsAsCoreFacility": true
+        },
+        {
+            "Id": "facility_f1_WorkerStandPoint_46_3",
+            "OwnerFacilityId": "facility_f1_ServiceWindow_46_2",
+            "ServiceStationId": "canteen_station_46",
+            "DisplayName": "工作站位",
+            "FacilityTypeId": "WorkerStandPoint",
+            "FacilityType": 25,
+            "FloorIndex": 1,
+            "Cell": {
+                "x": 46,
+                "y": 3,
+                "z": 0
+            },
+            "CountsAsCoreFacility": true
+        },
+        {
+            "Id": "facility_f1_WaitingPoint_48_-2",
+            "OwnerFacilityId": "facility_f1_ServiceWindow_48_2",
+            "ServiceStationId": "canteen_station_48",
+            "DisplayName": "等待点",
+            "FacilityTypeId": "WaitingPoint",
+            "FacilityType": 21,
+            "FloorIndex": 1,
+            "Cell": {
+                "x": 48,
+                "y": -2,
+                "z": 0
+            },
+            "CountsAsCoreFacility": true
+        },
+        {
+            "Id": "facility_f1_WaitingPoint_44_-3",
+            "OwnerFacilityId": "facility_f1_ServiceWindow_44_2",
+            "ServiceStationId": "canteen_station_44",
+            "DisplayName": "等待点",
+            "FacilityTypeId": "WaitingPoint",
+            "FacilityType": 21,
+            "FloorIndex": 1,
+            "Cell": {
+                "x": 44,
+                "y": -3,
+                "z": 0
+            },
+            "CountsAsCoreFacility": true
+        },
+        {
+            "Id": "facility_f1_WaitingPoint_52_-2",
+            "OwnerFacilityId": "facility_f1_ServiceWindow_52_2",
+            "ServiceStationId": "canteen_station_52",
+            "DisplayName": "等待点",
+            "FacilityTypeId": "WaitingPoint",
+            "FacilityType": 21,
+            "FloorIndex": 1,
+            "Cell": {
+                "x": 52,
+                "y": -2,
+                "z": 0
+            },
+            "CountsAsCoreFacility": true
+        },
+        {
+            "Id": "facility_f1_WaitingPoint_56_-3",
+            "OwnerFacilityId": "facility_f1_ServiceWindow_56_2",
+            "ServiceStationId": "canteen_station_56",
+            "DisplayName": "等待点",
+            "FacilityTypeId": "WaitingPoint",
+            "FacilityType": 21,
+            "FloorIndex": 1,
+            "Cell": {
+                "x": 56,
+                "y": -3,
+                "z": 0
+            },
+            "CountsAsCoreFacility": true
+        },
+        {
+            "Id": "facility_f1_WaitingPoint_42_-2",
+            "OwnerFacilityId": "facility_f1_ServiceWindow_42_2",
+            "ServiceStationId": "canteen_station_42",
+            "DisplayName": "等待点",
+            "FacilityTypeId": "WaitingPoint",
+            "FacilityType": 21,
+            "FloorIndex": 1,
+            "Cell": {
+                "x": 42,
+                "y": -2,
+                "z": 0
+            },
+            "CountsAsCoreFacility": true
+        },
+        {
+            "Id": "facility_f1_WaitingPoint_54_-3",
+            "OwnerFacilityId": "facility_f1_ServiceWindow_54_2",
+            "ServiceStationId": "canteen_station_54",
+            "DisplayName": "等待点",
+            "FacilityTypeId": "WaitingPoint",
+            "FacilityType": 21,
+            "FloorIndex": 1,
+            "Cell": {
+                "x": 54,
+                "y": -3,
+                "z": 0
+            },
+            "CountsAsCoreFacility": true
+        },
+        {
+            "Id": "facility_f1_ServiceWindow_54_2",
+            "OwnerFacilityId": "",
+            "ServiceStationId": "canteen_station_54",
+            "DisplayName": "打饭窗口",
+            "FacilityTypeId": "ServiceWindow",
+            "FacilityType": 27,
+            "FloorIndex": 1,
+            "Cell": {
+                "x": 54,
+                "y": 2,
+                "z": 0
+            },
+            "CountsAsCoreFacility": true
+        },
+        {
+            "Id": "facility_f1_WaitingPoint_50_-2",
+            "OwnerFacilityId": "facility_f1_ServiceWindow_50_2",
+            "ServiceStationId": "canteen_station_50",
+            "DisplayName": "等待点",
+            "FacilityTypeId": "WaitingPoint",
+            "FacilityType": 21,
+            "FloorIndex": 1,
+            "Cell": {
+                "x": 50,
+                "y": -2,
+                "z": 0
+            },
+            "CountsAsCoreFacility": true
+        },
+        {
+            "Id": "facility_f1_WaitingPoint_56_-2",
+            "OwnerFacilityId": "facility_f1_ServiceWindow_56_2",
+            "ServiceStationId": "canteen_station_56",
+            "DisplayName": "等待点",
+            "FacilityTypeId": "WaitingPoint",
+            "FacilityType": 21,
+            "FloorIndex": 1,
+            "Cell": {
+                "x": 56,
+                "y": -2,
+                "z": 0
+            },
+            "CountsAsCoreFacility": true
+        },
+        {
+            "Id": "facility_f1_WaitingPoint_42_-3",
+            "OwnerFacilityId": "facility_f1_ServiceWindow_42_2",
+            "ServiceStationId": "canteen_station_42",
+            "DisplayName": "等待点",
+            "FacilityTypeId": "WaitingPoint",
+            "FacilityType": 21,
+            "FloorIndex": 1,
+            "Cell": {
+                "x": 42,
+                "y": -3,
+                "z": 0
+            },
+            "CountsAsCoreFacility": true
+        },
+        {
+            "Id": "facility_f1_WorkerStandPoint_54_3",
+            "OwnerFacilityId": "facility_f1_ServiceWindow_54_2",
+            "ServiceStationId": "canteen_station_54",
+            "DisplayName": "工作站位",
+            "FacilityTypeId": "WorkerStandPoint",
+            "FacilityType": 25,
+            "FloorIndex": 1,
+            "Cell": {
+                "x": 54,
+                "y": 3,
+                "z": 0
+            },
+            "CountsAsCoreFacility": true
+        },
+        {
+            "Id": "facility_f1_ServiceWindow_56_2",
+            "OwnerFacilityId": "",
+            "ServiceStationId": "canteen_station_56",
+            "DisplayName": "打饭窗口",
+            "FacilityTypeId": "ServiceWindow",
+            "FacilityType": 27,
+            "FloorIndex": 1,
+            "Cell": {
+                "x": 56,
+                "y": 2,
+                "z": 0
+            },
+            "CountsAsCoreFacility": true
+        },
+        {
+            "Id": "facility_f1_WorkerStandPoint_44_3",
+            "OwnerFacilityId": "facility_f1_ServiceWindow_44_2",
+            "ServiceStationId": "canteen_station_44",
+            "DisplayName": "工作站位",
+            "FacilityTypeId": "WorkerStandPoint",
+            "FacilityType": 25,
+            "FloorIndex": 1,
+            "Cell": {
+                "x": 44,
+                "y": 3,
+                "z": 0
+            },
+            "CountsAsCoreFacility": true
+        },
+        {
+            "Id": "facility_f1_WaitingPoint_46_-2",
+            "OwnerFacilityId": "facility_f1_ServiceWindow_46_2",
+            "ServiceStationId": "canteen_station_46",
+            "DisplayName": "等待点",
+            "FacilityTypeId": "WaitingPoint",
+            "FacilityType": 21,
+            "FloorIndex": 1,
+            "Cell": {
+                "x": 46,
+                "y": -2,
+                "z": 0
+            },
+            "CountsAsCoreFacility": true
+        },
+        {
+            "Id": "facility_f1_ServiceWindow_44_2",
+            "OwnerFacilityId": "",
+            "ServiceStationId": "canteen_station_44",
+            "DisplayName": "打饭窗口",
+            "FacilityTypeId": "ServiceWindow",
+            "FacilityType": 27,
+            "FloorIndex": 1,
+            "Cell": {
+                "x": 44,
+                "y": 2,
+                "z": 0
+            },
+            "CountsAsCoreFacility": true
+        },
+        {
+            "Id": "facility_f1_WaitingPoint_56_0",
+            "OwnerFacilityId": "facility_f1_ServiceWindow_56_2",
+            "ServiceStationId": "canteen_station_56",
+            "DisplayName": "等待点",
+            "FacilityTypeId": "WaitingPoint",
+            "FacilityType": 21,
+            "FloorIndex": 1,
+            "Cell": {
+                "x": 56,
+                "y": 0,
+                "z": 0
+            },
+            "CountsAsCoreFacility": true
+        },
+        {
+            "Id": "facility_f1_WaitingPoint_50_0",
+            "OwnerFacilityId": "facility_f1_ServiceWindow_50_2",
+            "ServiceStationId": "canteen_station_50",
+            "DisplayName": "等待点",
+            "FacilityTypeId": "WaitingPoint",
+            "FacilityType": 21,
+            "FloorIndex": 1,
+            "Cell": {
+                "x": 50,
+                "y": 0,
+                "z": 0
+            },
+            "CountsAsCoreFacility": true
+        },
+        {
+            "Id": "facility_f1_WorkerStandPoint_56_3",
+            "OwnerFacilityId": "facility_f1_ServiceWindow_56_2",
+            "ServiceStationId": "canteen_station_56",
+            "DisplayName": "工作站位",
+            "FacilityTypeId": "WorkerStandPoint",
+            "FacilityType": 25,
+            "FloorIndex": 1,
+            "Cell": {
+                "x": 56,
+                "y": 3,
+                "z": 0
+            },
+            "CountsAsCoreFacility": true
+        },
+        {
+            "Id": "facility_f1_WorkerStandPoint_42_3",
+            "OwnerFacilityId": "facility_f1_ServiceWindow_42_2",
+            "ServiceStationId": "canteen_station_42",
+            "DisplayName": "工作站位",
+            "FacilityTypeId": "WorkerStandPoint",
+            "FacilityType": 25,
+            "FloorIndex": 1,
+            "Cell": {
+                "x": 42,
+                "y": 3,
+                "z": 0
+            },
+            "CountsAsCoreFacility": true
+        },
+        {
+            "Id": "facility_f1_PickupPoint_42_1",
+            "OwnerFacilityId": "facility_f1_ServiceWindow_42_2",
+            "ServiceStationId": "canteen_station_42",
+            "DisplayName": "顾客取餐点",
+            "FacilityTypeId": "PickupPoint",
+            "FacilityType": 26,
+            "FloorIndex": 1,
+            "Cell": {
+                "x": 42,
+                "y": 1,
+                "z": 0
+            },
+            "CountsAsCoreFacility": true
+        },
+        {
+            "Id": "facility_f1_WaitingPoint_52_-1",
+            "OwnerFacilityId": "facility_f1_ServiceWindow_52_2",
+            "ServiceStationId": "canteen_station_52",
+            "DisplayName": "等待点",
+            "FacilityTypeId": "WaitingPoint",
+            "FacilityType": 21,
+            "FloorIndex": 1,
+            "Cell": {
+                "x": 52,
+                "y": -1,
+                "z": 0
+            },
+            "CountsAsCoreFacility": true
+        },
+        {
+            "Id": "facility_f1_WorkerStandPoint_48_3",
+            "OwnerFacilityId": "facility_f1_ServiceWindow_48_2",
+            "ServiceStationId": "canteen_station_48",
+            "DisplayName": "工作站位",
+            "FacilityTypeId": "WorkerStandPoint",
+            "FacilityType": 25,
+            "FloorIndex": 1,
+            "Cell": {
+                "x": 48,
+                "y": 3,
+                "z": 0
+            },
+            "CountsAsCoreFacility": true
+        },
+        {
+            "Id": "facility_f1_WaitingPoint_48_0",
+            "OwnerFacilityId": "facility_f1_ServiceWindow_48_2",
+            "ServiceStationId": "canteen_station_48",
+            "DisplayName": "等待点",
+            "FacilityTypeId": "WaitingPoint",
+            "FacilityType": 21,
+            "FloorIndex": 1,
+            "Cell": {
+                "x": 48,
+                "y": 0,
+                "z": 0
+            },
+            "CountsAsCoreFacility": true
+        },
+        {
+            "Id": "facility_f1_ServiceWindow_46_2",
+            "OwnerFacilityId": "",
+            "ServiceStationId": "canteen_station_46",
+            "DisplayName": "打饭窗口",
+            "FacilityTypeId": "ServiceWindow",
+            "FacilityType": 27,
+            "FloorIndex": 1,
+            "Cell": {
+                "x": 46,
+                "y": 2,
+                "z": 0
+            },
+            "CountsAsCoreFacility": true
+        },
+        {
+            "Id": "facility_f1_WaitingPoint_42_-1",
+            "OwnerFacilityId": "facility_f1_ServiceWindow_42_2",
+            "ServiceStationId": "canteen_station_42",
+            "DisplayName": "等待点",
+            "FacilityTypeId": "WaitingPoint",
+            "FacilityType": 21,
+            "FloorIndex": 1,
+            "Cell": {
+                "x": 42,
+                "y": -1,
+                "z": 0
+            },
+            "CountsAsCoreFacility": true
+        },
+        {
+            "Id": "facility_f1_WaitingPoint_56_-1",
+            "OwnerFacilityId": "facility_f1_ServiceWindow_56_2",
+            "ServiceStationId": "canteen_station_56",
+            "DisplayName": "等待点",
+            "FacilityTypeId": "WaitingPoint",
+            "FacilityType": 21,
+            "FloorIndex": 1,
+            "Cell": {
+                "x": 56,
+                "y": -1,
+                "z": 0
+            },
+            "CountsAsCoreFacility": true
+        },
+        {
+            "Id": "facility_f1_WaitingPoint_50_-1",
+            "OwnerFacilityId": "facility_f1_ServiceWindow_50_2",
+            "ServiceStationId": "canteen_station_50",
+            "DisplayName": "等待点",
+            "FacilityTypeId": "WaitingPoint",
+            "FacilityType": 21,
+            "FloorIndex": 1,
+            "Cell": {
+                "x": 50,
+                "y": -1,
+                "z": 0
+            },
+            "CountsAsCoreFacility": true
+        },
+        {
+            "Id": "facility_f1_WorkerStandPoint_52_3",
+            "OwnerFacilityId": "facility_f1_ServiceWindow_52_2",
+            "ServiceStationId": "canteen_station_52",
+            "DisplayName": "工作站位",
+            "FacilityTypeId": "WorkerStandPoint",
+            "FacilityType": 25,
+            "FloorIndex": 1,
+            "Cell": {
+                "x": 52,
+                "y": 3,
+                "z": 0
+            },
+            "CountsAsCoreFacility": true
+        },
+        {
+            "Id": "facility_f1_WaitingPoint_48_-3",
+            "OwnerFacilityId": "facility_f1_ServiceWindow_48_2",
+            "ServiceStationId": "canteen_station_48",
+            "DisplayName": "等待点",
+            "FacilityTypeId": "WaitingPoint",
+            "FacilityType": 21,
+            "FloorIndex": 1,
+            "Cell": {
+                "x": 48,
+                "y": -3,
+                "z": 0
+            },
+            "CountsAsCoreFacility": true
+        },
+        {
+            "Id": "facility_f1_WaitingPoint_42_0",
+            "OwnerFacilityId": "facility_f1_ServiceWindow_42_2",
+            "ServiceStationId": "canteen_station_42",
+            "DisplayName": "等待点",
+            "FacilityTypeId": "WaitingPoint",
+            "FacilityType": 21,
+            "FloorIndex": 1,
+            "Cell": {
+                "x": 42,
+                "y": 0,
+                "z": 0
+            },
+            "CountsAsCoreFacility": true
+        },
+        {
+            "Id": "facility_f1_WaitingPoint_52_-3",
+            "OwnerFacilityId": "facility_f1_ServiceWindow_52_2",
+            "ServiceStationId": "canteen_station_52",
+            "DisplayName": "等待点",
+            "FacilityTypeId": "WaitingPoint",
+            "FacilityType": 21,
+            "FloorIndex": 1,
+            "Cell": {
+                "x": 52,
+                "y": -3,
+                "z": 0
+            },
+            "CountsAsCoreFacility": true
+        },
+        {
+            "Id": "facility_f1_WaitingPoint_44_0",
+            "OwnerFacilityId": "facility_f1_ServiceWindow_44_2",
+            "ServiceStationId": "canteen_station_44",
+            "DisplayName": "等待点",
+            "FacilityTypeId": "WaitingPoint",
+            "FacilityType": 21,
+            "FloorIndex": 1,
+            "Cell": {
+                "x": 44,
+                "y": 0,
+                "z": 0
+            },
+            "CountsAsCoreFacility": true
+        },
+        {
+            "Id": "facility_f1_PickupPoint_50_1",
+            "OwnerFacilityId": "facility_f1_ServiceWindow_50_2",
+            "ServiceStationId": "canteen_station_50",
+            "DisplayName": "顾客取餐点",
+            "FacilityTypeId": "PickupPoint",
+            "FacilityType": 26,
+            "FloorIndex": 1,
+            "Cell": {
+                "x": 50,
+                "y": 1,
+                "z": 0
+            },
+            "CountsAsCoreFacility": true
+        },
+        {
+            "Id": "facility_f1_PickupPoint_54_1",
+            "OwnerFacilityId": "facility_f1_ServiceWindow_54_2",
+            "ServiceStationId": "canteen_station_54",
+            "DisplayName": "顾客取餐点",
+            "FacilityTypeId": "PickupPoint",
+            "FacilityType": 26,
+            "FloorIndex": 1,
+            "Cell": {
+                "x": 54,
+                "y": 1,
+                "z": 0
+            },
+            "CountsAsCoreFacility": true
+        },
+        {
+            "Id": "facility_f1_WaitingPoint_48_-1",
+            "OwnerFacilityId": "facility_f1_ServiceWindow_48_2",
+            "ServiceStationId": "canteen_station_48",
+            "DisplayName": "等待点",
+            "FacilityTypeId": "WaitingPoint",
+            "FacilityType": 21,
+            "FloorIndex": 1,
+            "Cell": {
+                "x": 48,
+                "y": -1,
+                "z": 0
+            },
+            "CountsAsCoreFacility": true
+        },
+        {
+            "Id": "facility_f1_WaitingPoint_44_-1",
+            "OwnerFacilityId": "facility_f1_ServiceWindow_44_2",
+            "ServiceStationId": "canteen_station_44",
+            "DisplayName": "等待点",
+            "FacilityTypeId": "WaitingPoint",
+            "FacilityType": 21,
+            "FloorIndex": 1,
+            "Cell": {
+                "x": 44,
+                "y": -1,
+                "z": 0
+            },
+            "CountsAsCoreFacility": true
+        },
+        {
+            "Id": "facility_f1_WaitingPoint_54_-2",
+            "OwnerFacilityId": "facility_f1_ServiceWindow_54_2",
+            "ServiceStationId": "canteen_station_54",
+            "DisplayName": "等待点",
+            "FacilityTypeId": "WaitingPoint",
+            "FacilityType": 21,
+            "FloorIndex": 1,
+            "Cell": {
+                "x": 54,
+                "y": -2,
+                "z": 0
+            },
+            "CountsAsCoreFacility": true
+        },
+        {
+            "Id": "facility_f1_WaitingPoint_46_0",
+            "OwnerFacilityId": "facility_f1_ServiceWindow_46_2",
+            "ServiceStationId": "canteen_station_46",
+            "DisplayName": "等待点",
+            "FacilityTypeId": "WaitingPoint",
+            "FacilityType": 21,
+            "FloorIndex": 1,
+            "Cell": {
+                "x": 46,
+                "y": 0,
+                "z": 0
+            },
+            "CountsAsCoreFacility": true
+        },
+        {
+            "Id": "facility_f1_PickupPoint_44_1",
+            "OwnerFacilityId": "facility_f1_ServiceWindow_44_2",
+            "ServiceStationId": "canteen_station_44",
+            "DisplayName": "顾客取餐点",
+            "FacilityTypeId": "PickupPoint",
+            "FacilityType": 26,
+            "FloorIndex": 1,
+            "Cell": {
+                "x": 44,
+                "y": 1,
+                "z": 0
+            },
+            "CountsAsCoreFacility": true
+        },
+        {
+            "Id": "facility_f1_WaitingPoint_54_-1",
+            "OwnerFacilityId": "facility_f1_ServiceWindow_54_2",
+            "ServiceStationId": "canteen_station_54",
+            "DisplayName": "等待点",
+            "FacilityTypeId": "WaitingPoint",
+            "FacilityType": 21,
+            "FloorIndex": 1,
+            "Cell": {
+                "x": 54,
+                "y": -1,
+                "z": 0
+            },
+            "CountsAsCoreFacility": true
+        },
+        {
+            "Id": "facility_f1_ServiceWindow_50_2",
+            "OwnerFacilityId": "",
+            "ServiceStationId": "canteen_station_50",
+            "DisplayName": "打饭窗口",
+            "FacilityTypeId": "ServiceWindow",
+            "FacilityType": 27,
+            "FloorIndex": 1,
+            "Cell": {
+                "x": 50,
+                "y": 2,
+                "z": 0
+            },
+            "CountsAsCoreFacility": true
+        },
+        {
+            "Id": "facility_f1_WaitingPoint_46_-3",
+            "OwnerFacilityId": "facility_f1_ServiceWindow_46_2",
+            "ServiceStationId": "canteen_station_46",
+            "DisplayName": "等待点",
+            "FacilityTypeId": "WaitingPoint",
+            "FacilityType": 21,
+            "FloorIndex": 1,
+            "Cell": {
+                "x": 46,
+                "y": -3,
+                "z": 0
+            },
+            "CountsAsCoreFacility": true
+        },
+        {
+            "Id": "facility_f1_PickupPoint_52_1",
+            "OwnerFacilityId": "facility_f1_ServiceWindow_52_2",
+            "ServiceStationId": "canteen_station_52",
+            "DisplayName": "顾客取餐点",
+            "FacilityTypeId": "PickupPoint",
+            "FacilityType": 26,
+            "FloorIndex": 1,
+            "Cell": {
+                "x": 52,
+                "y": 1,
+                "z": 0
+            },
+            "CountsAsCoreFacility": true
+        },
+        {
+            "Id": "facility_f1_ServiceWindow_52_2",
+            "OwnerFacilityId": "",
+            "ServiceStationId": "canteen_station_52",
+            "DisplayName": "打饭窗口",
+            "FacilityTypeId": "ServiceWindow",
+            "FacilityType": 27,
+            "FloorIndex": 1,
+            "Cell": {
+                "x": 52,
+                "y": 2,
+                "z": 0
+            },
+            "CountsAsCoreFacility": true
+        },
+        {
+            "Id": "facility_f1_PickupPoint_48_1",
+            "OwnerFacilityId": "facility_f1_ServiceWindow_48_2",
+            "ServiceStationId": "canteen_station_48",
+            "DisplayName": "顾客取餐点",
+            "FacilityTypeId": "PickupPoint",
+            "FacilityType": 26,
+            "FloorIndex": 1,
+            "Cell": {
+                "x": 48,
+                "y": 1,
+                "z": 0
+            },
+            "CountsAsCoreFacility": true
+        },
+        {
+            "Id": "facility_f1_WaitingPoint_50_-3",
+            "OwnerFacilityId": "facility_f1_ServiceWindow_50_2",
+            "ServiceStationId": "canteen_station_50",
+            "DisplayName": "等待点",
+            "FacilityTypeId": "WaitingPoint",
+            "FacilityType": 21,
+            "FloorIndex": 1,
+            "Cell": {
+                "x": 50,
+                "y": -3,
+                "z": 0
+            },
+            "CountsAsCoreFacility": true
+        },
+        {
+            "Id": "facility_f1_ServiceWindow_48_2",
+            "OwnerFacilityId": "",
+            "ServiceStationId": "canteen_station_48",
+            "DisplayName": "打饭窗口",
+            "FacilityTypeId": "ServiceWindow",
+            "FacilityType": 27,
+            "FloorIndex": 1,
+            "Cell": {
+                "x": 48,
+                "y": 2,
+                "z": 0
+            },
+            "CountsAsCoreFacility": true
+        },
+        {
+            "Id": "facility_f1_ServiceWindow_42_2",
+            "OwnerFacilityId": "",
+            "ServiceStationId": "canteen_station_42",
+            "DisplayName": "打饭窗口",
+            "FacilityTypeId": "ServiceWindow",
+            "FacilityType": 27,
+            "FloorIndex": 1,
+            "Cell": {
+                "x": 42,
+                "y": 2,
+                "z": 0
+            },
+            "CountsAsCoreFacility": true
+        },
+        {
+            "Id": "facility_f1_WorkerStandPoint_50_3",
+            "OwnerFacilityId": "facility_f1_ServiceWindow_50_2",
+            "ServiceStationId": "canteen_station_50",
+            "DisplayName": "工作站位",
+            "FacilityTypeId": "WorkerStandPoint",
+            "FacilityType": 25,
+            "FloorIndex": 1,
+            "Cell": {
+                "x": 50,
+                "y": 3,
+                "z": 0
+            },
+            "CountsAsCoreFacility": true
+        },
+        {
+            "Id": "facility_f1_PickupPoint_56_1",
+            "OwnerFacilityId": "facility_f1_ServiceWindow_56_2",
+            "ServiceStationId": "canteen_station_56",
+            "DisplayName": "顾客取餐点",
+            "FacilityTypeId": "PickupPoint",
+            "FacilityType": 26,
+            "FloorIndex": 1,
+            "Cell": {
+                "x": 56,
+                "y": 1,
+                "z": 0
+            },
+            "CountsAsCoreFacility": true
+        }
+    ]
 }
-
-

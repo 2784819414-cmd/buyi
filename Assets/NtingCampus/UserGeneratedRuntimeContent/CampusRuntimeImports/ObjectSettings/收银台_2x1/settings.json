@@ -1,0 +1,41 @@
+﻿{
+    "ObjectId": "收银台_2x1",
+    "TypeId": "",
+    "DisplayNameOverride": "收银台",
+    "OverrideFootprintSize": true,
+    "FootprintSize": {
+        "x": 2,
+        "y": 1
+    },
+    "VisualScale": {
+        "x": 1.0,
+        "y": 1.0
+    },
+    "LockVisualScaleAspect": true,
+    "IsWallMounted": false,
+    "OverrideAllowRotation": true,
+    "AllowRotation": true,
+    "OverrideRotation0Sprite": false,
+    "Rotation0SpritePath": "",
+    "OverrideRotation90Sprite": false,
+    "Rotation90SpritePath": "",
+    "OverrideRotation180Sprite": false,
+    "Rotation180SpritePath": "",
+    "OverrideRotation270Sprite": false,
+    "Rotation270SpritePath": "",
+    "IsStorageContainer": false,
+    "StorageSize": {
+        "x": 4,
+        "y": 4
+    },
+    "StorageMaxWeight": 12.0,
+    "UseCustomInteractionAnchor": false,
+    "CustomInteractionAnchorLocalPosition": {
+        "x": 0.0,
+        "y": 0.0,
+        "z": 0.0
+    },
+    "CustomInteractionAnchorRadius": 0.6499999761581421,
+    "CustomInteractionPromptText": "交互",
+    "CustomInteractionAnchors": []
+}

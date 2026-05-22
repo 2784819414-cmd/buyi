@@ -104,9 +104,12 @@ namespace NtingCampusMapEditor
                     continue;
                 }
 
+                string ownerFacilityId = ResolveCapturedOwnerFacilityId(marker);
                 output.Add(new CampusRuntimeGameplayFacilitySnapshot
                 {
                     Id = id,
+                    OwnerFacilityId = ownerFacilityId,
+                    ServiceStationId = marker.LegacyServiceStationId,
                     DisplayName = marker.DisplayName,
                     FacilityType = marker.FacilityType,
                     FloorIndex = Mathf.Max(1, marker.FloorIndex),
@@ -185,6 +188,9 @@ namespace NtingCampusMapEditor
                 UnityEngine.Object.FindObjectsByType<CampusGameplayFacilityMarker>(
                     FindObjectsInactive.Include,
                     FindObjectsSortMode.None);
+            List<CampusGameplayFacilityMarker> capturedMarkers = new List<CampusGameplayFacilityMarker>();
+            Dictionary<string, string> relativeOwnerIdByAbsoluteFacilityId =
+                new Dictionary<string, string>(System.StringComparer.OrdinalIgnoreCase);
             for (int i = 0; i < markers.Length; i++)
             {
                 CampusGameplayFacilityMarker marker = markers[i];
@@ -199,9 +205,42 @@ namespace NtingCampusMapEditor
                     continue;
                 }
 
+                capturedMarkers.Add(marker);
+                string absoluteFacilityId = CampusGameplayFacilityMarker.NormalizeFacilityId(marker.FacilityId);
+                if (string.IsNullOrEmpty(absoluteFacilityId))
+                {
+                    absoluteFacilityId = CampusGameplayFacilityMarker.BuildStableFacilityId(
+                        marker.FloorIndex,
+                        marker.FacilityType,
+                        cell);
+                }
+
+                relativeOwnerIdByAbsoluteFacilityId[absoluteFacilityId] =
+                    CampusGameplayFacilityMarker.BuildStableFacilityId(
+                        0,
+                        marker.FacilityType,
+                        ToRelativeCell(cell, originCell));
+            }
+
+            for (int i = 0; i < capturedMarkers.Count; i++)
+            {
+                CampusGameplayFacilityMarker marker = capturedMarkers[i];
+                Vector3Int cell = NormalizeCell(marker.Cell);
+                string ownerFacilityId = ResolveCapturedOwnerFacilityId(marker);
+                if (!string.IsNullOrWhiteSpace(ownerFacilityId) &&
+                    relativeOwnerIdByAbsoluteFacilityId.TryGetValue(ownerFacilityId, out string relativeOwnerId))
+                {
+                    ownerFacilityId = relativeOwnerId;
+                }
+
                 output.Add(new CampusRuntimeGameplayFacilitySnapshot
                 {
-                    Id = marker.FacilityId,
+                    Id = CampusGameplayFacilityMarker.BuildStableFacilityId(
+                        0,
+                        marker.FacilityType,
+                        ToRelativeCell(cell, originCell)),
+                    OwnerFacilityId = ownerFacilityId,
+                    ServiceStationId = marker.LegacyServiceStationId,
                     DisplayName = marker.DisplayName,
                     FacilityType = marker.FacilityType,
                     FloorIndex = 0,
@@ -307,6 +346,8 @@ namespace NtingCampusMapEditor
                 CampusGameplayFacilityMarker marker = markerObject.AddComponent<CampusGameplayFacilityMarker>();
                 marker.Configure(
                     facility.Id,
+                    facility.OwnerFacilityId,
+                    facility.ServiceStationId,
                     facility.DisplayName,
                     facility.FacilityType,
                     floor.FloorIndex,
@@ -320,7 +361,8 @@ namespace NtingCampusMapEditor
             CampusFloorRoot floor,
             Vector3Int cell,
             string displayName,
-            CampusFacilityType facilityType)
+            CampusFacilityType facilityType,
+            string ownerFacilityId = "")
         {
             if (floor == null || floor.Grid == null || floor.PropsRoot == null)
             {
@@ -339,6 +381,9 @@ namespace NtingCampusMapEditor
 
             CampusGameplayFacilityMarker marker = markerObject.AddComponent<CampusGameplayFacilityMarker>();
             marker.Configure(
+                string.Empty,
+                ownerFacilityId,
+                string.Empty,
                 displayName,
                 facilityType,
                 floor.FloorIndex,
@@ -348,6 +393,37 @@ namespace NtingCampusMapEditor
 
             floor.MarkUsedBoundsDirty();
             return true;
+        }
+
+        private static string ResolveCapturedOwnerFacilityId(CampusGameplayFacilityMarker marker)
+        {
+            string explicitOwnerId =
+                CampusGameplayFacilityMarker.NormalizeOwnerFacilityId(
+                    marker != null ? marker.OwnerFacilityId : string.Empty);
+            if (!string.IsNullOrEmpty(explicitOwnerId))
+            {
+                return explicitOwnerId;
+            }
+
+            if (marker == null ||
+                marker.FacilityType == CampusFacilityType.ServiceWindow ||
+                marker.LinkedPlacedObject == null)
+            {
+                return string.Empty;
+            }
+
+            if (!CampusPlacedObjectConceptResolver.TryResolveFacility(
+                    marker.LinkedPlacedObject,
+                    out CampusFacilityTypeResolution ownerResolution) ||
+                ownerResolution.FacilityType != CampusFacilityType.ServiceWindow)
+            {
+                return string.Empty;
+            }
+
+            return CampusGameplayFacilityMarker.BuildStableFacilityId(
+                marker.LinkedPlacedObject.FloorIndex,
+                ownerResolution.FacilityType,
+                marker.LinkedPlacedObject.Cell);
         }
 
         internal static bool EraseMarkersAtCell(

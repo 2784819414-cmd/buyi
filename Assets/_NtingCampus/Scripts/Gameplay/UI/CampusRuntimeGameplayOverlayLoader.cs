@@ -188,6 +188,8 @@ namespace NtingCampus.Gameplay.UI
                 CampusGameplayFacilityMarker marker = facilityObject.AddComponent<CampusGameplayFacilityMarker>();
                 marker.Configure(
                     facility.Id,
+                    facility.OwnerFacilityId,
+                    facility.ServiceStationId,
                     facility.DisplayName,
                     facility.FacilityType,
                     facility.FloorIndex,

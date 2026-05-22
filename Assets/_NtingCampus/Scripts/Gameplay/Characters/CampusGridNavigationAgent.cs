@@ -58,6 +58,7 @@ namespace NtingCampus.Gameplay.Characters
         [SerializeField] private Vector3 destination;
         [SerializeField] private Vector3 resolvedDestination;
         [SerializeField] private Vector3 waypointPosition;
+        [SerializeField] private bool requireExactDestination;
 
         private readonly List<Vector3Int> pathCells = new List<Vector3Int>();
         private int pathCellIndex;
@@ -124,14 +125,22 @@ namespace NtingCampus.Gameplay.Characters
             movementStuckDistance = Mathf.Max(0.005f, stuckDistance);
         }
 
-        public void SetDestination(Vector3 worldPosition, float stopDistance, string reason)
+        public void SetDestination(
+            Vector3 worldPosition,
+            float stopDistance,
+            string reason,
+            bool exactDestinationRequired = false)
         {
             EnsureSetup();
             worldPosition.z = transform.position.z;
             arrivalDistance = Mathf.Max(0.02f, stopDistance);
             debugMoveReason = reason ?? string.Empty;
 
-            if (!hasDestination || Vector2.Distance(destination, worldPosition) > 0.025f)
+            bool destinationChanged = !hasDestination || Vector2.Distance(destination, worldPosition) > 0.025f;
+            bool policyChanged = requireExactDestination != exactDestinationRequired;
+            requireExactDestination = exactDestinationRequired;
+
+            if (destinationChanged || policyChanged)
             {
                 destination = worldPosition;
                 resolvedDestination = worldPosition;
@@ -519,6 +528,17 @@ namespace NtingCampus.Gameplay.Characters
             result = default;
             preferredCell.z = 0;
             fromCell.z = 0;
+            if (requireExactDestination)
+            {
+                if (!IsWalkableCell(floor, preferredCell))
+                {
+                    return false;
+                }
+
+                result = preferredCell;
+                return true;
+            }
+
             if (IsSuitableDestinationCell(floor, preferredCell, fromCell))
             {
                 result = preferredCell;
