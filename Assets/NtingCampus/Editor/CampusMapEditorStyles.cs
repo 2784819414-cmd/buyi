@@ -1,5 +1,6 @@
 using UnityEditor;
 using UnityEngine;
+using NtingCampus.UI.Runtime.Gameplay;
 
 namespace NtingCampusMapEditor
 {
@@ -21,6 +22,8 @@ namespace NtingCampusMapEditor
                     header = new GUIStyle(EditorStyles.boldLabel)
                     {
                         fontSize = 12,
+                        normal = { textColor = CampusUiVisualTheme.TextPrimary },
+                        contentOffset = new Vector2(0f, 1f),
                         padding = new RectOffset(0, 0, 6, 2)
                     };
                 }
@@ -37,6 +40,8 @@ namespace NtingCampusMapEditor
                 {
                     helpBox = new GUIStyle(EditorStyles.helpBox)
                     {
+                        normal = { background = Texture2D.whiteTexture, textColor = CampusUiVisualTheme.TextPrimary },
+                        border = new RectOffset(1, 1, 1, 1),
                         padding = new RectOffset(8, 8, 6, 6)
                     };
                 }
@@ -54,6 +59,7 @@ namespace NtingCampusMapEditor
                     miniPreview = new GUIStyle(EditorStyles.label)
                     {
                         wordWrap = true,
+                        normal = { textColor = CampusUiVisualTheme.TextSecondary },
                         fontSize = 10
                     };
                 }

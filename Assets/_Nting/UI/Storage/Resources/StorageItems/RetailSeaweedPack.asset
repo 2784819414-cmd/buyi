@@ -1,0 +1,37 @@
+﻿%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a6c8594f85b44c40abf87c80a8710110, type: 3}
+  m_Name: RetailSeaweedPack
+  m_EditorClassIdentifier: 
+  Id: retail_seaweed_pack
+  DisplayName: "\u6D77\u82D4\u5305"
+  LocalizedDisplayName:
+    chinese: "\u6D77\u82D4\u5305"
+    english: Seaweed Pack
+  Width: 1
+  Height: 2
+  Weight: 0.06
+  Price: 10
+  Description: "\u8584\u800C\u8F7B\u7684\u5373\u98DF\u6D77\u82D4\u5C0F\u888B\u3002"
+  LocalizedDescription:
+    chinese: "\u8584\u800C\u8F7B\u7684\u5373\u98DF\u6D77\u82D4\u5C0F\u888B\u3002"
+    english: A light snack pack of ready-to-eat seaweed.
+  ThemeColor: {r: 0.27, g: 0.42, b: 0.34, a: 1}
+  Icon: {fileID: 0}
+  IsUsable: 0
+  UseActionId: 
+  ConsumeOnUse: 1
+  UseText: 
+  LocalizedUseText:
+    chinese: 
+    english: 
+

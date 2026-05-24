@@ -1,5 +1,5 @@
-using System;
-using NtingCampus.Gameplay.UI;
+﻿using System;
+using NtingCampus.UI.Runtime.Gameplay;
 using NtingCampusMapEditor;
 using UnityEngine;
 
@@ -515,3 +515,4 @@ namespace NtingCampus.Gameplay.Core
         }
     }
 }
+

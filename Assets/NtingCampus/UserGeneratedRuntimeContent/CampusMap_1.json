@@ -1,7 +1,7 @@
-﻿{
+{
     "Schema": "NtingCampusRuntimeMapEditor.v1",
     "MapName": "校园地图根节点",
-    "ExportedAtLocal": "2026-05-22 18:44:33",
+    "ExportedAtLocal": "2026-05-24 15:08:20",
     "SortingOrderStepPerFloor": 1000,
     "SelectedFloorIndex": 1,
     "HasRoomDefinitions": true,
@@ -8412,6 +8412,60 @@
                 },
                 {
                     "Cell": {
+                        "x": 20,
+                        "y": -15,
+                        "z": 0
+                    },
+                    "AssetName": "地面_白色瓷砖",
+                    "PaletteIndex": 4,
+                    "Transform": {
+                        "e00": 1.0,
+                        "e01": 0.0,
+                        "e02": 0.0,
+                        "e03": 0.0,
+                        "e10": 0.0,
+                        "e11": 1.0,
+                        "e12": 0.0,
+                        "e13": 0.0,
+                        "e20": 0.0,
+                        "e21": 0.0,
+                        "e22": 1.0,
+                        "e23": 0.0,
+                        "e30": 0.0,
+                        "e31": 0.0,
+                        "e32": 0.0,
+                        "e33": 1.0
+                    }
+                },
+                {
+                    "Cell": {
+                        "x": 21,
+                        "y": -15,
+                        "z": 0
+                    },
+                    "AssetName": "地面_白色瓷砖",
+                    "PaletteIndex": 4,
+                    "Transform": {
+                        "e00": 1.0,
+                        "e01": 0.0,
+                        "e02": 0.0,
+                        "e03": 0.0,
+                        "e10": 0.0,
+                        "e11": 1.0,
+                        "e12": 0.0,
+                        "e13": 0.0,
+                        "e20": 0.0,
+                        "e21": 0.0,
+                        "e22": 1.0,
+                        "e23": 0.0,
+                        "e30": 0.0,
+                        "e31": 0.0,
+                        "e32": 0.0,
+                        "e33": 1.0
+                    }
+                },
+                {
+                    "Cell": {
                         "x": 46,
                         "y": -15,
                         "z": 0
@@ -12361,12 +12415,12 @@
                     "AssetName": "地面_人字转",
                     "PaletteIndex": 0,
                     "Transform": {
-                        "e00": 1.0,
-                        "e01": 0.0,
+                        "e00": 5.960464477539063e-8,
+                        "e01": -0.9999999403953552,
                         "e02": 0.0,
                         "e03": 0.0,
-                        "e10": 0.0,
-                        "e11": 1.0,
+                        "e10": 0.9999999403953552,
+                        "e11": 5.960464477539063e-8,
                         "e12": 0.0,
                         "e13": 0.0,
                         "e20": 0.0,
@@ -12388,12 +12442,12 @@
                     "AssetName": "地面_人字转",
                     "PaletteIndex": 0,
                     "Transform": {
-                        "e00": 1.0,
-                        "e01": 0.0,
+                        "e00": 5.960464477539063e-8,
+                        "e01": -0.9999999403953552,
                         "e02": 0.0,
                         "e03": 0.0,
-                        "e10": 0.0,
-                        "e11": 1.0,
+                        "e10": 0.9999999403953552,
+                        "e11": 5.960464477539063e-8,
                         "e12": 0.0,
                         "e13": 0.0,
                         "e20": 0.0,
@@ -12442,12 +12496,12 @@
                     "AssetName": "地面_人字转",
                     "PaletteIndex": 0,
                     "Transform": {
-                        "e00": 1.0,
-                        "e01": 0.0,
+                        "e00": 5.960464477539063e-8,
+                        "e01": -0.9999999403953552,
                         "e02": 0.0,
                         "e03": 0.0,
-                        "e10": 0.0,
-                        "e11": 1.0,
+                        "e10": 0.9999999403953552,
+                        "e11": 5.960464477539063e-8,
                         "e12": 0.0,
                         "e13": 0.0,
                         "e20": 0.0,
@@ -13360,12 +13414,12 @@
                     "AssetName": "地面_人字转",
                     "PaletteIndex": 0,
                     "Transform": {
-                        "e00": 1.0,
-                        "e01": 0.0,
+                        "e00": 5.960464477539063e-8,
+                        "e01": 0.9999999403953552,
                         "e02": 0.0,
                         "e03": 0.0,
-                        "e10": 0.0,
-                        "e11": 1.0,
+                        "e10": -0.9999999403953552,
+                        "e11": 5.960464477539063e-8,
                         "e12": 0.0,
                         "e13": 0.0,
                         "e20": 0.0,
@@ -13441,12 +13495,12 @@
                     "AssetName": "地面_人字转",
                     "PaletteIndex": 0,
                     "Transform": {
-                        "e00": 1.0,
-                        "e01": 0.0,
+                        "e00": 5.960464477539063e-8,
+                        "e01": 0.9999999403953552,
                         "e02": 0.0,
                         "e03": 0.0,
-                        "e10": 0.0,
-                        "e11": 1.0,
+                        "e10": -0.9999999403953552,
+                        "e11": 5.960464477539063e-8,
                         "e12": 0.0,
                         "e13": 0.0,
                         "e20": 0.0,
@@ -44001,350 +44055,10 @@
             ],
             "Objects": [
                 {
-                    "ObjectId": "门",
-                    "TypeId": "Door",
-                    "DisplayNameOverride": "",
-                    "PaletteIndex": 4,
-                    "Position": {
-                        "x": -3.5,
-                        "y": -14.5,
-                        "z": 0.5
-                    },
-                    "Cell": {
-                        "x": -4,
-                        "y": -15,
-                        "z": 0
-                    },
-                    "FootprintSize": {
-                        "x": 1,
-                        "y": 1
-                    },
-                    "FloorIndex": 1,
-                    "OverrideFootprintSize": true,
-                    "VisualScale": {
-                        "x": 1.0,
-                        "y": 1.0
-                    },
-                    "LockVisualScaleAspect": true,
-                    "IsWallMounted": false,
-                    "OverrideAllowRotation": true,
-                    "AllowRotation": true,
-                    "OverrideRotation0Sprite": false,
-                    "Rotation0SpritePath": "",
-                    "OverrideRotation90Sprite": false,
-                    "Rotation90SpritePath": "",
-                    "OverrideRotation180Sprite": false,
-                    "Rotation180SpritePath": "",
-                    "OverrideRotation270Sprite": false,
-                    "Rotation270SpritePath": "",
-                    "Rotation90": 1,
-                    "BlocksMovement": false,
-                    "BlocksSight": false,
-                    "IsInteractable": false,
-                    "IsStorageContainer": false,
-                    "StorageSize": {
-                        "x": 4,
-                        "y": 4
-                    },
-                    "StorageMaxWeight": 12.0,
-                    "UseCustomInteractionAnchor": true,
-                    "CustomInteractionAnchorLocalPosition": {
-                        "x": 0.0,
-                        "y": 0.0,
-                        "z": 0.0
-                    },
-                    "CustomInteractionAnchorRadius": 0.699999988079071,
-                    "CustomInteractionPromptText": "开门",
-                    "CustomInteractionAnchors": [
-                        {
-                            "AnchorId": "door_toggle",
-                            "DisplayName": "门",
-                            "Enabled": true,
-                            "LocalPosition": {
-                                "x": 0.0,
-                                "y": 0.0,
-                                "z": 0.0
-                            },
-                            "Radius": 0.699999988079071,
-                            "PromptText": "开门",
-                            "LocalizedPromptText": {
-                                "chinese": "",
-                                "english": ""
-                            },
-                            "ActionId": "campus.door.toggle",
-                            "Payload": "",
-                            "TargetComponentType": "CampusDoor3D",
-                            "Priority": 130,
-                            "UseTargetDoorStatePrompt": true,
-                            "LogInteraction": false,
-                            "InteractionLogMessage": "",
-                            "LocalizedInteractionLogMessage": {
-                                "chinese": "",
-                                "english": ""
-                            }
-                        }
-                    ]
-                },
-                {
-                    "ObjectId": "门",
-                    "TypeId": "Door",
-                    "DisplayNameOverride": "",
-                    "PaletteIndex": 4,
-                    "Position": {
-                        "x": -3.5,
-                        "y": -2.5,
-                        "z": 0.5
-                    },
-                    "Cell": {
-                        "x": -4,
-                        "y": -3,
-                        "z": 0
-                    },
-                    "FootprintSize": {
-                        "x": 1,
-                        "y": 1
-                    },
-                    "FloorIndex": 1,
-                    "OverrideFootprintSize": true,
-                    "VisualScale": {
-                        "x": 1.0,
-                        "y": 1.0
-                    },
-                    "LockVisualScaleAspect": true,
-                    "IsWallMounted": false,
-                    "OverrideAllowRotation": true,
-                    "AllowRotation": true,
-                    "OverrideRotation0Sprite": false,
-                    "Rotation0SpritePath": "",
-                    "OverrideRotation90Sprite": false,
-                    "Rotation90SpritePath": "",
-                    "OverrideRotation180Sprite": false,
-                    "Rotation180SpritePath": "",
-                    "OverrideRotation270Sprite": false,
-                    "Rotation270SpritePath": "",
-                    "Rotation90": 1,
-                    "BlocksMovement": false,
-                    "BlocksSight": false,
-                    "IsInteractable": false,
-                    "IsStorageContainer": false,
-                    "StorageSize": {
-                        "x": 4,
-                        "y": 4
-                    },
-                    "StorageMaxWeight": 12.0,
-                    "UseCustomInteractionAnchor": true,
-                    "CustomInteractionAnchorLocalPosition": {
-                        "x": 0.0,
-                        "y": 0.0,
-                        "z": 0.0
-                    },
-                    "CustomInteractionAnchorRadius": 0.699999988079071,
-                    "CustomInteractionPromptText": "开门",
-                    "CustomInteractionAnchors": [
-                        {
-                            "AnchorId": "door_toggle",
-                            "DisplayName": "门",
-                            "Enabled": true,
-                            "LocalPosition": {
-                                "x": 0.0,
-                                "y": 0.0,
-                                "z": 0.0
-                            },
-                            "Radius": 0.699999988079071,
-                            "PromptText": "开门",
-                            "LocalizedPromptText": {
-                                "chinese": "",
-                                "english": ""
-                            },
-                            "ActionId": "campus.door.toggle",
-                            "Payload": "",
-                            "TargetComponentType": "CampusDoor3D",
-                            "Priority": 130,
-                            "UseTargetDoorStatePrompt": true,
-                            "LogInteraction": false,
-                            "InteractionLogMessage": "",
-                            "LocalizedInteractionLogMessage": {
-                                "chinese": "",
-                                "english": ""
-                            }
-                        }
-                    ]
-                },
-                {
-                    "ObjectId": "门",
-                    "TypeId": "Door",
-                    "DisplayNameOverride": "",
-                    "PaletteIndex": 4,
-                    "Position": {
-                        "x": 46.5,
-                        "y": -6.5,
-                        "z": 0.5
-                    },
-                    "Cell": {
-                        "x": 46,
-                        "y": -7,
-                        "z": 0
-                    },
-                    "FootprintSize": {
-                        "x": 1,
-                        "y": 1
-                    },
-                    "FloorIndex": 1,
-                    "OverrideFootprintSize": true,
-                    "VisualScale": {
-                        "x": 1.0,
-                        "y": 1.0
-                    },
-                    "LockVisualScaleAspect": true,
-                    "IsWallMounted": false,
-                    "OverrideAllowRotation": true,
-                    "AllowRotation": true,
-                    "OverrideRotation0Sprite": false,
-                    "Rotation0SpritePath": "",
-                    "OverrideRotation90Sprite": false,
-                    "Rotation90SpritePath": "",
-                    "OverrideRotation180Sprite": false,
-                    "Rotation180SpritePath": "",
-                    "OverrideRotation270Sprite": false,
-                    "Rotation270SpritePath": "",
-                    "Rotation90": 0,
-                    "BlocksMovement": false,
-                    "BlocksSight": false,
-                    "IsInteractable": false,
-                    "IsStorageContainer": false,
-                    "StorageSize": {
-                        "x": 4,
-                        "y": 4
-                    },
-                    "StorageMaxWeight": 12.0,
-                    "UseCustomInteractionAnchor": true,
-                    "CustomInteractionAnchorLocalPosition": {
-                        "x": 0.0,
-                        "y": 0.0,
-                        "z": 0.0
-                    },
-                    "CustomInteractionAnchorRadius": 0.699999988079071,
-                    "CustomInteractionPromptText": "开门",
-                    "CustomInteractionAnchors": [
-                        {
-                            "AnchorId": "door_toggle",
-                            "DisplayName": "门",
-                            "Enabled": true,
-                            "LocalPosition": {
-                                "x": 0.0,
-                                "y": 0.0,
-                                "z": 0.0
-                            },
-                            "Radius": 0.699999988079071,
-                            "PromptText": "开门",
-                            "LocalizedPromptText": {
-                                "chinese": "",
-                                "english": ""
-                            },
-                            "ActionId": "campus.door.toggle",
-                            "Payload": "",
-                            "TargetComponentType": "CampusDoor3D",
-                            "Priority": 130,
-                            "UseTargetDoorStatePrompt": true,
-                            "LogInteraction": false,
-                            "InteractionLogMessage": "",
-                            "LocalizedInteractionLogMessage": {
-                                "chinese": "",
-                                "english": ""
-                            }
-                        }
-                    ]
-                },
-                {
-                    "ObjectId": "门",
-                    "TypeId": "Door",
-                    "DisplayNameOverride": "",
-                    "PaletteIndex": 4,
-                    "Position": {
-                        "x": 47.5,
-                        "y": -6.5,
-                        "z": 0.5
-                    },
-                    "Cell": {
-                        "x": 47,
-                        "y": -7,
-                        "z": 0
-                    },
-                    "FootprintSize": {
-                        "x": 1,
-                        "y": 1
-                    },
-                    "FloorIndex": 1,
-                    "OverrideFootprintSize": true,
-                    "VisualScale": {
-                        "x": 1.0,
-                        "y": 1.0
-                    },
-                    "LockVisualScaleAspect": true,
-                    "IsWallMounted": false,
-                    "OverrideAllowRotation": true,
-                    "AllowRotation": true,
-                    "OverrideRotation0Sprite": false,
-                    "Rotation0SpritePath": "",
-                    "OverrideRotation90Sprite": false,
-                    "Rotation90SpritePath": "",
-                    "OverrideRotation180Sprite": false,
-                    "Rotation180SpritePath": "",
-                    "OverrideRotation270Sprite": false,
-                    "Rotation270SpritePath": "",
-                    "Rotation90": 2,
-                    "BlocksMovement": false,
-                    "BlocksSight": false,
-                    "IsInteractable": false,
-                    "IsStorageContainer": false,
-                    "StorageSize": {
-                        "x": 4,
-                        "y": 4
-                    },
-                    "StorageMaxWeight": 12.0,
-                    "UseCustomInteractionAnchor": true,
-                    "CustomInteractionAnchorLocalPosition": {
-                        "x": 0.0,
-                        "y": 0.0,
-                        "z": 0.0
-                    },
-                    "CustomInteractionAnchorRadius": 0.699999988079071,
-                    "CustomInteractionPromptText": "开门",
-                    "CustomInteractionAnchors": [
-                        {
-                            "AnchorId": "door_toggle",
-                            "DisplayName": "门",
-                            "Enabled": true,
-                            "LocalPosition": {
-                                "x": 0.0,
-                                "y": 0.0,
-                                "z": 0.0
-                            },
-                            "Radius": 0.699999988079071,
-                            "PromptText": "开门",
-                            "LocalizedPromptText": {
-                                "chinese": "",
-                                "english": ""
-                            },
-                            "ActionId": "campus.door.toggle",
-                            "Payload": "",
-                            "TargetComponentType": "CampusDoor3D",
-                            "Priority": 130,
-                            "UseTargetDoorStatePrompt": true,
-                            "LogInteraction": false,
-                            "InteractionLogMessage": "",
-                            "LocalizedInteractionLogMessage": {
-                                "chinese": "",
-                                "english": ""
-                            }
-                        }
-                    ]
-                },
-                {
                     "ObjectId": "Desk_1x1",
                     "TypeId": "StudentDesk",
                     "DisplayNameOverride": "Desk",
-                    "PaletteIndex": 16,
+                    "PaletteIndex": 20,
                     "Position": {
                         "x": -6.5,
                         "y": -13.5,
@@ -44423,13 +44137,40 @@
                                 "english": ""
                             }
                         }
-                    ]
+                    ],
+                    "RetailShelf": {
+                        "Enabled": false,
+                        "ShelfMode": 0,
+                        "ItemDefinitionId": "",
+                        "StockCount": 8,
+                        "DisplaySlotCount": 4,
+                        "AutoRestock": true
+                    },
+                    "ProtectedStockContainer": {
+                        "Enabled": true,
+                        "ContainerId": "canteen_burger_chicken_container",
+                        "OwnerId": "",
+                        "OwnerRole": "Canteen",
+                        "AllowTakingContents": true,
+                        "SuspicionRisk": 4,
+                        "AutoRestock": true,
+                        "StockItems": [
+                            {
+                                "ItemDefinitionId": "canteen_burger",
+                                "StockCount": 6
+                            },
+                            {
+                                "ItemDefinitionId": "canteen_fried_chicken",
+                                "StockCount": 6
+                            }
+                        ]
+                    }
                 },
                 {
                     "ObjectId": "Desk_1x1",
                     "TypeId": "StudentDesk",
                     "DisplayNameOverride": "Desk",
-                    "PaletteIndex": 16,
+                    "PaletteIndex": 20,
                     "Position": {
                         "x": -9.5,
                         "y": -13.5,
@@ -44508,13 +44249,40 @@
                                 "english": ""
                             }
                         }
-                    ]
+                    ],
+                    "RetailShelf": {
+                        "Enabled": false,
+                        "ShelfMode": 0,
+                        "ItemDefinitionId": "",
+                        "StockCount": 8,
+                        "DisplaySlotCount": 4,
+                        "AutoRestock": true
+                    },
+                    "ProtectedStockContainer": {
+                        "Enabled": true,
+                        "ContainerId": "canteen_burger_chicken_container",
+                        "OwnerId": "",
+                        "OwnerRole": "Canteen",
+                        "AllowTakingContents": true,
+                        "SuspicionRisk": 4,
+                        "AutoRestock": true,
+                        "StockItems": [
+                            {
+                                "ItemDefinitionId": "canteen_burger",
+                                "StockCount": 6
+                            },
+                            {
+                                "ItemDefinitionId": "canteen_fried_chicken",
+                                "StockCount": 6
+                            }
+                        ]
+                    }
                 },
                 {
                     "ObjectId": "Desk_1x1",
                     "TypeId": "StudentDesk",
                     "DisplayNameOverride": "Desk",
-                    "PaletteIndex": 16,
+                    "PaletteIndex": 20,
                     "Position": {
                         "x": -12.5,
                         "y": -13.5,
@@ -44593,13 +44361,40 @@
                                 "english": ""
                             }
                         }
-                    ]
+                    ],
+                    "RetailShelf": {
+                        "Enabled": false,
+                        "ShelfMode": 0,
+                        "ItemDefinitionId": "",
+                        "StockCount": 8,
+                        "DisplaySlotCount": 4,
+                        "AutoRestock": true
+                    },
+                    "ProtectedStockContainer": {
+                        "Enabled": true,
+                        "ContainerId": "canteen_burger_chicken_container",
+                        "OwnerId": "",
+                        "OwnerRole": "Canteen",
+                        "AllowTakingContents": true,
+                        "SuspicionRisk": 4,
+                        "AutoRestock": true,
+                        "StockItems": [
+                            {
+                                "ItemDefinitionId": "canteen_burger",
+                                "StockCount": 6
+                            },
+                            {
+                                "ItemDefinitionId": "canteen_fried_chicken",
+                                "StockCount": 6
+                            }
+                        ]
+                    }
                 },
                 {
                     "ObjectId": "Desk_1x1",
                     "TypeId": "StudentDesk",
                     "DisplayNameOverride": "Desk",
-                    "PaletteIndex": 16,
+                    "PaletteIndex": 20,
                     "Position": {
                         "x": -15.5,
                         "y": -13.5,
@@ -44678,13 +44473,40 @@
                                 "english": ""
                             }
                         }
-                    ]
+                    ],
+                    "RetailShelf": {
+                        "Enabled": false,
+                        "ShelfMode": 0,
+                        "ItemDefinitionId": "",
+                        "StockCount": 8,
+                        "DisplaySlotCount": 4,
+                        "AutoRestock": true
+                    },
+                    "ProtectedStockContainer": {
+                        "Enabled": true,
+                        "ContainerId": "canteen_burger_chicken_container",
+                        "OwnerId": "",
+                        "OwnerRole": "Canteen",
+                        "AllowTakingContents": true,
+                        "SuspicionRisk": 4,
+                        "AutoRestock": true,
+                        "StockItems": [
+                            {
+                                "ItemDefinitionId": "canteen_burger",
+                                "StockCount": 6
+                            },
+                            {
+                                "ItemDefinitionId": "canteen_fried_chicken",
+                                "StockCount": 6
+                            }
+                        ]
+                    }
                 },
                 {
                     "ObjectId": "Desk_1x1",
                     "TypeId": "StudentDesk",
                     "DisplayNameOverride": "Desk",
-                    "PaletteIndex": 16,
+                    "PaletteIndex": 20,
                     "Position": {
                         "x": -15.5,
                         "y": -10.5,
@@ -44763,13 +44585,40 @@
                                 "english": ""
                             }
                         }
-                    ]
+                    ],
+                    "RetailShelf": {
+                        "Enabled": false,
+                        "ShelfMode": 0,
+                        "ItemDefinitionId": "",
+                        "StockCount": 8,
+                        "DisplaySlotCount": 4,
+                        "AutoRestock": true
+                    },
+                    "ProtectedStockContainer": {
+                        "Enabled": true,
+                        "ContainerId": "canteen_burger_chicken_container",
+                        "OwnerId": "",
+                        "OwnerRole": "Canteen",
+                        "AllowTakingContents": true,
+                        "SuspicionRisk": 4,
+                        "AutoRestock": true,
+                        "StockItems": [
+                            {
+                                "ItemDefinitionId": "canteen_burger",
+                                "StockCount": 6
+                            },
+                            {
+                                "ItemDefinitionId": "canteen_fried_chicken",
+                                "StockCount": 6
+                            }
+                        ]
+                    }
                 },
                 {
                     "ObjectId": "Desk_1x1",
                     "TypeId": "StudentDesk",
                     "DisplayNameOverride": "Desk",
-                    "PaletteIndex": 16,
+                    "PaletteIndex": 20,
                     "Position": {
                         "x": -12.5,
                         "y": -10.5,
@@ -44848,13 +44697,40 @@
                                 "english": ""
                             }
                         }
-                    ]
+                    ],
+                    "RetailShelf": {
+                        "Enabled": false,
+                        "ShelfMode": 0,
+                        "ItemDefinitionId": "",
+                        "StockCount": 8,
+                        "DisplaySlotCount": 4,
+                        "AutoRestock": true
+                    },
+                    "ProtectedStockContainer": {
+                        "Enabled": true,
+                        "ContainerId": "canteen_burger_chicken_container",
+                        "OwnerId": "",
+                        "OwnerRole": "Canteen",
+                        "AllowTakingContents": true,
+                        "SuspicionRisk": 4,
+                        "AutoRestock": true,
+                        "StockItems": [
+                            {
+                                "ItemDefinitionId": "canteen_burger",
+                                "StockCount": 6
+                            },
+                            {
+                                "ItemDefinitionId": "canteen_fried_chicken",
+                                "StockCount": 6
+                            }
+                        ]
+                    }
                 },
                 {
                     "ObjectId": "Desk_1x1",
                     "TypeId": "StudentDesk",
                     "DisplayNameOverride": "Desk",
-                    "PaletteIndex": 16,
+                    "PaletteIndex": 20,
                     "Position": {
                         "x": -9.5,
                         "y": -10.5,
@@ -44933,13 +44809,40 @@
                                 "english": ""
                             }
                         }
-                    ]
+                    ],
+                    "RetailShelf": {
+                        "Enabled": false,
+                        "ShelfMode": 0,
+                        "ItemDefinitionId": "",
+                        "StockCount": 8,
+                        "DisplaySlotCount": 4,
+                        "AutoRestock": true
+                    },
+                    "ProtectedStockContainer": {
+                        "Enabled": true,
+                        "ContainerId": "canteen_burger_chicken_container",
+                        "OwnerId": "",
+                        "OwnerRole": "Canteen",
+                        "AllowTakingContents": true,
+                        "SuspicionRisk": 4,
+                        "AutoRestock": true,
+                        "StockItems": [
+                            {
+                                "ItemDefinitionId": "canteen_burger",
+                                "StockCount": 6
+                            },
+                            {
+                                "ItemDefinitionId": "canteen_fried_chicken",
+                                "StockCount": 6
+                            }
+                        ]
+                    }
                 },
                 {
                     "ObjectId": "Desk_1x1",
                     "TypeId": "StudentDesk",
                     "DisplayNameOverride": "Desk",
-                    "PaletteIndex": 16,
+                    "PaletteIndex": 20,
                     "Position": {
                         "x": -6.5,
                         "y": -10.5,
@@ -45018,13 +44921,40 @@
                                 "english": ""
                             }
                         }
-                    ]
+                    ],
+                    "RetailShelf": {
+                        "Enabled": false,
+                        "ShelfMode": 0,
+                        "ItemDefinitionId": "",
+                        "StockCount": 8,
+                        "DisplaySlotCount": 4,
+                        "AutoRestock": true
+                    },
+                    "ProtectedStockContainer": {
+                        "Enabled": true,
+                        "ContainerId": "canteen_burger_chicken_container",
+                        "OwnerId": "",
+                        "OwnerRole": "Canteen",
+                        "AllowTakingContents": true,
+                        "SuspicionRisk": 4,
+                        "AutoRestock": true,
+                        "StockItems": [
+                            {
+                                "ItemDefinitionId": "canteen_burger",
+                                "StockCount": 6
+                            },
+                            {
+                                "ItemDefinitionId": "canteen_fried_chicken",
+                                "StockCount": 6
+                            }
+                        ]
+                    }
                 },
                 {
                     "ObjectId": "Desk_1x1",
                     "TypeId": "StudentDesk",
                     "DisplayNameOverride": "Desk",
-                    "PaletteIndex": 16,
+                    "PaletteIndex": 20,
                     "Position": {
                         "x": -6.5,
                         "y": -7.5,
@@ -45103,13 +45033,40 @@
                                 "english": ""
                             }
                         }
-                    ]
+                    ],
+                    "RetailShelf": {
+                        "Enabled": false,
+                        "ShelfMode": 0,
+                        "ItemDefinitionId": "",
+                        "StockCount": 8,
+                        "DisplaySlotCount": 4,
+                        "AutoRestock": true
+                    },
+                    "ProtectedStockContainer": {
+                        "Enabled": true,
+                        "ContainerId": "canteen_burger_chicken_container",
+                        "OwnerId": "",
+                        "OwnerRole": "Canteen",
+                        "AllowTakingContents": true,
+                        "SuspicionRisk": 4,
+                        "AutoRestock": true,
+                        "StockItems": [
+                            {
+                                "ItemDefinitionId": "canteen_burger",
+                                "StockCount": 6
+                            },
+                            {
+                                "ItemDefinitionId": "canteen_fried_chicken",
+                                "StockCount": 6
+                            }
+                        ]
+                    }
                 },
                 {
                     "ObjectId": "Desk_1x1",
                     "TypeId": "StudentDesk",
                     "DisplayNameOverride": "Desk",
-                    "PaletteIndex": 16,
+                    "PaletteIndex": 20,
                     "Position": {
                         "x": -9.5,
                         "y": -7.5,
@@ -45188,13 +45145,40 @@
                                 "english": ""
                             }
                         }
-                    ]
+                    ],
+                    "RetailShelf": {
+                        "Enabled": false,
+                        "ShelfMode": 0,
+                        "ItemDefinitionId": "",
+                        "StockCount": 8,
+                        "DisplaySlotCount": 4,
+                        "AutoRestock": true
+                    },
+                    "ProtectedStockContainer": {
+                        "Enabled": true,
+                        "ContainerId": "canteen_burger_chicken_container",
+                        "OwnerId": "",
+                        "OwnerRole": "Canteen",
+                        "AllowTakingContents": true,
+                        "SuspicionRisk": 4,
+                        "AutoRestock": true,
+                        "StockItems": [
+                            {
+                                "ItemDefinitionId": "canteen_burger",
+                                "StockCount": 6
+                            },
+                            {
+                                "ItemDefinitionId": "canteen_fried_chicken",
+                                "StockCount": 6
+                            }
+                        ]
+                    }
                 },
                 {
                     "ObjectId": "Desk_1x1",
                     "TypeId": "StudentDesk",
                     "DisplayNameOverride": "Desk",
-                    "PaletteIndex": 16,
+                    "PaletteIndex": 20,
                     "Position": {
                         "x": -12.5,
                         "y": -7.5,
@@ -45273,13 +45257,40 @@
                                 "english": ""
                             }
                         }
-                    ]
+                    ],
+                    "RetailShelf": {
+                        "Enabled": false,
+                        "ShelfMode": 0,
+                        "ItemDefinitionId": "",
+                        "StockCount": 8,
+                        "DisplaySlotCount": 4,
+                        "AutoRestock": true
+                    },
+                    "ProtectedStockContainer": {
+                        "Enabled": true,
+                        "ContainerId": "canteen_burger_chicken_container",
+                        "OwnerId": "",
+                        "OwnerRole": "Canteen",
+                        "AllowTakingContents": true,
+                        "SuspicionRisk": 4,
+                        "AutoRestock": true,
+                        "StockItems": [
+                            {
+                                "ItemDefinitionId": "canteen_burger",
+                                "StockCount": 6
+                            },
+                            {
+                                "ItemDefinitionId": "canteen_fried_chicken",
+                                "StockCount": 6
+                            }
+                        ]
+                    }
                 },
                 {
                     "ObjectId": "Desk_1x1",
                     "TypeId": "StudentDesk",
                     "DisplayNameOverride": "Desk",
-                    "PaletteIndex": 16,
+                    "PaletteIndex": 20,
                     "Position": {
                         "x": -15.5,
                         "y": -7.5,
@@ -45358,13 +45369,40 @@
                                 "english": ""
                             }
                         }
-                    ]
+                    ],
+                    "RetailShelf": {
+                        "Enabled": false,
+                        "ShelfMode": 0,
+                        "ItemDefinitionId": "",
+                        "StockCount": 8,
+                        "DisplaySlotCount": 4,
+                        "AutoRestock": true
+                    },
+                    "ProtectedStockContainer": {
+                        "Enabled": true,
+                        "ContainerId": "canteen_burger_chicken_container",
+                        "OwnerId": "",
+                        "OwnerRole": "Canteen",
+                        "AllowTakingContents": true,
+                        "SuspicionRisk": 4,
+                        "AutoRestock": true,
+                        "StockItems": [
+                            {
+                                "ItemDefinitionId": "canteen_burger",
+                                "StockCount": 6
+                            },
+                            {
+                                "ItemDefinitionId": "canteen_fried_chicken",
+                                "StockCount": 6
+                            }
+                        ]
+                    }
                 },
                 {
                     "ObjectId": "Desk_1x1",
                     "TypeId": "StudentDesk",
                     "DisplayNameOverride": "Desk",
-                    "PaletteIndex": 16,
+                    "PaletteIndex": 20,
                     "Position": {
                         "x": -15.5,
                         "y": -4.5,
@@ -45443,13 +45481,40 @@
                                 "english": ""
                             }
                         }
-                    ]
+                    ],
+                    "RetailShelf": {
+                        "Enabled": false,
+                        "ShelfMode": 0,
+                        "ItemDefinitionId": "",
+                        "StockCount": 8,
+                        "DisplaySlotCount": 4,
+                        "AutoRestock": true
+                    },
+                    "ProtectedStockContainer": {
+                        "Enabled": true,
+                        "ContainerId": "canteen_burger_chicken_container",
+                        "OwnerId": "",
+                        "OwnerRole": "Canteen",
+                        "AllowTakingContents": true,
+                        "SuspicionRisk": 4,
+                        "AutoRestock": true,
+                        "StockItems": [
+                            {
+                                "ItemDefinitionId": "canteen_burger",
+                                "StockCount": 6
+                            },
+                            {
+                                "ItemDefinitionId": "canteen_fried_chicken",
+                                "StockCount": 6
+                            }
+                        ]
+                    }
                 },
                 {
                     "ObjectId": "Desk_1x1",
                     "TypeId": "StudentDesk",
                     "DisplayNameOverride": "Desk",
-                    "PaletteIndex": 16,
+                    "PaletteIndex": 20,
                     "Position": {
                         "x": -12.5,
                         "y": -4.5,
@@ -45528,13 +45593,40 @@
                                 "english": ""
                             }
                         }
-                    ]
+                    ],
+                    "RetailShelf": {
+                        "Enabled": false,
+                        "ShelfMode": 0,
+                        "ItemDefinitionId": "",
+                        "StockCount": 8,
+                        "DisplaySlotCount": 4,
+                        "AutoRestock": true
+                    },
+                    "ProtectedStockContainer": {
+                        "Enabled": true,
+                        "ContainerId": "canteen_burger_chicken_container",
+                        "OwnerId": "",
+                        "OwnerRole": "Canteen",
+                        "AllowTakingContents": true,
+                        "SuspicionRisk": 4,
+                        "AutoRestock": true,
+                        "StockItems": [
+                            {
+                                "ItemDefinitionId": "canteen_burger",
+                                "StockCount": 6
+                            },
+                            {
+                                "ItemDefinitionId": "canteen_fried_chicken",
+                                "StockCount": 6
+                            }
+                        ]
+                    }
                 },
                 {
                     "ObjectId": "Desk_1x1",
                     "TypeId": "StudentDesk",
                     "DisplayNameOverride": "Desk",
-                    "PaletteIndex": 16,
+                    "PaletteIndex": 20,
                     "Position": {
                         "x": -9.5,
                         "y": -4.5,
@@ -45613,13 +45705,40 @@
                                 "english": ""
                             }
                         }
-                    ]
+                    ],
+                    "RetailShelf": {
+                        "Enabled": false,
+                        "ShelfMode": 0,
+                        "ItemDefinitionId": "",
+                        "StockCount": 8,
+                        "DisplaySlotCount": 4,
+                        "AutoRestock": true
+                    },
+                    "ProtectedStockContainer": {
+                        "Enabled": true,
+                        "ContainerId": "canteen_burger_chicken_container",
+                        "OwnerId": "",
+                        "OwnerRole": "Canteen",
+                        "AllowTakingContents": true,
+                        "SuspicionRisk": 4,
+                        "AutoRestock": true,
+                        "StockItems": [
+                            {
+                                "ItemDefinitionId": "canteen_burger",
+                                "StockCount": 6
+                            },
+                            {
+                                "ItemDefinitionId": "canteen_fried_chicken",
+                                "StockCount": 6
+                            }
+                        ]
+                    }
                 },
                 {
                     "ObjectId": "Desk_1x1",
                     "TypeId": "StudentDesk",
                     "DisplayNameOverride": "Desk",
-                    "PaletteIndex": 16,
+                    "PaletteIndex": 20,
                     "Position": {
                         "x": -6.5,
                         "y": -4.5,
@@ -45698,7 +45817,34 @@
                                 "english": ""
                             }
                         }
-                    ]
+                    ],
+                    "RetailShelf": {
+                        "Enabled": false,
+                        "ShelfMode": 0,
+                        "ItemDefinitionId": "",
+                        "StockCount": 8,
+                        "DisplaySlotCount": 4,
+                        "AutoRestock": true
+                    },
+                    "ProtectedStockContainer": {
+                        "Enabled": true,
+                        "ContainerId": "canteen_burger_chicken_container",
+                        "OwnerId": "",
+                        "OwnerRole": "Canteen",
+                        "AllowTakingContents": true,
+                        "SuspicionRisk": 4,
+                        "AutoRestock": true,
+                        "StockItems": [
+                            {
+                                "ItemDefinitionId": "canteen_burger",
+                                "StockCount": 6
+                            },
+                            {
+                                "ItemDefinitionId": "canteen_fried_chicken",
+                                "StockCount": 6
+                            }
+                        ]
+                    }
                 },
                 {
                     "ObjectId": "Cafeteria_Counter_4x1",
@@ -45783,13 +45929,31 @@
                                 "english": ""
                             }
                         }
-                    ]
+                    ],
+                    "RetailShelf": {
+                        "Enabled": false,
+                        "ShelfMode": 0,
+                        "ItemDefinitionId": "",
+                        "StockCount": 8,
+                        "DisplaySlotCount": 4,
+                        "AutoRestock": true
+                    },
+                    "ProtectedStockContainer": {
+                        "Enabled": false,
+                        "ContainerId": "",
+                        "OwnerId": "",
+                        "OwnerRole": "Campus",
+                        "AllowTakingContents": true,
+                        "SuspicionRisk": 4,
+                        "AutoRestock": true,
+                        "StockItems": []
+                    }
                 },
                 {
                     "ObjectId": "ServiceCounter_4x1",
                     "TypeId": "ServiceCounter",
                     "DisplayNameOverride": "服务柜台",
-                    "PaletteIndex": 17,
+                    "PaletteIndex": 21,
                     "Position": {
                         "x": 47.0,
                         "y": 2.5,
@@ -45840,13 +46004,36 @@
                     },
                     "CustomInteractionAnchorRadius": 0.6499999761581421,
                     "CustomInteractionPromptText": "交互",
-                    "CustomInteractionAnchors": []
+                    "CustomInteractionAnchors": [],
+                    "RetailShelf": {
+                        "Enabled": false,
+                        "ShelfMode": 0,
+                        "ItemDefinitionId": "",
+                        "StockCount": 8,
+                        "DisplaySlotCount": 4,
+                        "AutoRestock": true
+                    },
+                    "ProtectedStockContainer": {
+                        "Enabled": true,
+                        "ContainerId": "canteen_oden_container",
+                        "OwnerId": "",
+                        "OwnerRole": "Canteen",
+                        "AllowTakingContents": true,
+                        "SuspicionRisk": 4,
+                        "AutoRestock": true,
+                        "StockItems": [
+                            {
+                                "ItemDefinitionId": "canteen_oden_cup",
+                                "StockCount": 8
+                            }
+                        ]
+                    }
                 },
                 {
                     "ObjectId": "ServiceCounter_4x1",
                     "TypeId": "ServiceCounter",
                     "DisplayNameOverride": "服务柜台",
-                    "PaletteIndex": 17,
+                    "PaletteIndex": 21,
                     "Position": {
                         "x": 51.0,
                         "y": 2.5,
@@ -45897,13 +46084,36 @@
                     },
                     "CustomInteractionAnchorRadius": 0.6499999761581421,
                     "CustomInteractionPromptText": "交互",
-                    "CustomInteractionAnchors": []
+                    "CustomInteractionAnchors": [],
+                    "RetailShelf": {
+                        "Enabled": false,
+                        "ShelfMode": 0,
+                        "ItemDefinitionId": "",
+                        "StockCount": 8,
+                        "DisplaySlotCount": 4,
+                        "AutoRestock": true
+                    },
+                    "ProtectedStockContainer": {
+                        "Enabled": true,
+                        "ContainerId": "canteen_oden_container",
+                        "OwnerId": "",
+                        "OwnerRole": "Canteen",
+                        "AllowTakingContents": true,
+                        "SuspicionRisk": 4,
+                        "AutoRestock": true,
+                        "StockItems": [
+                            {
+                                "ItemDefinitionId": "canteen_oden_cup",
+                                "StockCount": 8
+                            }
+                        ]
+                    }
                 },
                 {
                     "ObjectId": "ServiceCounter_4x1",
                     "TypeId": "ServiceCounter",
                     "DisplayNameOverride": "服务柜台",
-                    "PaletteIndex": 17,
+                    "PaletteIndex": 21,
                     "Position": {
                         "x": 55.0,
                         "y": 2.5,
@@ -45954,13 +46164,36 @@
                     },
                     "CustomInteractionAnchorRadius": 0.6499999761581421,
                     "CustomInteractionPromptText": "交互",
-                    "CustomInteractionAnchors": []
+                    "CustomInteractionAnchors": [],
+                    "RetailShelf": {
+                        "Enabled": false,
+                        "ShelfMode": 0,
+                        "ItemDefinitionId": "",
+                        "StockCount": 8,
+                        "DisplaySlotCount": 4,
+                        "AutoRestock": true
+                    },
+                    "ProtectedStockContainer": {
+                        "Enabled": true,
+                        "ContainerId": "canteen_oden_container",
+                        "OwnerId": "",
+                        "OwnerRole": "Canteen",
+                        "AllowTakingContents": true,
+                        "SuspicionRisk": 4,
+                        "AutoRestock": true,
+                        "StockItems": [
+                            {
+                                "ItemDefinitionId": "canteen_oden_cup",
+                                "StockCount": 8
+                            }
+                        ]
+                    }
                 },
                 {
                     "ObjectId": "新物体_1x1",
                     "TypeId": "ServiceWindow",
-                    "DisplayNameOverride": "新物体",
-                    "PaletteIndex": 23,
+                    "DisplayNameOverride": "窗口",
+                    "PaletteIndex": 27,
                     "Position": {
                         "x": 46.5,
                         "y": 2.5,
@@ -45983,8 +46216,8 @@
                     },
                     "LockVisualScaleAspect": true,
                     "IsWallMounted": false,
-                    "OverrideAllowRotation": false,
-                    "AllowRotation": false,
+                    "OverrideAllowRotation": true,
+                    "AllowRotation": true,
                     "OverrideRotation0Sprite": false,
                     "Rotation0SpritePath": "",
                     "OverrideRotation90Sprite": false,
@@ -45996,7 +46229,7 @@
                     "Rotation90": 0,
                     "BlocksMovement": false,
                     "BlocksSight": false,
-                    "IsInteractable": false,
+                    "IsInteractable": true,
                     "IsStorageContainer": false,
                     "StorageSize": {
                         "x": 4,
@@ -46010,14 +46243,32 @@
                         "z": 0.0
                     },
                     "CustomInteractionAnchorRadius": 0.6499999761581421,
-                    "CustomInteractionPromptText": "交互",
-                    "CustomInteractionAnchors": []
+                    "CustomInteractionPromptText": "点餐",
+                    "CustomInteractionAnchors": [],
+                    "RetailShelf": {
+                        "Enabled": false,
+                        "ShelfMode": 0,
+                        "ItemDefinitionId": "",
+                        "StockCount": 8,
+                        "DisplaySlotCount": 4,
+                        "AutoRestock": true
+                    },
+                    "ProtectedStockContainer": {
+                        "Enabled": false,
+                        "ContainerId": "",
+                        "OwnerId": "",
+                        "OwnerRole": "Campus",
+                        "AllowTakingContents": true,
+                        "SuspicionRisk": 4,
+                        "AutoRestock": true,
+                        "StockItems": []
+                    }
                 },
                 {
                     "ObjectId": "新物体_1x1",
                     "TypeId": "ServiceWindow",
-                    "DisplayNameOverride": "新物体",
-                    "PaletteIndex": 23,
+                    "DisplayNameOverride": "窗口",
+                    "PaletteIndex": 27,
                     "Position": {
                         "x": 48.5,
                         "y": 2.5,
@@ -46040,8 +46291,8 @@
                     },
                     "LockVisualScaleAspect": true,
                     "IsWallMounted": false,
-                    "OverrideAllowRotation": false,
-                    "AllowRotation": false,
+                    "OverrideAllowRotation": true,
+                    "AllowRotation": true,
                     "OverrideRotation0Sprite": false,
                     "Rotation0SpritePath": "",
                     "OverrideRotation90Sprite": false,
@@ -46053,7 +46304,7 @@
                     "Rotation90": 0,
                     "BlocksMovement": false,
                     "BlocksSight": false,
-                    "IsInteractable": false,
+                    "IsInteractable": true,
                     "IsStorageContainer": false,
                     "StorageSize": {
                         "x": 4,
@@ -46067,14 +46318,32 @@
                         "z": 0.0
                     },
                     "CustomInteractionAnchorRadius": 0.6499999761581421,
-                    "CustomInteractionPromptText": "交互",
-                    "CustomInteractionAnchors": []
+                    "CustomInteractionPromptText": "点餐",
+                    "CustomInteractionAnchors": [],
+                    "RetailShelf": {
+                        "Enabled": false,
+                        "ShelfMode": 0,
+                        "ItemDefinitionId": "",
+                        "StockCount": 8,
+                        "DisplaySlotCount": 4,
+                        "AutoRestock": true
+                    },
+                    "ProtectedStockContainer": {
+                        "Enabled": false,
+                        "ContainerId": "",
+                        "OwnerId": "",
+                        "OwnerRole": "Campus",
+                        "AllowTakingContents": true,
+                        "SuspicionRisk": 4,
+                        "AutoRestock": true,
+                        "StockItems": []
+                    }
                 },
                 {
                     "ObjectId": "ServiceCounter_4x1",
                     "TypeId": "ServiceCounter",
                     "DisplayNameOverride": "服务柜台",
-                    "PaletteIndex": 17,
+                    "PaletteIndex": 21,
                     "Position": {
                         "x": 43.0,
                         "y": 2.5,
@@ -46125,13 +46394,36 @@
                     },
                     "CustomInteractionAnchorRadius": 0.6499999761581421,
                     "CustomInteractionPromptText": "交互",
-                    "CustomInteractionAnchors": []
+                    "CustomInteractionAnchors": [],
+                    "RetailShelf": {
+                        "Enabled": false,
+                        "ShelfMode": 0,
+                        "ItemDefinitionId": "",
+                        "StockCount": 8,
+                        "DisplaySlotCount": 4,
+                        "AutoRestock": true
+                    },
+                    "ProtectedStockContainer": {
+                        "Enabled": true,
+                        "ContainerId": "canteen_oden_container",
+                        "OwnerId": "",
+                        "OwnerRole": "Canteen",
+                        "AllowTakingContents": true,
+                        "SuspicionRisk": 4,
+                        "AutoRestock": true,
+                        "StockItems": [
+                            {
+                                "ItemDefinitionId": "canteen_oden_cup",
+                                "StockCount": 8
+                            }
+                        ]
+                    }
                 },
                 {
                     "ObjectId": "新物体_1x1",
                     "TypeId": "ServiceWindow",
-                    "DisplayNameOverride": "新物体",
-                    "PaletteIndex": 23,
+                    "DisplayNameOverride": "窗口",
+                    "PaletteIndex": 27,
                     "Position": {
                         "x": 42.5,
                         "y": 2.5,
@@ -46154,8 +46446,8 @@
                     },
                     "LockVisualScaleAspect": true,
                     "IsWallMounted": false,
-                    "OverrideAllowRotation": false,
-                    "AllowRotation": false,
+                    "OverrideAllowRotation": true,
+                    "AllowRotation": true,
                     "OverrideRotation0Sprite": false,
                     "Rotation0SpritePath": "",
                     "OverrideRotation90Sprite": false,
@@ -46167,7 +46459,7 @@
                     "Rotation90": 0,
                     "BlocksMovement": false,
                     "BlocksSight": false,
-                    "IsInteractable": false,
+                    "IsInteractable": true,
                     "IsStorageContainer": false,
                     "StorageSize": {
                         "x": 4,
@@ -46181,14 +46473,32 @@
                         "z": 0.0
                     },
                     "CustomInteractionAnchorRadius": 0.6499999761581421,
-                    "CustomInteractionPromptText": "交互",
-                    "CustomInteractionAnchors": []
+                    "CustomInteractionPromptText": "点餐",
+                    "CustomInteractionAnchors": [],
+                    "RetailShelf": {
+                        "Enabled": false,
+                        "ShelfMode": 0,
+                        "ItemDefinitionId": "",
+                        "StockCount": 8,
+                        "DisplaySlotCount": 4,
+                        "AutoRestock": true
+                    },
+                    "ProtectedStockContainer": {
+                        "Enabled": false,
+                        "ContainerId": "",
+                        "OwnerId": "",
+                        "OwnerRole": "Campus",
+                        "AllowTakingContents": true,
+                        "SuspicionRisk": 4,
+                        "AutoRestock": true,
+                        "StockItems": []
+                    }
                 },
                 {
                     "ObjectId": "新物体_1x1",
                     "TypeId": "ServiceWindow",
-                    "DisplayNameOverride": "新物体",
-                    "PaletteIndex": 23,
+                    "DisplayNameOverride": "窗口",
+                    "PaletteIndex": 27,
                     "Position": {
                         "x": 44.5,
                         "y": 2.5,
@@ -46211,8 +46521,8 @@
                     },
                     "LockVisualScaleAspect": true,
                     "IsWallMounted": false,
-                    "OverrideAllowRotation": false,
-                    "AllowRotation": false,
+                    "OverrideAllowRotation": true,
+                    "AllowRotation": true,
                     "OverrideRotation0Sprite": false,
                     "Rotation0SpritePath": "",
                     "OverrideRotation90Sprite": false,
@@ -46224,7 +46534,7 @@
                     "Rotation90": 0,
                     "BlocksMovement": false,
                     "BlocksSight": false,
-                    "IsInteractable": false,
+                    "IsInteractable": true,
                     "IsStorageContainer": false,
                     "StorageSize": {
                         "x": 4,
@@ -46238,14 +46548,32 @@
                         "z": 0.0
                     },
                     "CustomInteractionAnchorRadius": 0.6499999761581421,
-                    "CustomInteractionPromptText": "交互",
-                    "CustomInteractionAnchors": []
+                    "CustomInteractionPromptText": "点餐",
+                    "CustomInteractionAnchors": [],
+                    "RetailShelf": {
+                        "Enabled": false,
+                        "ShelfMode": 0,
+                        "ItemDefinitionId": "",
+                        "StockCount": 8,
+                        "DisplaySlotCount": 4,
+                        "AutoRestock": true
+                    },
+                    "ProtectedStockContainer": {
+                        "Enabled": false,
+                        "ContainerId": "",
+                        "OwnerId": "",
+                        "OwnerRole": "Campus",
+                        "AllowTakingContents": true,
+                        "SuspicionRisk": 4,
+                        "AutoRestock": true,
+                        "StockItems": []
+                    }
                 },
                 {
                     "ObjectId": "新物体_1x1",
                     "TypeId": "ServiceWindow",
-                    "DisplayNameOverride": "新物体",
-                    "PaletteIndex": 23,
+                    "DisplayNameOverride": "窗口",
+                    "PaletteIndex": 27,
                     "Position": {
                         "x": 50.5,
                         "y": 2.5,
@@ -46268,8 +46596,8 @@
                     },
                     "LockVisualScaleAspect": true,
                     "IsWallMounted": false,
-                    "OverrideAllowRotation": false,
-                    "AllowRotation": false,
+                    "OverrideAllowRotation": true,
+                    "AllowRotation": true,
                     "OverrideRotation0Sprite": false,
                     "Rotation0SpritePath": "",
                     "OverrideRotation90Sprite": false,
@@ -46281,7 +46609,7 @@
                     "Rotation90": 0,
                     "BlocksMovement": false,
                     "BlocksSight": false,
-                    "IsInteractable": false,
+                    "IsInteractable": true,
                     "IsStorageContainer": false,
                     "StorageSize": {
                         "x": 4,
@@ -46295,14 +46623,32 @@
                         "z": 0.0
                     },
                     "CustomInteractionAnchorRadius": 0.6499999761581421,
-                    "CustomInteractionPromptText": "交互",
-                    "CustomInteractionAnchors": []
+                    "CustomInteractionPromptText": "点餐",
+                    "CustomInteractionAnchors": [],
+                    "RetailShelf": {
+                        "Enabled": false,
+                        "ShelfMode": 0,
+                        "ItemDefinitionId": "",
+                        "StockCount": 8,
+                        "DisplaySlotCount": 4,
+                        "AutoRestock": true
+                    },
+                    "ProtectedStockContainer": {
+                        "Enabled": false,
+                        "ContainerId": "",
+                        "OwnerId": "",
+                        "OwnerRole": "Campus",
+                        "AllowTakingContents": true,
+                        "SuspicionRisk": 4,
+                        "AutoRestock": true,
+                        "StockItems": []
+                    }
                 },
                 {
                     "ObjectId": "新物体_1x1",
                     "TypeId": "ServiceWindow",
-                    "DisplayNameOverride": "新物体",
-                    "PaletteIndex": 23,
+                    "DisplayNameOverride": "窗口",
+                    "PaletteIndex": 27,
                     "Position": {
                         "x": 52.5,
                         "y": 2.5,
@@ -46325,8 +46671,8 @@
                     },
                     "LockVisualScaleAspect": true,
                     "IsWallMounted": false,
-                    "OverrideAllowRotation": false,
-                    "AllowRotation": false,
+                    "OverrideAllowRotation": true,
+                    "AllowRotation": true,
                     "OverrideRotation0Sprite": false,
                     "Rotation0SpritePath": "",
                     "OverrideRotation90Sprite": false,
@@ -46338,7 +46684,7 @@
                     "Rotation90": 0,
                     "BlocksMovement": false,
                     "BlocksSight": false,
-                    "IsInteractable": false,
+                    "IsInteractable": true,
                     "IsStorageContainer": false,
                     "StorageSize": {
                         "x": 4,
@@ -46352,14 +46698,32 @@
                         "z": 0.0
                     },
                     "CustomInteractionAnchorRadius": 0.6499999761581421,
-                    "CustomInteractionPromptText": "交互",
-                    "CustomInteractionAnchors": []
+                    "CustomInteractionPromptText": "点餐",
+                    "CustomInteractionAnchors": [],
+                    "RetailShelf": {
+                        "Enabled": false,
+                        "ShelfMode": 0,
+                        "ItemDefinitionId": "",
+                        "StockCount": 8,
+                        "DisplaySlotCount": 4,
+                        "AutoRestock": true
+                    },
+                    "ProtectedStockContainer": {
+                        "Enabled": false,
+                        "ContainerId": "",
+                        "OwnerId": "",
+                        "OwnerRole": "Campus",
+                        "AllowTakingContents": true,
+                        "SuspicionRisk": 4,
+                        "AutoRestock": true,
+                        "StockItems": []
+                    }
                 },
                 {
                     "ObjectId": "新物体_1x1",
                     "TypeId": "ServiceWindow",
-                    "DisplayNameOverride": "新物体",
-                    "PaletteIndex": 23,
+                    "DisplayNameOverride": "窗口",
+                    "PaletteIndex": 27,
                     "Position": {
                         "x": 56.5,
                         "y": 2.5,
@@ -46382,8 +46746,8 @@
                     },
                     "LockVisualScaleAspect": true,
                     "IsWallMounted": false,
-                    "OverrideAllowRotation": false,
-                    "AllowRotation": false,
+                    "OverrideAllowRotation": true,
+                    "AllowRotation": true,
                     "OverrideRotation0Sprite": false,
                     "Rotation0SpritePath": "",
                     "OverrideRotation90Sprite": false,
@@ -46395,7 +46759,7 @@
                     "Rotation90": 0,
                     "BlocksMovement": false,
                     "BlocksSight": false,
-                    "IsInteractable": false,
+                    "IsInteractable": true,
                     "IsStorageContainer": false,
                     "StorageSize": {
                         "x": 4,
@@ -46409,14 +46773,32 @@
                         "z": 0.0
                     },
                     "CustomInteractionAnchorRadius": 0.6499999761581421,
-                    "CustomInteractionPromptText": "交互",
-                    "CustomInteractionAnchors": []
+                    "CustomInteractionPromptText": "点餐",
+                    "CustomInteractionAnchors": [],
+                    "RetailShelf": {
+                        "Enabled": false,
+                        "ShelfMode": 0,
+                        "ItemDefinitionId": "",
+                        "StockCount": 8,
+                        "DisplaySlotCount": 4,
+                        "AutoRestock": true
+                    },
+                    "ProtectedStockContainer": {
+                        "Enabled": false,
+                        "ContainerId": "",
+                        "OwnerId": "",
+                        "OwnerRole": "Campus",
+                        "AllowTakingContents": true,
+                        "SuspicionRisk": 4,
+                        "AutoRestock": true,
+                        "StockItems": []
+                    }
                 },
                 {
                     "ObjectId": "新物体_1x1",
                     "TypeId": "ServiceWindow",
-                    "DisplayNameOverride": "新物体",
-                    "PaletteIndex": 23,
+                    "DisplayNameOverride": "窗口",
+                    "PaletteIndex": 27,
                     "Position": {
                         "x": 54.5,
                         "y": 2.5,
@@ -46439,8 +46821,83 @@
                     },
                     "LockVisualScaleAspect": true,
                     "IsWallMounted": false,
-                    "OverrideAllowRotation": false,
-                    "AllowRotation": false,
+                    "OverrideAllowRotation": true,
+                    "AllowRotation": true,
+                    "OverrideRotation0Sprite": false,
+                    "Rotation0SpritePath": "",
+                    "OverrideRotation90Sprite": false,
+                    "Rotation90SpritePath": "",
+                    "OverrideRotation180Sprite": false,
+                    "Rotation180SpritePath": "",
+                    "OverrideRotation270Sprite": false,
+                    "Rotation270SpritePath": "",
+                    "Rotation90": 0,
+                    "BlocksMovement": false,
+                    "BlocksSight": false,
+                    "IsInteractable": true,
+                    "IsStorageContainer": false,
+                    "StorageSize": {
+                        "x": 4,
+                        "y": 4
+                    },
+                    "StorageMaxWeight": 12.0,
+                    "UseCustomInteractionAnchor": false,
+                    "CustomInteractionAnchorLocalPosition": {
+                        "x": 0.0,
+                        "y": 0.0,
+                        "z": 0.0
+                    },
+                    "CustomInteractionAnchorRadius": 0.6499999761581421,
+                    "CustomInteractionPromptText": "点餐",
+                    "CustomInteractionAnchors": [],
+                    "RetailShelf": {
+                        "Enabled": false,
+                        "ShelfMode": 0,
+                        "ItemDefinitionId": "",
+                        "StockCount": 8,
+                        "DisplaySlotCount": 4,
+                        "AutoRestock": true
+                    },
+                    "ProtectedStockContainer": {
+                        "Enabled": false,
+                        "ContainerId": "",
+                        "OwnerId": "",
+                        "OwnerRole": "Campus",
+                        "AllowTakingContents": true,
+                        "SuspicionRisk": 4,
+                        "AutoRestock": true,
+                        "StockItems": []
+                    }
+                },
+                {
+                    "ObjectId": "门",
+                    "TypeId": "Door",
+                    "DisplayNameOverride": "",
+                    "PaletteIndex": 4,
+                    "Position": {
+                        "x": 46.5,
+                        "y": -6.5,
+                        "z": 0.5
+                    },
+                    "Cell": {
+                        "x": 46,
+                        "y": -7,
+                        "z": 0
+                    },
+                    "FootprintSize": {
+                        "x": 1,
+                        "y": 1
+                    },
+                    "FloorIndex": 1,
+                    "OverrideFootprintSize": true,
+                    "VisualScale": {
+                        "x": 1.0,
+                        "y": 1.0
+                    },
+                    "LockVisualScaleAspect": true,
+                    "IsWallMounted": false,
+                    "OverrideAllowRotation": true,
+                    "AllowRotation": true,
                     "OverrideRotation0Sprite": false,
                     "Rotation0SpritePath": "",
                     "OverrideRotation90Sprite": false,
@@ -46459,15 +46916,164 @@
                         "y": 4
                     },
                     "StorageMaxWeight": 12.0,
-                    "UseCustomInteractionAnchor": false,
+                    "UseCustomInteractionAnchor": true,
                     "CustomInteractionAnchorLocalPosition": {
                         "x": 0.0,
                         "y": 0.0,
                         "z": 0.0
                     },
-                    "CustomInteractionAnchorRadius": 0.6499999761581421,
-                    "CustomInteractionPromptText": "交互",
-                    "CustomInteractionAnchors": []
+                    "CustomInteractionAnchorRadius": 0.699999988079071,
+                    "CustomInteractionPromptText": "开门",
+                    "CustomInteractionAnchors": [
+                        {
+                            "AnchorId": "door_toggle",
+                            "DisplayName": "门",
+                            "Enabled": true,
+                            "LocalPosition": {
+                                "x": 0.0,
+                                "y": 0.0,
+                                "z": 0.0
+                            },
+                            "Radius": 0.699999988079071,
+                            "PromptText": "开门",
+                            "LocalizedPromptText": {
+                                "chinese": "",
+                                "english": ""
+                            },
+                            "ActionId": "campus.door.toggle",
+                            "Payload": "",
+                            "TargetComponentType": "CampusDoor3D",
+                            "Priority": 130,
+                            "UseTargetDoorStatePrompt": true,
+                            "LogInteraction": false,
+                            "InteractionLogMessage": "",
+                            "LocalizedInteractionLogMessage": {
+                                "chinese": "",
+                                "english": ""
+                            }
+                        }
+                    ],
+                    "RetailShelf": {
+                        "Enabled": false,
+                        "ShelfMode": 0,
+                        "ItemDefinitionId": "",
+                        "StockCount": 8,
+                        "DisplaySlotCount": 4,
+                        "AutoRestock": true
+                    },
+                    "ProtectedStockContainer": {
+                        "Enabled": false,
+                        "ContainerId": "",
+                        "OwnerId": "",
+                        "OwnerRole": "Campus",
+                        "AllowTakingContents": true,
+                        "SuspicionRisk": 4,
+                        "AutoRestock": true,
+                        "StockItems": []
+                    }
+                },
+                {
+                    "ObjectId": "门",
+                    "TypeId": "Door",
+                    "DisplayNameOverride": "",
+                    "PaletteIndex": 4,
+                    "Position": {
+                        "x": 47.5,
+                        "y": -6.5,
+                        "z": 0.5
+                    },
+                    "Cell": {
+                        "x": 47,
+                        "y": -7,
+                        "z": 0
+                    },
+                    "FootprintSize": {
+                        "x": 1,
+                        "y": 1
+                    },
+                    "FloorIndex": 1,
+                    "OverrideFootprintSize": true,
+                    "VisualScale": {
+                        "x": 1.0,
+                        "y": 1.0
+                    },
+                    "LockVisualScaleAspect": true,
+                    "IsWallMounted": false,
+                    "OverrideAllowRotation": true,
+                    "AllowRotation": true,
+                    "OverrideRotation0Sprite": false,
+                    "Rotation0SpritePath": "",
+                    "OverrideRotation90Sprite": false,
+                    "Rotation90SpritePath": "",
+                    "OverrideRotation180Sprite": false,
+                    "Rotation180SpritePath": "",
+                    "OverrideRotation270Sprite": false,
+                    "Rotation270SpritePath": "",
+                    "Rotation90": 0,
+                    "BlocksMovement": false,
+                    "BlocksSight": false,
+                    "IsInteractable": false,
+                    "IsStorageContainer": false,
+                    "StorageSize": {
+                        "x": 4,
+                        "y": 4
+                    },
+                    "StorageMaxWeight": 12.0,
+                    "UseCustomInteractionAnchor": true,
+                    "CustomInteractionAnchorLocalPosition": {
+                        "x": 0.0,
+                        "y": 0.0,
+                        "z": 0.0
+                    },
+                    "CustomInteractionAnchorRadius": 0.699999988079071,
+                    "CustomInteractionPromptText": "开门",
+                    "CustomInteractionAnchors": [
+                        {
+                            "AnchorId": "door_toggle",
+                            "DisplayName": "门",
+                            "Enabled": true,
+                            "LocalPosition": {
+                                "x": 0.0,
+                                "y": 0.0,
+                                "z": 0.0
+                            },
+                            "Radius": 0.699999988079071,
+                            "PromptText": "开门",
+                            "LocalizedPromptText": {
+                                "chinese": "",
+                                "english": ""
+                            },
+                            "ActionId": "campus.door.toggle",
+                            "Payload": "",
+                            "TargetComponentType": "CampusDoor3D",
+                            "Priority": 130,
+                            "UseTargetDoorStatePrompt": true,
+                            "LogInteraction": false,
+                            "InteractionLogMessage": "",
+                            "LocalizedInteractionLogMessage": {
+                                "chinese": "",
+                                "english": ""
+                            }
+                        }
+                    ],
+                    "RetailShelf": {
+                        "Enabled": false,
+                        "ShelfMode": 0,
+                        "ItemDefinitionId": "",
+                        "StockCount": 8,
+                        "DisplaySlotCount": 4,
+                        "AutoRestock": true
+                    },
+                    "ProtectedStockContainer": {
+                        "Enabled": false,
+                        "ContainerId": "",
+                        "OwnerId": "",
+                        "OwnerRole": "Campus",
+                        "AllowTakingContents": true,
+                        "SuspicionRisk": 4,
+                        "AutoRestock": true,
+                        "StockItems": []
+                    }
                 },
                 {
                     "ObjectId": "门",
@@ -46509,7 +47115,7 @@
                     "Rotation90": 0,
                     "BlocksMovement": false,
                     "BlocksSight": false,
-                    "IsInteractable": true,
+                    "IsInteractable": false,
                     "IsStorageContainer": false,
                     "StorageSize": {
                         "x": 4,
@@ -46552,7 +47158,25 @@
                                 "english": ""
                             }
                         }
-                    ]
+                    ],
+                    "RetailShelf": {
+                        "Enabled": false,
+                        "ShelfMode": 0,
+                        "ItemDefinitionId": "",
+                        "StockCount": 8,
+                        "DisplaySlotCount": 4,
+                        "AutoRestock": true
+                    },
+                    "ProtectedStockContainer": {
+                        "Enabled": false,
+                        "ContainerId": "",
+                        "OwnerId": "",
+                        "OwnerRole": "Campus",
+                        "AllowTakingContents": true,
+                        "SuspicionRisk": 4,
+                        "AutoRestock": true,
+                        "StockItems": []
+                    }
                 },
                 {
                     "ObjectId": "门",
@@ -46592,6 +47216,109 @@
                     "OverrideRotation270Sprite": false,
                     "Rotation270SpritePath": "",
                     "Rotation90": 0,
+                    "BlocksMovement": false,
+                    "BlocksSight": false,
+                    "IsInteractable": false,
+                    "IsStorageContainer": false,
+                    "StorageSize": {
+                        "x": 4,
+                        "y": 4
+                    },
+                    "StorageMaxWeight": 12.0,
+                    "UseCustomInteractionAnchor": true,
+                    "CustomInteractionAnchorLocalPosition": {
+                        "x": 0.0,
+                        "y": 0.0,
+                        "z": 0.0
+                    },
+                    "CustomInteractionAnchorRadius": 0.699999988079071,
+                    "CustomInteractionPromptText": "开门",
+                    "CustomInteractionAnchors": [
+                        {
+                            "AnchorId": "door_toggle",
+                            "DisplayName": "门",
+                            "Enabled": true,
+                            "LocalPosition": {
+                                "x": 0.0,
+                                "y": 0.0,
+                                "z": 0.0
+                            },
+                            "Radius": 0.699999988079071,
+                            "PromptText": "开门",
+                            "LocalizedPromptText": {
+                                "chinese": "",
+                                "english": ""
+                            },
+                            "ActionId": "campus.door.toggle",
+                            "Payload": "",
+                            "TargetComponentType": "CampusDoor3D",
+                            "Priority": 130,
+                            "UseTargetDoorStatePrompt": true,
+                            "LogInteraction": false,
+                            "InteractionLogMessage": "",
+                            "LocalizedInteractionLogMessage": {
+                                "chinese": "",
+                                "english": ""
+                            }
+                        }
+                    ],
+                    "RetailShelf": {
+                        "Enabled": false,
+                        "ShelfMode": 0,
+                        "ItemDefinitionId": "",
+                        "StockCount": 8,
+                        "DisplaySlotCount": 4,
+                        "AutoRestock": true
+                    },
+                    "ProtectedStockContainer": {
+                        "Enabled": false,
+                        "ContainerId": "",
+                        "OwnerId": "",
+                        "OwnerRole": "Campus",
+                        "AllowTakingContents": true,
+                        "SuspicionRisk": 4,
+                        "AutoRestock": true,
+                        "StockItems": []
+                    }
+                },
+                {
+                    "ObjectId": "门",
+                    "TypeId": "Door",
+                    "DisplayNameOverride": "",
+                    "PaletteIndex": 4,
+                    "Position": {
+                        "x": -3.5,
+                        "y": 5.5,
+                        "z": 0.5
+                    },
+                    "Cell": {
+                        "x": -4,
+                        "y": 5,
+                        "z": 0
+                    },
+                    "FootprintSize": {
+                        "x": 1,
+                        "y": 1
+                    },
+                    "FloorIndex": 1,
+                    "OverrideFootprintSize": true,
+                    "VisualScale": {
+                        "x": 1.0,
+                        "y": 1.0
+                    },
+                    "LockVisualScaleAspect": true,
+                    "IsWallMounted": false,
+                    "OverrideAllowRotation": true,
+                    "AllowRotation": true,
+                    "OverrideRotation0Sprite": false,
+                    "Rotation0SpritePath": "",
+                    "OverrideRotation90Sprite": false,
+                    "Rotation90SpritePath": "",
+                    "OverrideRotation180Sprite": false,
+                    "Rotation180SpritePath": "",
+                    "OverrideRotation270Sprite": false,
+                    "Rotation270SpritePath": "",
+                    "Rotation90": 1,
                     "BlocksMovement": false,
                     "BlocksSight": false,
                     "IsInteractable": true,
@@ -46637,7 +47364,25 @@
                                 "english": ""
                             }
                         }
-                    ]
+                    ],
+                    "RetailShelf": {
+                        "Enabled": false,
+                        "ShelfMode": 0,
+                        "ItemDefinitionId": "",
+                        "StockCount": 8,
+                        "DisplaySlotCount": 4,
+                        "AutoRestock": true
+                    },
+                    "ProtectedStockContainer": {
+                        "Enabled": false,
+                        "ContainerId": "",
+                        "OwnerId": "",
+                        "OwnerRole": "Campus",
+                        "AllowTakingContents": true,
+                        "SuspicionRisk": 4,
+                        "AutoRestock": true,
+                        "StockItems": []
+                    }
                 },
                 {
                     "ObjectId": "门",
@@ -46646,12 +47391,12 @@
                     "PaletteIndex": 4,
                     "Position": {
                         "x": -3.5,
-                        "y": 5.5,
+                        "y": -2.5,
                         "z": 0.5
                     },
                     "Cell": {
                         "x": -4,
-                        "y": 5,
+                        "y": -3,
                         "z": 0
                     },
                     "FootprintSize": {
@@ -46722,13 +47467,1034 @@
                                 "english": ""
                             }
                         }
-                    ]
+                    ],
+                    "RetailShelf": {
+                        "Enabled": false,
+                        "ShelfMode": 0,
+                        "ItemDefinitionId": "",
+                        "StockCount": 8,
+                        "DisplaySlotCount": 4,
+                        "AutoRestock": true
+                    },
+                    "ProtectedStockContainer": {
+                        "Enabled": false,
+                        "ContainerId": "",
+                        "OwnerId": "",
+                        "OwnerRole": "Campus",
+                        "AllowTakingContents": true,
+                        "SuspicionRisk": 4,
+                        "AutoRestock": true,
+                        "StockItems": []
+                    }
+                },
+                {
+                    "ObjectId": "门",
+                    "TypeId": "Door",
+                    "DisplayNameOverride": "",
+                    "PaletteIndex": 4,
+                    "Position": {
+                        "x": -3.5,
+                        "y": -14.5,
+                        "z": 0.5
+                    },
+                    "Cell": {
+                        "x": -4,
+                        "y": -15,
+                        "z": 0
+                    },
+                    "FootprintSize": {
+                        "x": 1,
+                        "y": 1
+                    },
+                    "FloorIndex": 1,
+                    "OverrideFootprintSize": true,
+                    "VisualScale": {
+                        "x": 1.0,
+                        "y": 1.0
+                    },
+                    "LockVisualScaleAspect": true,
+                    "IsWallMounted": false,
+                    "OverrideAllowRotation": true,
+                    "AllowRotation": true,
+                    "OverrideRotation0Sprite": false,
+                    "Rotation0SpritePath": "",
+                    "OverrideRotation90Sprite": false,
+                    "Rotation90SpritePath": "",
+                    "OverrideRotation180Sprite": false,
+                    "Rotation180SpritePath": "",
+                    "OverrideRotation270Sprite": false,
+                    "Rotation270SpritePath": "",
+                    "Rotation90": 1,
+                    "BlocksMovement": false,
+                    "BlocksSight": false,
+                    "IsInteractable": false,
+                    "IsStorageContainer": false,
+                    "StorageSize": {
+                        "x": 4,
+                        "y": 4
+                    },
+                    "StorageMaxWeight": 12.0,
+                    "UseCustomInteractionAnchor": true,
+                    "CustomInteractionAnchorLocalPosition": {
+                        "x": 0.0,
+                        "y": 0.0,
+                        "z": 0.0
+                    },
+                    "CustomInteractionAnchorRadius": 0.699999988079071,
+                    "CustomInteractionPromptText": "开门",
+                    "CustomInteractionAnchors": [
+                        {
+                            "AnchorId": "door_toggle",
+                            "DisplayName": "门",
+                            "Enabled": true,
+                            "LocalPosition": {
+                                "x": 0.0,
+                                "y": 0.0,
+                                "z": 0.0
+                            },
+                            "Radius": 0.699999988079071,
+                            "PromptText": "开门",
+                            "LocalizedPromptText": {
+                                "chinese": "",
+                                "english": ""
+                            },
+                            "ActionId": "campus.door.toggle",
+                            "Payload": "",
+                            "TargetComponentType": "CampusDoor3D",
+                            "Priority": 130,
+                            "UseTargetDoorStatePrompt": true,
+                            "LogInteraction": false,
+                            "InteractionLogMessage": "",
+                            "LocalizedInteractionLogMessage": {
+                                "chinese": "",
+                                "english": ""
+                            }
+                        }
+                    ],
+                    "RetailShelf": {
+                        "Enabled": false,
+                        "ShelfMode": 0,
+                        "ItemDefinitionId": "",
+                        "StockCount": 8,
+                        "DisplaySlotCount": 4,
+                        "AutoRestock": true
+                    },
+                    "ProtectedStockContainer": {
+                        "Enabled": false,
+                        "ContainerId": "",
+                        "OwnerId": "",
+                        "OwnerRole": "Campus",
+                        "AllowTakingContents": true,
+                        "SuspicionRisk": 4,
+                        "AutoRestock": true,
+                        "StockItems": []
+                    }
+                },
+                {
+                    "ObjectId": "builtin_retail_shelf_display",
+                    "TypeId": "GoodsShelf",
+                    "DisplayNameOverride": "超市货架（直摆）",
+                    "PaletteIndex": 15,
+                    "Position": {
+                        "x": 21.0,
+                        "y": 1.5,
+                        "z": 0.5
+                    },
+                    "Cell": {
+                        "x": 20,
+                        "y": 1,
+                        "z": 0
+                    },
+                    "FootprintSize": {
+                        "x": 2,
+                        "y": 1
+                    },
+                    "FloorIndex": 1,
+                    "OverrideFootprintSize": true,
+                    "VisualScale": {
+                        "x": 1.0,
+                        "y": 1.0
+                    },
+                    "LockVisualScaleAspect": true,
+                    "IsWallMounted": false,
+                    "OverrideAllowRotation": false,
+                    "AllowRotation": false,
+                    "OverrideRotation0Sprite": false,
+                    "Rotation0SpritePath": "",
+                    "OverrideRotation90Sprite": false,
+                    "Rotation90SpritePath": "",
+                    "OverrideRotation180Sprite": false,
+                    "Rotation180SpritePath": "",
+                    "OverrideRotation270Sprite": false,
+                    "Rotation270SpritePath": "",
+                    "Rotation90": 0,
+                    "BlocksMovement": true,
+                    "BlocksSight": false,
+                    "IsInteractable": false,
+                    "IsStorageContainer": false,
+                    "StorageSize": {
+                        "x": 4,
+                        "y": 4
+                    },
+                    "StorageMaxWeight": 18.0,
+                    "UseCustomInteractionAnchor": false,
+                    "CustomInteractionAnchorLocalPosition": {
+                        "x": 0.0,
+                        "y": 0.0,
+                        "z": 0.0
+                    },
+                    "CustomInteractionAnchorRadius": 0.6499999761581421,
+                    "CustomInteractionPromptText": "交互",
+                    "CustomInteractionAnchors": [],
+                    "RetailShelf": {
+                        "Enabled": true,
+                        "ShelfMode": 1,
+                        "ItemDefinitionId": "retail_potato_chips",
+                        "StockCount": 8,
+                        "DisplaySlotCount": 4,
+                        "AutoRestock": true
+                    },
+                    "ProtectedStockContainer": {
+                        "Enabled": false,
+                        "ContainerId": "",
+                        "OwnerId": "",
+                        "OwnerRole": "Campus",
+                        "AllowTakingContents": true,
+                        "SuspicionRisk": 4,
+                        "AutoRestock": true,
+                        "StockItems": []
+                    }
+                },
+                {
+                    "ObjectId": "builtin_retail_shelf_display",
+                    "TypeId": "GoodsShelf",
+                    "DisplayNameOverride": "超市货架（直摆）",
+                    "PaletteIndex": 15,
+                    "Position": {
+                        "x": 24.0,
+                        "y": 1.5,
+                        "z": 0.5
+                    },
+                    "Cell": {
+                        "x": 23,
+                        "y": 1,
+                        "z": 0
+                    },
+                    "FootprintSize": {
+                        "x": 2,
+                        "y": 1
+                    },
+                    "FloorIndex": 1,
+                    "OverrideFootprintSize": true,
+                    "VisualScale": {
+                        "x": 1.0,
+                        "y": 1.0
+                    },
+                    "LockVisualScaleAspect": true,
+                    "IsWallMounted": false,
+                    "OverrideAllowRotation": false,
+                    "AllowRotation": false,
+                    "OverrideRotation0Sprite": false,
+                    "Rotation0SpritePath": "",
+                    "OverrideRotation90Sprite": false,
+                    "Rotation90SpritePath": "",
+                    "OverrideRotation180Sprite": false,
+                    "Rotation180SpritePath": "",
+                    "OverrideRotation270Sprite": false,
+                    "Rotation270SpritePath": "",
+                    "Rotation90": 0,
+                    "BlocksMovement": true,
+                    "BlocksSight": false,
+                    "IsInteractable": false,
+                    "IsStorageContainer": false,
+                    "StorageSize": {
+                        "x": 4,
+                        "y": 4
+                    },
+                    "StorageMaxWeight": 18.0,
+                    "UseCustomInteractionAnchor": false,
+                    "CustomInteractionAnchorLocalPosition": {
+                        "x": 0.0,
+                        "y": 0.0,
+                        "z": 0.0
+                    },
+                    "CustomInteractionAnchorRadius": 0.6499999761581421,
+                    "CustomInteractionPromptText": "交互",
+                    "CustomInteractionAnchors": [],
+                    "RetailShelf": {
+                        "Enabled": true,
+                        "ShelfMode": 1,
+                        "ItemDefinitionId": "retail_potato_chips",
+                        "StockCount": 8,
+                        "DisplaySlotCount": 4,
+                        "AutoRestock": true
+                    },
+                    "ProtectedStockContainer": {
+                        "Enabled": false,
+                        "ContainerId": "",
+                        "OwnerId": "",
+                        "OwnerRole": "Campus",
+                        "AllowTakingContents": true,
+                        "SuspicionRisk": 4,
+                        "AutoRestock": true,
+                        "StockItems": []
+                    }
+                },
+                {
+                    "ObjectId": "builtin_retail_shelf_container",
+                    "TypeId": "GoodsShelf",
+                    "DisplayNameOverride": "超市货架（容器）",
+                    "PaletteIndex": 14,
+                    "Position": {
+                        "x": 21.0,
+                        "y": -0.5,
+                        "z": 0.5
+                    },
+                    "Cell": {
+                        "x": 20,
+                        "y": -1,
+                        "z": 0
+                    },
+                    "FootprintSize": {
+                        "x": 2,
+                        "y": 1
+                    },
+                    "FloorIndex": 1,
+                    "OverrideFootprintSize": true,
+                    "VisualScale": {
+                        "x": 1.0,
+                        "y": 1.0
+                    },
+                    "LockVisualScaleAspect": true,
+                    "IsWallMounted": false,
+                    "OverrideAllowRotation": false,
+                    "AllowRotation": false,
+                    "OverrideRotation0Sprite": false,
+                    "Rotation0SpritePath": "",
+                    "OverrideRotation90Sprite": false,
+                    "Rotation90SpritePath": "",
+                    "OverrideRotation180Sprite": false,
+                    "Rotation180SpritePath": "",
+                    "OverrideRotation270Sprite": false,
+                    "Rotation270SpritePath": "",
+                    "Rotation90": 0,
+                    "BlocksMovement": true,
+                    "BlocksSight": false,
+                    "IsInteractable": true,
+                    "IsStorageContainer": true,
+                    "StorageSize": {
+                        "x": 6,
+                        "y": 4
+                    },
+                    "StorageMaxWeight": 24.0,
+                    "UseCustomInteractionAnchor": false,
+                    "CustomInteractionAnchorLocalPosition": {
+                        "x": 0.0,
+                        "y": 0.0,
+                        "z": 0.0
+                    },
+                    "CustomInteractionAnchorRadius": 0.6499999761581421,
+                    "CustomInteractionPromptText": "交互",
+                    "CustomInteractionAnchors": [],
+                    "RetailShelf": {
+                        "Enabled": true,
+                        "ShelfMode": 0,
+                        "ItemDefinitionId": "retail_water",
+                        "StockCount": 12,
+                        "DisplaySlotCount": 3,
+                        "AutoRestock": true
+                    },
+                    "ProtectedStockContainer": {
+                        "Enabled": false,
+                        "ContainerId": "",
+                        "OwnerId": "",
+                        "OwnerRole": "Campus",
+                        "AllowTakingContents": true,
+                        "SuspicionRisk": 4,
+                        "AutoRestock": true,
+                        "StockItems": []
+                    }
+                },
+                {
+                    "ObjectId": "builtin_retail_shelf_container",
+                    "TypeId": "GoodsShelf",
+                    "DisplayNameOverride": "超市货架（容器）",
+                    "PaletteIndex": 14,
+                    "Position": {
+                        "x": 24.0,
+                        "y": -0.5,
+                        "z": 0.5
+                    },
+                    "Cell": {
+                        "x": 23,
+                        "y": -1,
+                        "z": 0
+                    },
+                    "FootprintSize": {
+                        "x": 2,
+                        "y": 1
+                    },
+                    "FloorIndex": 1,
+                    "OverrideFootprintSize": true,
+                    "VisualScale": {
+                        "x": 1.0,
+                        "y": 1.0
+                    },
+                    "LockVisualScaleAspect": true,
+                    "IsWallMounted": false,
+                    "OverrideAllowRotation": false,
+                    "AllowRotation": false,
+                    "OverrideRotation0Sprite": false,
+                    "Rotation0SpritePath": "",
+                    "OverrideRotation90Sprite": false,
+                    "Rotation90SpritePath": "",
+                    "OverrideRotation180Sprite": false,
+                    "Rotation180SpritePath": "",
+                    "OverrideRotation270Sprite": false,
+                    "Rotation270SpritePath": "",
+                    "Rotation90": 0,
+                    "BlocksMovement": true,
+                    "BlocksSight": false,
+                    "IsInteractable": true,
+                    "IsStorageContainer": true,
+                    "StorageSize": {
+                        "x": 6,
+                        "y": 4
+                    },
+                    "StorageMaxWeight": 24.0,
+                    "UseCustomInteractionAnchor": false,
+                    "CustomInteractionAnchorLocalPosition": {
+                        "x": 0.0,
+                        "y": 0.0,
+                        "z": 0.0
+                    },
+                    "CustomInteractionAnchorRadius": 0.6499999761581421,
+                    "CustomInteractionPromptText": "交互",
+                    "CustomInteractionAnchors": [],
+                    "RetailShelf": {
+                        "Enabled": true,
+                        "ShelfMode": 0,
+                        "ItemDefinitionId": "retail_water",
+                        "StockCount": 12,
+                        "DisplaySlotCount": 3,
+                        "AutoRestock": true
+                    },
+                    "ProtectedStockContainer": {
+                        "Enabled": false,
+                        "ContainerId": "",
+                        "OwnerId": "",
+                        "OwnerRole": "Campus",
+                        "AllowTakingContents": true,
+                        "SuspicionRisk": 4,
+                        "AutoRestock": true,
+                        "StockItems": []
+                    }
+                },
+                {
+                    "ObjectId": "ground_item_retail_potato_chips",
+                    "TypeId": "",
+                    "DisplayNameOverride": "薯片",
+                    "PaletteIndex": -1,
+                    "Position": {
+                        "x": 21.174999237060548,
+                        "y": 2.130525588989258,
+                        "z": 0.5
+                    },
+                    "Cell": {
+                        "x": 21,
+                        "y": 2,
+                        "z": 0
+                    },
+                    "FootprintSize": {
+                        "x": 1,
+                        "y": 1
+                    },
+                    "FloorIndex": 1,
+                    "OverrideFootprintSize": true,
+                    "VisualScale": {
+                        "x": 0.21875,
+                        "y": 0.21875
+                    },
+                    "LockVisualScaleAspect": true,
+                    "IsWallMounted": false,
+                    "OverrideAllowRotation": true,
+                    "AllowRotation": false,
+                    "OverrideRotation0Sprite": false,
+                    "Rotation0SpritePath": "",
+                    "OverrideRotation90Sprite": false,
+                    "Rotation90SpritePath": "",
+                    "OverrideRotation180Sprite": false,
+                    "Rotation180SpritePath": "",
+                    "OverrideRotation270Sprite": false,
+                    "Rotation270SpritePath": "",
+                    "Rotation90": 0,
+                    "BlocksMovement": false,
+                    "BlocksSight": false,
+                    "IsInteractable": true,
+                    "IsStorageContainer": false,
+                    "StorageSize": {
+                        "x": 4,
+                        "y": 4
+                    },
+                    "StorageMaxWeight": 12.0,
+                    "UseCustomInteractionAnchor": false,
+                    "CustomInteractionAnchorLocalPosition": {
+                        "x": 0.0,
+                        "y": 0.0,
+                        "z": 0.0
+                    },
+                    "CustomInteractionAnchorRadius": 0.6499999761581421,
+                    "CustomInteractionPromptText": "交互",
+                    "CustomInteractionAnchors": [],
+                    "RetailShelf": {
+                        "Enabled": false,
+                        "ShelfMode": 0,
+                        "ItemDefinitionId": "",
+                        "StockCount": 8,
+                        "DisplaySlotCount": 4,
+                        "AutoRestock": true
+                    },
+                    "ProtectedStockContainer": {
+                        "Enabled": false,
+                        "ContainerId": "",
+                        "OwnerId": "",
+                        "OwnerRole": "Campus",
+                        "AllowTakingContents": true,
+                        "SuspicionRisk": 4,
+                        "AutoRestock": true,
+                        "StockItems": []
+                    }
+                },
+                {
+                    "ObjectId": "ground_item_retail_potato_chips",
+                    "TypeId": "",
+                    "DisplayNameOverride": "薯片",
+                    "PaletteIndex": -1,
+                    "Position": {
+                        "x": 20.475000381469728,
+                        "y": 1.940000057220459,
+                        "z": 0.5
+                    },
+                    "Cell": {
+                        "x": 20,
+                        "y": 1,
+                        "z": 0
+                    },
+                    "FootprintSize": {
+                        "x": 1,
+                        "y": 1
+                    },
+                    "FloorIndex": 1,
+                    "OverrideFootprintSize": true,
+                    "VisualScale": {
+                        "x": 0.21875,
+                        "y": 0.21875
+                    },
+                    "LockVisualScaleAspect": true,
+                    "IsWallMounted": false,
+                    "OverrideAllowRotation": true,
+                    "AllowRotation": false,
+                    "OverrideRotation0Sprite": false,
+                    "Rotation0SpritePath": "",
+                    "OverrideRotation90Sprite": false,
+                    "Rotation90SpritePath": "",
+                    "OverrideRotation180Sprite": false,
+                    "Rotation180SpritePath": "",
+                    "OverrideRotation270Sprite": false,
+                    "Rotation270SpritePath": "",
+                    "Rotation90": 0,
+                    "BlocksMovement": false,
+                    "BlocksSight": false,
+                    "IsInteractable": true,
+                    "IsStorageContainer": false,
+                    "StorageSize": {
+                        "x": 4,
+                        "y": 4
+                    },
+                    "StorageMaxWeight": 12.0,
+                    "UseCustomInteractionAnchor": false,
+                    "CustomInteractionAnchorLocalPosition": {
+                        "x": 0.0,
+                        "y": 0.0,
+                        "z": 0.0
+                    },
+                    "CustomInteractionAnchorRadius": 0.6499999761581421,
+                    "CustomInteractionPromptText": "交互",
+                    "CustomInteractionAnchors": [],
+                    "RetailShelf": {
+                        "Enabled": false,
+                        "ShelfMode": 0,
+                        "ItemDefinitionId": "",
+                        "StockCount": 8,
+                        "DisplaySlotCount": 4,
+                        "AutoRestock": true
+                    },
+                    "ProtectedStockContainer": {
+                        "Enabled": false,
+                        "ContainerId": "",
+                        "OwnerId": "",
+                        "OwnerRole": "Campus",
+                        "AllowTakingContents": true,
+                        "SuspicionRisk": 4,
+                        "AutoRestock": true,
+                        "StockItems": []
+                    }
+                },
+                {
+                    "ObjectId": "ground_item_retail_potato_chips",
+                    "TypeId": "",
+                    "DisplayNameOverride": "薯片",
+                    "PaletteIndex": -1,
+                    "Position": {
+                        "x": 21.524999618530275,
+                        "y": 1.9399999380111695,
+                        "z": 0.5
+                    },
+                    "Cell": {
+                        "x": 21,
+                        "y": 1,
+                        "z": 0
+                    },
+                    "FootprintSize": {
+                        "x": 1,
+                        "y": 1
+                    },
+                    "FloorIndex": 1,
+                    "OverrideFootprintSize": true,
+                    "VisualScale": {
+                        "x": 0.21875,
+                        "y": 0.21875
+                    },
+                    "LockVisualScaleAspect": true,
+                    "IsWallMounted": false,
+                    "OverrideAllowRotation": true,
+                    "AllowRotation": false,
+                    "OverrideRotation0Sprite": false,
+                    "Rotation0SpritePath": "",
+                    "OverrideRotation90Sprite": false,
+                    "Rotation90SpritePath": "",
+                    "OverrideRotation180Sprite": false,
+                    "Rotation180SpritePath": "",
+                    "OverrideRotation270Sprite": false,
+                    "Rotation270SpritePath": "",
+                    "Rotation90": 0,
+                    "BlocksMovement": false,
+                    "BlocksSight": false,
+                    "IsInteractable": true,
+                    "IsStorageContainer": false,
+                    "StorageSize": {
+                        "x": 4,
+                        "y": 4
+                    },
+                    "StorageMaxWeight": 12.0,
+                    "UseCustomInteractionAnchor": false,
+                    "CustomInteractionAnchorLocalPosition": {
+                        "x": 0.0,
+                        "y": 0.0,
+                        "z": 0.0
+                    },
+                    "CustomInteractionAnchorRadius": 0.6499999761581421,
+                    "CustomInteractionPromptText": "交互",
+                    "CustomInteractionAnchors": [],
+                    "RetailShelf": {
+                        "Enabled": false,
+                        "ShelfMode": 0,
+                        "ItemDefinitionId": "",
+                        "StockCount": 8,
+                        "DisplaySlotCount": 4,
+                        "AutoRestock": true
+                    },
+                    "ProtectedStockContainer": {
+                        "Enabled": false,
+                        "ContainerId": "",
+                        "OwnerId": "",
+                        "OwnerRole": "Campus",
+                        "AllowTakingContents": true,
+                        "SuspicionRisk": 4,
+                        "AutoRestock": true,
+                        "StockItems": []
+                    }
+                },
+                {
+                    "ObjectId": "ground_item_retail_potato_chips",
+                    "TypeId": "",
+                    "DisplayNameOverride": "薯片",
+                    "PaletteIndex": -1,
+                    "Position": {
+                        "x": 20.825000762939454,
+                        "y": 2.130525588989258,
+                        "z": 0.5
+                    },
+                    "Cell": {
+                        "x": 20,
+                        "y": 2,
+                        "z": 0
+                    },
+                    "FootprintSize": {
+                        "x": 1,
+                        "y": 1
+                    },
+                    "FloorIndex": 1,
+                    "OverrideFootprintSize": true,
+                    "VisualScale": {
+                        "x": 0.21875,
+                        "y": 0.21875
+                    },
+                    "LockVisualScaleAspect": true,
+                    "IsWallMounted": false,
+                    "OverrideAllowRotation": true,
+                    "AllowRotation": false,
+                    "OverrideRotation0Sprite": false,
+                    "Rotation0SpritePath": "",
+                    "OverrideRotation90Sprite": false,
+                    "Rotation90SpritePath": "",
+                    "OverrideRotation180Sprite": false,
+                    "Rotation180SpritePath": "",
+                    "OverrideRotation270Sprite": false,
+                    "Rotation270SpritePath": "",
+                    "Rotation90": 0,
+                    "BlocksMovement": false,
+                    "BlocksSight": false,
+                    "IsInteractable": true,
+                    "IsStorageContainer": false,
+                    "StorageSize": {
+                        "x": 4,
+                        "y": 4
+                    },
+                    "StorageMaxWeight": 12.0,
+                    "UseCustomInteractionAnchor": false,
+                    "CustomInteractionAnchorLocalPosition": {
+                        "x": 0.0,
+                        "y": 0.0,
+                        "z": 0.0
+                    },
+                    "CustomInteractionAnchorRadius": 0.6499999761581421,
+                    "CustomInteractionPromptText": "交互",
+                    "CustomInteractionAnchors": [],
+                    "RetailShelf": {
+                        "Enabled": false,
+                        "ShelfMode": 0,
+                        "ItemDefinitionId": "",
+                        "StockCount": 8,
+                        "DisplaySlotCount": 4,
+                        "AutoRestock": true
+                    },
+                    "ProtectedStockContainer": {
+                        "Enabled": false,
+                        "ContainerId": "",
+                        "OwnerId": "",
+                        "OwnerRole": "Campus",
+                        "AllowTakingContents": true,
+                        "SuspicionRisk": 4,
+                        "AutoRestock": true,
+                        "StockItems": []
+                    }
+                },
+                {
+                    "ObjectId": "ground_item_retail_potato_chips",
+                    "TypeId": "",
+                    "DisplayNameOverride": "薯片",
+                    "PaletteIndex": -1,
+                    "Position": {
+                        "x": 23.825000762939454,
+                        "y": 2.130525588989258,
+                        "z": 0.5
+                    },
+                    "Cell": {
+                        "x": 23,
+                        "y": 2,
+                        "z": 0
+                    },
+                    "FootprintSize": {
+                        "x": 1,
+                        "y": 1
+                    },
+                    "FloorIndex": 1,
+                    "OverrideFootprintSize": true,
+                    "VisualScale": {
+                        "x": 0.21875,
+                        "y": 0.21875
+                    },
+                    "LockVisualScaleAspect": true,
+                    "IsWallMounted": false,
+                    "OverrideAllowRotation": true,
+                    "AllowRotation": false,
+                    "OverrideRotation0Sprite": false,
+                    "Rotation0SpritePath": "",
+                    "OverrideRotation90Sprite": false,
+                    "Rotation90SpritePath": "",
+                    "OverrideRotation180Sprite": false,
+                    "Rotation180SpritePath": "",
+                    "OverrideRotation270Sprite": false,
+                    "Rotation270SpritePath": "",
+                    "Rotation90": 0,
+                    "BlocksMovement": false,
+                    "BlocksSight": false,
+                    "IsInteractable": true,
+                    "IsStorageContainer": false,
+                    "StorageSize": {
+                        "x": 4,
+                        "y": 4
+                    },
+                    "StorageMaxWeight": 12.0,
+                    "UseCustomInteractionAnchor": false,
+                    "CustomInteractionAnchorLocalPosition": {
+                        "x": 0.0,
+                        "y": 0.0,
+                        "z": 0.0
+                    },
+                    "CustomInteractionAnchorRadius": 0.6499999761581421,
+                    "CustomInteractionPromptText": "交互",
+                    "CustomInteractionAnchors": [],
+                    "RetailShelf": {
+                        "Enabled": false,
+                        "ShelfMode": 0,
+                        "ItemDefinitionId": "",
+                        "StockCount": 8,
+                        "DisplaySlotCount": 4,
+                        "AutoRestock": true
+                    },
+                    "ProtectedStockContainer": {
+                        "Enabled": false,
+                        "ContainerId": "",
+                        "OwnerId": "",
+                        "OwnerRole": "Campus",
+                        "AllowTakingContents": true,
+                        "SuspicionRisk": 4,
+                        "AutoRestock": true,
+                        "StockItems": []
+                    }
+                },
+                {
+                    "ObjectId": "ground_item_retail_potato_chips",
+                    "TypeId": "",
+                    "DisplayNameOverride": "薯片",
+                    "PaletteIndex": -1,
+                    "Position": {
+                        "x": 24.524999618530275,
+                        "y": 1.9399999380111695,
+                        "z": 0.5
+                    },
+                    "Cell": {
+                        "x": 24,
+                        "y": 1,
+                        "z": 0
+                    },
+                    "FootprintSize": {
+                        "x": 1,
+                        "y": 1
+                    },
+                    "FloorIndex": 1,
+                    "OverrideFootprintSize": true,
+                    "VisualScale": {
+                        "x": 0.21875,
+                        "y": 0.21875
+                    },
+                    "LockVisualScaleAspect": true,
+                    "IsWallMounted": false,
+                    "OverrideAllowRotation": true,
+                    "AllowRotation": false,
+                    "OverrideRotation0Sprite": false,
+                    "Rotation0SpritePath": "",
+                    "OverrideRotation90Sprite": false,
+                    "Rotation90SpritePath": "",
+                    "OverrideRotation180Sprite": false,
+                    "Rotation180SpritePath": "",
+                    "OverrideRotation270Sprite": false,
+                    "Rotation270SpritePath": "",
+                    "Rotation90": 0,
+                    "BlocksMovement": false,
+                    "BlocksSight": false,
+                    "IsInteractable": true,
+                    "IsStorageContainer": false,
+                    "StorageSize": {
+                        "x": 4,
+                        "y": 4
+                    },
+                    "StorageMaxWeight": 12.0,
+                    "UseCustomInteractionAnchor": false,
+                    "CustomInteractionAnchorLocalPosition": {
+                        "x": 0.0,
+                        "y": 0.0,
+                        "z": 0.0
+                    },
+                    "CustomInteractionAnchorRadius": 0.6499999761581421,
+                    "CustomInteractionPromptText": "交互",
+                    "CustomInteractionAnchors": [],
+                    "RetailShelf": {
+                        "Enabled": false,
+                        "ShelfMode": 0,
+                        "ItemDefinitionId": "",
+                        "StockCount": 8,
+                        "DisplaySlotCount": 4,
+                        "AutoRestock": true
+                    },
+                    "ProtectedStockContainer": {
+                        "Enabled": false,
+                        "ContainerId": "",
+                        "OwnerId": "",
+                        "OwnerRole": "Campus",
+                        "AllowTakingContents": true,
+                        "SuspicionRisk": 4,
+                        "AutoRestock": true,
+                        "StockItems": []
+                    }
+                },
+                {
+                    "ObjectId": "ground_item_retail_potato_chips",
+                    "TypeId": "",
+                    "DisplayNameOverride": "薯片",
+                    "PaletteIndex": -1,
+                    "Position": {
+                        "x": 24.174999237060548,
+                        "y": 2.130525588989258,
+                        "z": 0.5
+                    },
+                    "Cell": {
+                        "x": 24,
+                        "y": 2,
+                        "z": 0
+                    },
+                    "FootprintSize": {
+                        "x": 1,
+                        "y": 1
+                    },
+                    "FloorIndex": 1,
+                    "OverrideFootprintSize": true,
+                    "VisualScale": {
+                        "x": 0.21875,
+                        "y": 0.21875
+                    },
+                    "LockVisualScaleAspect": true,
+                    "IsWallMounted": false,
+                    "OverrideAllowRotation": true,
+                    "AllowRotation": false,
+                    "OverrideRotation0Sprite": false,
+                    "Rotation0SpritePath": "",
+                    "OverrideRotation90Sprite": false,
+                    "Rotation90SpritePath": "",
+                    "OverrideRotation180Sprite": false,
+                    "Rotation180SpritePath": "",
+                    "OverrideRotation270Sprite": false,
+                    "Rotation270SpritePath": "",
+                    "Rotation90": 0,
+                    "BlocksMovement": false,
+                    "BlocksSight": false,
+                    "IsInteractable": true,
+                    "IsStorageContainer": false,
+                    "StorageSize": {
+                        "x": 4,
+                        "y": 4
+                    },
+                    "StorageMaxWeight": 12.0,
+                    "UseCustomInteractionAnchor": false,
+                    "CustomInteractionAnchorLocalPosition": {
+                        "x": 0.0,
+                        "y": 0.0,
+                        "z": 0.0
+                    },
+                    "CustomInteractionAnchorRadius": 0.6499999761581421,
+                    "CustomInteractionPromptText": "交互",
+                    "CustomInteractionAnchors": [],
+                    "RetailShelf": {
+                        "Enabled": false,
+                        "ShelfMode": 0,
+                        "ItemDefinitionId": "",
+                        "StockCount": 8,
+                        "DisplaySlotCount": 4,
+                        "AutoRestock": true
+                    },
+                    "ProtectedStockContainer": {
+                        "Enabled": false,
+                        "ContainerId": "",
+                        "OwnerId": "",
+                        "OwnerRole": "Campus",
+                        "AllowTakingContents": true,
+                        "SuspicionRisk": 4,
+                        "AutoRestock": true,
+                        "StockItems": []
+                    }
+                },
+                {
+                    "ObjectId": "ground_item_retail_potato_chips",
+                    "TypeId": "",
+                    "DisplayNameOverride": "薯片",
+                    "PaletteIndex": -1,
+                    "Position": {
+                        "x": 23.475000381469728,
+                        "y": 1.940000057220459,
+                        "z": 0.5
+                    },
+                    "Cell": {
+                        "x": 23,
+                        "y": 1,
+                        "z": 0
+                    },
+                    "FootprintSize": {
+                        "x": 1,
+                        "y": 1
+                    },
+                    "FloorIndex": 1,
+                    "OverrideFootprintSize": true,
+                    "VisualScale": {
+                        "x": 0.21875,
+                        "y": 0.21875
+                    },
+                    "LockVisualScaleAspect": true,
+                    "IsWallMounted": false,
+                    "OverrideAllowRotation": true,
+                    "AllowRotation": false,
+                    "OverrideRotation0Sprite": false,
+                    "Rotation0SpritePath": "",
+                    "OverrideRotation90Sprite": false,
+                    "Rotation90SpritePath": "",
+                    "OverrideRotation180Sprite": false,
+                    "Rotation180SpritePath": "",
+                    "OverrideRotation270Sprite": false,
+                    "Rotation270SpritePath": "",
+                    "Rotation90": 0,
+                    "BlocksMovement": false,
+                    "BlocksSight": false,
+                    "IsInteractable": true,
+                    "IsStorageContainer": false,
+                    "StorageSize": {
+                        "x": 4,
+                        "y": 4
+                    },
+                    "StorageMaxWeight": 12.0,
+                    "UseCustomInteractionAnchor": false,
+                    "CustomInteractionAnchorLocalPosition": {
+                        "x": 0.0,
+                        "y": 0.0,
+                        "z": 0.0
+                    },
+                    "CustomInteractionAnchorRadius": 0.6499999761581421,
+                    "CustomInteractionPromptText": "交互",
+                    "CustomInteractionAnchors": [],
+                    "RetailShelf": {
+                        "Enabled": false,
+                        "ShelfMode": 0,
+                        "ItemDefinitionId": "",
+                        "StockCount": 8,
+                        "DisplaySlotCount": 4,
+                        "AutoRestock": true
+                    },
+                    "ProtectedStockContainer": {
+                        "Enabled": false,
+                        "ContainerId": "",
+                        "OwnerId": "",
+                        "OwnerRole": "Campus",
+                        "AllowTakingContents": true,
+                        "SuspicionRisk": 4,
+                        "AutoRestock": true,
+                        "StockItems": []
+                    }
                 },
                 {
                     "ObjectId": "收银台_2x1",
-                    "TypeId": "",
+                    "TypeId": "CheckoutPoint",
                     "DisplayNameOverride": "收银台",
-                    "PaletteIndex": 22,
+                    "PaletteIndex": 26,
                     "Position": {
                         "x": 23.5,
                         "y": -10.0,
@@ -46779,13 +48545,31 @@
                     },
                     "CustomInteractionAnchorRadius": 0.6499999761581421,
                     "CustomInteractionPromptText": "交互",
-                    "CustomInteractionAnchors": []
+                    "CustomInteractionAnchors": [],
+                    "RetailShelf": {
+                        "Enabled": false,
+                        "ShelfMode": 0,
+                        "ItemDefinitionId": "",
+                        "StockCount": 8,
+                        "DisplaySlotCount": 4,
+                        "AutoRestock": true
+                    },
+                    "ProtectedStockContainer": {
+                        "Enabled": false,
+                        "ContainerId": "",
+                        "OwnerId": "",
+                        "OwnerRole": "Campus",
+                        "AllowTakingContents": true,
+                        "SuspicionRisk": 4,
+                        "AutoRestock": true,
+                        "StockItems": []
+                    }
                 },
                 {
                     "ObjectId": "收银台_2x1",
-                    "TypeId": "",
+                    "TypeId": "CheckoutPoint",
                     "DisplayNameOverride": "收银台",
-                    "PaletteIndex": 22,
+                    "PaletteIndex": 26,
                     "Position": {
                         "x": 20.5,
                         "y": -10.0,
@@ -46836,7 +48620,25 @@
                     },
                     "CustomInteractionAnchorRadius": 0.6499999761581421,
                     "CustomInteractionPromptText": "交互",
-                    "CustomInteractionAnchors": []
+                    "CustomInteractionAnchors": [],
+                    "RetailShelf": {
+                        "Enabled": false,
+                        "ShelfMode": 0,
+                        "ItemDefinitionId": "",
+                        "StockCount": 8,
+                        "DisplaySlotCount": 4,
+                        "AutoRestock": true
+                    },
+                    "ProtectedStockContainer": {
+                        "Enabled": false,
+                        "ContainerId": "",
+                        "OwnerId": "",
+                        "OwnerRole": "Campus",
+                        "AllowTakingContents": true,
+                        "SuspicionRisk": 4,
+                        "AutoRestock": true,
+                        "StockItems": []
+                    }
                 }
             ],
             "Stairs": [],
@@ -49785,16 +51587,6 @@
                     "RoomName": "ServiceArea",
                     "FloorIndex": 1,
                     "Cell": {
-                        "x": 47,
-                        "y": -7,
-                        "z": 0
-                    },
-                    "HideMarkerVisual": false
-                },
-                {
-                    "RoomName": "ServiceArea",
-                    "FloorIndex": 1,
-                    "Cell": {
                         "x": 48,
                         "y": -7,
                         "z": 0
@@ -56535,16 +58327,6 @@
                     "RoomName": "RetailArea",
                     "FloorIndex": 1,
                     "Cell": {
-                        "x": 20,
-                        "y": -11,
-                        "z": 0
-                    },
-                    "HideMarkerVisual": false
-                },
-                {
-                    "RoomName": "RetailArea",
-                    "FloorIndex": 1,
-                    "Cell": {
                         "x": 21,
                         "y": -11,
                         "z": 0
@@ -56556,16 +58338,6 @@
                     "FloorIndex": 1,
                     "Cell": {
                         "x": 22,
-                        "y": -11,
-                        "z": 0
-                    },
-                    "HideMarkerVisual": false
-                },
-                {
-                    "RoomName": "RetailArea",
-                    "FloorIndex": 1,
-                    "Cell": {
-                        "x": 23,
                         "y": -11,
                         "z": 0
                     },
@@ -56655,16 +58427,6 @@
                     "RoomName": "RetailArea",
                     "FloorIndex": 1,
                     "Cell": {
-                        "x": 20,
-                        "y": -10,
-                        "z": 0
-                    },
-                    "HideMarkerVisual": false
-                },
-                {
-                    "RoomName": "RetailArea",
-                    "FloorIndex": 1,
-                    "Cell": {
                         "x": 21,
                         "y": -10,
                         "z": 0
@@ -56676,16 +58438,6 @@
                     "FloorIndex": 1,
                     "Cell": {
                         "x": 22,
-                        "y": -10,
-                        "z": 0
-                    },
-                    "HideMarkerVisual": false
-                },
-                {
-                    "RoomName": "RetailArea",
-                    "FloorIndex": 1,
-                    "Cell": {
-                        "x": 23,
                         "y": -10,
                         "z": 0
                     },

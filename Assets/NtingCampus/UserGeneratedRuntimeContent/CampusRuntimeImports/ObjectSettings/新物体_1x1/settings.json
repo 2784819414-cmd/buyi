@@ -1,7 +1,7 @@
-﻿{
-    "ObjectId": "新物体_1x1",
+{
+    "ObjectId": "\u65b0\u7269\u4f53_1x1",
     "TypeId": "ServiceWindow",
-    "DisplayNameOverride": "窗口",
+    "DisplayNameOverride": "\u7a97\u53e3",
     "OverrideFootprintSize": true,
     "FootprintSize": {
         "x": 1,
@@ -36,6 +36,24 @@
         "z": 0.0
     },
     "CustomInteractionAnchorRadius": 0.6499999761581421,
-    "CustomInteractionPromptText": "交互",
-    "CustomInteractionAnchors": []
+    "CustomInteractionPromptText": "\u70b9\u9910",
+    "CustomInteractionAnchors": [],
+    "RetailShelf": {
+        "Enabled": false,
+        "ShelfMode": 0,
+        "ItemDefinitionId": "",
+        "StockCount": 8,
+        "DisplaySlotCount": 4,
+        "AutoRestock": true
+    },
+    "ProtectedStockContainer": {
+        "Enabled": false,
+        "ContainerId": "",
+        "OwnerId": "",
+        "OwnerRole": "Campus",
+        "AllowTakingContents": true,
+        "SuspicionRisk": 4,
+        "AutoRestock": true,
+        "StockItems": []
+    }
 }

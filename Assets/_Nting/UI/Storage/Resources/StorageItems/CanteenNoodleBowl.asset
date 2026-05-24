@@ -1,0 +1,36 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a6c8594f85b44c40abf87c80a8710110, type: 3}
+  m_Name: CanteenNoodleBowl
+  m_EditorClassIdentifier: 
+  Id: canteen_noodle_bowl
+  DisplayName: "\u70ED\u6C64\u9762"
+  LocalizedDisplayName:
+    chinese: "\u70ED\u6C64\u9762"
+    english: Noodle Bowl
+  Width: 2
+  Height: 2
+  Weight: 0.65
+  Price: 10
+  Description: "\u98DF\u5802\u7A97\u53E3\u51FA\u9910\u7684\u70ED\u6C64\u9762\u3002"
+  LocalizedDescription:
+    chinese: "\u98DF\u5802\u7A97\u53E3\u51FA\u9910\u7684\u70ED\u6C64\u9762\u3002"
+    english: A hot noodle bowl served from the canteen window.
+  ThemeColor: {r: 0.79, g: 0.62, b: 0.39, a: 1}
+  Icon: {fileID: 0}
+  IsUsable: 1
+  UseActionId: campus.item.consume_food
+  ConsumeOnUse: 1
+  UseText: "\u5403\u6389\u70ED\u6C64\u9762"
+  LocalizedUseText:
+    chinese: "\u5403\u6389\u70ED\u6C64\u9762"
+    english: Eat the noodle bowl.

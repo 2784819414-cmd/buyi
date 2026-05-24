@@ -8,6 +8,7 @@ namespace NtingCampus.Gameplay.Characters
     {
         public CampusNpcIntentKind Kind;
         public string Label = string.Empty;
+        public string ActionId = string.Empty;
         public string RoomId = string.Empty;
         public Vector3 TargetPosition;
         public float StopDistance = 0.14f;
@@ -70,16 +71,11 @@ namespace NtingCampus.Gameplay.Characters
             }
 
             return Kind == other.Kind &&
+                   string.Equals(ActionId ?? string.Empty, other.ActionId ?? string.Empty, StringComparison.OrdinalIgnoreCase) &&
                    string.Equals(RoomId ?? string.Empty, other.RoomId ?? string.Empty, StringComparison.OrdinalIgnoreCase) &&
-                   string.Equals(ResolveActionId(ActionOpportunity), ResolveActionId(other.ActionOpportunity), StringComparison.OrdinalIgnoreCase) &&
                    Vector2.SqrMagnitude((Vector2)(TargetPosition - other.TargetPosition)) <= 0.04f &&
                    RequireExactDestination == other.RequireExactDestination &&
                    Mathf.Abs(StopDistance - other.StopDistance) <= 0.03f;
-        }
-
-        private static string ResolveActionId(CampusNpcActionOpportunity opportunity)
-        {
-            return opportunity != null ? opportunity.ActionId : string.Empty;
         }
     }
 }

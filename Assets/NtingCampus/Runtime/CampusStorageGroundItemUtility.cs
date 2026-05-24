@@ -1,5 +1,5 @@
 using Nting.Storage;
-using NtingCampus.Gameplay.UI;
+using NtingCampus.UI.Runtime.Gameplay;
 using UnityEngine;
 using UnityEngine.Tilemaps;
 
@@ -51,7 +51,23 @@ namespace NtingCampusMapEditor
             Vector3 worldPosition,
             out string errorMessage)
         {
+            return TryPlaceItemAtWorldPosition(
+                sourceContext,
+                item,
+                worldPosition,
+                out errorMessage,
+                out _);
+        }
+
+        public static bool TryPlaceItemAtWorldPosition(
+            GameObject sourceContext,
+            StorageItemModel item,
+            Vector3 worldPosition,
+            out string errorMessage,
+            out CampusDroppedStorageItem droppedItem)
+        {
             errorMessage = string.Empty;
+            droppedItem = null;
             if (item == null)
             {
                 errorMessage = StorageTextCatalog.Get(StorageTextId.MissingItem);
@@ -73,7 +89,9 @@ namespace NtingCampusMapEditor
             }
 
             Vector3Int cell = floor.Grid.WorldToCell(worldPosition);
-            return CreateWorldItemObject(floor, item, sprite, cell, worldPosition, true) != null;
+            GameObject worldItem = CreateWorldItemObject(floor, item, sprite, cell, worldPosition, true);
+            droppedItem = worldItem != null ? worldItem.GetComponent<CampusDroppedStorageItem>() : null;
+            return worldItem != null;
         }
 
         private static GameObject CreateWorldItemObject(CampusFloorRoot floor, StorageItemModel item, Sprite sprite, Vector3Int cell)
@@ -107,6 +125,7 @@ namespace NtingCampusMapEditor
             droppedItem.Width = item.CurrentWidth;
             droppedItem.Height = item.CurrentHeight;
             droppedItem.Weight = item.Weight;
+            droppedItem.Price = item.Price;
             droppedItem.Description = item.Description;
             droppedItem.LocalizedDescription = item.LocalizedDescription;
             droppedItem.ThemeColor = item.ThemeColor;
@@ -289,9 +308,10 @@ namespace NtingCampusMapEditor
 
         private static Sprite ResolveWorldSprite(StorageItemModel item)
         {
-            if (item != null && item.Icon != null)
+            Sprite itemIcon = StorageItemIconUtility.Resolve(item);
+            if (itemIcon != null)
             {
-                return item.Icon;
+                return itemIcon;
             }
 
             StorageMemory memory = StorageMemory.Instance;

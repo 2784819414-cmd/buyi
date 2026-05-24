@@ -1,4 +1,7 @@
 using System;
+using System.Collections.Generic;
+using NtingCampus.Gameplay.Inventory;
+using NtingCampus.Gameplay.Retail;
 using NtingCampus.Gameplay.Rooms;
 using UnityEngine;
 
@@ -56,6 +59,8 @@ namespace NtingCampusMapEditor
             settings.IsStorageContainer = placed.IsStorageContainer;
             settings.StorageSize = placed.NormalizedStorageSize;
             settings.StorageMaxWeight = placed.NormalizedStorageMaxWeight;
+            settings.RetailShelf = CaptureRetailShelfData(placed.gameObject);
+            settings.ProtectedStockContainer = CaptureProtectedStockContainerData(placed.gameObject);
             return settings;
         }
 
@@ -156,6 +161,10 @@ namespace NtingCampusMapEditor
             placed.IsStorageContainer = settings.IsStorageContainer;
             placed.StorageSize = CampusPlacedObject.NormalizeStorageSize(settings.StorageSize);
             placed.StorageMaxWeight = CampusPlacedObject.NormalizeStorageMaxWeight(settings.StorageMaxWeight);
+
+            ApplyRetailShelfData(target, placed, settings.RetailShelf);
+            ApplyProtectedStockContainerData(target, placed, settings.ProtectedStockContainer);
+
             if (placed.IsStorageContainer && ensureStorageInteractionAnchor != null)
             {
                 ensureStorageInteractionAnchor(placed);
@@ -333,6 +342,238 @@ namespace NtingCampusMapEditor
             }
 
             return CampusFacilityType.Unknown;
+        }
+
+        internal static CampusRuntimeRetailShelfData CaptureRetailShelfData(GameObject target)
+        {
+            CampusRuntimeRetailShelfData data = new CampusRuntimeRetailShelfData();
+            CampusRetailShelf shelf = target != null ? target.GetComponent<CampusRetailShelf>() : null;
+            if (shelf == null)
+            {
+                return data;
+            }
+
+            data.Enabled = true;
+            data.ShelfMode = shelf.ShelfMode;
+            data.ItemDefinitionId = string.IsNullOrWhiteSpace(shelf.ItemDefinitionId)
+                ? string.Empty
+                : shelf.ItemDefinitionId.Trim();
+            data.StockCount = Mathf.Max(1, shelf.StockCount);
+            data.DisplaySlotCount = Mathf.Max(1, shelf.DisplaySlotCount);
+            data.AutoRestock = shelf.AutoRestock;
+            return data;
+        }
+
+        internal static CampusRuntimeRetailShelfData CloneRetailShelfData(CampusRuntimeRetailShelfData source)
+        {
+            CampusRuntimeRetailShelfData clone = new CampusRuntimeRetailShelfData();
+            if (source == null)
+            {
+                return clone;
+            }
+
+            clone.Enabled = source.Enabled;
+            clone.ShelfMode = source.ShelfMode;
+            clone.ItemDefinitionId = source.ItemDefinitionId;
+            clone.StockCount = source.StockCount;
+            clone.DisplaySlotCount = source.DisplaySlotCount;
+            clone.AutoRestock = source.AutoRestock;
+            NormalizeRetailShelfData(clone);
+            return clone;
+        }
+
+        internal static void NormalizeRetailShelfData(CampusRuntimeRetailShelfData data)
+        {
+            if (data == null)
+            {
+                return;
+            }
+
+            data.ItemDefinitionId = string.IsNullOrWhiteSpace(data.ItemDefinitionId)
+                ? string.Empty
+                : data.ItemDefinitionId.Trim();
+            data.StockCount = Mathf.Max(1, data.StockCount);
+            data.DisplaySlotCount = Mathf.Max(1, data.DisplaySlotCount);
+        }
+
+        internal static void ApplyRetailShelfData(
+            GameObject target,
+            CampusPlacedObject placed,
+            CampusRuntimeRetailShelfData data)
+        {
+            NormalizeRetailShelfData(data);
+            if (target == null || !target.scene.IsValid() && placed == null)
+            {
+                return;
+            }
+
+            if (data == null || !data.Enabled)
+            {
+                return;
+            }
+
+            CampusRetailShelf shelf = target.GetComponent<CampusRetailShelf>();
+            if (shelf == null)
+            {
+                shelf = target.AddComponent<CampusRetailShelf>();
+            }
+
+            if (string.IsNullOrWhiteSpace(shelf.ShelfId) && placed != null && !string.IsNullOrWhiteSpace(placed.ObjectId))
+            {
+                shelf.ShelfId = placed.ObjectId.Trim();
+            }
+
+            shelf.ItemDefinitionId = data.ItemDefinitionId;
+            shelf.ShelfMode = data.ShelfMode;
+            shelf.StockCount = data.StockCount;
+            shelf.DisplaySlotCount = data.DisplaySlotCount;
+            shelf.AutoRestock = data.AutoRestock;
+            if (placed != null)
+            {
+                placed.IsStorageContainer = data.ShelfMode == CampusRetailShelfMode.Container;
+            }
+        }
+
+        internal static CampusRuntimeProtectedStockContainerData CaptureProtectedStockContainerData(GameObject target)
+        {
+            CampusRuntimeProtectedStockContainerData data = new CampusRuntimeProtectedStockContainerData();
+            CampusProtectedStockContainer stockContainer = target != null
+                ? target.GetComponent<CampusProtectedStockContainer>()
+                : null;
+            if (stockContainer == null)
+            {
+                return data;
+            }
+
+            stockContainer.Normalize();
+            data.Enabled = true;
+            data.ContainerId = stockContainer.ContainerId;
+            data.OwnerId = stockContainer.OwnerId;
+            data.OwnerRole = stockContainer.OwnerRole;
+            data.AllowTakingContents = stockContainer.AllowTakingContents;
+            data.SuspicionRisk = stockContainer.SuspicionRisk;
+            data.AutoRestock = stockContainer.AutoRestock;
+            data.StockItems = CloneStockEntries(stockContainer.StockItems);
+            return data;
+        }
+
+        internal static CampusRuntimeProtectedStockContainerData CloneProtectedStockContainerData(
+            CampusRuntimeProtectedStockContainerData source)
+        {
+            CampusRuntimeProtectedStockContainerData clone = new CampusRuntimeProtectedStockContainerData();
+            if (source == null)
+            {
+                return clone;
+            }
+
+            clone.Enabled = source.Enabled;
+            clone.ContainerId = source.ContainerId;
+            clone.OwnerId = source.OwnerId;
+            clone.OwnerRole = source.OwnerRole;
+            clone.AllowTakingContents = source.AllowTakingContents;
+            clone.SuspicionRisk = source.SuspicionRisk;
+            clone.AutoRestock = source.AutoRestock;
+            clone.StockItems = CloneStockEntries(source.StockItems);
+            NormalizeProtectedStockContainerData(clone);
+            return clone;
+        }
+
+        internal static void NormalizeProtectedStockContainerData(CampusRuntimeProtectedStockContainerData data)
+        {
+            if (data == null)
+            {
+                return;
+            }
+
+            data.ContainerId = string.IsNullOrWhiteSpace(data.ContainerId) ? string.Empty : data.ContainerId.Trim();
+            data.OwnerId = string.IsNullOrWhiteSpace(data.OwnerId) ? string.Empty : data.OwnerId.Trim();
+            data.OwnerRole = string.IsNullOrWhiteSpace(data.OwnerRole) ? "Campus" : data.OwnerRole.Trim();
+            data.SuspicionRisk = Mathf.Max(0, data.SuspicionRisk);
+            data.StockItems = NormalizeStockEntries(data.StockItems);
+        }
+
+        internal static void ApplyProtectedStockContainerData(
+            GameObject target,
+            CampusPlacedObject placed,
+            CampusRuntimeProtectedStockContainerData data)
+        {
+            NormalizeProtectedStockContainerData(data);
+            if (target == null || data == null || !data.Enabled)
+            {
+                return;
+            }
+
+            CampusProtectedStockContainer stockContainer = target.GetComponent<CampusProtectedStockContainer>();
+            if (stockContainer == null)
+            {
+                stockContainer = target.AddComponent<CampusProtectedStockContainer>();
+            }
+
+            stockContainer.ContainerId = data.ContainerId;
+            stockContainer.OwnerId = data.OwnerId;
+            stockContainer.OwnerRole = data.OwnerRole;
+            stockContainer.AllowTakingContents = data.AllowTakingContents;
+            stockContainer.SuspicionRisk = data.SuspicionRisk;
+            stockContainer.AutoRestock = data.AutoRestock;
+            stockContainer.StockItems = CloneStockEntries(data.StockItems);
+            stockContainer.Normalize();
+
+            if (placed != null)
+            {
+                placed.IsStorageContainer = true;
+            }
+        }
+
+        private static List<CampusProtectedStockEntry> CloneStockEntries(List<CampusProtectedStockEntry> source)
+        {
+            List<CampusProtectedStockEntry> clone = new List<CampusProtectedStockEntry>();
+            if (source == null)
+            {
+                return clone;
+            }
+
+            for (int i = 0; i < source.Count; i++)
+            {
+                CampusProtectedStockEntry entry = source[i];
+                if (entry == null || string.IsNullOrWhiteSpace(entry.ItemDefinitionId))
+                {
+                    continue;
+                }
+
+                clone.Add(new CampusProtectedStockEntry
+                {
+                    ItemDefinitionId = entry.ItemDefinitionId.Trim(),
+                    StockCount = Mathf.Max(1, entry.StockCount)
+                });
+            }
+
+            return clone;
+        }
+
+        private static List<CampusProtectedStockEntry> NormalizeStockEntries(List<CampusProtectedStockEntry> entries)
+        {
+            List<CampusProtectedStockEntry> normalized = new List<CampusProtectedStockEntry>();
+            if (entries == null)
+            {
+                return normalized;
+            }
+
+            for (int i = 0; i < entries.Count; i++)
+            {
+                CampusProtectedStockEntry entry = entries[i];
+                if (entry == null || string.IsNullOrWhiteSpace(entry.ItemDefinitionId))
+                {
+                    continue;
+                }
+
+                normalized.Add(new CampusProtectedStockEntry
+                {
+                    ItemDefinitionId = entry.ItemDefinitionId.Trim(),
+                    StockCount = Mathf.Max(1, entry.StockCount)
+                });
+            }
+
+            return normalized;
         }
 
         internal static CampusFacilityType ResolveFacilityType(

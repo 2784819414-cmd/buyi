@@ -1,0 +1,37 @@
+﻿%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a6c8594f85b44c40abf87c80a8710110, type: 3}
+  m_Name: RetailEnergyDrink
+  m_EditorClassIdentifier: 
+  Id: retail_energy_drink
+  DisplayName: "\u80FD\u91CF\u996E\u6599"
+  LocalizedDisplayName:
+    chinese: "\u80FD\u91CF\u996E\u6599"
+    english: Energy Drink
+  Width: 1
+  Height: 2
+  Weight: 0.33
+  Price: 10
+  Description: "\u989C\u8272\u5F20\u626C\u7684\u529F\u80FD\u996E\u6599\u3002"
+  LocalizedDescription:
+    chinese: "\u989C\u8272\u5F20\u626C\u7684\u529F\u80FD\u996E\u6599\u3002"
+    english: A brightly colored energy drink.
+  ThemeColor: {r: 0.36, g: 0.48, b: 0.89, a: 1}
+  Icon: {fileID: 0}
+  IsUsable: 0
+  UseActionId: 
+  ConsumeOnUse: 1
+  UseText: 
+  LocalizedUseText:
+    chinese: 
+    english: 
+

@@ -1,6 +1,7 @@
 using System;
+using NtingCampus.Gameplay.Retail;
 using NtingCampus.Gameplay.Rooms;
-using NtingCampus.Gameplay.UI;
+using NtingCampus.UI.Runtime.Gameplay;
 using UnityEngine;
 
 namespace NtingCampusMapEditor
@@ -29,15 +30,19 @@ namespace NtingCampusMapEditor
                 return;
             }
 
-            if (!placedObject.IsInteractable)
+            ResolveDefaultAnchorAction(
+                placedObject,
+                displayName,
+                out MonoBehaviour target,
+                out string actionId,
+                out CampusLocalizedText promptText);
+            if (!placedObject.IsInteractable &&
+                string.IsNullOrWhiteSpace(actionId))
             {
                 return;
             }
 
-            MonoBehaviour target = FindInteractionTarget(placedObject, null);
-            string actionId = target != null ? CampusInteractionActionIds.InteractTarget : CampusInteractionActionIds.Log;
             Vector3 fallbackPosition = ResolveColliderTopLocal(placedObject.transform, FindPrimaryCollider(placedObject), Vector3.zero);
-            CampusLocalizedText promptText = BuildLocalizedText(CampusInteractionTextId.InteractWith, displayName);
             EnsureAnchor(
                 placedObject,
                 GenericAnchorName,
@@ -52,6 +57,45 @@ namespace NtingCampusMapEditor
                 false,
                 null,
                 default);
+        }
+
+        private static void ResolveDefaultAnchorAction(
+            CampusPlacedObject placedObject,
+            string displayName,
+            out MonoBehaviour target,
+            out string actionId,
+            out CampusLocalizedText promptText)
+        {
+            target = null;
+            actionId = string.Empty;
+            promptText = BuildLocalizedText(CampusInteractionTextId.InteractWith, displayName);
+            if (placedObject == null)
+            {
+                return;
+            }
+
+            if (placedObject.IsStorageContainer)
+            {
+                actionId = CampusInteractionActionIds.OpenStorage;
+                promptText = BuildLocalizedText(CampusInteractionTextId.OpenObject, displayName);
+                return;
+            }
+
+            switch (CampusFacilityTypeResolver.Resolve(placedObject))
+            {
+                case CampusFacilityType.CheckoutPoint:
+                    actionId = CampusRetailActionIds.Checkout;
+                    promptText = new CampusLocalizedText(
+                        CampusRetailTextCatalog.Get(CampusDisplayLanguage.Chinese, CampusRetailTextId.CheckoutPrompt),
+                        CampusRetailTextCatalog.Get(CampusDisplayLanguage.English, CampusRetailTextId.CheckoutPrompt));
+                    return;
+                case CampusFacilityType.ServiceWindow:
+                    actionId = CampusInteractionActionIds.ServiceWindowUse;
+                    return;
+            }
+
+            target = FindInteractionTarget(placedObject, null);
+            actionId = target != null ? CampusInteractionActionIds.InteractTarget : CampusInteractionActionIds.Log;
         }
 
         private static void EnsureDiningTableAnchors(CampusPlacedObject placedObject)

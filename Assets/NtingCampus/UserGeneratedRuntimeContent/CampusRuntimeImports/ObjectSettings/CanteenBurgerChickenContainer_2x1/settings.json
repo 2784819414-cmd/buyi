@@ -1,0 +1,68 @@
+{
+    "ObjectId": "CanteenBurgerChickenContainer_2x1",
+    "TypeId": "GoodsShelf",
+    "DisplayNameOverride": "\u6c49\u5821\u70b8\u9e21\u5bb9\u5668",
+    "OverrideFootprintSize": true,
+    "FootprintSize": {
+        "x": 2,
+        "y": 1
+    },
+    "VisualScale": {
+        "x": 1.0,
+        "y": 1.0
+    },
+    "LockVisualScaleAspect": true,
+    "IsWallMounted": false,
+    "OverrideAllowRotation": false,
+    "AllowRotation": false,
+    "OverrideRotation0Sprite": false,
+    "Rotation0SpritePath": "",
+    "OverrideRotation90Sprite": false,
+    "Rotation90SpritePath": "",
+    "OverrideRotation180Sprite": false,
+    "Rotation180SpritePath": "",
+    "OverrideRotation270Sprite": false,
+    "Rotation270SpritePath": "",
+    "IsStorageContainer": true,
+    "StorageSize": {
+        "x": 6,
+        "y": 8
+    },
+    "StorageMaxWeight": 20.0,
+    "UseCustomInteractionAnchor": false,
+    "CustomInteractionAnchorLocalPosition": {
+        "x": 0.0,
+        "y": 0.0,
+        "z": 0.0
+    },
+    "CustomInteractionAnchorRadius": 0.6499999761581421,
+    "CustomInteractionPromptText": "\u6253\u5f00\u6c49\u5821\u70b8\u9e21\u5bb9\u5668",
+    "CustomInteractionAnchors": [],
+    "RetailShelf": {
+        "Enabled": false,
+        "ShelfMode": 0,
+        "ItemDefinitionId": "",
+        "StockCount": 8,
+        "DisplaySlotCount": 4,
+        "AutoRestock": true
+    },
+    "ProtectedStockContainer": {
+        "Enabled": true,
+        "ContainerId": "canteen_burger_chicken_container",
+        "OwnerId": "",
+        "OwnerRole": "Canteen",
+        "AllowTakingContents": true,
+        "SuspicionRisk": 4,
+        "AutoRestock": true,
+        "StockItems": [
+            {
+                "ItemDefinitionId": "canteen_burger",
+                "StockCount": 6
+            },
+            {
+                "ItemDefinitionId": "canteen_fried_chicken",
+                "StockCount": 6
+            }
+        ]
+    }
+}

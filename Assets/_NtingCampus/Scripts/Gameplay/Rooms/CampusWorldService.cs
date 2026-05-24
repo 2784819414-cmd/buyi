@@ -1,7 +1,7 @@
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using NtingCampus.Gameplay.Characters;
 using NtingCampus.Gameplay.Core;
-using NtingCampus.Gameplay.UI;
+using NtingCampus.UI.Runtime.Gameplay;
 using UnityEngine;
 
 namespace NtingCampus.Gameplay.Rooms
@@ -109,27 +109,12 @@ namespace NtingCampus.Gameplay.Rooms
 
         public CampusGameplayRoom FindRoomForRuntime(CampusCharacterRuntime runtime)
         {
-            if (runtime == null)
+            if (runtime == null || runtime.Data == null || string.IsNullOrWhiteSpace(runtime.Data.CurrentRoomId))
             {
                 return null;
             }
 
-            CampusGameplayRoom positionRoom = FindRoomForPosition(ResolveFloorIndex(runtime), runtime.transform.position);
-            if (positionRoom != null)
-            {
-                return positionRoom;
-            }
-
-            if (runtime.Data != null && !string.IsNullOrWhiteSpace(runtime.Data.CurrentRoomId))
-            {
-                CampusGameplayRoom boundRoom = FindRoomById(runtime.Data.CurrentRoomId);
-                if (boundRoom != null)
-                {
-                    return boundRoom;
-                }
-            }
-
-            return null;
+            return FindRoomById(runtime.Data.CurrentRoomId);
         }
 
         public CampusWorldFacts BuildFacts(CampusRosterService rosterService)
@@ -203,3 +188,4 @@ namespace NtingCampus.Gameplay.Rooms
         }
     }
 }
+

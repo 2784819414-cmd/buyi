@@ -7,6 +7,8 @@ namespace NtingCampus.Gameplay.Inventory
 {
     public sealed class CampusHandPickupService
     {
+        private const float HandsFullSpeechDurationSeconds = 2f;
+
         private readonly CampusInventoryTransferService transferService;
 
         public CampusHandPickupService(CampusInventoryTransferService transferService)
@@ -27,48 +29,82 @@ namespace NtingCampus.Gameplay.Inventory
                 return false;
             }
 
-            CampusCharacterInventory inventory = CampusCharacterInventoryService.GetOrCreateInventory(
-                ResolveActorRuntime(context),
-                false);
-            StorageContainerModel[] hands = inventory.Hands;
-            for (int i = 0; i < hands.Length; i++)
+            CampusCharacterRuntime actorRuntime = ResolveActorRuntime(context);
+            if (actorRuntime == null)
             {
-                if (transferService.TryPlaceFirstFit(item, null, hands[i], context, out result))
-                {
-                    RefreshHeldItemVisual(context);
-                    return true;
-                }
+                result = StorageTransferResult.Fail(StorageTextCatalog.Get(StorageTextId.MissingItemOrSource));
+                return false;
             }
 
-            result = StorageTransferResult.Fail(StorageTextCatalog.Get(StorageTextId.TargetBlocked));
-            return false;
+            CampusCharacterInventory inventory = CampusCharacterInventoryService.GetOrCreateInventory(
+                actorRuntime,
+                false);
+            StorageContainerModel[] hands = inventory.Hands;
+            if (!TryFindFirstOpenHand(hands, item, out StorageContainerModel targetHand, out Vector2Int targetPosition))
+            {
+                return FailBecauseHandsAreFull(actorRuntime, out result);
+            }
+
+            StorageContainerModel source = item.CurrentContainer;
+            if (!transferService.TryMoveItem(item, source, targetHand, targetPosition.x, targetPosition.y, context, out result))
+            {
+                return false;
+            }
+
+            RefreshHeldItemVisual(actorRuntime);
+            return true;
         }
 
         private static CampusCharacterRuntime ResolveActorRuntime(StorageTransferContext context)
         {
-            if (context != null && context.Actor != null)
-            {
-                CampusCharacterRuntime runtime = context.Actor.GetComponentInParent<CampusCharacterRuntime>();
-                if (runtime != null)
-                {
-                    return runtime;
-                }
-            }
-
-            CampusGameBootstrap bootstrap = CampusGameBootstrap.Instance;
-            return bootstrap != null && bootstrap.RosterService != null
-                ? bootstrap.RosterService.PlayerRuntime
-                : Object.FindFirstObjectByType<CampusCharacterRuntime>();
+            return context != null
+                ? CampusCharacterActionUtility.ResolveActorRuntime(context.Actor)
+                : null;
         }
 
-        private static void RefreshHeldItemVisual(StorageTransferContext context)
+        private static void RefreshHeldItemVisual(CampusCharacterRuntime runtime)
         {
-            CampusCharacterRuntime runtime = ResolveActorRuntime(context);
             CampusHeldItemVisual heldItemVisual = runtime != null ? runtime.GetComponent<CampusHeldItemVisual>() : null;
             if (heldItemVisual != null)
             {
                 heldItemVisual.RefreshImmediate();
             }
+        }
+
+        private static bool TryFindFirstOpenHand(
+            StorageContainerModel[] hands,
+            StorageItemModel item,
+            out StorageContainerModel targetHand,
+            out Vector2Int targetPosition)
+        {
+            targetHand = null;
+            targetPosition = default;
+            if (hands == null || item == null)
+            {
+                return false;
+            }
+
+            for (int i = 0; i < hands.Length; i++)
+            {
+                StorageContainerModel hand = hands[i];
+                if (hand != null && hand.FindFirstFit(item, out targetPosition))
+                {
+                    targetHand = hand;
+                    return true;
+                }
+            }
+
+            return false;
+        }
+
+        private static bool FailBecauseHandsAreFull(
+            CampusCharacterRuntime actorRuntime,
+            out StorageTransferResult result)
+        {
+            string message = StorageTextCatalog.Get(StorageTextId.HandsFullPickup);
+            CampusCharacterSpeechUtility.Speak(actorRuntime, message, HandsFullSpeechDurationSeconds);
+            result = StorageTransferResult.Fail(message);
+            return false;
         }
     }
 }

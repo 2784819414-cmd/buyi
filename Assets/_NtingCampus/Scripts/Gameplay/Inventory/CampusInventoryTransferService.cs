@@ -205,6 +205,15 @@ namespace NtingCampus.Gameplay.Inventory
             EnsureServices();
             context = contextResolver.Normalize(context);
             source = source ?? item?.CurrentContainer;
+            if (item != null &&
+                item.IsPendingProtectedTransfer)
+            {
+                CampusProtectedTransferState.TryPromotePendingTransferToEvidence(
+                    item,
+                    context.RoomId,
+                    CampusItemRiskUtility.ResolveProtectedMoveRisk(item, source, context));
+            }
+
             bool destroyedEvidence = item != null && item.IsStolenEvidence;
             if (!StorageTransferService.TryRemove(item, source, out _, out string errorMessage))
             {

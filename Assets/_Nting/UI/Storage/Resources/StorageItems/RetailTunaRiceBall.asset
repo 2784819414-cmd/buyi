@@ -1,0 +1,37 @@
+﻿%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a6c8594f85b44c40abf87c80a8710110, type: 3}
+  m_Name: RetailTunaRiceBall
+  m_EditorClassIdentifier: 
+  Id: retail_tuna_rice_ball
+  DisplayName: "\u91D1\u67AA\u9C7C\u996D\u56E2"
+  LocalizedDisplayName:
+    chinese: "\u91D1\u67AA\u9C7C\u996D\u56E2"
+    english: Tuna Rice Ball
+  Width: 1
+  Height: 2
+  Weight: 0.16
+  Price: 10
+  Description: "\u91D1\u67AA\u9C7C\u6C99\u62C9\u53E3\u5473\u7684\u4E09\u89D2\u996D\u56E2\u3002"
+  LocalizedDescription:
+    chinese: "\u91D1\u67AA\u9C7C\u6C99\u62C9\u53E3\u5473\u7684\u4E09\u89D2\u996D\u56E2\u3002"
+    english: A triangular tuna-salad rice ball.
+  ThemeColor: {r: 0.96, g: 0.96, b: 0.95, a: 1}
+  Icon: {fileID: 0}
+  IsUsable: 0
+  UseActionId: 
+  ConsumeOnUse: 1
+  UseText: 
+  LocalizedUseText:
+    chinese: 
+    english: 
+

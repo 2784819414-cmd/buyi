@@ -1,7 +1,7 @@
 using System.Collections.Generic;
 using System.IO;
 using NtingCampus.Gameplay.Rooms;
-using NtingCampus.Gameplay.UI;
+using NtingCampus.UI.Runtime.Gameplay;
 using UnityEngine;
 
 namespace NtingCampusMapEditor

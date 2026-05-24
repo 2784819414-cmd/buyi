@@ -1,0 +1,56 @@
+{
+  "DefaultItemId": "daily_set_meal",
+  "MenuItems": [
+    {
+      "Id": "daily_set_meal",
+      "ItemDefinitionId": "canteen_daily_set_meal",
+      "Price": 12,
+      "DisplayName": {
+        "Chinese": "\u4eca\u65e5\u5957\u9910",
+        "English": "Daily Set Meal"
+      },
+      "PromptText": {
+        "Chinese": "\u70b9\u4eca\u65e5\u5957\u9910",
+        "English": "Order Daily Set Meal"
+      },
+      "OrderedLogText": {
+        "Chinese": "\u5df2\u53d6\u5230{0}\u3002",
+        "English": "Received {0}."
+      }
+    },
+    {
+      "Id": "noodle_bowl",
+      "ItemDefinitionId": "canteen_noodle_bowl",
+      "Price": 10,
+      "DisplayName": {
+        "Chinese": "\u70ed\u6c64\u9762",
+        "English": "Noodle Bowl"
+      },
+      "PromptText": {
+        "Chinese": "\u70b9\u70ed\u6c64\u9762",
+        "English": "Order Noodle Bowl"
+      },
+      "OrderedLogText": {
+        "Chinese": "\u5df2\u53d6\u5230{0}\u3002",
+        "English": "Received {0}."
+      }
+    },
+    {
+      "Id": "lunch_box",
+      "ItemDefinitionId": "lunch_box",
+      "Price": 8,
+      "DisplayName": {
+        "Chinese": "\u4fbf\u5f53",
+        "English": "Lunch Box"
+      },
+      "PromptText": {
+        "Chinese": "\u70b9\u4fbf\u5f53",
+        "English": "Order Lunch Box"
+      },
+      "OrderedLogText": {
+        "Chinese": "\u5df2\u53d6\u5230{0}\u3002",
+        "English": "Received {0}."
+      }
+    }
+  ]
+}

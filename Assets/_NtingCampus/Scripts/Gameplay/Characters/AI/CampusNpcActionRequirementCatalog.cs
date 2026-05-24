@@ -7,11 +7,13 @@ namespace NtingCampus.Gameplay.Characters
     internal static class CampusNpcActionRequirementCatalog
     {
         public const string CanOrderMeal = "CanOrderMeal";
+        public const string HasOwnServedCanteenItem = "HasOwnServedCanteenItem";
 
         private static readonly Dictionary<string, Func<CampusCharacterRuntime, bool>> Requirements =
             new Dictionary<string, Func<CampusCharacterRuntime, bool>>(StringComparer.OrdinalIgnoreCase)
             {
-                [CanOrderMeal] = CampusCanteenMealRules.CanOrderMeal
+                [CanOrderMeal] = CampusCanteenMealRules.CanOrderMeal,
+                [HasOwnServedCanteenItem] = CampusCanteenMealRules.HasOwnServedCanteenItem
             };
 
         public static bool IsKnownRequirement(string requirementId)

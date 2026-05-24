@@ -1,0 +1,37 @@
+﻿%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a6c8594f85b44c40abf87c80a8710110, type: 3}
+  m_Name: RetailHighlighter
+  m_EditorClassIdentifier: 
+  Id: retail_highlighter
+  DisplayName: "\u8367\u5149\u7B14"
+  LocalizedDisplayName:
+    chinese: "\u8367\u5149\u7B14"
+    english: Highlighter
+  Width: 1
+  Height: 2
+  Weight: 0.03
+  Price: 10
+  Description: "\u989C\u8272\u5F88\u4EAE\u7684\u6241\u5E73\u8367\u5149\u7B14\u3002"
+  LocalizedDescription:
+    chinese: "\u989C\u8272\u5F88\u4EAE\u7684\u6241\u5E73\u8367\u5149\u7B14\u3002"
+    english: A flat brightly colored highlighter.
+  ThemeColor: {r: 0.97, g: 0.88, b: 0.3, a: 1}
+  Icon: {fileID: 0}
+  IsUsable: 0
+  UseActionId: 
+  ConsumeOnUse: 1
+  UseText: 
+  LocalizedUseText:
+    chinese: 
+    english: 
+

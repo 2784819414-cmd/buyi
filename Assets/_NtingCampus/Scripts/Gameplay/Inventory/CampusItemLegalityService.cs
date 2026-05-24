@@ -22,6 +22,13 @@ namespace NtingCampus.Gameplay.Inventory
                 return true;
             }
 
+            if (CampusProtectedTransferState.HasLeftPendingTransferSourceRoom(
+                    item,
+                    context != null ? context.RoomId : source != null ? source.RoomId : string.Empty))
+            {
+                return true;
+            }
+
             if (IsKnownEvidence(item) || IsCarriedInventoryMove(source) || source == null)
             {
                 return false;
@@ -53,6 +60,12 @@ namespace NtingCampus.Gameplay.Inventory
                 return;
             }
 
+            if (CampusProtectedTransferState.IsPendingProtectedTransfer(item) &&
+                CampusProtectedTransferState.TryPromotePendingTransferToEvidence(item, roomId, suspicionRisk))
+            {
+                return;
+            }
+
             item.EnsureEvidence().MarkAsStolen(
                 source,
                 roomId,
@@ -74,7 +87,7 @@ namespace NtingCampus.Gameplay.Inventory
 
             if (IsAllowedProtectedTransferTake(source))
             {
-                MarkUnclearedProtectedTransferItem(item, source);
+                CampusProtectedTransferState.BeginPendingTransfer(item, source);
                 return;
             }
 
@@ -163,36 +176,16 @@ namespace NtingCampus.Gameplay.Inventory
                    source.AllowTakingContents;
         }
 
-        private static void MarkUnclearedProtectedTransferItem(StorageItemModel item, StorageContainerModel source)
-        {
-            if (item == null || source == null)
-            {
-                return;
-            }
-
-            item.LegalState = StorageItemLegalState.Suspicious;
-            item.OwnerId = source.OwnerId;
-            item.SourceContainerId = source.Id;
-            item.SourceRoomId = source.RoomId;
-            item.SourceLocation = source.DisplayName;
-            item.AllowTaking = false;
-            item.StolenDuringSession = false;
-            item.SuspicionRisk = source.SuspicionRisk;
-        }
-
         private static bool IsTakingAway(StorageContainerModel target)
         {
             return target == null ||
-                   target.IsPlayerCarried ||
-                   target.AccessPolicy == StorageContainerAccessPolicy.PlayerCarried ||
+                   target.IsCarriedInventory ||
                    target.AccessPolicy == StorageContainerAccessPolicy.Ground;
         }
 
         private static bool IsCarriedInventory(StorageContainerModel container)
         {
-            return container != null &&
-                   (container.IsPlayerCarried ||
-                    container.AccessPolicy == StorageContainerAccessPolicy.PlayerCarried);
+            return container != null && container.IsCarriedInventory;
         }
 
         private static bool IsOpenTarget(StorageContainerModel container)

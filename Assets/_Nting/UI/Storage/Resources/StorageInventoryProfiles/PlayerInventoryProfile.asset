@@ -20,26 +20,28 @@ MonoBehaviour:
     LocalizedDisplayName:
       chinese: 左手
       english: Left Hand
-    Columns: 2
-    Rows: 2
+    Columns: 1
+    Rows: 1
     MaxWeight: 3
     AccessPolicy: 1
     OwnerRole: Player
     AllowTakingContents: 1
     IsPlayerCarried: 1
+    IsSingleItemSlot: 1
     SuspicionRisk: 0
   - Id: hand_right
     DisplayName: 右手
     LocalizedDisplayName:
       chinese: 右手
       english: Right Hand
-    Columns: 2
-    Rows: 2
+    Columns: 1
+    Rows: 1
     MaxWeight: 3
     AccessPolicy: 1
     OwnerRole: Player
     AllowTakingContents: 1
     IsPlayerCarried: 1
+    IsSingleItemSlot: 1
     SuspicionRisk: 0
   - Id: pocket_left_chest
     DisplayName: 左胸袋

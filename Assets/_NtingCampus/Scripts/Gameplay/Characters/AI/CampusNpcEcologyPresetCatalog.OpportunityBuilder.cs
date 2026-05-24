@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using NtingCampus.Gameplay.Rooms;
 using NtingCampus.Gameplay.Services;
+using NtingCampusMapEditor;
 using UnityEngine;
 
 namespace NtingCampus.Gameplay.Characters
@@ -379,6 +380,9 @@ namespace NtingCampus.Gameplay.Characters
                 case CampusNpcEcologyTargetKind.RoomType:
                     return TryResolveNearestRoomTarget(npc, actionDefinition.RoomType, entry, out target);
 
+                case CampusNpcEcologyTargetKind.DroppedStorageItem:
+                    return TryResolveDroppedStorageItemTarget(npc, actionDefinition, out target);
+
                 case CampusNpcEcologyTargetKind.None:
                     target = CreateResolvedTarget(
                         npc != null ? npc.Runtime : null,
@@ -444,6 +448,205 @@ namespace NtingCampus.Gameplay.Characters
             }
 
             return false;
+        }
+
+        private static bool TryResolveDroppedStorageItemTarget(
+            CampusNpcAiRuntime npc,
+            ActionDefinitionRecord actionDefinition,
+            out ResolvedTarget target)
+        {
+            target = default;
+            if (npc == null || npc.Runtime == null || actionDefinition == null)
+            {
+                return false;
+            }
+
+            CampusDroppedStorageItem[] items = UnityEngine.Object.FindObjectsByType<CampusDroppedStorageItem>(
+                FindObjectsInactive.Exclude,
+                FindObjectsSortMode.None);
+            CampusDroppedStorageItem best = null;
+            float bestDistance = float.MaxValue;
+            Vector3 npcPosition = npc.Runtime.transform.position;
+            for (int i = 0; i < items.Length; i++)
+            {
+                CampusDroppedStorageItem item = items[i];
+                if (!MatchesDroppedStorageItemFilter(npc, item, actionDefinition))
+                {
+                    continue;
+                }
+
+                float distance = Vector2.SqrMagnitude((Vector2)(item.transform.position - npcPosition));
+                if (best == null || distance < bestDistance)
+                {
+                    best = item;
+                    bestDistance = distance;
+                }
+            }
+
+            if (best == null)
+            {
+                return false;
+            }
+
+            target = CreateResolvedTarget(
+                best,
+                ResolveDroppedItemApproachPosition(npc, best),
+                ResolveDroppedItemRoomId(npc, best),
+                false,
+                BuildDroppedItemTargetId(best));
+            return true;
+        }
+
+        private static Vector3 ResolveDroppedItemApproachPosition(
+            CampusNpcAiRuntime npc,
+            CampusDroppedStorageItem item)
+        {
+            if (item == null)
+            {
+                return Vector3.zero;
+            }
+
+            CampusFloorRoot floor = item.GetComponentInParent<CampusFloorRoot>();
+            if (floor == null)
+            {
+                CampusPlacedObject placedObject = item.GetComponent<CampusPlacedObject>();
+                floor = placedObject != null ? placedObject.GetComponentInParent<CampusFloorRoot>() : null;
+            }
+
+            if (floor == null || floor.Grid == null)
+            {
+                return item.transform.position;
+            }
+
+            Vector3Int itemCell = floor.Grid.WorldToCell(item.transform.position);
+            itemCell.z = 0;
+            Vector3Int actorCell = npc != null && npc.Runtime != null
+                ? floor.Grid.WorldToCell(npc.Runtime.transform.position)
+                : itemCell;
+            actorCell.z = 0;
+
+            if (TryFindDroppedItemApproachCell(floor, itemCell, actorCell, out Vector3Int approachCell))
+            {
+                Vector3 position = floor.Grid.GetCellCenterWorld(approachCell);
+                position.z = item.transform.position.z;
+                return position;
+            }
+
+            return item.transform.position;
+        }
+
+        private static bool TryFindDroppedItemApproachCell(
+            CampusFloorRoot floor,
+            Vector3Int itemCell,
+            Vector3Int actorCell,
+            out Vector3Int approachCell)
+        {
+            approachCell = itemCell;
+            float bestScore = float.PositiveInfinity;
+            for (int radius = 0; radius <= 2; radius++)
+            {
+                for (int y = itemCell.y - radius; y <= itemCell.y + radius; y++)
+                {
+                    for (int x = itemCell.x - radius; x <= itemCell.x + radius; x++)
+                    {
+                        if (radius > 0 &&
+                            Mathf.Abs(x - itemCell.x) != radius &&
+                            Mathf.Abs(y - itemCell.y) != radius)
+                        {
+                            continue;
+                        }
+
+                        Vector3Int cell = new Vector3Int(x, y, 0);
+                        if (!CampusGridNavigationAgent.IsNavigationCellWalkable(floor, cell))
+                        {
+                            continue;
+                        }
+
+                        float score = Mathf.Abs(cell.x - itemCell.x) * 3f +
+                                      Mathf.Abs(cell.y - itemCell.y) * 3f +
+                                      Mathf.Abs(cell.x - actorCell.x) +
+                                      Mathf.Abs(cell.y - actorCell.y);
+                        if (score >= bestScore)
+                        {
+                            continue;
+                        }
+
+                        approachCell = cell;
+                        bestScore = score;
+                    }
+                }
+
+                if (bestScore < float.PositiveInfinity)
+                {
+                    return true;
+                }
+            }
+
+            return false;
+        }
+
+        private static bool MatchesDroppedStorageItemFilter(
+            CampusNpcAiRuntime npc,
+            CampusDroppedStorageItem item,
+            ActionDefinitionRecord actionDefinition)
+        {
+            if (npc == null || item == null || actionDefinition == null)
+            {
+                return false;
+            }
+
+            if (string.Equals(actionDefinition.Owner, "Self", StringComparison.OrdinalIgnoreCase) &&
+                !string.Equals(item.OwnerId, npc.Data != null ? npc.Data.Id : string.Empty, StringComparison.OrdinalIgnoreCase))
+            {
+                return false;
+            }
+
+            if (!string.IsNullOrEmpty(actionDefinition.SourceLocation) &&
+                !string.Equals(item.SourceLocation, actionDefinition.SourceLocation, StringComparison.OrdinalIgnoreCase))
+            {
+                return false;
+            }
+
+            if (!string.IsNullOrEmpty(actionDefinition.SourceContainerPrefix) &&
+                !NormalizeId(item.SourceContainerId).StartsWith(actionDefinition.SourceContainerPrefix, StringComparison.OrdinalIgnoreCase))
+            {
+                return false;
+            }
+
+            return string.IsNullOrEmpty(actionDefinition.DefinitionId) ||
+                   string.Equals(item.DefinitionId, actionDefinition.DefinitionId, StringComparison.OrdinalIgnoreCase);
+        }
+
+        private static string ResolveDroppedItemRoomId(CampusNpcAiRuntime npc, CampusDroppedStorageItem item)
+        {
+            if (item == null)
+            {
+                return string.Empty;
+            }
+
+            if (!string.IsNullOrWhiteSpace(item.SourceRoomId))
+            {
+                return item.SourceRoomId.Trim();
+            }
+
+            CampusPlacedObject placedObject = item.GetComponent<CampusPlacedObject>();
+            CampusGameplayRoom room = npc != null && npc.WorldService != null && placedObject != null
+                ? npc.WorldService.FindRoomForPosition(placedObject.FloorIndex, item.transform.position)
+                : null;
+            return room != null ? room.RoomId : string.Empty;
+        }
+
+        private static string BuildDroppedItemTargetId(CampusDroppedStorageItem item)
+        {
+            if (item == null)
+            {
+                return string.Empty;
+            }
+
+            string instanceId = NormalizeId(item.InstanceId);
+            return string.IsNullOrEmpty(instanceId)
+                ? "dropped_item:" + NormalizeId(item.DefinitionId)
+                : "dropped_item:" + instanceId;
         }
 
         private static CampusFacilityType[] ResolvePrimaryWorkstationFacilityTypes(CampusNpcAiRuntime npc)

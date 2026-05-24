@@ -14,11 +14,13 @@ namespace NtingCampus.Gameplay.Characters
         private void Awake()
         {
             EnsureShadowCasterProfile();
+            EnsureRoomTracker();
         }
 
         private void Reset()
         {
             EnsureShadowCasterProfile();
+            EnsureRoomTracker();
         }
 
         public void Bind(CampusCharacterData characterData, bool renameGameObject)
@@ -32,6 +34,8 @@ namespace NtingCampus.Gameplay.Characters
                     gameObject.name = objectName;
                 }
             }
+
+            EnsureRoomTracker();
         }
 
         private void EnsureShadowCasterProfile()
@@ -46,6 +50,53 @@ namespace NtingCampus.Gameplay.Characters
             profile.castCustomShadows = true;
             profile.castPointLightShadows = true;
             profile.castSunShadow = true;
+        }
+
+        private void EnsureRoomTracker()
+        {
+            CampusCharacterCurrentRoomTracker.EnsureFor(this);
+        }
+    }
+
+    public static class CampusCharacterSpeechUtility
+    {
+        private const string SpeechAnchorName = "CharacterSpeechAnchor";
+        private const float SpeechAnchorHeight = 0.82f;
+
+        public static void Speak(CampusCharacterRuntime runtime, string line, float durationSeconds)
+        {
+            if (runtime == null || string.IsNullOrWhiteSpace(line))
+            {
+                return;
+            }
+
+            CampusNpcSpeechBubble speechBubble = runtime.GetComponent<CampusNpcSpeechBubble>();
+            if (speechBubble == null)
+            {
+                speechBubble = runtime.gameObject.AddComponent<CampusNpcSpeechBubble>();
+                speechBubble.Bind(ResolveSpeechAnchor(runtime.transform));
+            }
+
+            speechBubble.Speak(line.Trim(), durationSeconds);
+        }
+
+        private static Transform ResolveSpeechAnchor(Transform root)
+        {
+            if (root == null)
+            {
+                return null;
+            }
+
+            Transform anchor = root.Find(SpeechAnchorName);
+            if (anchor != null)
+            {
+                return anchor;
+            }
+
+            GameObject anchorObject = new GameObject(SpeechAnchorName);
+            anchorObject.transform.SetParent(root, false);
+            anchorObject.transform.localPosition = new Vector3(0f, SpeechAnchorHeight, 0f);
+            return anchorObject.transform;
         }
     }
 

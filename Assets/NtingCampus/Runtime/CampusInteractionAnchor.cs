@@ -1,6 +1,6 @@
 using System.Reflection;
 using NtingCampus.Gameplay.Core;
-using NtingCampus.Gameplay.UI;
+using NtingCampus.UI.Runtime.Gameplay;
 using UnityEngine;
 
 namespace NtingCampusMapEditor

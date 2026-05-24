@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using Nting.Storage;
 using NtingCampus.Gameplay.Inventory;
+using NtingCampus.Gameplay.Retail;
 using UnityEngine;
 
 namespace NtingCampus.Gameplay.Characters
@@ -28,6 +29,19 @@ namespace NtingCampus.Gameplay.Characters
 
     public static class CampusCharacterActionUtility
     {
+        public static CampusCharacterRuntime ResolveActorRuntime(GameObject actor)
+        {
+            return actor != null
+                ? actor.GetComponentInParent<CampusCharacterRuntime>()
+                : null;
+        }
+
+        public static bool TryResolveActorRuntime(GameObject actor, out CampusCharacterRuntime runtime)
+        {
+            runtime = ResolveActorRuntime(actor);
+            return runtime != null;
+        }
+
         public static bool IdEquals(string actionId, string expected)
         {
             return string.Equals(
@@ -182,6 +196,7 @@ namespace NtingCampus.Gameplay.Characters
     {
         public static void Install()
         {
+            CampusCharacterActionRegistry.Register(CampusRetailCharacterActionProvider.Instance);
         }
     }
 }

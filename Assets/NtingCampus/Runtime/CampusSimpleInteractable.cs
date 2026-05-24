@@ -1,6 +1,6 @@
 using NtingCampus.Gameplay.Characters;
 using NtingCampus.Gameplay.Core;
-using NtingCampus.Gameplay.UI;
+using NtingCampus.UI.Runtime.Gameplay;
 using UnityEngine;
 
 namespace NtingCampusMapEditor
@@ -108,19 +108,7 @@ namespace NtingCampusMapEditor
 
         private static CampusCharacterRuntime ResolveActorRuntime(GameObject actor)
         {
-            if (actor != null)
-            {
-                CampusCharacterRuntime actorRuntime = actor.GetComponentInParent<CampusCharacterRuntime>();
-                if (actorRuntime != null)
-                {
-                    return actorRuntime;
-                }
-            }
-
-            CampusGameBootstrap bootstrap = CampusGameBootstrap.Instance;
-            return bootstrap != null && bootstrap.RosterService != null
-                ? bootstrap.RosterService.PlayerRuntime
-                : null;
+            return CampusCharacterActionUtility.ResolveActorRuntime(actor);
         }
 
         private static void WriteInteractionLog(string message)

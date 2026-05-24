@@ -1,6 +1,6 @@
 using NtingCampus.Gameplay.Characters;
 using NtingCampus.Gameplay.Rooms;
-using NtingCampus.Gameplay.UI;
+using NtingCampus.UI.Runtime.Gameplay;
 using UnityEngine;
 
 namespace NtingCampusMapEditor

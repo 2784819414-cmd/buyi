@@ -1,11 +1,19 @@
 using System;
 using System.Collections.Generic;
 using NtingCampus.Gameplay.Rooms;
-using NtingCampus.Gameplay.UI;
+using NtingCampus.Gameplay.Retail;
+using NtingCampus.UI.Runtime.Gameplay;
 using UnityEngine;
 
 namespace NtingCampusMapEditor
 {
+    /// <summary>
+    /// Marks a component that owns placed-object facing and keeps the root transform unrotated.
+    /// </summary>
+    public interface ICampusPlacedObjectPlacementRotationOwner
+    {
+    }
+
     [Serializable]
     public sealed class CampusPlacedObjectInteractionAnchor
     {
@@ -193,7 +201,7 @@ namespace NtingCampusMapEditor
 
         public int ResolveAllowedRotation90(int requestedRotation90)
         {
-            return AllowRotation ? NormalizeRotation90(requestedRotation90) : 0;
+            return AllowRotation ? NormalizeRotation90(requestedRotation90) : NormalizeRotation90(Rotation90);
         }
 
         public void ApplyPlacementRotation(int requestedRotation90)
@@ -204,7 +212,7 @@ namespace NtingCampusMapEditor
 
         public void ApplyRotationVisualState()
         {
-            Rotation90 = ResolveAllowedRotation90(Rotation90);
+            Rotation90 = NormalizeRotation90(Rotation90);
             if (IsWallMounted && SortingOrderOffset < WallMountedSortingOrderOffset)
             {
                 SortingOrderOffset = WallMountedSortingOrderOffset;
@@ -215,7 +223,7 @@ namespace NtingCampusMapEditor
                 return;
             }
 
-            transform.localRotation = Quaternion.identity;
+            transform.localRotation = ResolvePlacementLocalRotation();
             ApplyColliderFootprintSize();
             ApplyDirectionalSprite();
             ApplyWallMountedVisualState();
@@ -325,7 +333,7 @@ namespace NtingCampusMapEditor
                 });
             }
 
-            if (UseCustomInteractionAnchor)
+            if (UseCustomInteractionAnchor && ShouldSyncLegacyPrimaryAnchorFields())
             {
                 CampusPlacedObjectInteractionAnchor editablePrimary = GetFirstEnabledCustomInteractionAnchor();
                 if (editablePrimary == null && CustomInteractionAnchors.Count > 0)
@@ -380,6 +388,11 @@ namespace NtingCampusMapEditor
                     : primary.PromptText;
                 LocalizedCustomInteractionPromptText = primary.LocalizedPromptText;
             }
+        }
+
+        private bool ShouldSyncLegacyPrimaryAnchorFields()
+        {
+            return CustomInteractionAnchors == null || CustomInteractionAnchors.Count <= 1;
         }
 
         public CampusPlacedObjectInteractionAnchor GetFirstEnabledCustomInteractionAnchor()
@@ -440,7 +453,7 @@ namespace NtingCampusMapEditor
             }
 
             anchorTransform.gameObject.layer = gameObject.layer;
-            anchorTransform.localPosition = RotateLocalPositionForAnchor(data.LocalPosition, Rotation90);
+            anchorTransform.localPosition = ResolveAnchorLocalPosition(data.LocalPosition);
             anchorTransform.localRotation = Quaternion.identity;
             anchorTransform.localScale = Vector3.one;
 
@@ -742,7 +755,7 @@ namespace NtingCampusMapEditor
                     return;
                 }
 
-                Vector2Int footprint = RotatedFootprintSize;
+                Vector2Int footprint = ResolveColliderFootprintSize();
                 box.size = new Vector2(footprint.x, footprint.y);
             }
         }
@@ -764,9 +777,7 @@ namespace NtingCampusMapEditor
             if (visualTransform != null)
             {
                 ApplyVisualScale(renderer);
-                visualTransform.localRotation = IsWallMounted || usesAuthoredDirectionSprite || !AllowRotation
-                    ? Quaternion.identity
-                    : Quaternion.Euler(0f, 0f, Rotation90 * 90f);
+                visualTransform.localRotation = ResolveVisualLocalRotation(usesAuthoredDirectionSprite);
             }
 
             renderer.enabled = !IsWallMounted;
@@ -1046,6 +1057,68 @@ namespace NtingCampusMapEditor
             }
         }
 
+        private Quaternion ResolvePlacementLocalRotation()
+        {
+            return ShouldRotateRootTransformForPlacement()
+                ? Quaternion.Euler(0f, 0f, Rotation90 * 90f)
+                : Quaternion.identity;
+        }
+
+        private Vector2Int ResolveColliderFootprintSize()
+        {
+            return ShouldRotateRootTransformForPlacement() ? NormalizedFootprintSize : RotatedFootprintSize;
+        }
+
+        private Quaternion ResolveVisualLocalRotation(bool usesAuthoredDirectionalSprite)
+        {
+            if (IsWallMounted)
+            {
+                return Quaternion.identity;
+            }
+
+            if (ShouldRotateRootTransformForPlacement())
+            {
+                return usesAuthoredDirectionalSprite
+                    ? Quaternion.Euler(0f, 0f, -Rotation90 * 90f)
+                    : Quaternion.identity;
+            }
+
+            if (usesAuthoredDirectionalSprite || !AllowRotation)
+            {
+                return Quaternion.identity;
+            }
+
+            return Quaternion.Euler(0f, 0f, Rotation90 * 90f);
+        }
+
+        private Vector3 ResolveAnchorLocalPosition(Vector3 authoredLocalPosition)
+        {
+            return ShouldRotateRootTransformForPlacement()
+                ? authoredLocalPosition
+                : RotateLocalPositionForAnchor(authoredLocalPosition, Rotation90);
+        }
+
+        private bool ShouldRotateRootTransformForPlacement()
+        {
+            return !IsWallMounted &&
+                   !HasPlacementRotationOwner() &&
+                   !HasDirectionalSprites();
+        }
+
+        private bool HasPlacementRotationOwner()
+        {
+            MonoBehaviour[] behaviours = GetComponents<MonoBehaviour>();
+            for (int i = 0; i < behaviours.Length; i++)
+            {
+                if (behaviours[i] is ICampusPlacedObjectPlacementRotationOwner)
+                {
+                    return true;
+                }
+            }
+
+            return false;
+        }
+
         private void DestroyGeneratedObjectIfNeeded(UnityEngine.Object target, string expectedPrefix)
         {
             if (target == null || string.IsNullOrEmpty(expectedPrefix))
@@ -1190,6 +1263,9 @@ namespace NtingCampusMapEditor
                 case CampusFacilityType.ServiceWindow:
                     handler.DefaultActionId = CampusInteractionActionIds.ServiceWindowUse;
                     break;
+                case CampusFacilityType.CheckoutPoint:
+                    handler.DefaultActionId = CampusRetailActionIds.Checkout;
+                    break;
             }
         }
 
@@ -1198,6 +1274,7 @@ namespace NtingCampusMapEditor
             switch (CampusFacilityTypeResolver.Resolve(this))
             {
                 case CampusFacilityType.ServiceWindow:
+                case CampusFacilityType.CheckoutPoint:
                     return true;
                 default:
                     return false;

@@ -3,69 +3,20 @@ using UnityEngine;
 
 namespace NtingCampus.Gameplay.Core
 {
-    /// <summary>
-    /// 保存玩法核心的基础资源状态。
-    /// </summary>
     [Serializable]
     public sealed class CampusResourceState
     {
-        [SerializeField, Min(0)] private int money = 500;
         [SerializeField, Min(0)] private int divinePower;
 
-        /// <summary>
-        /// 当前金钱。
-        /// </summary>
-        public int Money => money;
+        public event Action<int> DivinePowerChanged;
 
-        /// <summary>
-        /// 当前神力。
-        /// </summary>
         public int DivinePower => divinePower;
 
-        /// <summary>
-        /// 使用指定数值重置金钱和神力。
-        /// </summary>
-        public void Reset(int initialMoney, int initialDivinePower)
+        public void Reset(int initialDivinePower)
         {
-            money = Mathf.Max(0, initialMoney);
-            divinePower = Mathf.Max(0, initialDivinePower);
+            SetDivinePower(Mathf.Max(0, initialDivinePower));
         }
 
-        /// <summary>
-        /// 增加金钱，非正数会被忽略。
-        /// </summary>
-        public void AddMoney(int amount)
-        {
-            if (amount <= 0)
-            {
-                return;
-            }
-
-            money = AddClamped(money, amount);
-        }
-
-        /// <summary>
-        /// 尝试扣除金钱，余额不足时返回 false。
-        /// </summary>
-        public bool SpendMoney(int amount)
-        {
-            if (amount <= 0)
-            {
-                return true;
-            }
-
-            if (money < amount)
-            {
-                return false;
-            }
-
-            money -= amount;
-            return true;
-        }
-
-        /// <summary>
-        /// 增加神力，非正数会被忽略。
-        /// </summary>
         public void AddDivinePower(int amount)
         {
             if (amount <= 0)
@@ -73,12 +24,9 @@ namespace NtingCampus.Gameplay.Core
                 return;
             }
 
-            divinePower = AddClamped(divinePower, amount);
+            SetDivinePower(AddClamped(divinePower, amount));
         }
 
-        /// <summary>
-        /// 尝试扣除神力，余额不足时返回 false。
-        /// </summary>
         public bool SpendDivinePower(int amount)
         {
             if (amount <= 0)
@@ -91,8 +39,20 @@ namespace NtingCampus.Gameplay.Core
                 return false;
             }
 
-            divinePower -= amount;
+            SetDivinePower(divinePower - amount);
             return true;
+        }
+
+        private void SetDivinePower(int value)
+        {
+            int normalizedValue = Mathf.Max(0, value);
+            if (divinePower == normalizedValue)
+            {
+                return;
+            }
+
+            divinePower = normalizedValue;
+            DivinePowerChanged?.Invoke(divinePower);
         }
 
         private static int AddClamped(int current, int amount)

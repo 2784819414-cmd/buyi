@@ -27,6 +27,7 @@
             },
             "Sleepiness": 25,
             "Mischief": 35,
+            "InitialMoney": -1,
             "TraitIds": [
                 "Troublemaker"
             ],
@@ -72,6 +73,7 @@
             },
             "Sleepiness": 20,
             "Mischief": 30,
+            "InitialMoney": -1,
             "TraitIds": [
                 "GoodStudent"
             ],
@@ -117,6 +119,7 @@
             },
             "Sleepiness": 45,
             "Mischief": 18,
+            "InitialMoney": -1,
             "TraitIds": [
                 "Tattletale"
             ],
@@ -162,6 +165,7 @@
             },
             "Sleepiness": 62,
             "Mischief": 14,
+            "InitialMoney": -1,
             "TraitIds": [
                 "Sleepyhead"
             ],
@@ -207,6 +211,7 @@
             },
             "Sleepiness": 28,
             "Mischief": 68,
+            "InitialMoney": -1,
             "TraitIds": [
                 "Troublemaker"
             ],
@@ -252,6 +257,7 @@
             },
             "Sleepiness": 35,
             "Mischief": 22,
+            "InitialMoney": -1,
             "TraitIds": [
                 "Ordinary"
             ],
@@ -297,6 +303,7 @@
             },
             "Sleepiness": 50,
             "Mischief": 25,
+            "InitialMoney": -1,
             "TraitIds": [
                 "Sleepyhead"
             ],
@@ -342,6 +349,7 @@
             },
             "Sleepiness": 24,
             "Mischief": 44,
+            "InitialMoney": -1,
             "TraitIds": [
                 "Troublemaker"
             ],
@@ -387,6 +395,7 @@
             },
             "Sleepiness": 22,
             "Mischief": 12,
+            "InitialMoney": -1,
             "TraitIds": [
                 "GoodStudent"
             ],
@@ -432,6 +441,7 @@
             },
             "Sleepiness": 40,
             "Mischief": 20,
+            "InitialMoney": -1,
             "TraitIds": [
                 "Tattletale"
             ],
@@ -477,6 +487,7 @@
             },
             "Sleepiness": 31,
             "Mischief": 26,
+            "InitialMoney": -1,
             "TraitIds": [
                 "Ordinary"
             ],
@@ -522,6 +533,7 @@
             },
             "Sleepiness": 66,
             "Mischief": 16,
+            "InitialMoney": -1,
             "TraitIds": [
                 "Sleepyhead"
             ],
@@ -567,6 +579,7 @@
             },
             "Sleepiness": 19,
             "Mischief": 58,
+            "InitialMoney": -1,
             "TraitIds": [
                 "Troublemaker"
             ],
@@ -612,6 +625,7 @@
             },
             "Sleepiness": 18,
             "Mischief": 14,
+            "InitialMoney": -1,
             "TraitIds": [
                 "GoodStudent"
             ],
@@ -657,6 +671,7 @@
             },
             "Sleepiness": 8,
             "Mischief": 0,
+            "InitialMoney": -1,
             "TraitIds": [
                 "Ordinary"
             ],
@@ -702,6 +717,7 @@
             },
             "Sleepiness": 10,
             "Mischief": 0,
+            "InitialMoney": -1,
             "TraitIds": [
                 "Ordinary"
             ],
@@ -747,6 +763,7 @@
             },
             "Sleepiness": 12,
             "Mischief": 0,
+            "InitialMoney": -1,
             "TraitIds": [
                 "Ordinary"
             ],
@@ -792,6 +809,7 @@
             },
             "Sleepiness": 10,
             "Mischief": 0,
+            "InitialMoney": -1,
             "TraitIds": [
                 "Ordinary"
             ],
@@ -837,6 +855,7 @@
             },
             "Sleepiness": 10,
             "Mischief": 0,
+            "InitialMoney": -1,
             "TraitIds": [
                 "Ordinary"
             ],
@@ -882,6 +901,7 @@
             },
             "Sleepiness": 10,
             "Mischief": 0,
+            "InitialMoney": -1,
             "TraitIds": [
                 "Ordinary"
             ],
@@ -927,6 +947,7 @@
             },
             "Sleepiness": 10,
             "Mischief": 0,
+            "InitialMoney": -1,
             "TraitIds": [
                 "Ordinary"
             ],
@@ -972,6 +993,7 @@
             },
             "Sleepiness": 10,
             "Mischief": 0,
+            "InitialMoney": -1,
             "TraitIds": [
                 "Ordinary"
             ],
@@ -1017,6 +1039,7 @@
             },
             "Sleepiness": 10,
             "Mischief": 0,
+            "InitialMoney": -1,
             "TraitIds": [
                 "Ordinary"
             ],
@@ -1062,6 +1085,7 @@
             },
             "Sleepiness": 10,
             "Mischief": 0,
+            "InitialMoney": -1,
             "TraitIds": [
                 "Ordinary"
             ],
@@ -1107,6 +1131,7 @@
             },
             "Sleepiness": 10,
             "Mischief": 0,
+            "InitialMoney": -1,
             "TraitIds": [
                 "Ordinary"
             ],
@@ -1131,112 +1156,37 @@
     "Rooms": [],
     "Facilities": [
         {
-            "Id": "facility_f1_WaitingPoint_54_0",
-            "OwnerFacilityId": "facility_f1_ServiceWindow_54_2",
-            "ServiceStationId": "canteen_station_54",
+            "Id": "facility_f1_WaitingPoint_42_-1",
+            "OwnerFacilityId": "facility_f1_ServiceWindow_42_2",
+            "ServiceStationId": "canteen_station_42",
             "DisplayName": "等待点",
             "FacilityTypeId": "WaitingPoint",
             "FacilityType": 21,
             "FloorIndex": 1,
             "Cell": {
-                "x": 54,
-                "y": 0,
-                "z": 0
-            },
-            "CountsAsCoreFacility": true
-        },
-        {
-            "Id": "facility_f1_WaitingPoint_52_0",
-            "OwnerFacilityId": "facility_f1_ServiceWindow_52_2",
-            "ServiceStationId": "canteen_station_52",
-            "DisplayName": "等待点",
-            "FacilityTypeId": "WaitingPoint",
-            "FacilityType": 21,
-            "FloorIndex": 1,
-            "Cell": {
-                "x": 52,
-                "y": 0,
-                "z": 0
-            },
-            "CountsAsCoreFacility": true
-        },
-        {
-            "Id": "facility_f1_DropPoint_32_17",
-            "OwnerFacilityId": "",
-            "ServiceStationId": "",
-            "DisplayName": "放置点",
-            "FacilityTypeId": "DropPoint",
-            "FacilityType": 20,
-            "FloorIndex": 1,
-            "Cell": {
-                "x": 32,
-                "y": 17,
-                "z": 0
-            },
-            "CountsAsCoreFacility": true
-        },
-        {
-            "Id": "facility_f1_PickupPoint_46_1",
-            "OwnerFacilityId": "facility_f1_ServiceWindow_46_2",
-            "ServiceStationId": "canteen_station_46",
-            "DisplayName": "顾客取餐点",
-            "FacilityTypeId": "PickupPoint",
-            "FacilityType": 26,
-            "FloorIndex": 1,
-            "Cell": {
-                "x": 46,
-                "y": 1,
-                "z": 0
-            },
-            "CountsAsCoreFacility": true
-        },
-        {
-            "Id": "facility_f1_WaitingPoint_46_-1",
-            "OwnerFacilityId": "facility_f1_ServiceWindow_46_2",
-            "ServiceStationId": "canteen_station_46",
-            "DisplayName": "等待点",
-            "FacilityTypeId": "WaitingPoint",
-            "FacilityType": 21,
-            "FloorIndex": 1,
-            "Cell": {
-                "x": 46,
+                "x": 42,
                 "y": -1,
                 "z": 0
             },
             "CountsAsCoreFacility": true
         },
         {
-            "Id": "facility_f1_WaitingPoint_44_-2",
-            "OwnerFacilityId": "facility_f1_ServiceWindow_44_2",
-            "ServiceStationId": "canteen_station_44",
+            "Id": "facility_f1_WaitingPoint_46_-3",
+            "OwnerFacilityId": "facility_f1_ServiceWindow_46_2",
+            "ServiceStationId": "canteen_station_46",
             "DisplayName": "等待点",
             "FacilityTypeId": "WaitingPoint",
             "FacilityType": 21,
             "FloorIndex": 1,
             "Cell": {
-                "x": 44,
-                "y": -2,
-                "z": 0
-            },
-            "CountsAsCoreFacility": true
-        },
-        {
-            "Id": "facility_f1_WorkerStandPoint_46_3",
-            "OwnerFacilityId": "facility_f1_ServiceWindow_46_2",
-            "ServiceStationId": "canteen_station_46",
-            "DisplayName": "工作站位",
-            "FacilityTypeId": "WorkerStandPoint",
-            "FacilityType": 25,
-            "FloorIndex": 1,
-            "Cell": {
                 "x": 46,
-                "y": 3,
+                "y": -3,
                 "z": 0
             },
             "CountsAsCoreFacility": true
         },
         {
-            "Id": "facility_f1_WaitingPoint_48_-2",
+            "Id": "facility_f1_WaitingPoint_48_-1",
             "OwnerFacilityId": "facility_f1_ServiceWindow_48_2",
             "ServiceStationId": "canteen_station_48",
             "DisplayName": "等待点",
@@ -1245,7 +1195,37 @@
             "FloorIndex": 1,
             "Cell": {
                 "x": 48,
-                "y": -2,
+                "y": -1,
+                "z": 0
+            },
+            "CountsAsCoreFacility": true
+        },
+        {
+            "Id": "facility_f1_WorkerStandPoint_56_3",
+            "OwnerFacilityId": "facility_f1_ServiceWindow_56_2",
+            "ServiceStationId": "canteen_station_56",
+            "DisplayName": "工作站位",
+            "FacilityTypeId": "WorkerStandPoint",
+            "FacilityType": 25,
+            "FloorIndex": 1,
+            "Cell": {
+                "x": 56,
+                "y": 3,
+                "z": 0
+            },
+            "CountsAsCoreFacility": true
+        },
+        {
+            "Id": "facility_f1_WaitingPoint_46_0",
+            "OwnerFacilityId": "facility_f1_ServiceWindow_46_2",
+            "ServiceStationId": "canteen_station_46",
+            "DisplayName": "等待点",
+            "FacilityTypeId": "WaitingPoint",
+            "FacilityType": 21,
+            "FloorIndex": 1,
+            "Cell": {
+                "x": 46,
+                "y": 0,
                 "z": 0
             },
             "CountsAsCoreFacility": true
@@ -1266,6 +1246,66 @@
             "CountsAsCoreFacility": true
         },
         {
+            "Id": "facility_f1_PickupPoint_46_1",
+            "OwnerFacilityId": "facility_f1_ServiceWindow_46_2",
+            "ServiceStationId": "canteen_station_46",
+            "DisplayName": "顾客取餐点",
+            "FacilityTypeId": "PickupPoint",
+            "FacilityType": 26,
+            "FloorIndex": 1,
+            "Cell": {
+                "x": 46,
+                "y": 1,
+                "z": 0
+            },
+            "CountsAsCoreFacility": true
+        },
+        {
+            "Id": "facility_f1_ServiceWindow_52_2",
+            "OwnerFacilityId": "",
+            "ServiceStationId": "canteen_station_52",
+            "DisplayName": "打饭窗口",
+            "FacilityTypeId": "ServiceWindow",
+            "FacilityType": 27,
+            "FloorIndex": 1,
+            "Cell": {
+                "x": 52,
+                "y": 2,
+                "z": 0
+            },
+            "CountsAsCoreFacility": true
+        },
+        {
+            "Id": "facility_f1_WaitingPoint_44_-1",
+            "OwnerFacilityId": "facility_f1_ServiceWindow_44_2",
+            "ServiceStationId": "canteen_station_44",
+            "DisplayName": "等待点",
+            "FacilityTypeId": "WaitingPoint",
+            "FacilityType": 21,
+            "FloorIndex": 1,
+            "Cell": {
+                "x": 44,
+                "y": -1,
+                "z": 0
+            },
+            "CountsAsCoreFacility": true
+        },
+        {
+            "Id": "facility_f1_PickupPoint_52_1",
+            "OwnerFacilityId": "facility_f1_ServiceWindow_52_2",
+            "ServiceStationId": "canteen_station_52",
+            "DisplayName": "顾客取餐点",
+            "FacilityTypeId": "PickupPoint",
+            "FacilityType": 26,
+            "FloorIndex": 1,
+            "Cell": {
+                "x": 52,
+                "y": 1,
+                "z": 0
+            },
+            "CountsAsCoreFacility": true
+        },
+        {
             "Id": "facility_f1_WaitingPoint_52_-2",
             "OwnerFacilityId": "facility_f1_ServiceWindow_52_2",
             "ServiceStationId": "canteen_station_52",
@@ -1281,7 +1321,112 @@
             "CountsAsCoreFacility": true
         },
         {
-            "Id": "facility_f1_WaitingPoint_56_-3",
+            "Id": "facility_f1_PickupPoint_48_1",
+            "OwnerFacilityId": "facility_f1_ServiceWindow_48_2",
+            "ServiceStationId": "canteen_station_48",
+            "DisplayName": "顾客取餐点",
+            "FacilityTypeId": "PickupPoint",
+            "FacilityType": 26,
+            "FloorIndex": 1,
+            "Cell": {
+                "x": 48,
+                "y": 1,
+                "z": 0
+            },
+            "CountsAsCoreFacility": true
+        },
+        {
+            "Id": "facility_f1_WaitingPoint_50_-1",
+            "OwnerFacilityId": "facility_f1_ServiceWindow_50_2",
+            "ServiceStationId": "canteen_station_50",
+            "DisplayName": "等待点",
+            "FacilityTypeId": "WaitingPoint",
+            "FacilityType": 21,
+            "FloorIndex": 1,
+            "Cell": {
+                "x": 50,
+                "y": -1,
+                "z": 0
+            },
+            "CountsAsCoreFacility": true
+        },
+        {
+            "Id": "facility_f1_ServiceWindow_42_2",
+            "OwnerFacilityId": "",
+            "ServiceStationId": "canteen_station_42",
+            "DisplayName": "打饭窗口",
+            "FacilityTypeId": "ServiceWindow",
+            "FacilityType": 27,
+            "FloorIndex": 1,
+            "Cell": {
+                "x": 42,
+                "y": 2,
+                "z": 0
+            },
+            "CountsAsCoreFacility": true
+        },
+        {
+            "Id": "facility_f1_WorkerStandPoint_42_3",
+            "OwnerFacilityId": "facility_f1_ServiceWindow_42_2",
+            "ServiceStationId": "canteen_station_42",
+            "DisplayName": "工作站位",
+            "FacilityTypeId": "WorkerStandPoint",
+            "FacilityType": 25,
+            "FloorIndex": 1,
+            "Cell": {
+                "x": 42,
+                "y": 3,
+                "z": 0
+            },
+            "CountsAsCoreFacility": true
+        },
+        {
+            "Id": "facility_f1_WaitingPoint_50_0",
+            "OwnerFacilityId": "facility_f1_ServiceWindow_50_2",
+            "ServiceStationId": "canteen_station_50",
+            "DisplayName": "等待点",
+            "FacilityTypeId": "WaitingPoint",
+            "FacilityType": 21,
+            "FloorIndex": 1,
+            "Cell": {
+                "x": 50,
+                "y": 0,
+                "z": 0
+            },
+            "CountsAsCoreFacility": true
+        },
+        {
+            "Id": "facility_f1_PickupPoint_56_1",
+            "OwnerFacilityId": "facility_f1_ServiceWindow_56_2",
+            "ServiceStationId": "canteen_station_56",
+            "DisplayName": "顾客取餐点",
+            "FacilityTypeId": "PickupPoint",
+            "FacilityType": 26,
+            "FloorIndex": 1,
+            "Cell": {
+                "x": 56,
+                "y": 1,
+                "z": 0
+            },
+            "CountsAsCoreFacility": true
+        },
+        {
+            "Id": "facility_f1_WorkerStandPoint_48_3",
+            "OwnerFacilityId": "facility_f1_ServiceWindow_48_2",
+            "ServiceStationId": "canteen_station_48",
+            "DisplayName": "工作站位",
+            "FacilityTypeId": "WorkerStandPoint",
+            "FacilityType": 25,
+            "FloorIndex": 1,
+            "Cell": {
+                "x": 48,
+                "y": 3,
+                "z": 0
+            },
+            "CountsAsCoreFacility": true
+        },
+        {
+            "Id": "facility_f1_WaitingPoint_56_-2",
             "OwnerFacilityId": "facility_f1_ServiceWindow_56_2",
             "ServiceStationId": "canteen_station_56",
             "DisplayName": "等待点",
@@ -1290,37 +1435,7 @@
             "FloorIndex": 1,
             "Cell": {
                 "x": 56,
-                "y": -3,
-                "z": 0
-            },
-            "CountsAsCoreFacility": true
-        },
-        {
-            "Id": "facility_f1_WaitingPoint_42_-2",
-            "OwnerFacilityId": "facility_f1_ServiceWindow_42_2",
-            "ServiceStationId": "canteen_station_42",
-            "DisplayName": "等待点",
-            "FacilityTypeId": "WaitingPoint",
-            "FacilityType": 21,
-            "FloorIndex": 1,
-            "Cell": {
-                "x": 42,
                 "y": -2,
-                "z": 0
-            },
-            "CountsAsCoreFacility": true
-        },
-        {
-            "Id": "facility_f1_WaitingPoint_54_-3",
-            "OwnerFacilityId": "facility_f1_ServiceWindow_54_2",
-            "ServiceStationId": "canteen_station_54",
-            "DisplayName": "等待点",
-            "FacilityTypeId": "WaitingPoint",
-            "FacilityType": 21,
-            "FloorIndex": 1,
-            "Cell": {
-                "x": 54,
-                "y": -3,
                 "z": 0
             },
             "CountsAsCoreFacility": true
@@ -1356,21 +1471,6 @@
             "CountsAsCoreFacility": true
         },
         {
-            "Id": "facility_f1_WaitingPoint_56_-2",
-            "OwnerFacilityId": "facility_f1_ServiceWindow_56_2",
-            "ServiceStationId": "canteen_station_56",
-            "DisplayName": "等待点",
-            "FacilityTypeId": "WaitingPoint",
-            "FacilityType": 21,
-            "FloorIndex": 1,
-            "Cell": {
-                "x": 56,
-                "y": -2,
-                "z": 0
-            },
-            "CountsAsCoreFacility": true
-        },
-        {
             "Id": "facility_f1_WaitingPoint_42_-3",
             "OwnerFacilityId": "facility_f1_ServiceWindow_42_2",
             "ServiceStationId": "canteen_station_42",
@@ -1381,186 +1481,6 @@
             "Cell": {
                 "x": 42,
                 "y": -3,
-                "z": 0
-            },
-            "CountsAsCoreFacility": true
-        },
-        {
-            "Id": "facility_f1_WorkerStandPoint_54_3",
-            "OwnerFacilityId": "facility_f1_ServiceWindow_54_2",
-            "ServiceStationId": "canteen_station_54",
-            "DisplayName": "工作站位",
-            "FacilityTypeId": "WorkerStandPoint",
-            "FacilityType": 25,
-            "FloorIndex": 1,
-            "Cell": {
-                "x": 54,
-                "y": 3,
-                "z": 0
-            },
-            "CountsAsCoreFacility": true
-        },
-        {
-            "Id": "facility_f1_ServiceWindow_56_2",
-            "OwnerFacilityId": "",
-            "ServiceStationId": "canteen_station_56",
-            "DisplayName": "打饭窗口",
-            "FacilityTypeId": "ServiceWindow",
-            "FacilityType": 27,
-            "FloorIndex": 1,
-            "Cell": {
-                "x": 56,
-                "y": 2,
-                "z": 0
-            },
-            "CountsAsCoreFacility": true
-        },
-        {
-            "Id": "facility_f1_WorkerStandPoint_44_3",
-            "OwnerFacilityId": "facility_f1_ServiceWindow_44_2",
-            "ServiceStationId": "canteen_station_44",
-            "DisplayName": "工作站位",
-            "FacilityTypeId": "WorkerStandPoint",
-            "FacilityType": 25,
-            "FloorIndex": 1,
-            "Cell": {
-                "x": 44,
-                "y": 3,
-                "z": 0
-            },
-            "CountsAsCoreFacility": true
-        },
-        {
-            "Id": "facility_f1_WaitingPoint_46_-2",
-            "OwnerFacilityId": "facility_f1_ServiceWindow_46_2",
-            "ServiceStationId": "canteen_station_46",
-            "DisplayName": "等待点",
-            "FacilityTypeId": "WaitingPoint",
-            "FacilityType": 21,
-            "FloorIndex": 1,
-            "Cell": {
-                "x": 46,
-                "y": -2,
-                "z": 0
-            },
-            "CountsAsCoreFacility": true
-        },
-        {
-            "Id": "facility_f1_ServiceWindow_44_2",
-            "OwnerFacilityId": "",
-            "ServiceStationId": "canteen_station_44",
-            "DisplayName": "打饭窗口",
-            "FacilityTypeId": "ServiceWindow",
-            "FacilityType": 27,
-            "FloorIndex": 1,
-            "Cell": {
-                "x": 44,
-                "y": 2,
-                "z": 0
-            },
-            "CountsAsCoreFacility": true
-        },
-        {
-            "Id": "facility_f1_WaitingPoint_56_0",
-            "OwnerFacilityId": "facility_f1_ServiceWindow_56_2",
-            "ServiceStationId": "canteen_station_56",
-            "DisplayName": "等待点",
-            "FacilityTypeId": "WaitingPoint",
-            "FacilityType": 21,
-            "FloorIndex": 1,
-            "Cell": {
-                "x": 56,
-                "y": 0,
-                "z": 0
-            },
-            "CountsAsCoreFacility": true
-        },
-        {
-            "Id": "facility_f1_WaitingPoint_50_0",
-            "OwnerFacilityId": "facility_f1_ServiceWindow_50_2",
-            "ServiceStationId": "canteen_station_50",
-            "DisplayName": "等待点",
-            "FacilityTypeId": "WaitingPoint",
-            "FacilityType": 21,
-            "FloorIndex": 1,
-            "Cell": {
-                "x": 50,
-                "y": 0,
-                "z": 0
-            },
-            "CountsAsCoreFacility": true
-        },
-        {
-            "Id": "facility_f1_WorkerStandPoint_56_3",
-            "OwnerFacilityId": "facility_f1_ServiceWindow_56_2",
-            "ServiceStationId": "canteen_station_56",
-            "DisplayName": "工作站位",
-            "FacilityTypeId": "WorkerStandPoint",
-            "FacilityType": 25,
-            "FloorIndex": 1,
-            "Cell": {
-                "x": 56,
-                "y": 3,
-                "z": 0
-            },
-            "CountsAsCoreFacility": true
-        },
-        {
-            "Id": "facility_f1_WorkerStandPoint_42_3",
-            "OwnerFacilityId": "facility_f1_ServiceWindow_42_2",
-            "ServiceStationId": "canteen_station_42",
-            "DisplayName": "工作站位",
-            "FacilityTypeId": "WorkerStandPoint",
-            "FacilityType": 25,
-            "FloorIndex": 1,
-            "Cell": {
-                "x": 42,
-                "y": 3,
-                "z": 0
-            },
-            "CountsAsCoreFacility": true
-        },
-        {
-            "Id": "facility_f1_PickupPoint_42_1",
-            "OwnerFacilityId": "facility_f1_ServiceWindow_42_2",
-            "ServiceStationId": "canteen_station_42",
-            "DisplayName": "顾客取餐点",
-            "FacilityTypeId": "PickupPoint",
-            "FacilityType": 26,
-            "FloorIndex": 1,
-            "Cell": {
-                "x": 42,
-                "y": 1,
-                "z": 0
-            },
-            "CountsAsCoreFacility": true
-        },
-        {
-            "Id": "facility_f1_WaitingPoint_52_-1",
-            "OwnerFacilityId": "facility_f1_ServiceWindow_52_2",
-            "ServiceStationId": "canteen_station_52",
-            "DisplayName": "等待点",
-            "FacilityTypeId": "WaitingPoint",
-            "FacilityType": 21,
-            "FloorIndex": 1,
-            "Cell": {
-                "x": 52,
-                "y": -1,
-                "z": 0
-            },
-            "CountsAsCoreFacility": true
-        },
-        {
-            "Id": "facility_f1_WorkerStandPoint_48_3",
-            "OwnerFacilityId": "facility_f1_ServiceWindow_48_2",
-            "ServiceStationId": "canteen_station_48",
-            "DisplayName": "工作站位",
-            "FacilityTypeId": "WorkerStandPoint",
-            "FacilityType": 25,
-            "FloorIndex": 1,
-            "Cell": {
-                "x": 48,
-                "y": 3,
                 "z": 0
             },
             "CountsAsCoreFacility": true
@@ -1581,6 +1501,81 @@
             "CountsAsCoreFacility": true
         },
         {
+            "Id": "facility_f1_WaitingPoint_48_-2",
+            "OwnerFacilityId": "facility_f1_ServiceWindow_48_2",
+            "ServiceStationId": "canteen_station_48",
+            "DisplayName": "等待点",
+            "FacilityTypeId": "WaitingPoint",
+            "FacilityType": 21,
+            "FloorIndex": 1,
+            "Cell": {
+                "x": 48,
+                "y": -2,
+                "z": 0
+            },
+            "CountsAsCoreFacility": true
+        },
+        {
+            "Id": "facility_f1_DropPoint_32_17",
+            "OwnerFacilityId": "",
+            "ServiceStationId": "",
+            "DisplayName": "放置点",
+            "FacilityTypeId": "DropPoint",
+            "FacilityType": 20,
+            "FloorIndex": 1,
+            "Cell": {
+                "x": 32,
+                "y": 17,
+                "z": 0
+            },
+            "CountsAsCoreFacility": true
+        },
+        {
+            "Id": "facility_f1_WorkerStandPoint_46_3",
+            "OwnerFacilityId": "facility_f1_ServiceWindow_46_2",
+            "ServiceStationId": "canteen_station_46",
+            "DisplayName": "工作站位",
+            "FacilityTypeId": "WorkerStandPoint",
+            "FacilityType": 25,
+            "FloorIndex": 1,
+            "Cell": {
+                "x": 46,
+                "y": 3,
+                "z": 0
+            },
+            "CountsAsCoreFacility": true
+        },
+        {
+            "Id": "facility_f1_WaitingPoint_52_-1",
+            "OwnerFacilityId": "facility_f1_ServiceWindow_52_2",
+            "ServiceStationId": "canteen_station_52",
+            "DisplayName": "等待点",
+            "FacilityTypeId": "WaitingPoint",
+            "FacilityType": 21,
+            "FloorIndex": 1,
+            "Cell": {
+                "x": 52,
+                "y": -1,
+                "z": 0
+            },
+            "CountsAsCoreFacility": true
+        },
+        {
+            "Id": "facility_f1_WaitingPoint_50_-3",
+            "OwnerFacilityId": "facility_f1_ServiceWindow_50_2",
+            "ServiceStationId": "canteen_station_50",
+            "DisplayName": "等待点",
+            "FacilityTypeId": "WaitingPoint",
+            "FacilityType": 21,
+            "FloorIndex": 1,
+            "Cell": {
+                "x": 50,
+                "y": -3,
+                "z": 0
+            },
+            "CountsAsCoreFacility": true
+        },
+        {
             "Id": "facility_f1_ServiceWindow_46_2",
             "OwnerFacilityId": "",
             "ServiceStationId": "canteen_station_46",
@@ -1596,45 +1591,45 @@
             "CountsAsCoreFacility": true
         },
         {
-            "Id": "facility_f1_WaitingPoint_42_-1",
-            "OwnerFacilityId": "facility_f1_ServiceWindow_42_2",
-            "ServiceStationId": "canteen_station_42",
-            "DisplayName": "等待点",
-            "FacilityTypeId": "WaitingPoint",
-            "FacilityType": 21,
+            "Id": "facility_f1_PickupPoint_54_1",
+            "OwnerFacilityId": "facility_f1_ServiceWindow_54_2",
+            "ServiceStationId": "canteen_station_54",
+            "DisplayName": "顾客取餐点",
+            "FacilityTypeId": "PickupPoint",
+            "FacilityType": 26,
             "FloorIndex": 1,
             "Cell": {
-                "x": 42,
-                "y": -1,
+                "x": 54,
+                "y": 1,
                 "z": 0
             },
             "CountsAsCoreFacility": true
         },
         {
-            "Id": "facility_f1_WaitingPoint_56_-1",
-            "OwnerFacilityId": "facility_f1_ServiceWindow_56_2",
-            "ServiceStationId": "canteen_station_56",
-            "DisplayName": "等待点",
-            "FacilityTypeId": "WaitingPoint",
-            "FacilityType": 21,
+            "Id": "facility_f1_WorkerStandPoint_54_3",
+            "OwnerFacilityId": "facility_f1_ServiceWindow_54_2",
+            "ServiceStationId": "canteen_station_54",
+            "DisplayName": "工作站位",
+            "FacilityTypeId": "WorkerStandPoint",
+            "FacilityType": 25,
             "FloorIndex": 1,
             "Cell": {
-                "x": 56,
-                "y": -1,
+                "x": 54,
+                "y": 3,
                 "z": 0
             },
             "CountsAsCoreFacility": true
         },
         {
-            "Id": "facility_f1_WaitingPoint_50_-1",
-            "OwnerFacilityId": "facility_f1_ServiceWindow_50_2",
-            "ServiceStationId": "canteen_station_50",
+            "Id": "facility_f1_WaitingPoint_46_-1",
+            "OwnerFacilityId": "facility_f1_ServiceWindow_46_2",
+            "ServiceStationId": "canteen_station_46",
             "DisplayName": "等待点",
             "FacilityTypeId": "WaitingPoint",
             "FacilityType": 21,
             "FloorIndex": 1,
             "Cell": {
-                "x": 50,
+                "x": 46,
                 "y": -1,
                 "z": 0
             },
@@ -1651,6 +1646,96 @@
             "Cell": {
                 "x": 52,
                 "y": 3,
+                "z": 0
+            },
+            "CountsAsCoreFacility": true
+        },
+        {
+            "Id": "facility_f1_WaitingPoint_56_0",
+            "OwnerFacilityId": "facility_f1_ServiceWindow_56_2",
+            "ServiceStationId": "canteen_station_56",
+            "DisplayName": "等待点",
+            "FacilityTypeId": "WaitingPoint",
+            "FacilityType": 21,
+            "FloorIndex": 1,
+            "Cell": {
+                "x": 56,
+                "y": 0,
+                "z": 0
+            },
+            "CountsAsCoreFacility": true
+        },
+        {
+            "Id": "facility_f1_WaitingPoint_44_0",
+            "OwnerFacilityId": "facility_f1_ServiceWindow_44_2",
+            "ServiceStationId": "canteen_station_44",
+            "DisplayName": "等待点",
+            "FacilityTypeId": "WaitingPoint",
+            "FacilityType": 21,
+            "FloorIndex": 1,
+            "Cell": {
+                "x": 44,
+                "y": 0,
+                "z": 0
+            },
+            "CountsAsCoreFacility": true
+        },
+        {
+            "Id": "facility_f1_WorkerStandPoint_44_3",
+            "OwnerFacilityId": "facility_f1_ServiceWindow_44_2",
+            "ServiceStationId": "canteen_station_44",
+            "DisplayName": "工作站位",
+            "FacilityTypeId": "WorkerStandPoint",
+            "FacilityType": 25,
+            "FloorIndex": 1,
+            "Cell": {
+                "x": 44,
+                "y": 3,
+                "z": 0
+            },
+            "CountsAsCoreFacility": true
+        },
+        {
+            "Id": "facility_f1_PickupPoint_44_1",
+            "OwnerFacilityId": "facility_f1_ServiceWindow_44_2",
+            "ServiceStationId": "canteen_station_44",
+            "DisplayName": "顾客取餐点",
+            "FacilityTypeId": "PickupPoint",
+            "FacilityType": 26,
+            "FloorIndex": 1,
+            "Cell": {
+                "x": 44,
+                "y": 1,
+                "z": 0
+            },
+            "CountsAsCoreFacility": true
+        },
+        {
+            "Id": "facility_f1_WaitingPoint_54_-2",
+            "OwnerFacilityId": "facility_f1_ServiceWindow_54_2",
+            "ServiceStationId": "canteen_station_54",
+            "DisplayName": "等待点",
+            "FacilityTypeId": "WaitingPoint",
+            "FacilityType": 21,
+            "FloorIndex": 1,
+            "Cell": {
+                "x": 54,
+                "y": -2,
+                "z": 0
+            },
+            "CountsAsCoreFacility": true
+        },
+        {
+            "Id": "facility_f1_PickupPoint_42_1",
+            "OwnerFacilityId": "facility_f1_ServiceWindow_42_2",
+            "ServiceStationId": "canteen_station_42",
+            "DisplayName": "顾客取餐点",
+            "FacilityTypeId": "PickupPoint",
+            "FacilityType": 26,
+            "FloorIndex": 1,
+            "Cell": {
+                "x": 42,
+                "y": 1,
                 "z": 0
             },
             "CountsAsCoreFacility": true
@@ -1686,271 +1771,46 @@
             "CountsAsCoreFacility": true
         },
         {
-            "Id": "facility_f1_WaitingPoint_52_-3",
-            "OwnerFacilityId": "facility_f1_ServiceWindow_52_2",
-            "ServiceStationId": "canteen_station_52",
+            "Id": "facility_f1_WaitingPoint_56_-3",
+            "OwnerFacilityId": "facility_f1_ServiceWindow_56_2",
+            "ServiceStationId": "canteen_station_56",
             "DisplayName": "等待点",
             "FacilityTypeId": "WaitingPoint",
             "FacilityType": 21,
             "FloorIndex": 1,
             "Cell": {
-                "x": 52,
+                "x": 56,
                 "y": -3,
                 "z": 0
             },
             "CountsAsCoreFacility": true
         },
         {
-            "Id": "facility_f1_WaitingPoint_44_0",
-            "OwnerFacilityId": "facility_f1_ServiceWindow_44_2",
-            "ServiceStationId": "canteen_station_44",
+            "Id": "facility_f1_WaitingPoint_42_-2",
+            "OwnerFacilityId": "facility_f1_ServiceWindow_42_2",
+            "ServiceStationId": "canteen_station_42",
             "DisplayName": "等待点",
             "FacilityTypeId": "WaitingPoint",
             "FacilityType": 21,
             "FloorIndex": 1,
             "Cell": {
-                "x": 44,
-                "y": 0,
-                "z": 0
-            },
-            "CountsAsCoreFacility": true
-        },
-        {
-            "Id": "facility_f1_PickupPoint_50_1",
-            "OwnerFacilityId": "facility_f1_ServiceWindow_50_2",
-            "ServiceStationId": "canteen_station_50",
-            "DisplayName": "顾客取餐点",
-            "FacilityTypeId": "PickupPoint",
-            "FacilityType": 26,
-            "FloorIndex": 1,
-            "Cell": {
-                "x": 50,
-                "y": 1,
-                "z": 0
-            },
-            "CountsAsCoreFacility": true
-        },
-        {
-            "Id": "facility_f1_PickupPoint_54_1",
-            "OwnerFacilityId": "facility_f1_ServiceWindow_54_2",
-            "ServiceStationId": "canteen_station_54",
-            "DisplayName": "顾客取餐点",
-            "FacilityTypeId": "PickupPoint",
-            "FacilityType": 26,
-            "FloorIndex": 1,
-            "Cell": {
-                "x": 54,
-                "y": 1,
-                "z": 0
-            },
-            "CountsAsCoreFacility": true
-        },
-        {
-            "Id": "facility_f1_WaitingPoint_48_-1",
-            "OwnerFacilityId": "facility_f1_ServiceWindow_48_2",
-            "ServiceStationId": "canteen_station_48",
-            "DisplayName": "等待点",
-            "FacilityTypeId": "WaitingPoint",
-            "FacilityType": 21,
-            "FloorIndex": 1,
-            "Cell": {
-                "x": 48,
-                "y": -1,
-                "z": 0
-            },
-            "CountsAsCoreFacility": true
-        },
-        {
-            "Id": "facility_f1_WaitingPoint_44_-1",
-            "OwnerFacilityId": "facility_f1_ServiceWindow_44_2",
-            "ServiceStationId": "canteen_station_44",
-            "DisplayName": "等待点",
-            "FacilityTypeId": "WaitingPoint",
-            "FacilityType": 21,
-            "FloorIndex": 1,
-            "Cell": {
-                "x": 44,
-                "y": -1,
-                "z": 0
-            },
-            "CountsAsCoreFacility": true
-        },
-        {
-            "Id": "facility_f1_WaitingPoint_54_-2",
-            "OwnerFacilityId": "facility_f1_ServiceWindow_54_2",
-            "ServiceStationId": "canteen_station_54",
-            "DisplayName": "等待点",
-            "FacilityTypeId": "WaitingPoint",
-            "FacilityType": 21,
-            "FloorIndex": 1,
-            "Cell": {
-                "x": 54,
+                "x": 42,
                 "y": -2,
                 "z": 0
             },
             "CountsAsCoreFacility": true
         },
         {
-            "Id": "facility_f1_WaitingPoint_46_0",
-            "OwnerFacilityId": "facility_f1_ServiceWindow_46_2",
-            "ServiceStationId": "canteen_station_46",
-            "DisplayName": "等待点",
-            "FacilityTypeId": "WaitingPoint",
-            "FacilityType": 21,
-            "FloorIndex": 1,
-            "Cell": {
-                "x": 46,
-                "y": 0,
-                "z": 0
-            },
-            "CountsAsCoreFacility": true
-        },
-        {
-            "Id": "facility_f1_PickupPoint_44_1",
-            "OwnerFacilityId": "facility_f1_ServiceWindow_44_2",
-            "ServiceStationId": "canteen_station_44",
-            "DisplayName": "顾客取餐点",
-            "FacilityTypeId": "PickupPoint",
-            "FacilityType": 26,
-            "FloorIndex": 1,
-            "Cell": {
-                "x": 44,
-                "y": 1,
-                "z": 0
-            },
-            "CountsAsCoreFacility": true
-        },
-        {
-            "Id": "facility_f1_WaitingPoint_54_-1",
-            "OwnerFacilityId": "facility_f1_ServiceWindow_54_2",
-            "ServiceStationId": "canteen_station_54",
-            "DisplayName": "等待点",
-            "FacilityTypeId": "WaitingPoint",
-            "FacilityType": 21,
-            "FloorIndex": 1,
-            "Cell": {
-                "x": 54,
-                "y": -1,
-                "z": 0
-            },
-            "CountsAsCoreFacility": true
-        },
-        {
-            "Id": "facility_f1_ServiceWindow_50_2",
-            "OwnerFacilityId": "",
-            "ServiceStationId": "canteen_station_50",
-            "DisplayName": "打饭窗口",
-            "FacilityTypeId": "ServiceWindow",
-            "FacilityType": 27,
-            "FloorIndex": 1,
-            "Cell": {
-                "x": 50,
-                "y": 2,
-                "z": 0
-            },
-            "CountsAsCoreFacility": true
-        },
-        {
-            "Id": "facility_f1_WaitingPoint_46_-3",
-            "OwnerFacilityId": "facility_f1_ServiceWindow_46_2",
-            "ServiceStationId": "canteen_station_46",
-            "DisplayName": "等待点",
-            "FacilityTypeId": "WaitingPoint",
-            "FacilityType": 21,
-            "FloorIndex": 1,
-            "Cell": {
-                "x": 46,
-                "y": -3,
-                "z": 0
-            },
-            "CountsAsCoreFacility": true
-        },
-        {
-            "Id": "facility_f1_PickupPoint_52_1",
+            "Id": "facility_f1_WaitingPoint_52_0",
             "OwnerFacilityId": "facility_f1_ServiceWindow_52_2",
             "ServiceStationId": "canteen_station_52",
-            "DisplayName": "顾客取餐点",
-            "FacilityTypeId": "PickupPoint",
-            "FacilityType": 26,
-            "FloorIndex": 1,
-            "Cell": {
-                "x": 52,
-                "y": 1,
-                "z": 0
-            },
-            "CountsAsCoreFacility": true
-        },
-        {
-            "Id": "facility_f1_ServiceWindow_52_2",
-            "OwnerFacilityId": "",
-            "ServiceStationId": "canteen_station_52",
-            "DisplayName": "打饭窗口",
-            "FacilityTypeId": "ServiceWindow",
-            "FacilityType": 27,
-            "FloorIndex": 1,
-            "Cell": {
-                "x": 52,
-                "y": 2,
-                "z": 0
-            },
-            "CountsAsCoreFacility": true
-        },
-        {
-            "Id": "facility_f1_PickupPoint_48_1",
-            "OwnerFacilityId": "facility_f1_ServiceWindow_48_2",
-            "ServiceStationId": "canteen_station_48",
-            "DisplayName": "顾客取餐点",
-            "FacilityTypeId": "PickupPoint",
-            "FacilityType": 26,
-            "FloorIndex": 1,
-            "Cell": {
-                "x": 48,
-                "y": 1,
-                "z": 0
-            },
-            "CountsAsCoreFacility": true
-        },
-        {
-            "Id": "facility_f1_WaitingPoint_50_-3",
-            "OwnerFacilityId": "facility_f1_ServiceWindow_50_2",
-            "ServiceStationId": "canteen_station_50",
             "DisplayName": "等待点",
             "FacilityTypeId": "WaitingPoint",
             "FacilityType": 21,
             "FloorIndex": 1,
             "Cell": {
-                "x": 50,
-                "y": -3,
-                "z": 0
-            },
-            "CountsAsCoreFacility": true
-        },
-        {
-            "Id": "facility_f1_ServiceWindow_48_2",
-            "OwnerFacilityId": "",
-            "ServiceStationId": "canteen_station_48",
-            "DisplayName": "打饭窗口",
-            "FacilityTypeId": "ServiceWindow",
-            "FacilityType": 27,
-            "FloorIndex": 1,
-            "Cell": {
-                "x": 48,
-                "y": 2,
-                "z": 0
-            },
-            "CountsAsCoreFacility": true
-        },
-        {
-            "Id": "facility_f1_ServiceWindow_42_2",
-            "OwnerFacilityId": "",
-            "ServiceStationId": "canteen_station_42",
-            "DisplayName": "打饭窗口",
-            "FacilityTypeId": "ServiceWindow",
-            "FacilityType": 27,
-            "FloorIndex": 1,
-            "Cell": {
-                "x": 42,
-                "y": 2,
+                "x": 52,
+                "y": 0,
                 "z": 0
             },
             "CountsAsCoreFacility": true
@@ -1971,16 +1831,181 @@
             "CountsAsCoreFacility": true
         },
         {
-            "Id": "facility_f1_PickupPoint_56_1",
+            "Id": "facility_f1_WaitingPoint_54_0",
+            "OwnerFacilityId": "facility_f1_ServiceWindow_54_2",
+            "ServiceStationId": "canteen_station_54",
+            "DisplayName": "等待点",
+            "FacilityTypeId": "WaitingPoint",
+            "FacilityType": 21,
+            "FloorIndex": 1,
+            "Cell": {
+                "x": 54,
+                "y": 0,
+                "z": 0
+            },
+            "CountsAsCoreFacility": true
+        },
+        {
+            "Id": "facility_f1_ServiceWindow_48_2",
+            "OwnerFacilityId": "",
+            "ServiceStationId": "canteen_station_48",
+            "DisplayName": "打饭窗口",
+            "FacilityTypeId": "ServiceWindow",
+            "FacilityType": 27,
+            "FloorIndex": 1,
+            "Cell": {
+                "x": 48,
+                "y": 2,
+                "z": 0
+            },
+            "CountsAsCoreFacility": true
+        },
+        {
+            "Id": "facility_f1_WaitingPoint_56_-1",
             "OwnerFacilityId": "facility_f1_ServiceWindow_56_2",
             "ServiceStationId": "canteen_station_56",
+            "DisplayName": "等待点",
+            "FacilityTypeId": "WaitingPoint",
+            "FacilityType": 21,
+            "FloorIndex": 1,
+            "Cell": {
+                "x": 56,
+                "y": -1,
+                "z": 0
+            },
+            "CountsAsCoreFacility": true
+        },
+        {
+            "Id": "facility_f1_WaitingPoint_52_-3",
+            "OwnerFacilityId": "facility_f1_ServiceWindow_52_2",
+            "ServiceStationId": "canteen_station_52",
+            "DisplayName": "等待点",
+            "FacilityTypeId": "WaitingPoint",
+            "FacilityType": 21,
+            "FloorIndex": 1,
+            "Cell": {
+                "x": 52,
+                "y": -3,
+                "z": 0
+            },
+            "CountsAsCoreFacility": true
+        },
+        {
+            "Id": "facility_f1_ServiceWindow_56_2",
+            "OwnerFacilityId": "",
+            "ServiceStationId": "canteen_station_56",
+            "DisplayName": "打饭窗口",
+            "FacilityTypeId": "ServiceWindow",
+            "FacilityType": 27,
+            "FloorIndex": 1,
+            "Cell": {
+                "x": 56,
+                "y": 2,
+                "z": 0
+            },
+            "CountsAsCoreFacility": true
+        },
+        {
+            "Id": "facility_f1_WaitingPoint_44_-2",
+            "OwnerFacilityId": "facility_f1_ServiceWindow_44_2",
+            "ServiceStationId": "canteen_station_44",
+            "DisplayName": "等待点",
+            "FacilityTypeId": "WaitingPoint",
+            "FacilityType": 21,
+            "FloorIndex": 1,
+            "Cell": {
+                "x": 44,
+                "y": -2,
+                "z": 0
+            },
+            "CountsAsCoreFacility": true
+        },
+        {
+            "Id": "facility_f1_WaitingPoint_46_-2",
+            "OwnerFacilityId": "facility_f1_ServiceWindow_46_2",
+            "ServiceStationId": "canteen_station_46",
+            "DisplayName": "等待点",
+            "FacilityTypeId": "WaitingPoint",
+            "FacilityType": 21,
+            "FloorIndex": 1,
+            "Cell": {
+                "x": 46,
+                "y": -2,
+                "z": 0
+            },
+            "CountsAsCoreFacility": true
+        },
+        {
+            "Id": "facility_f1_WaitingPoint_54_-1",
+            "OwnerFacilityId": "facility_f1_ServiceWindow_54_2",
+            "ServiceStationId": "canteen_station_54",
+            "DisplayName": "等待点",
+            "FacilityTypeId": "WaitingPoint",
+            "FacilityType": 21,
+            "FloorIndex": 1,
+            "Cell": {
+                "x": 54,
+                "y": -1,
+                "z": 0
+            },
+            "CountsAsCoreFacility": true
+        },
+        {
+            "Id": "facility_f1_ServiceWindow_44_2",
+            "OwnerFacilityId": "",
+            "ServiceStationId": "canteen_station_44",
+            "DisplayName": "打饭窗口",
+            "FacilityTypeId": "ServiceWindow",
+            "FacilityType": 27,
+            "FloorIndex": 1,
+            "Cell": {
+                "x": 44,
+                "y": 2,
+                "z": 0
+            },
+            "CountsAsCoreFacility": true
+        },
+        {
+            "Id": "facility_f1_ServiceWindow_50_2",
+            "OwnerFacilityId": "",
+            "ServiceStationId": "canteen_station_50",
+            "DisplayName": "打饭窗口",
+            "FacilityTypeId": "ServiceWindow",
+            "FacilityType": 27,
+            "FloorIndex": 1,
+            "Cell": {
+                "x": 50,
+                "y": 2,
+                "z": 0
+            },
+            "CountsAsCoreFacility": true
+        },
+        {
+            "Id": "facility_f1_PickupPoint_50_1",
+            "OwnerFacilityId": "facility_f1_ServiceWindow_50_2",
+            "ServiceStationId": "canteen_station_50",
             "DisplayName": "顾客取餐点",
             "FacilityTypeId": "PickupPoint",
             "FacilityType": 26,
             "FloorIndex": 1,
             "Cell": {
-                "x": 56,
+                "x": 50,
                 "y": 1,
+                "z": 0
+            },
+            "CountsAsCoreFacility": true
+        },
+        {
+            "Id": "facility_f1_WaitingPoint_54_-3",
+            "OwnerFacilityId": "facility_f1_ServiceWindow_54_2",
+            "ServiceStationId": "canteen_station_54",
+            "DisplayName": "等待点",
+            "FacilityTypeId": "WaitingPoint",
+            "FacilityType": 21,
+            "FloorIndex": 1,
+            "Cell": {
+                "x": 54,
+                "y": -3,
                 "z": 0
             },
             "CountsAsCoreFacility": true

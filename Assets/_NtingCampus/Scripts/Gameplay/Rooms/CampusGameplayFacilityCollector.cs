@@ -1,6 +1,6 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
-using NtingCampus.Gameplay.UI;
+using NtingCampus.UI.Runtime.Gameplay;
 using NtingCampusMapEditor;
 
 namespace NtingCampus.Gameplay.Rooms
@@ -232,3 +232,4 @@ namespace NtingCampus.Gameplay.Rooms
         }
     }
 }
+

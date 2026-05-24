@@ -1,5 +1,5 @@
-using System;
-using NtingCampus.Gameplay.UI;
+﻿using System;
+using NtingCampus.UI.Runtime.Gameplay;
 using UnityEngine;
 
 namespace NtingCampus.Gameplay.Characters
@@ -20,6 +20,7 @@ namespace NtingCampus.Gameplay.Characters
         [SerializeField, Min(1)] private int floorIndex = 1;
         [SerializeField, Range(0, 100)] private int sleepiness = 40;
         [SerializeField, Range(0, 100)] private int mischief = 20;
+        [SerializeField] private int initialMoney = NtingCampus.Gameplay.Economy.CampusCharacterEconomyDefaults.UseRoleDefaultMoney;
         [SerializeField] private CampusCharacterTrait[] traits = Array.Empty<CampusCharacterTrait>();
         [SerializeField] private CampusCharacterAssignmentData assignments = new CampusCharacterAssignmentData();
 
@@ -40,7 +41,8 @@ namespace NtingCampus.Gameplay.Characters
                 sleepiness,
                 mischief,
                 traits,
-                staffDuty);
+                staffDuty,
+                initialMoney);
             data.SetAssignments(assignments);
             return data;
         }
@@ -50,6 +52,7 @@ namespace NtingCampus.Gameplay.Characters
             floorIndex = Mathf.Max(1, floorIndex);
             sleepiness = Mathf.Clamp(sleepiness, 0, 100);
             mischief = Mathf.Clamp(mischief, 0, 100);
+            initialMoney = Mathf.Max(NtingCampus.Gameplay.Economy.CampusCharacterEconomyDefaults.UseRoleDefaultMoney, initialMoney);
             if (string.IsNullOrWhiteSpace(displayName))
             {
                 displayName = gameObject.name;
@@ -57,3 +60,4 @@ namespace NtingCampus.Gameplay.Characters
         }
     }
 }
+

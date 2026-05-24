@@ -103,8 +103,27 @@ namespace NtingCampus.Gameplay.Characters
         public float ArrivalHoldSeconds { get; }
         public bool RequireExactDestination { get; }
         public string TargetId { get; }
+        public string ScheduleEntryId { get; private set; } = string.Empty;
+        public string ActionChainId { get; private set; } = string.Empty;
+        public int ChainStepIndex { get; private set; }
+        public int ChainStepCount { get; private set; }
+        public bool AdvancesActionChain { get; private set; } = true;
 
         public UnityEngine.Object Target => Action != null ? Action.Target : null;
+
+        internal void AssignActionChain(
+            string scheduleEntryId,
+            string actionChainId,
+            int stepIndex,
+            int stepCount,
+            bool advancesActionChain)
+        {
+            ScheduleEntryId = string.IsNullOrWhiteSpace(scheduleEntryId) ? string.Empty : scheduleEntryId.Trim();
+            ActionChainId = string.IsNullOrWhiteSpace(actionChainId) ? string.Empty : actionChainId.Trim();
+            ChainStepIndex = Mathf.Max(0, stepIndex);
+            ChainStepCount = Mathf.Max(1, stepCount);
+            AdvancesActionChain = advancesActionChain;
+        }
 
         public static CampusNpcActionOpportunity MoveTo(
             string actionId,
@@ -218,6 +237,7 @@ namespace NtingCampus.Gameplay.Characters
                 intent.StopDistance = StopDistance;
             }
 
+            intent.ActionId = ActionId;
             intent.ActionOpportunity = this;
             return intent;
         }

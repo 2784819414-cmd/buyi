@@ -1,7 +1,7 @@
-using NtingCampus.Gameplay.Core;
+﻿using NtingCampus.Gameplay.Core;
 using NtingCampus.Gameplay.Events;
 using NtingCampus.Gameplay.Rooms;
-using NtingCampus.Gameplay.UI;
+using NtingCampus.UI.Runtime.Gameplay;
 using NtingCampusMapEditor;
 using UnityEngine;
 
@@ -301,3 +301,4 @@ namespace NtingCampus.Gameplay.Characters
         }
     }
 }
+

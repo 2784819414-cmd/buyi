@@ -1,5 +1,5 @@
 using System.Collections.Generic;
-using NtingCampus.Gameplay.UI;
+using NtingCampus.UI.Runtime.Gameplay;
 
 namespace NtingCampusMapEditor
 {

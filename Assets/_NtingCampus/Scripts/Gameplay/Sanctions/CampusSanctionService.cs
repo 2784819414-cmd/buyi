@@ -1,9 +1,9 @@
-using NtingCampus.Gameplay.Characters;
+﻿using NtingCampus.Gameplay.Characters;
 using NtingCampus.Gameplay.Core;
 using NtingCampus.Gameplay.Events;
 using NtingCampus.Gameplay.Rooms;
 using NtingCampus.Gameplay.Schedule;
-using NtingCampus.Gameplay.UI;
+using NtingCampus.UI.Runtime.Gameplay;
 using UnityEngine;
 
 namespace NtingCampus.Gameplay.Sanctions
@@ -208,26 +208,26 @@ namespace NtingCampus.Gameplay.Sanctions
             {
                 case CampusSanctionLevel.Warning:
                     bootstrap.EventLog.AddLog(CampusCharacterTextCatalog.FormatSanctionIssued(
-                        UI.CampusLanguageState.CurrentLanguage,
-                        actorRuntime.Data.GetDisplayName(UI.CampusLanguageState.CurrentLanguage),
+                        CampusLanguageState.CurrentLanguage,
+                        actorRuntime.Data.GetDisplayName(CampusLanguageState.CurrentLanguage),
                         level));
                     break;
                 case CampusSanctionLevel.Reprimand:
                     bootstrap.EventLog.AddLog(CampusCharacterTextCatalog.FormatSanctionIssued(
-                        UI.CampusLanguageState.CurrentLanguage,
-                        actorRuntime.Data.GetDisplayName(UI.CampusLanguageState.CurrentLanguage),
+                        CampusLanguageState.CurrentLanguage,
+                        actorRuntime.Data.GetDisplayName(CampusLanguageState.CurrentLanguage),
                         level));
                     break;
                 case CampusSanctionLevel.OfficePunishment:
                     bootstrap.EventLog.AddLog(CampusCharacterTextCatalog.FormatSanctionIssued(
-                        UI.CampusLanguageState.CurrentLanguage,
-                        actorRuntime.Data.GetDisplayName(UI.CampusLanguageState.CurrentLanguage),
+                        CampusLanguageState.CurrentLanguage,
+                        actorRuntime.Data.GetDisplayName(CampusLanguageState.CurrentLanguage),
                         level));
                     break;
             }
 
             bootstrap.EventLog.AddLog(CampusCharacterTextCatalog.FormatDailyWarnings(
-                UI.CampusLanguageState.CurrentLanguage,
+                CampusLanguageState.CurrentLanguage,
                 warningCount));
         }
 
@@ -247,3 +247,4 @@ namespace NtingCampus.Gameplay.Sanctions
         }
     }
 }
+

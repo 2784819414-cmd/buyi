@@ -1,0 +1,37 @@
+﻿%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a6c8594f85b44c40abf87c80a8710110, type: 3}
+  m_Name: RetailSoapBar
+  m_EditorClassIdentifier: 
+  Id: retail_soap_bar
+  DisplayName: "\u9999\u7682"
+  LocalizedDisplayName:
+    chinese: "\u9999\u7682"
+    english: Soap Bar
+  Width: 1
+  Height: 1
+  Weight: 0.1
+  Price: 10
+  Description: "\u65B9\u5757\u9999\u7682\uFF0C\u6C14\u5473\u5F88\u666E\u901A\u3002"
+  LocalizedDescription:
+    chinese: "\u65B9\u5757\u9999\u7682\uFF0C\u6C14\u5473\u5F88\u666E\u901A\u3002"
+    english: A plain square soap bar with a standard scent.
+  ThemeColor: {r: 0.72, g: 0.85, b: 0.61, a: 1}
+  Icon: {fileID: 0}
+  IsUsable: 0
+  UseActionId: 
+  ConsumeOnUse: 1
+  UseText: 
+  LocalizedUseText:
+    chinese: 
+    english: 
+

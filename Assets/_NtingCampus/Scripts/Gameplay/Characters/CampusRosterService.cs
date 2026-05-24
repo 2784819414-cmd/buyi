@@ -1,8 +1,8 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using NtingCampus.Gameplay.Core;
 using NtingCampus.Gameplay.Rooms;
-using NtingCampus.Gameplay.UI;
+using NtingCampus.UI.Runtime.Gameplay;
 using NtingCampusMapEditor;
 using UnityEngine;
 
@@ -315,11 +315,6 @@ namespace NtingCampus.Gameplay.Characters
 
         private void SyncCurrentRoomsFromWorld()
         {
-            if (worldService == null)
-            {
-                return;
-            }
-
             for (int i = 0; i < runtimes.Count; i++)
             {
                 CampusCharacterRuntime runtime = runtimes[i];
@@ -328,11 +323,7 @@ namespace NtingCampus.Gameplay.Characters
                     continue;
                 }
 
-                CampusGameplayRoom room = worldService.FindRoomForRuntime(runtime);
-                if (room != null)
-                {
-                    runtime.Data.SetCurrentRoom(room.RoomId);
-                }
+                CampusCharacterCurrentRoomTracker.SyncRuntime(runtime, worldService);
             }
         }
 
@@ -482,3 +473,4 @@ namespace NtingCampus.Gameplay.Characters
         }
     }
 }
+

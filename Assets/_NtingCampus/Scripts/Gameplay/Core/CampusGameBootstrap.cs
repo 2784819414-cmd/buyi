@@ -1,11 +1,12 @@
-using NtingCampus.Gameplay.Characters;
+﻿using NtingCampus.Gameplay.Characters;
+using NtingCampus.Gameplay.Economy;
 using NtingCampus.Gameplay.Events;
 using NtingCampus.Gameplay.Inventory;
 using NtingCampus.Gameplay.Modes;
 using NtingCampus.Gameplay.Rooms;
 using NtingCampus.Gameplay.Sanctions;
 using NtingCampus.Gameplay.Schedule;
-using NtingCampus.Gameplay.UI;
+using NtingCampus.UI.Runtime.Gameplay;
 using UnityEngine;
 
 namespace NtingCampus.Gameplay.Core
@@ -14,7 +15,6 @@ namespace NtingCampus.Gameplay.Core
     public sealed class CampusGameBootstrap : MonoBehaviour
     {
         [SerializeField, Min(1)] private int initialDay = 1;
-        [SerializeField, Min(0)] private int initialMoney = 500;
         [SerializeField, Min(0)] private int initialDivinePower;
         [SerializeField] private CampusGameStateInitialization initialGameState =
             CampusGameStateInitialization.CreateDefault(1);
@@ -27,6 +27,9 @@ namespace NtingCampus.Gameplay.Core
         [SerializeField] private CampusGameplayEventHub gameplayEventHub;
         [SerializeField] private CampusInventoryTransferService inventoryTransferService;
         [SerializeField] private CampusSanctionService sanctionService;
+        [SerializeField] private CampusEconomyService economyService;
+        [SerializeField] private CampusEconomyHudController economyHudController;
+        [SerializeField] private CampusHandHudController handHudController;
         [SerializeField] private CampusPlayerInventoryController playerInventoryController;
         [SerializeField] private CampusGameState gameState = new CampusGameState();
         [SerializeField] private CampusResourceState resourceState = new CampusResourceState();
@@ -48,6 +51,9 @@ namespace NtingCampus.Gameplay.Core
         public CampusGameplayEventHub GameplayEventHub => gameplayEventHub;
         public CampusInventoryTransferService InventoryTransferService => inventoryTransferService;
         public CampusSanctionService SanctionService => sanctionService;
+        public CampusEconomyService EconomyService => economyService;
+        public CampusEconomyHudController EconomyHudController => economyHudController;
+        public CampusHandHudController HandHudController => handHudController;
         public CampusPlayerInventoryController PlayerInventoryController => playerInventoryController;
 
         public static CampusGameBootstrap EnsureSceneBootstrap()
@@ -69,6 +75,9 @@ namespace NtingCampus.Gameplay.Core
             bootstrap.EnsureGameplayEventHub();
             bootstrap.EnsureInventoryTransferService();
             bootstrap.EnsureSanctionService();
+            bootstrap.EnsureEconomyService();
+            bootstrap.EnsureEconomyHudController();
+            bootstrap.EnsureHandHudController();
             bootstrap.EnsurePlayerInventoryController();
             bootstrap.EnsureSettingsOverlay();
             bootstrap.EnsureLaunchSelectionApplier();
@@ -88,7 +97,7 @@ namespace NtingCampus.Gameplay.Core
             gameState.Reset(gameStateInitialization);
 
             resourceState = new CampusResourceState();
-            resourceState.Reset(initialMoney, initialDivinePower);
+            resourceState.Reset(initialDivinePower);
 
             eventLog = new CampusEventLog();
 
@@ -121,14 +130,22 @@ namespace NtingCampus.Gameplay.Core
             sanctionService = EnsureSanctionService();
             sanctionService.Initialize(this);
 
+            economyService = EnsureEconomyService();
+            economyService.Initialize(this);
+
             playerInventoryController = EnsurePlayerInventoryController();
             playerInventoryController.Initialize(this);
+
+            economyHudController = EnsureEconomyHudController();
+            economyHudController.Initialize(this);
+
+            handHudController = EnsureHandHudController();
+            handHudController.Initialize(this);
 
             isInitialized = true;
             eventLog.AddLog(CampusCoreTextCatalog.Format(
                 CampusCoreTextId.GameplayBootstrapInitialized,
                 timeController.CurrentDateText,
-                resourceState.Money,
                 resourceState.DivinePower,
                 gameState.Day,
                 gameState.CampusOrder,
@@ -149,6 +166,8 @@ namespace NtingCampus.Gameplay.Core
             EnsureLaunchSelectionApplier();
             EnsurePlayerInventoryController();
             EnsureInventoryTransferService();
+            EnsureEconomyHudController();
+            EnsureHandHudController();
         }
 
         private void OnDestroy()
@@ -162,7 +181,6 @@ namespace NtingCampus.Gameplay.Core
         private void OnValidate()
         {
             initialDay = Mathf.Max(1, initialDay);
-            initialMoney = Mathf.Max(0, initialMoney);
             initialDivinePower = Mathf.Max(0, initialDivinePower);
             initialGameState.InitialDay = initialDay;
             initialGameState.InitialCampusOrder = Mathf.Clamp(initialGameState.InitialCampusOrder, CampusGameState.StatMin, CampusGameState.StatMax);
@@ -211,6 +229,38 @@ namespace NtingCampus.Gameplay.Core
             }
 
             return playerInventoryController;
+        }
+
+        private CampusEconomyHudController EnsureEconomyHudController()
+        {
+            if (economyHudController != null)
+            {
+                return economyHudController;
+            }
+
+            economyHudController = GetComponent<CampusEconomyHudController>();
+            if (economyHudController == null)
+            {
+                economyHudController = gameObject.AddComponent<CampusEconomyHudController>();
+            }
+
+            return economyHudController;
+        }
+
+        private CampusHandHudController EnsureHandHudController()
+        {
+            if (handHudController != null)
+            {
+                return handHudController;
+            }
+
+            handHudController = GetComponent<CampusHandHudController>();
+            if (handHudController == null)
+            {
+                handHudController = gameObject.AddComponent<CampusHandHudController>();
+            }
+
+            return handHudController;
         }
 
         private CampusTimeController EnsureTimeController()
@@ -356,5 +406,22 @@ namespace NtingCampus.Gameplay.Core
 
             return sanctionService;
         }
+
+        private CampusEconomyService EnsureEconomyService()
+        {
+            if (economyService != null)
+            {
+                return economyService;
+            }
+
+            economyService = GetComponent<CampusEconomyService>();
+            if (economyService == null)
+            {
+                economyService = gameObject.AddComponent<CampusEconomyService>();
+            }
+
+            return economyService;
+        }
     }
 }
+

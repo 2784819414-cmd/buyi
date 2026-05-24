@@ -4,7 +4,7 @@ using System.Globalization;
 using System.Text.RegularExpressions;
 using NtingCampus.Gameplay.Characters;
 using NtingCampus.Gameplay.Rooms;
-using NtingCampus.Gameplay.UI;
+using NtingCampus.UI.Runtime.Gameplay;
 using UnityEngine;
 
 namespace NtingCampusMapEditor
@@ -22,6 +22,7 @@ namespace NtingCampusMapEditor
         public readonly string ClassId;
         public readonly int Sleepiness;
         public readonly int Mischief;
+        public readonly int InitialMoney;
         public readonly CampusCharacterTrait[] Traits;
         public readonly Color Color;
 
@@ -37,6 +38,7 @@ namespace NtingCampusMapEditor
             string classId,
             int sleepiness,
             int mischief,
+            int initialMoney,
             CampusCharacterTrait[] traits,
             Color color)
         {
@@ -51,6 +53,7 @@ namespace NtingCampusMapEditor
             ClassId = classId;
             Sleepiness = Mathf.Clamp(sleepiness, 0, 100);
             Mischief = Mathf.Clamp(mischief, 0, 100);
+            InitialMoney = Mathf.Max(NtingCampus.Gameplay.Economy.CampusCharacterEconomyDefaults.UseRoleDefaultMoney, initialMoney);
             Traits = traits != null ? (CampusCharacterTrait[])traits.Clone() : Array.Empty<CampusCharacterTrait>();
             Color = color;
         }
@@ -106,6 +109,9 @@ namespace NtingCampusMapEditor
                 Cell = NormalizeCell(cell),
                 Sleepiness = preset != null ? preset.Sleepiness : 40,
                 Mischief = preset != null ? preset.Mischief : 20,
+                InitialMoney = preset != null
+                    ? preset.InitialMoney
+                    : NtingCampus.Gameplay.Economy.CampusCharacterEconomyDefaults.UseRoleDefaultMoney,
                 Traits = preset != null && preset.Traits != null
                     ? (CampusCharacterTrait[])preset.Traits.Clone()
                     : Array.Empty<CampusCharacterTrait>(),
@@ -341,6 +347,7 @@ namespace NtingCampusMapEditor
                 Cell = ResolveCellForWorldPosition(mapRoot, resolvedFloor, worldPosition),
                 Sleepiness = data.Sleepiness,
                 Mischief = data.Mischief,
+                InitialMoney = data.Money,
                 Traits = CopyTraits(data.Traits),
                 Assignments = data.Assignments != null ? data.Assignments.Clone() : new CampusCharacterAssignmentData()
             };
@@ -700,7 +707,8 @@ namespace NtingCampusMapEditor
                 actor.Sleepiness,
                 actor.Mischief,
                 actor.Traits,
-                actor.StaffDuty);
+                actor.StaffDuty,
+                actor.InitialMoney);
             data.SetAssignments(actor.Assignments);
             return data;
         }

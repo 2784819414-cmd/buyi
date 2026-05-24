@@ -29,7 +29,8 @@ namespace NtingCampus.Gameplay.Characters
         Common = 6,
         RoomType = 7,
         RoomFacility = 8,
-        ServiceStation = 9
+        ServiceStation = 9,
+        DroppedStorageItem = 10
     }
 
     internal enum CampusNpcEcologyActionMode
@@ -47,7 +48,8 @@ namespace NtingCampus.Gameplay.Characters
         {
             public bool EnableSelectionDebug = false;
             public List<FacilityGroupFileRecord> FacilityGroups = new List<FacilityGroupFileRecord>();
-            public List<ActionDefinitionFileRecord> ActionDefinitions = new List<ActionDefinitionFileRecord>();
+            public List<ActionStepFileRecord> ActionSteps = new List<ActionStepFileRecord>();
+            public List<ActionChainFileRecord> ActionChains = new List<ActionChainFileRecord>();
             public List<ScheduleTemplateFileRecord> ScheduleTemplates = new List<ScheduleTemplateFileRecord>();
         }
 
@@ -59,7 +61,7 @@ namespace NtingCampus.Gameplay.Characters
         }
 
         [Serializable]
-        private sealed class ActionDefinitionFileRecord
+        private sealed class ActionStepFileRecord
         {
             public string Id = string.Empty;
             public string TargetKind = string.Empty;
@@ -67,10 +69,20 @@ namespace NtingCampus.Gameplay.Characters
             public string FacilityGroupId = string.Empty;
             public string ActionMode = string.Empty;
             public string ExecuteActionId = string.Empty;
-            public string ActionId = string.Empty;
             public string Payload = string.Empty;
+            public string Owner = string.Empty;
+            public string SourceLocation = string.Empty;
+            public string SourceContainerPrefix = string.Empty;
+            public string DefinitionId = string.Empty;
             public float StopDistance = 0.18f;
             public string[] Requirements = Array.Empty<string>();
+        }
+
+        [Serializable]
+        private sealed class ActionChainFileRecord
+        {
+            public string Id = string.Empty;
+            public string[] Steps = Array.Empty<string>();
         }
 
         [Serializable]
@@ -95,7 +107,7 @@ namespace NtingCampus.Gameplay.Characters
             public string EndClock = string.Empty;
             public string IntentKind = string.Empty;
             public string IntentLabel = string.Empty;
-            public string ActionId = string.Empty;
+            public string ActionChainId = string.Empty;
             public float Score = 0f;
         }
 
@@ -104,8 +116,10 @@ namespace NtingCampus.Gameplay.Characters
             public bool EnableSelectionDebug;
             public readonly Dictionary<string, CampusFacilityType[]> FacilityGroups =
                 new Dictionary<string, CampusFacilityType[]>(StringComparer.OrdinalIgnoreCase);
-            public readonly Dictionary<string, ActionDefinitionRecord> ActionDefinitions =
+            public readonly Dictionary<string, ActionDefinitionRecord> ActionSteps =
                 new Dictionary<string, ActionDefinitionRecord>(StringComparer.OrdinalIgnoreCase);
+            public readonly Dictionary<string, ActionChainRecord> ActionChains =
+                new Dictionary<string, ActionChainRecord>(StringComparer.OrdinalIgnoreCase);
             public readonly List<ScheduleTemplateRecord> ScheduleTemplates = new List<ScheduleTemplateRecord>();
         }
 
@@ -118,8 +132,18 @@ namespace NtingCampus.Gameplay.Characters
             public CampusNpcEcologyActionMode ActionMode = CampusNpcEcologyActionMode.NoOp;
             public string ExecuteActionId = string.Empty;
             public string Payload = string.Empty;
+            public string Owner = string.Empty;
+            public string SourceLocation = string.Empty;
+            public string SourceContainerPrefix = string.Empty;
+            public string DefinitionId = string.Empty;
             public float StopDistance = 0.18f;
             public string[] RequirementIds = Array.Empty<string>();
+        }
+
+        private sealed class ActionChainRecord
+        {
+            public string Id = string.Empty;
+            public string[] StepIds = Array.Empty<string>();
         }
 
         private sealed class ScheduleTemplateRecord
@@ -143,7 +167,7 @@ namespace NtingCampus.Gameplay.Characters
             public int EndMinute;
             public CampusNpcIntentKind IntentKind = CampusNpcIntentKind.Roam;
             public string IntentLabel = string.Empty;
-            public string ActionId = string.Empty;
+            public string ActionChainId = string.Empty;
             public float Score;
         }
 
@@ -162,20 +186,26 @@ namespace NtingCampus.Gameplay.Characters
             public SelectedEntry(
                 ScheduleTemplateRecord template,
                 ScheduleEntryRecord entry,
-                ActionDefinitionRecord actionDefinition,
+                ActionChainRecord actionChain,
+                ActionDefinitionRecord actionStep,
+                int stepIndex,
                 CampusNpcActionOpportunity opportunity,
                 float score)
             {
                 Template = template;
                 Entry = entry;
-                ActionDefinition = actionDefinition;
+                ActionChain = actionChain;
+                ActionStep = actionStep;
+                StepIndex = stepIndex;
                 Opportunity = opportunity;
                 Score = score;
             }
 
             public ScheduleTemplateRecord Template { get; }
             public ScheduleEntryRecord Entry { get; }
-            public ActionDefinitionRecord ActionDefinition { get; }
+            public ActionChainRecord ActionChain { get; }
+            public ActionDefinitionRecord ActionStep { get; }
+            public int StepIndex { get; }
             public CampusNpcActionOpportunity Opportunity { get; }
             public float Score { get; }
         }
@@ -184,7 +214,7 @@ namespace NtingCampus.Gameplay.Characters
             CampusNpcAiRuntime npc,
             CampusGameplayRoom room,
             ScheduleEntryRecord entry,
-            ActionDefinitionRecord actionDefinition,
+            ActionDefinitionRecord actionStep,
             out ResolvedTarget target);
     }
 }

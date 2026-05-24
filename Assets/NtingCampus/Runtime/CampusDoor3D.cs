@@ -10,7 +10,7 @@ namespace NtingCampusMapEditor
     /// </summary>
     [ExecuteAlways]
     [DisallowMultipleComponent]
-    public sealed class CampusDoor3D : MonoBehaviour
+    public sealed class CampusDoor3D : MonoBehaviour, ICampusPlacedObjectPlacementRotationOwner
     {
         private const string GeneratedMeshName = "CampusDoor3D_GeneratedMesh";
 

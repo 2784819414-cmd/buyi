@@ -1,5 +1,5 @@
 using System.Collections.Generic;
-using NtingCampus.Gameplay.UI;
+using NtingCampus.UI.Runtime.Gameplay;
 
 namespace NtingCampus.Gameplay.Core
 {
@@ -29,9 +29,9 @@ namespace NtingCampus.Gameplay.Core
             public string English { get; }
         }
 
-        private static readonly Dictionary<CampusCoreTextId, Entry> Entries = new Dictionary<CampusCoreTextId, Entry>
+        private static readonly Dictionary<CampusCoreTextId, Entry> Entries = new()
         {
-            { CampusCoreTextId.GameplayBootstrapInitialized, new Entry("[系统] {0} 玩法启动完成。金钱={1}，神力={2}，天数={3}，秩序={4}，混乱={5}。", "[System] {0} gameplay bootstrap initialized. Money={1}, DivinePower={2}, Day={3}, Order={4}, Chaos={5}.") },
+            { CampusCoreTextId.GameplayBootstrapInitialized, new Entry("[系统] {0} 玩法启动完成。神力={1}，天数={2}，秩序={3}，混乱={4}。", "[System] {0} gameplay bootstrap initialized. DivinePower={1}, Day={2}, Order={3}, Chaos={4}.") },
             { CampusCoreTextId.EmptyEvent, new Entry("（空事件）", "(empty event)") },
             { CampusCoreTextId.SwitchedStudentBodyMode, new Entry("[系统] 已切换到学生身体模式。", "[System] Switched to student body mode.") },
             { CampusCoreTextId.SwitchedGodViewMode, new Entry("[系统] 已切换到神视角模式。", "[System] Switched to god view mode.") },
@@ -52,17 +52,22 @@ namespace NtingCampus.Gameplay.Core
                 ? resolved
                 : new Entry(id.ToString(), id.ToString());
 
-            return language switch
-            {
-                CampusDisplayLanguage.English => entry.English,
-                CampusDisplayLanguage.Bilingual => entry.Chinese + " / " + entry.English,
-                _ => entry.Chinese
-            };
+            return Resolve(language, entry.Chinese, entry.English);
         }
 
         public static string Format(CampusCoreTextId id, params object[] args)
         {
             return string.Format(Get(id), args);
+        }
+
+        private static string Resolve(CampusDisplayLanguage language, string chinese, string english)
+        {
+            return language switch
+            {
+                CampusDisplayLanguage.English => english,
+                CampusDisplayLanguage.Bilingual => chinese + " / " + english,
+                _ => chinese
+            };
         }
     }
 }

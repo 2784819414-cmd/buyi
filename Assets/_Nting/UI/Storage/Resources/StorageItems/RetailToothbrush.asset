@@ -1,0 +1,37 @@
+﻿%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a6c8594f85b44c40abf87c80a8710110, type: 3}
+  m_Name: RetailToothbrush
+  m_EditorClassIdentifier: 
+  Id: retail_toothbrush
+  DisplayName: "\u7259\u5237"
+  LocalizedDisplayName:
+    chinese: "\u7259\u5237"
+    english: Toothbrush
+  Width: 1
+  Height: 2
+  Weight: 0.04
+  Price: 10
+  Description: "\u5E26\u900F\u660E\u5851\u5C01\u7684\u65B0\u7259\u5237\u3002"
+  LocalizedDescription:
+    chinese: "\u5E26\u900F\u660E\u5851\u5C01\u7684\u65B0\u7259\u5237\u3002"
+    english: A new toothbrush sealed in clear plastic.
+  ThemeColor: {r: 0.65, g: 0.84, b: 0.83, a: 1}
+  Icon: {fileID: 0}
+  IsUsable: 0
+  UseActionId: 
+  ConsumeOnUse: 1
+  UseText: 
+  LocalizedUseText:
+    chinese: 
+    english: 
+

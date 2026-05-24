@@ -1,0 +1,37 @@
+﻿%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a6c8594f85b44c40abf87c80a8710110, type: 3}
+  m_Name: RetailBallpointPen
+  m_EditorClassIdentifier: 
+  Id: retail_ballpoint_pen
+  DisplayName: "\u5706\u73E0\u7B14"
+  LocalizedDisplayName:
+    chinese: "\u5706\u73E0\u7B14"
+    english: Ballpoint Pen
+  Width: 1
+  Height: 2
+  Weight: 0.02
+  Price: 10
+  Description: "\u666E\u901A\u84DD\u8272\u5706\u73E0\u7B14\u3002"
+  LocalizedDescription:
+    chinese: "\u666E\u901A\u84DD\u8272\u5706\u73E0\u7B14\u3002"
+    english: A standard blue ballpoint pen.
+  ThemeColor: {r: 0.29, g: 0.42, b: 0.82, a: 1}
+  Icon: {fileID: 0}
+  IsUsable: 0
+  UseActionId: 
+  ConsumeOnUse: 1
+  UseText: 
+  LocalizedUseText:
+    chinese: 
+    english: 
+

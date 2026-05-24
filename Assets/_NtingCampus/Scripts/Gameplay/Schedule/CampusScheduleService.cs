@@ -1,7 +1,7 @@
-using NtingCampus.Gameplay.Characters;
+﻿using NtingCampus.Gameplay.Characters;
 using NtingCampus.Gameplay.Core;
 using NtingCampus.Gameplay.Rooms;
-using NtingCampus.Gameplay.UI;
+using NtingCampus.UI.Runtime.Gameplay;
 using NtingCampusMapEditor;
 using UnityEngine;
 
@@ -115,30 +115,13 @@ namespace NtingCampus.Gameplay.Schedule
 
         private void SyncRuntimeRoomBinding(CampusCharacterRuntime runtime)
         {
-            if (runtime == null || runtime.Data == null || worldService == null)
+            if (runtime == null || runtime.Data == null)
             {
                 return;
             }
 
-            int floorIndex = ResolveFloorIndex(runtime);
-            CampusGameplayRoom actualRoom = worldService.FindRoomForPosition(floorIndex, runtime.transform.position);
-            runtime.Data.SetCurrentRoom(actualRoom != null ? actualRoom.RoomId : string.Empty);
-        }
-
-        private static int ResolveFloorIndex(CampusCharacterRuntime runtime)
-        {
-            if (runtime == null)
-            {
-                return 1;
-            }
-
-            if (CampusRuntimeGameplayOverlayLoader.TryGetManagedEntity(runtime, out CampusRuntimeGameplayOverlayEntity entity))
-            {
-                return entity.FloorIndex;
-            }
-
-            CampusSceneCharacterDefinition sceneCharacter = runtime.GetComponent<CampusSceneCharacterDefinition>();
-            return sceneCharacter != null ? sceneCharacter.FloorIndex : 1;
+            CampusCharacterCurrentRoomTracker.SyncRuntime(runtime, worldService);
         }
     }
 }
+

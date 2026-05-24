@@ -1,0 +1,37 @@
+﻿%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a6c8594f85b44c40abf87c80a8710110, type: 3}
+  m_Name: RetailInstantMisoSoup
+  m_EditorClassIdentifier: 
+  Id: retail_instant_miso_soup
+  DisplayName: "\u901F\u98DF\u5473\u564C\u6C64"
+  LocalizedDisplayName:
+    chinese: "\u901F\u98DF\u5473\u564C\u6C64"
+    english: Instant Miso Soup
+  Width: 1
+  Height: 1
+  Weight: 0.05
+  Price: 10
+  Description: "\u6241\u5E73\u5C0F\u5305\u7684\u901F\u98DF\u5473\u564C\u6C64\u6599\u3002"
+  LocalizedDescription:
+    chinese: "\u6241\u5E73\u5C0F\u5305\u7684\u901F\u98DF\u5473\u564C\u6C64\u6599\u3002"
+    english: A flat instant miso soup sachet.
+  ThemeColor: {r: 0.72, g: 0.53, b: 0.37, a: 1}
+  Icon: {fileID: 0}
+  IsUsable: 0
+  UseActionId: 
+  ConsumeOnUse: 1
+  UseText: 
+  LocalizedUseText:
+    chinese: 
+    english: 
+

@@ -1,0 +1,37 @@
+﻿%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a6c8594f85b44c40abf87c80a8710110, type: 3}
+  m_Name: RetailHairTiePack
+  m_EditorClassIdentifier: 
+  Id: retail_hair_tie_pack
+  DisplayName: "\u53D1\u5708\u5305"
+  LocalizedDisplayName:
+    chinese: "\u53D1\u5708\u5305"
+    english: Hair Tie Pack
+  Width: 1
+  Height: 1
+  Weight: 0.03
+  Price: 10
+  Description: "\u51E0\u6839\u53D1\u5708\u88C5\u5728\u900F\u660E\u5C0F\u888B\u91CC\u3002"
+  LocalizedDescription:
+    chinese: "\u51E0\u6839\u53D1\u5708\u88C5\u5728\u900F\u660E\u5C0F\u888B\u91CC\u3002"
+    english: A few hair ties packed in a clear mini bag.
+  ThemeColor: {r: 0.7, g: 0.45, b: 0.62, a: 1}
+  Icon: {fileID: 0}
+  IsUsable: 0
+  UseActionId: 
+  ConsumeOnUse: 1
+  UseText: 
+  LocalizedUseText:
+    chinese: 
+    english: 
+

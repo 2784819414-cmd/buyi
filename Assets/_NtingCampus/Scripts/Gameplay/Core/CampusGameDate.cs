@@ -1,12 +1,9 @@
 using System;
-using NtingCampus.Gameplay.UI;
+using NtingCampus.UI.Runtime.Gameplay;
 using UnityEngine;
 
 namespace NtingCampus.Gameplay.Core
 {
-    /// <summary>
-    /// 可序列化的游戏日期，只保存年月日，运行时再转换为 DateTime 计算星期。
-    /// </summary>
     [Serializable]
     public struct CampusGameDate
     {
@@ -14,9 +11,6 @@ namespace NtingCampus.Gameplay.Core
         [SerializeField, Range(1, 12)] private int month;
         [SerializeField, Range(1, 31)] private int day;
 
-        /// <summary>
-        /// 创建一个游戏日期。
-        /// </summary>
         public CampusGameDate(int year, int month, int day)
         {
             this.year = 2021;
@@ -25,29 +19,12 @@ namespace NtingCampus.Gameplay.Core
             Set(year, month, day);
         }
 
-        /// <summary>
-        /// 默认开局日期。
-        /// </summary>
-        public static CampusGameDate DefaultStartDate => new CampusGameDate(2021, 9, 1);
+        public static CampusGameDate DefaultStartDate => new(2021, 9, 1);
 
-        /// <summary>
-        /// 年。
-        /// </summary>
         public int Year => year;
-
-        /// <summary>
-        /// 月。
-        /// </summary>
         public int Month => month;
-
-        /// <summary>
-        /// 日。
-        /// </summary>
         public int Day => day;
 
-        /// <summary>
-        /// 设置年月日，并修正到合法日期范围。
-        /// </summary>
         public void Set(int newYear, int newMonth, int newDay)
         {
             year = Mathf.Clamp(newYear, 1, 9999);
@@ -55,9 +32,6 @@ namespace NtingCampus.Gameplay.Core
             day = Mathf.Clamp(newDay, 1, DateTime.DaysInMonth(year, month));
         }
 
-        /// <summary>
-        /// 增加指定天数。
-        /// </summary>
         public void AddDays(int dayCount)
         {
             DateTime dateTime = ToDateTime().AddDays(dayCount);
@@ -66,9 +40,6 @@ namespace NtingCampus.Gameplay.Core
             day = dateTime.Day;
         }
 
-        /// <summary>
-        /// 尝试转换为运行时 DateTime。
-        /// </summary>
         public bool TryToDateTime(out DateTime dateTime)
         {
             try
@@ -83,17 +54,11 @@ namespace NtingCampus.Gameplay.Core
             }
         }
 
-        /// <summary>
-        /// 转换为运行时 DateTime。
-        /// </summary>
         public DateTime ToDateTime()
         {
             return TryToDateTime(out DateTime dateTime) ? dateTime : new DateTime(2021, 9, 1);
         }
 
-        /// <summary>
-        /// 返回当前语言的日期显示文本。
-        /// </summary>
         public string ToDisplayString()
         {
             return ToDisplayString(CampusLanguageState.CurrentLanguage);
@@ -103,18 +68,10 @@ namespace NtingCampus.Gameplay.Core
         {
             DateTime dateTime = ToDateTime();
             string chinese = dateTime.Year + "年" + dateTime.Month + "月" + dateTime.Day + "日 " + GetChineseWeekday(dateTime.DayOfWeek);
-            string english = dateTime.ToString("yyyy-MM-dd") + " " + GetEnglishWeekday(dateTime.DayOfWeek);
-            return language switch
-            {
-                CampusDisplayLanguage.English => english,
-                CampusDisplayLanguage.Bilingual => chinese + " / " + english,
-                _ => chinese
-            };
+            string english = dateTime.ToString("yyyy-MM-dd") + " " + dateTime.DayOfWeek;
+            return Resolve(language, chinese, english);
         }
 
-        /// <summary>
-        /// 返回中文日期显示文本。
-        /// </summary>
         public override string ToString()
         {
             return ToDisplayString();
@@ -122,39 +79,26 @@ namespace NtingCampus.Gameplay.Core
 
         private static string GetChineseWeekday(DayOfWeek dayOfWeek)
         {
-            switch (dayOfWeek)
-            {
-                case DayOfWeek.Monday:
-                    return "星期一";
-                case DayOfWeek.Tuesday:
-                    return "星期二";
-                case DayOfWeek.Wednesday:
-                    return "星期三";
-                case DayOfWeek.Thursday:
-                    return "星期四";
-                case DayOfWeek.Friday:
-                    return "星期五";
-                case DayOfWeek.Saturday:
-                    return "星期六";
-                case DayOfWeek.Sunday:
-                    return "星期日";
-                default:
-                    return "星期三";
-            }
-        }
-
-        private static string GetEnglishWeekday(DayOfWeek dayOfWeek)
-        {
             return dayOfWeek switch
             {
-                DayOfWeek.Monday => "Monday",
-                DayOfWeek.Tuesday => "Tuesday",
-                DayOfWeek.Wednesday => "Wednesday",
-                DayOfWeek.Thursday => "Thursday",
-                DayOfWeek.Friday => "Friday",
-                DayOfWeek.Saturday => "Saturday",
-                DayOfWeek.Sunday => "Sunday",
-                _ => "Wednesday"
+                DayOfWeek.Monday => "星期一",
+                DayOfWeek.Tuesday => "星期二",
+                DayOfWeek.Wednesday => "星期三",
+                DayOfWeek.Thursday => "星期四",
+                DayOfWeek.Friday => "星期五",
+                DayOfWeek.Saturday => "星期六",
+                DayOfWeek.Sunday => "星期日",
+                _ => "星期一"
+            };
+        }
+
+        private static string Resolve(CampusDisplayLanguage language, string chinese, string english)
+        {
+            return language switch
+            {
+                CampusDisplayLanguage.English => english,
+                CampusDisplayLanguage.Bilingual => chinese + " / " + english,
+                _ => chinese
             };
         }
     }

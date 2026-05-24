@@ -2836,15 +2836,7 @@ namespace NtingCampusMapEditor
                     }
 
                     placed.Rotation90 = objectData.Rotation90;
-                    if (placed.AllowRotation)
-                    {
-                        placed.ApplyRotationVisualState();
-                    }
-                    else
-                    {
-                        instance.transform.rotation = Quaternion.Euler(0f, 0f, objectData.Rotation90 * 90f);
-                        placed.ApplyVisualScaleState();
-                    }
+                    placed.ApplyRotationVisualState();
                     if (!HasSerializedCell(placed.Cell, objectData.Position))
                     {
                         instance.transform.position = objectData.Position;

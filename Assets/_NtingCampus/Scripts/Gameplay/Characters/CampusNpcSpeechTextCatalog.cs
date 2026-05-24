@@ -1,5 +1,5 @@
 using System.Collections.Generic;
-using NtingCampus.Gameplay.UI;
+using NtingCampus.UI.Runtime.Gameplay;
 
 namespace NtingCampus.Gameplay.Characters
 {
@@ -24,13 +24,12 @@ namespace NtingCampus.Gameplay.Characters
             public string English { get; }
         }
 
-        private static readonly Dictionary<CampusNpcSpeechTextId, Entry> Entries =
-            new Dictionary<CampusNpcSpeechTextId, Entry>
-            {
-                { CampusNpcSpeechTextId.GenericScheduledBusy, new Entry("我现在有安排。", "I have something scheduled right now.") },
-                { CampusNpcSpeechTextId.GenericHeadingToTask, new Entry("我先去做当前的事。", "I am heading to the current task.") },
-                { CampusNpcSpeechTextId.GenericHeadingOut, new Entry("我先过去。", "I am heading over.") }
-            };
+        private static readonly Dictionary<CampusNpcSpeechTextId, Entry> Entries = new()
+        {
+            { CampusNpcSpeechTextId.GenericScheduledBusy, new Entry("我现在有安排。", "I have something scheduled right now.") },
+            { CampusNpcSpeechTextId.GenericHeadingToTask, new Entry("我先去做当前的事。", "I am heading to the current task.") },
+            { CampusNpcSpeechTextId.GenericHeadingOut, new Entry("我先过去。", "I am heading over.") }
+        };
 
         public static string Get(CampusNpcSpeechTextId id)
         {
@@ -38,11 +37,16 @@ namespace NtingCampus.Gameplay.Characters
                 ? resolved
                 : new Entry(id.ToString(), id.ToString());
 
-            return CampusLanguageState.CurrentLanguage switch
+            return Resolve(CampusLanguageState.CurrentLanguage, entry.Chinese, entry.English);
+        }
+
+        private static string Resolve(CampusDisplayLanguage language, string chinese, string english)
+        {
+            return language switch
             {
-                CampusDisplayLanguage.English => entry.English,
-                CampusDisplayLanguage.Bilingual => entry.Chinese + " / " + entry.English,
-                _ => entry.Chinese
+                CampusDisplayLanguage.English => english,
+                CampusDisplayLanguage.Bilingual => chinese + " / " + english,
+                _ => chinese
             };
         }
     }

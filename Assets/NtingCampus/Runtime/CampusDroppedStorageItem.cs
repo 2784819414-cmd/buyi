@@ -2,7 +2,7 @@ using Nting.Storage;
 using NtingCampus.Gameplay.Characters;
 using NtingCampus.Gameplay.Core;
 using NtingCampus.Gameplay.Inventory;
-using NtingCampus.Gameplay.UI;
+using NtingCampus.UI.Runtime.Gameplay;
 using UnityEngine;
 
 namespace NtingCampusMapEditor
@@ -17,6 +17,7 @@ namespace NtingCampusMapEditor
         public int Width = 1;
         public int Height = 1;
         public float Weight;
+        public int Price;
         [TextArea]
         public string Description;
         public CampusLocalizedText LocalizedDescription;
@@ -105,22 +106,19 @@ namespace NtingCampusMapEditor
 
         private bool ShouldMarkPickupIllegal(CampusCharacterRuntime actorRuntime)
         {
-            if (LegalState == StorageItemLegalState.Stolen || LegalState == StorageItemLegalState.Suspicious)
-            {
-                return false;
-            }
-
-            if (string.IsNullOrWhiteSpace(OwnerId) || actorRuntime == null)
-            {
-                return false;
-            }
-
-            return !string.Equals(OwnerId.Trim(), actorRuntime.CharacterId, System.StringComparison.OrdinalIgnoreCase);
+            CampusCharacterCurrentRoomTracker.SyncRuntime(actorRuntime);
+            return CampusProtectedTransferState.ShouldTreatDroppedPickupAsIllegal(
+                LegalState,
+                StolenDuringSession,
+                SourceRoomId,
+                OwnerId,
+                CampusProtectedTransferState.ResolveActorCurrentRoomId(actorRuntime),
+                actorRuntime != null ? actorRuntime.CharacterId : string.Empty);
         }
 
         private static CampusCharacterRuntime ResolveActorRuntime(GameObject actor)
         {
-            return actor != null ? actor.GetComponentInParent<CampusCharacterRuntime>() : null;
+            return CampusCharacterActionUtility.ResolveActorRuntime(actor);
         }
 
         private StorageItemModel BuildStorageItem(StorageMemory memory)
@@ -148,6 +146,7 @@ namespace NtingCampusMapEditor
             item.Width = Mathf.Max(1, Width);
             item.Height = Mathf.Max(1, Height);
             item.Weight = Weight;
+            item.Price = Mathf.Max(0, Price);
             item.Description = Description;
             item.LocalizedDescription = LocalizedDescription;
             item.ThemeColor = ThemeColor;
@@ -164,6 +163,7 @@ namespace NtingCampusMapEditor
             item.StolenDuringSession = StolenDuringSession;
             item.SuspicionRisk = SuspicionRisk;
             item.AllowTaking = !item.IsStolenEvidence;
+            item.Icon = StorageItemIconUtility.Resolve(item);
             return item;
         }
 

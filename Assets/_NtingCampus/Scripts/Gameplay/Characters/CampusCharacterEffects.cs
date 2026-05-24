@@ -39,7 +39,7 @@ namespace NtingCampus.Gameplay.Characters
             }
 
             actor.transform.position = room.WorldCenter + offset;
-            actor.Data.SetCurrentRoom(room.RoomId);
+            CampusCharacterCurrentRoomTracker.SyncRuntime(actor);
             return true;
         }
     }

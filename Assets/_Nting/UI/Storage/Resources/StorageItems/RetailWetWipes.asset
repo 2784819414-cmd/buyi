@@ -1,0 +1,37 @@
+﻿%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a6c8594f85b44c40abf87c80a8710110, type: 3}
+  m_Name: RetailWetWipes
+  m_EditorClassIdentifier: 
+  Id: retail_wet_wipes
+  DisplayName: "\u6E7F\u5DFE\u5305"
+  LocalizedDisplayName:
+    chinese: "\u6E7F\u5DFE\u5305"
+    english: Wet Wipes
+  Width: 2
+  Height: 1
+  Weight: 0.11
+  Price: 10
+  Description: "\u4FBF\u643A\u6E7F\u5DFE\uFF0C\u5C01\u53E3\u8D34\u5F88\u5BBD\u3002"
+  LocalizedDescription:
+    chinese: "\u4FBF\u643A\u6E7F\u5DFE\uFF0C\u5C01\u53E3\u8D34\u5F88\u5BBD\u3002"
+    english: Portable wet wipes with a wide seal sticker.
+  ThemeColor: {r: 0.55, g: 0.78, b: 0.84, a: 1}
+  Icon: {fileID: 0}
+  IsUsable: 0
+  UseActionId: 
+  ConsumeOnUse: 1
+  UseText: 
+  LocalizedUseText:
+    chinese: 
+    english: 
+

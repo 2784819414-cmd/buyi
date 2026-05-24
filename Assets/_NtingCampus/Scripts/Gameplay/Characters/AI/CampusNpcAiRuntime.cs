@@ -31,6 +31,9 @@ namespace NtingCampus.Gameplay.Characters
         private float nextDecisionTime = -1f;
         private float nextSenseTime;
         private int senseFrameSlot;
+        private string activeActionChainEntryId = string.Empty;
+        private string activeActionChainId = string.Empty;
+        private int activeActionChainStepIndex;
 
         public readonly CampusNpcNavigatorHandle Navigator = new CampusNpcNavigatorHandle();
 
@@ -113,8 +116,68 @@ namespace NtingCampus.Gameplay.Characters
         {
             Segment = currentSegment;
             roomTargets.Clear();
+            ClearActionChainProgress();
             nextSenseTime = UnityEngine.Time.time + ResolveSenseOffset(PersonalSeed);
             RequestDecisionSoon();
+        }
+
+        public bool IsActiveActionChain(string entryId, string actionChainId)
+        {
+            return string.Equals(activeActionChainEntryId, NormalizeId(entryId), StringComparison.OrdinalIgnoreCase) &&
+                   string.Equals(activeActionChainId, NormalizeId(actionChainId), StringComparison.OrdinalIgnoreCase);
+        }
+
+        public bool TryGetActiveActionChainStep(string entryId, string actionChainId, out int stepIndex)
+        {
+            stepIndex = activeActionChainStepIndex;
+            return IsActiveActionChain(entryId, actionChainId);
+        }
+
+        public void BeginActionChainStep(string entryId, string actionChainId, int stepIndex)
+        {
+            activeActionChainEntryId = NormalizeId(entryId);
+            activeActionChainId = NormalizeId(actionChainId);
+            activeActionChainStepIndex = Mathf.Max(0, stepIndex);
+        }
+
+        public void CompleteActionChainStep(CampusNpcActionOpportunity opportunity, bool succeeded)
+        {
+            if (opportunity == null || string.IsNullOrEmpty(opportunity.ActionChainId))
+            {
+                return;
+            }
+
+            if (!IsActiveActionChain(opportunity.ScheduleEntryId, opportunity.ActionChainId))
+            {
+                return;
+            }
+
+            if (!opportunity.AdvancesActionChain)
+            {
+                return;
+            }
+
+            if (!succeeded)
+            {
+                ClearActionChainProgress();
+                return;
+            }
+
+            int nextStepIndex = opportunity.ChainStepIndex + 1;
+            if (nextStepIndex >= opportunity.ChainStepCount)
+            {
+                ClearActionChainProgress();
+                return;
+            }
+
+            activeActionChainStepIndex = nextStepIndex;
+        }
+
+        public void ClearActionChainProgress()
+        {
+            activeActionChainEntryId = string.Empty;
+            activeActionChainId = string.Empty;
+            activeActionChainStepIndex = 0;
         }
 
         public void Speak(string line, float durationSeconds, bool writeToLog)
@@ -247,16 +310,12 @@ namespace NtingCampus.Gameplay.Characters
 
         private void UpdateKnownRoom()
         {
-            if (runtime == null || runtime.Data == null || worldService == null)
+            if (runtime == null || runtime.Data == null)
             {
                 return;
             }
 
-            CampusGameplayRoom room = worldService.FindRoomForRuntime(runtime);
-            if (room != null)
-            {
-                runtime.Data.SetCurrentRoom(room.RoomId);
-            }
+            CampusCharacterCurrentRoomTracker.SyncRuntime(runtime, worldService);
         }
 
         private void EnsureFacingState()
@@ -308,6 +367,11 @@ namespace NtingCampus.Gameplay.Characters
         private static float ResolveDecisionIntervalOffset(int seed)
         {
             return Mathf.Lerp(0.02f, 0.19f, CampusNpcStableIds.PositiveModulo(seed * 17, 100) / 99f);
+        }
+
+        private static string NormalizeId(string value)
+        {
+            return string.IsNullOrWhiteSpace(value) ? string.Empty : value.Trim();
         }
 
         private void SpeakChangedIntentLine(

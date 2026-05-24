@@ -9,30 +9,28 @@ namespace NtingCampus.Gameplay.Inventory
     public sealed class CampusInventoryContextResolver
     {
         private readonly CampusWorldService worldService;
-        private readonly CampusRosterService rosterService;
 
         public CampusInventoryContextResolver(CampusGameBootstrap bootstrap)
         {
             worldService = bootstrap != null ? bootstrap.WorldService : null;
-            rosterService = bootstrap != null ? bootstrap.RosterService : null;
         }
 
         public StorageTransferContext Normalize(StorageTransferContext context)
         {
             context = context ?? new StorageTransferContext();
-            if (string.IsNullOrWhiteSpace(context.ActorId))
+            CampusCharacterRuntime runtime = ResolveActorRuntime(context);
+            CampusCharacterCurrentRoomTracker.SyncRuntime(runtime, worldService);
+
+            if (string.IsNullOrWhiteSpace(context.ActorId) &&
+                runtime != null &&
+                !string.IsNullOrWhiteSpace(runtime.CharacterId))
             {
-                CampusCharacterRuntime runtime = ResolveActorRuntime(context);
-                context.ActorId = runtime != null ? runtime.CharacterId : "player";
+                context.ActorId = runtime.CharacterId.Trim();
             }
 
-            if (string.IsNullOrWhiteSpace(context.RoomId))
+            if (string.IsNullOrWhiteSpace(context.RoomId) && runtime != null)
             {
-                CampusCharacterRuntime runtime = ResolveActorRuntime(context);
-                CampusGameplayRoom room = runtime != null && worldService != null
-                    ? worldService.FindRoomForRuntime(runtime)
-                    : null;
-                context.RoomId = room != null ? room.RoomId : string.Empty;
+                context.RoomId = CampusProtectedTransferState.ResolveActorCurrentRoomId(runtime);
             }
 
             return context;
@@ -40,16 +38,9 @@ namespace NtingCampus.Gameplay.Inventory
 
         public CampusCharacterRuntime ResolveActorRuntime(StorageTransferContext context)
         {
-            if (context != null && context.Actor != null)
-            {
-                CampusCharacterRuntime runtime = context.Actor.GetComponentInParent<CampusCharacterRuntime>();
-                if (runtime != null)
-                {
-                    return runtime;
-                }
-            }
-
-            return rosterService != null ? rosterService.PlayerRuntime : null;
+            return context != null
+                ? CampusCharacterActionUtility.ResolveActorRuntime(context.Actor)
+                : null;
         }
 
         public string ResolveActorId(StorageTransferContext context)
@@ -62,7 +53,7 @@ namespace NtingCampus.Gameplay.Inventory
             CampusCharacterRuntime runtime = ResolveActorRuntime(context);
             return runtime != null && !string.IsNullOrWhiteSpace(runtime.CharacterId)
                 ? runtime.CharacterId
-                : "player";
+                : string.Empty;
         }
 
         public Vector3 ResolveActorWorldPosition(StorageTransferContext context)
@@ -91,8 +82,8 @@ namespace NtingCampus.Gameplay.Inventory
             }
 
             CampusCharacterRuntime runtime = ResolveActorRuntime(context);
-            CampusGameplayRoom room = runtime != null && worldService != null ? worldService.FindRoomForRuntime(runtime) : null;
-            return room != null ? room.RoomId : string.Empty;
+            CampusCharacterCurrentRoomTracker.SyncRuntime(runtime, worldService);
+            return CampusProtectedTransferState.ResolveActorCurrentRoomId(runtime);
         }
 
         public static string ResolveOwnerId(

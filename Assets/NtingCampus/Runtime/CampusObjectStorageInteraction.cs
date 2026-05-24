@@ -1,8 +1,10 @@
 using Nting.Storage;
 using NtingCampus.Gameplay.Characters;
 using NtingCampus.Gameplay.Core;
+using NtingCampus.Gameplay.Inventory;
+using NtingCampus.Gameplay.Retail;
 using NtingCampus.Gameplay.Rooms;
-using NtingCampus.Gameplay.UI;
+using NtingCampus.UI.Runtime.Gameplay;
 using UnityEngine;
 
 namespace NtingCampusMapEditor
@@ -17,8 +19,20 @@ namespace NtingCampusMapEditor
             }
 
             StorageMemory memory = StorageMemory.GetOrCreate();
+            if (memory == null)
+            {
+                return false;
+            }
+
             CampusCharacterRuntime actorRuntime = ResolveActorRuntime(actor);
             CampusPlacedObject placedObject = source.GetComponent<CampusPlacedObject>();
+            CampusRetailShelf retailShelf = source.GetComponent<CampusRetailShelf>() ??
+                                            source.GetComponentInParent<CampusRetailShelf>();
+            if (retailShelf != null && retailShelf.ShelfMode == CampusRetailShelfMode.DirectPickupDisplay)
+            {
+                return false;
+            }
+
             string containerId = ResolveStorageContainerId(source, placedObject, payload);
             Vector2Int storageSize = ResolveObjectStorageSize(placedObject);
             StorageContainerModel container = memory.GetOrCreateContainer(
@@ -39,19 +53,7 @@ namespace NtingCampusMapEditor
 
         private static CampusCharacterRuntime ResolveActorRuntime(GameObject actor)
         {
-            if (actor != null)
-            {
-                CampusCharacterRuntime actorRuntime = actor.GetComponentInParent<CampusCharacterRuntime>();
-                if (actorRuntime != null)
-                {
-                    return actorRuntime;
-                }
-            }
-
-            CampusGameBootstrap bootstrap = CampusGameBootstrap.Instance;
-            return bootstrap != null && bootstrap.RosterService != null
-                ? bootstrap.RosterService.PlayerRuntime
-                : null;
+            return CampusCharacterActionUtility.ResolveActorRuntime(actor);
         }
 
         private static void ConfigureObjectStorageContainer(
@@ -65,6 +67,23 @@ namespace NtingCampusMapEditor
             }
 
             CampusGameplayRoom room = ResolveGameplayRoom(source, placedObject);
+            CampusProtectedStockContainer stockContainer = source.GetComponent<CampusProtectedStockContainer>() ??
+                                                           source.GetComponentInParent<CampusProtectedStockContainer>();
+            if (stockContainer != null &&
+                stockContainer.ConfigureContainer(StorageMemory.GetOrCreate(), placedObject, container))
+            {
+                return;
+            }
+
+            CampusRetailShelf retailShelf = source.GetComponent<CampusRetailShelf>() ??
+                                            source.GetComponentInParent<CampusRetailShelf>();
+            StorageMemory memory = StorageMemory.GetOrCreate();
+            if (retailShelf != null &&
+                retailShelf.ConfigureContainer(memory, placedObject, container))
+            {
+                return;
+            }
+
             container.AccessPolicy = StorageContainerAccessPolicy.ProtectedPublic;
             container.OwnerId = placedObject != null && !string.IsNullOrWhiteSpace(placedObject.ObjectId)
                 ? placedObject.ObjectId
@@ -133,6 +152,15 @@ namespace NtingCampusMapEditor
 
         private static string ResolveStorageContainerId(Component source, CampusPlacedObject placedObject, string payload)
         {
+            CampusProtectedStockContainer stockContainer = source != null
+                ? source.GetComponent<CampusProtectedStockContainer>() ??
+                  source.GetComponentInParent<CampusProtectedStockContainer>()
+                : null;
+            if (stockContainer != null)
+            {
+                return stockContainer.ResolveStableContainerId(placedObject);
+            }
+
             if (!string.IsNullOrWhiteSpace(payload))
             {
                 return "object_storage_" + SanitizeStorageId(payload);

@@ -1,5 +1,5 @@
 using System.Collections.Generic;
-using NtingCampus.Gameplay.UI;
+using NtingCampus.UI.Runtime.Gameplay;
 
 namespace NtingCampus.Gameplay.Rooms
 {
@@ -26,15 +26,14 @@ namespace NtingCampus.Gameplay.Rooms
             public string English { get; }
         }
 
-        private static readonly Dictionary<CampusFacilityValidationTextId, Entry> Entries =
-            new Dictionary<CampusFacilityValidationTextId, Entry>
-            {
-                { CampusFacilityValidationTextId.LegacyInference, new Entry("设施类型 {0} 来自旧版物体名/显示名推断。请给源物体设置显式 TypeId，或添加 CampusGameplayFacilityMarker。{1}", "Facility type {0} came from legacy object/display-name inference. Set an explicit TypeId on the source object or add a CampusGameplayFacilityMarker. {1}") },
-                { CampusFacilityValidationTextId.StorageFallback, new Entry("设施类型 Storage 来自储物容器 fallback。正常玩法数据应设置显式 TypeId=Storage。{0}", "Facility type Storage came from the storage-container fallback. Normal gameplay data should set explicit TypeId=Storage. {0}") },
-                { CampusFacilityValidationTextId.MissingTypeId, new Entry("设施缺少显式 TypeId，当前不能作为明确玩法设施。{0}", "Facility is missing an explicit TypeId and cannot act as a clear gameplay facility. {0}") },
-                { CampusFacilityValidationTextId.UnknownTypeId, new Entry("设施 TypeId 无法解析。请使用 CampusFacilityType 枚举值或 FacilityRules TypeIds。{0}", "Facility TypeId could not be resolved. Use a CampusFacilityType enum value or a FacilityRules TypeIds entry. {0}") },
-                { CampusFacilityValidationTextId.UnknownTypeSource, new Entry("设施类型来源未知。请设置显式 TypeId 或 CampusGameplayFacilityMarker。", "Facility type source is unknown. Set an explicit TypeId or CampusGameplayFacilityMarker.") }
-            };
+        private static readonly Dictionary<CampusFacilityValidationTextId, Entry> Entries = new()
+        {
+            { CampusFacilityValidationTextId.LegacyInference, new Entry("设施类型 {0} 来自旧版物体名或显示名推断。请给源物体设置显式 TypeId，或添加 CampusGameplayFacilityMarker。{1}", "Facility type {0} came from legacy object or display-name inference. Set an explicit TypeId on the source object or add a CampusGameplayFacilityMarker. {1}") },
+            { CampusFacilityValidationTextId.StorageFallback, new Entry("设施类型 Storage 来自储物容器 fallback。正常玩法数据应设置显式 TypeId=Storage。{0}", "Facility type Storage came from the storage-container fallback. Normal gameplay data should set explicit TypeId=Storage. {0}") },
+            { CampusFacilityValidationTextId.MissingTypeId, new Entry("设施缺少显式 TypeId，当前不能作为明确玩法设施。{0}", "Facility is missing an explicit TypeId and cannot act as a clear gameplay facility. {0}") },
+            { CampusFacilityValidationTextId.UnknownTypeId, new Entry("设施 TypeId 无法解析。请使用 CampusFacilityType 枚举值或 FacilityRules TypeIds。{0}", "Facility TypeId could not be resolved. Use a CampusFacilityType enum value or a FacilityRules TypeIds entry. {0}") },
+            { CampusFacilityValidationTextId.UnknownTypeSource, new Entry("设施类型来源未知。请设置显式 TypeId 或 CampusGameplayFacilityMarker。", "Facility type source is unknown. Set an explicit TypeId or CampusGameplayFacilityMarker.") }
+        };
 
         public static string Format(CampusFacilityValidationTextId id, params object[] args)
         {
@@ -47,15 +46,17 @@ namespace NtingCampus.Gameplay.Rooms
                 ? resolved
                 : new Entry(id.ToString(), id.ToString());
 
-            switch (CampusLanguageState.CurrentLanguage)
+            return Resolve(CampusLanguageState.CurrentLanguage, entry.Chinese, entry.English);
+        }
+
+        private static string Resolve(CampusDisplayLanguage language, string chinese, string english)
+        {
+            return language switch
             {
-                case CampusDisplayLanguage.English:
-                    return entry.English;
-                case CampusDisplayLanguage.Bilingual:
-                    return entry.Chinese + " / " + entry.English;
-                default:
-                    return entry.Chinese;
-            }
+                CampusDisplayLanguage.English => english,
+                CampusDisplayLanguage.Bilingual => chinese + " / " + english,
+                _ => chinese
+            };
         }
     }
 }

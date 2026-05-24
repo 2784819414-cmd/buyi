@@ -36,6 +36,7 @@ namespace NtingCampusMapEditor
                 "class_1",
                 40,
                 20,
+                60,
                 new[] { CampusCharacterTrait.Ordinary },
                 new Color(0.38f, 0.56f, 0.83f, 1f)),
             new CampusRuntimeGameplayActorPreset(
@@ -50,6 +51,7 @@ namespace NtingCampusMapEditor
                 "class_1",
                 28,
                 68,
+                45,
                 new[] { CampusCharacterTrait.Troublemaker },
                 new Color(0.62f, 0.42f, 0.66f, 1f)),
             new CampusRuntimeGameplayActorPreset(
@@ -64,6 +66,7 @@ namespace NtingCampusMapEditor
                 "class_1",
                 24,
                 12,
+                80,
                 new[] { CampusCharacterTrait.GoodStudent },
                 new Color(0.42f, 0.62f, 0.48f, 1f)),
             new CampusRuntimeGameplayActorPreset(
@@ -78,6 +81,7 @@ namespace NtingCampusMapEditor
                 "class_1",
                 10,
                 0,
+                160,
                 new[] { CampusCharacterTrait.Ordinary },
                 new Color(0.48f, 0.48f, 0.52f, 1f)),
             new CampusRuntimeGameplayActorPreset(
@@ -92,6 +96,7 @@ namespace NtingCampusMapEditor
                 "class_1",
                 10,
                 0,
+                160,
                 new[] { CampusCharacterTrait.Ordinary },
                 new Color(0.42f, 0.42f, 0.48f, 1f)),
             new CampusRuntimeGameplayActorPreset(
@@ -106,6 +111,7 @@ namespace NtingCampusMapEditor
                 string.Empty,
                 10,
                 0,
+                120,
                 new[] { CampusCharacterTrait.Ordinary },
                 new Color(0.65f, 0.54f, 0.32f, 1f))
         };
@@ -156,6 +162,7 @@ namespace NtingCampusMapEditor
                         string.IsNullOrWhiteSpace(record.ClassId) ? string.Empty : record.ClassId.Trim(),
                         record.Sleepiness,
                         record.Mischief,
+                        record.InitialMoney,
                         ParseTraits(record.Traits),
                         CampusRuntimeModPresetStore.ParseColor(record.Color, new Color(0.5f, 0.6f, 0.75f, 1f))));
                 }
@@ -224,6 +231,7 @@ namespace NtingCampusMapEditor
             public string ClassId = string.Empty;
             public int Sleepiness = 40;
             public int Mischief = 20;
+            public int InitialMoney = NtingCampus.Gameplay.Economy.CampusCharacterEconomyDefaults.UseRoleDefaultMoney;
             public string[] Traits = Array.Empty<string>();
             public string Color = string.Empty;
         }

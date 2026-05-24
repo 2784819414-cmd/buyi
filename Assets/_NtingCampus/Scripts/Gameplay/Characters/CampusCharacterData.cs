@@ -1,6 +1,7 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
-using NtingCampus.Gameplay.UI;
+using NtingCampus.Gameplay.Economy;
+using NtingCampus.UI.Runtime.Gameplay;
 using UnityEngine;
 
 namespace NtingCampus.Gameplay.Characters
@@ -26,6 +27,7 @@ namespace NtingCampus.Gameplay.Characters
         [SerializeField, Min(0)] private int masteryMath;
         [SerializeField, Min(0)] private int warningCountToday;
         [SerializeField] private bool ecologyInitialized;
+        [SerializeField] private CampusCharacterEconomyState economy = new CampusCharacterEconomyState();
         [SerializeField, Range(0, 100)] private int mood = 50;
         [SerializeField, Range(0, 100)] private int socialEnergy = 50;
         [SerializeField] private List<CampusCharacterRelationship> relationships = new List<CampusCharacterRelationship>();
@@ -51,6 +53,8 @@ namespace NtingCampus.Gameplay.Characters
         public int MasteryWorldLanguage => masteryWorldLanguage;
         public int MasteryMath => masteryMath;
         public int WarningCountToday => warningCountToday;
+        public CampusCharacterEconomyState Economy => economy ?? (economy = new CampusCharacterEconomyState());
+        public int Money => Economy.Money;
         public int Mood => mood;
         public int SocialEnergy => socialEnergy;
         public IReadOnlyList<CampusCharacterRelationship> Relationships => relationships;
@@ -71,7 +75,8 @@ namespace NtingCampus.Gameplay.Characters
             int initialSleepiness,
             int initialMischief,
             IEnumerable<CampusCharacterTrait> characterTraits,
-            CampusStaffDuty staffDuties = CampusStaffDuty.None)
+            CampusStaffDuty staffDuties = CampusStaffDuty.None,
+            int initialMoney = CampusCharacterEconomyDefaults.UseRoleDefaultMoney)
         {
             id = string.IsNullOrWhiteSpace(characterId) ? Guid.NewGuid().ToString("N") : characterId.Trim();
             legacyDisplayName = string.IsNullOrWhiteSpace(legacyCharacterName) ? string.Empty : legacyCharacterName.Trim();
@@ -94,6 +99,11 @@ namespace NtingCampus.Gameplay.Characters
             possessions = new List<CampusCharacterPossession>(4);
             memories = new List<CampusCharacterMemoryId>(5);
             assignments = new CampusCharacterAssignmentData();
+            economy = new CampusCharacterEconomyState();
+            economy.Reset(CampusCharacterEconomyDefaults.ResolveInitialMoney(
+                role,
+                isPlayerControlled,
+                initialMoney));
             ResetEcologyFromTraits();
         }
 
@@ -160,6 +170,21 @@ namespace NtingCampus.Gameplay.Characters
         public void AddWarningCountToday(int delta)
         {
             warningCountToday = Mathf.Max(0, warningCountToday + delta);
+        }
+
+        public void SetMoney(int value)
+        {
+            Economy.SetMoney(value);
+        }
+
+        public void AddMoney(int amount)
+        {
+            Economy.AddMoney(amount);
+        }
+
+        public bool TrySpendMoney(int amount)
+        {
+            return Economy.TrySpendMoney(amount);
         }
 
         public void EnsureEcologyInitialized()
@@ -646,3 +671,4 @@ namespace NtingCampus.Gameplay.Characters
         }
     }
 }
+

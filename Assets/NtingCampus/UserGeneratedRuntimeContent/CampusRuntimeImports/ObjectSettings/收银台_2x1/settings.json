@@ -1,6 +1,6 @@
 ﻿{
     "ObjectId": "收银台_2x1",
-    "TypeId": "",
+    "TypeId": "CheckoutPoint",
     "DisplayNameOverride": "收银台",
     "OverrideFootprintSize": true,
     "FootprintSize": {

@@ -1,0 +1,37 @@
+﻿%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a6c8594f85b44c40abf87c80a8710110, type: 3}
+  m_Name: RetailInstantCupNoodles
+  m_EditorClassIdentifier: 
+  Id: retail_instant_cup_noodles
+  DisplayName: "\u676F\u9762"
+  LocalizedDisplayName:
+    chinese: "\u676F\u9762"
+    english: Instant Cup Noodles
+  Width: 2
+  Height: 2
+  Weight: 0.18
+  Price: 10
+  Description: "\u7ECF\u5178\u6CE1\u9762\u676F\uFF0C\u76D6\u5B50\u5F88\u8584\u3002"
+  LocalizedDescription:
+    chinese: "\u7ECF\u5178\u6CE1\u9762\u676F\uFF0C\u76D6\u5B50\u5F88\u8584\u3002"
+    english: A classic instant noodle cup with a flimsy lid.
+  ThemeColor: {r: 0.94, g: 0.83, b: 0.42, a: 1}
+  Icon: {fileID: 0}
+  IsUsable: 0
+  UseActionId: 
+  ConsumeOnUse: 1
+  UseText: 
+  LocalizedUseText:
+    chinese: 
+    english: 
+

@@ -1,5 +1,7 @@
 using System;
 using System.Collections.Generic;
+using NtingCampus.Gameplay.Inventory;
+using NtingCampus.Gameplay.Retail;
 using UnityEngine;
 
 namespace NtingCampusMapEditor
@@ -56,6 +58,30 @@ namespace NtingCampusMapEditor
     }
 
     [Serializable]
+    public sealed class CampusRuntimeRetailShelfData
+    {
+        public bool Enabled;
+        public CampusRetailShelfMode ShelfMode = CampusRetailShelfMode.Container;
+        public string ItemDefinitionId;
+        public int StockCount = 8;
+        public int DisplaySlotCount = 4;
+        public bool AutoRestock = true;
+    }
+
+    [Serializable]
+    public sealed class CampusRuntimeProtectedStockContainerData
+    {
+        public bool Enabled;
+        public string ContainerId;
+        public string OwnerId;
+        public string OwnerRole = "Campus";
+        public bool AllowTakingContents = true;
+        public int SuspicionRisk = 4;
+        public bool AutoRestock = true;
+        public List<CampusProtectedStockEntry> StockItems = new List<CampusProtectedStockEntry>();
+    }
+
+    [Serializable]
     public sealed class CampusRuntimeObjectSnapshot
     {
         public string ObjectId;
@@ -92,6 +118,8 @@ namespace NtingCampusMapEditor
         public float CustomInteractionAnchorRadius = CampusPlacedObject.DefaultInteractionAnchorRadius;
         public string CustomInteractionPromptText;
         public List<CampusPlacedObjectInteractionAnchor> CustomInteractionAnchors = new List<CampusPlacedObjectInteractionAnchor>();
+        public CampusRuntimeRetailShelfData RetailShelf = new CampusRuntimeRetailShelfData();
+        public CampusRuntimeProtectedStockContainerData ProtectedStockContainer = new CampusRuntimeProtectedStockContainerData();
     }
 
     [Serializable]
@@ -123,6 +151,8 @@ namespace NtingCampusMapEditor
         public float CustomInteractionAnchorRadius = CampusPlacedObject.DefaultInteractionAnchorRadius;
         public string CustomInteractionPromptText;
         public List<CampusPlacedObjectInteractionAnchor> CustomInteractionAnchors = new List<CampusPlacedObjectInteractionAnchor>();
+        public CampusRuntimeRetailShelfData RetailShelf = new CampusRuntimeRetailShelfData();
+        public CampusRuntimeProtectedStockContainerData ProtectedStockContainer = new CampusRuntimeProtectedStockContainerData();
     }
 
     [Serializable]

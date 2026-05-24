@@ -489,6 +489,184 @@ Tilemap:
     e31: 0
     e32: 0
     e33: 1
+--- !u!43 &168151080
+Mesh:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_Name: Campus Projected Wall Shadow Mesh
+  serializedVersion: 12
+  m_SubMeshes:
+  - serializedVersion: 2
+    firstByte: 0
+    indexCount: 0
+    topology: 0
+    baseVertex: 0
+    firstVertex: 0
+    vertexCount: 0
+    localAABB:
+      m_Center: {x: 0, y: 0, z: 0}
+      m_Extent: {x: 0, y: 0, z: 0}
+  m_Shapes:
+    vertices: []
+    shapes: []
+    channels: []
+    fullWeights: []
+  m_BindPose: []
+  m_BoneNameHashes: 
+  m_RootBoneNameHash: 0
+  m_BonesAABB: []
+  m_VariableBoneCountWeights:
+    m_Data: 
+  m_MeshCompression: 0
+  m_IsReadable: 1
+  m_KeepVertices: 1
+  m_KeepIndices: 1
+  m_IndexFormat: 0
+  m_IndexBuffer: 
+  m_VertexData:
+    serializedVersion: 3
+    m_VertexCount: 0
+    m_Channels:
+    - stream: 0
+      offset: 0
+      format: 0
+      dimension: 0
+    - stream: 0
+      offset: 0
+      format: 0
+      dimension: 0
+    - stream: 0
+      offset: 0
+      format: 0
+      dimension: 0
+    - stream: 0
+      offset: 0
+      format: 0
+      dimension: 0
+    - stream: 0
+      offset: 0
+      format: 0
+      dimension: 0
+    - stream: 0
+      offset: 0
+      format: 0
+      dimension: 0
+    - stream: 0
+      offset: 0
+      format: 0
+      dimension: 0
+    - stream: 0
+      offset: 0
+      format: 0
+      dimension: 0
+    - stream: 0
+      offset: 0
+      format: 0
+      dimension: 0
+    - stream: 0
+      offset: 0
+      format: 0
+      dimension: 0
+    - stream: 0
+      offset: 0
+      format: 0
+      dimension: 0
+    - stream: 0
+      offset: 0
+      format: 0
+      dimension: 0
+    - stream: 0
+      offset: 0
+      format: 0
+      dimension: 0
+    - stream: 0
+      offset: 0
+      format: 0
+      dimension: 0
+    m_DataSize: 0
+    _typelessdata: 
+  m_CompressedMesh:
+    m_Vertices:
+      m_NumItems: 0
+      m_Range: 0
+      m_Start: 0
+      m_Data: 
+      m_BitSize: 0
+    m_UV:
+      m_NumItems: 0
+      m_Range: 0
+      m_Start: 0
+      m_Data: 
+      m_BitSize: 0
+    m_Normals:
+      m_NumItems: 0
+      m_Range: 0
+      m_Start: 0
+      m_Data: 
+      m_BitSize: 0
+    m_Tangents:
+      m_NumItems: 0
+      m_Range: 0
+      m_Start: 0
+      m_Data: 
+      m_BitSize: 0
+    m_Weights:
+      m_NumItems: 0
+      m_Data: 
+      m_BitSize: 0
+    m_NormalSigns:
+      m_NumItems: 0
+      m_Data: 
+      m_BitSize: 0
+    m_TangentSigns:
+      m_NumItems: 0
+      m_Data: 
+      m_BitSize: 0
+    m_FloatColors:
+      m_NumItems: 0
+      m_Range: 0
+      m_Start: 0
+      m_Data: 
+      m_BitSize: 0
+    m_BoneIndices:
+      m_NumItems: 0
+      m_Data: 
+      m_BitSize: 0
+    m_Triangles:
+      m_NumItems: 0
+      m_Data: 
+      m_BitSize: 0
+    m_UVInfo: 0
+  m_LocalAABB:
+    m_Center: {x: 0, y: 0, z: 0}
+    m_Extent: {x: 0, y: 0, z: 0}
+  m_MeshUsageFlags: 0
+  m_CookingOptions: 30
+  m_BakedConvexCollisionMesh: 
+  m_BakedTriangleCollisionMesh: 
+  'm_MeshMetrics[0]': 1
+  'm_MeshMetrics[1]': 1
+  m_MeshOptimizationFlags: 1
+  m_StreamData:
+    serializedVersion: 2
+    offset: 0
+    size: 0
+    path: 
+  m_MeshLodInfo:
+    serializedVersion: 2
+    m_LodSelectionCurve:
+      serializedVersion: 1
+      m_LodSlope: 0
+      m_LodBias: 0
+    m_NumLevels: 1
+    m_SubMeshes:
+    - serializedVersion: 2
+      m_Levels:
+      - serializedVersion: 1
+        m_IndexStart: 0
+        m_IndexCount: 0
 --- !u!1 &309766845
 GameObject:
   m_ObjectHideFlags: 0
@@ -756,184 +934,6 @@ Transform:
   - {fileID: 857501727}
   m_Father: {fileID: 141021199}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!43 &511853943
-Mesh:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_Name: Campus Projected Wall Shadow Mesh
-  serializedVersion: 12
-  m_SubMeshes:
-  - serializedVersion: 2
-    firstByte: 0
-    indexCount: 0
-    topology: 0
-    baseVertex: 0
-    firstVertex: 0
-    vertexCount: 0
-    localAABB:
-      m_Center: {x: 0, y: 0, z: 0}
-      m_Extent: {x: 0, y: 0, z: 0}
-  m_Shapes:
-    vertices: []
-    shapes: []
-    channels: []
-    fullWeights: []
-  m_BindPose: []
-  m_BoneNameHashes: 
-  m_RootBoneNameHash: 0
-  m_BonesAABB: []
-  m_VariableBoneCountWeights:
-    m_Data: 
-  m_MeshCompression: 0
-  m_IsReadable: 1
-  m_KeepVertices: 1
-  m_KeepIndices: 1
-  m_IndexFormat: 0
-  m_IndexBuffer: 
-  m_VertexData:
-    serializedVersion: 3
-    m_VertexCount: 0
-    m_Channels:
-    - stream: 0
-      offset: 0
-      format: 0
-      dimension: 0
-    - stream: 0
-      offset: 0
-      format: 0
-      dimension: 0
-    - stream: 0
-      offset: 0
-      format: 0
-      dimension: 0
-    - stream: 0
-      offset: 0
-      format: 0
-      dimension: 0
-    - stream: 0
-      offset: 0
-      format: 0
-      dimension: 0
-    - stream: 0
-      offset: 0
-      format: 0
-      dimension: 0
-    - stream: 0
-      offset: 0
-      format: 0
-      dimension: 0
-    - stream: 0
-      offset: 0
-      format: 0
-      dimension: 0
-    - stream: 0
-      offset: 0
-      format: 0
-      dimension: 0
-    - stream: 0
-      offset: 0
-      format: 0
-      dimension: 0
-    - stream: 0
-      offset: 0
-      format: 0
-      dimension: 0
-    - stream: 0
-      offset: 0
-      format: 0
-      dimension: 0
-    - stream: 0
-      offset: 0
-      format: 0
-      dimension: 0
-    - stream: 0
-      offset: 0
-      format: 0
-      dimension: 0
-    m_DataSize: 0
-    _typelessdata: 
-  m_CompressedMesh:
-    m_Vertices:
-      m_NumItems: 0
-      m_Range: 0
-      m_Start: 0
-      m_Data: 
-      m_BitSize: 0
-    m_UV:
-      m_NumItems: 0
-      m_Range: 0
-      m_Start: 0
-      m_Data: 
-      m_BitSize: 0
-    m_Normals:
-      m_NumItems: 0
-      m_Range: 0
-      m_Start: 0
-      m_Data: 
-      m_BitSize: 0
-    m_Tangents:
-      m_NumItems: 0
-      m_Range: 0
-      m_Start: 0
-      m_Data: 
-      m_BitSize: 0
-    m_Weights:
-      m_NumItems: 0
-      m_Data: 
-      m_BitSize: 0
-    m_NormalSigns:
-      m_NumItems: 0
-      m_Data: 
-      m_BitSize: 0
-    m_TangentSigns:
-      m_NumItems: 0
-      m_Data: 
-      m_BitSize: 0
-    m_FloatColors:
-      m_NumItems: 0
-      m_Range: 0
-      m_Start: 0
-      m_Data: 
-      m_BitSize: 0
-    m_BoneIndices:
-      m_NumItems: 0
-      m_Data: 
-      m_BitSize: 0
-    m_Triangles:
-      m_NumItems: 0
-      m_Data: 
-      m_BitSize: 0
-    m_UVInfo: 0
-  m_LocalAABB:
-    m_Center: {x: 0, y: 0, z: 0}
-    m_Extent: {x: 0, y: 0, z: 0}
-  m_MeshUsageFlags: 0
-  m_CookingOptions: 30
-  m_BakedConvexCollisionMesh: 
-  m_BakedTriangleCollisionMesh: 
-  'm_MeshMetrics[0]': 1
-  'm_MeshMetrics[1]': 1
-  m_MeshOptimizationFlags: 1
-  m_StreamData:
-    serializedVersion: 2
-    offset: 0
-    size: 0
-    path: 
-  m_MeshLodInfo:
-    serializedVersion: 2
-    m_LodSelectionCurve:
-      serializedVersion: 1
-      m_LodSlope: 0
-      m_LodBias: 0
-    m_NumLevels: 1
-    m_SubMeshes:
-    - serializedVersion: 2
-      m_Levels:
-      - serializedVersion: 1
-        m_IndexStart: 0
-        m_IndexCount: 0
 --- !u!1 &519420028
 GameObject:
   m_ObjectHideFlags: 0
@@ -1102,7 +1102,6 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::NtingCampus.Gameplay.Core.CampusGameBootstrap
   initialDay: 1
-  initialMoney: 500
   initialDivinePower: 0
   initialGameState:
     InitialDay: 1
@@ -1110,17 +1109,22 @@ MonoBehaviour:
     InitialCampusChaos: 20
     InitialTeacherAlertness: 15
     InitialDivineInterest: 25
+    InitialPlayerSuspicion: 0
     InitialDailyWarningCount: 0
     InitialShrineRoomUnlocked: 0
     InitialLandExpansionUnlocked: 0
-  showDebugPanel: 0
   timeController: {fileID: 621872939}
   modeController: {fileID: 0}
+  actionService: {fileID: 0}
   worldService: {fileID: 0}
   rosterService: {fileID: 0}
   scheduleService: {fileID: 0}
   gameplayEventHub: {fileID: 0}
+  inventoryTransferService: {fileID: 0}
   sanctionService: {fileID: 0}
+  economyService: {fileID: 0}
+  economyHudController: {fileID: 0}
+  playerInventoryController: {fileID: 0}
   gameState:
     currentMode: 0
     day: 1
@@ -1128,11 +1132,11 @@ MonoBehaviour:
     campusChaos: 20
     teacherAlertness: 15
     divineInterest: 25
+    playerSuspicion: 0
     dailyWarningCount: 0
     shrineRoomUnlocked: 0
     landExpansionUnlocked: 0
   resourceState:
-    money: 500
     divinePower: 0
   eventLog:
     entries: []
@@ -1165,6 +1169,8 @@ MonoBehaviour:
   speedMode: 1
   customTimeScale: 1
   dayNightController: {fileID: 0}
+  lastActiveSpeedMode: 1
+  lastActiveCustomTimeScale: 1
 --- !u!4 &621872941
 Transform:
   m_ObjectHideFlags: 0
@@ -1401,7 +1407,10 @@ MonoBehaviour:
   selectedObjectIndex: 0
   selectedRoomIndex: 0
   selectedRoomPrefabIndex: 0
+  selectedGameplayPresetIndex: 0
+  selectedGameplayActorPresetIndex: 0
   selectedWallProfileIndex: 0
+  selectedFacilityOwnerId: 
   brushSize: 1
   rotation90: 0
   stairTargetFloorIndex: 2
@@ -1624,7 +1633,7 @@ MeshFilter:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1280466456}
-  m_Mesh: {fileID: 511853943}
+  m_Mesh: {fileID: 168151080}
 --- !u!114 &1280466460
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -1644,7 +1653,7 @@ MonoBehaviour:
   shadowMaterial: {fileID: 2100000, guid: d642cc6c83544ef4ab598cfcc59d270b, type: 2}
   minShadowLength: 0.3
   maxShadowLength: 1.15
-  shadowWidth: 0.66
+  shadowWidth: 1
   alphaMultiplier: 3.4
   rebuildDirectionThreshold: 0.01
   autoFindDayNight: 1
@@ -2411,7 +2420,7 @@ PrefabInstance:
     m_Modifications:
     - target: {fileID: 1832939020699674757, guid: e6128256ba1d5cd4ab408f9540f55698, type: 3}
       propertyPath: m_SizeDelta.x
-      value: 0
+      value: 108
       objectReference: {fileID: 0}
     - target: {fileID: 2285910790979838274, guid: e6128256ba1d5cd4ab408f9540f55698, type: 3}
       propertyPath: m_AnchorMax.x
@@ -2419,7 +2428,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 2285910790979838274, guid: e6128256ba1d5cd4ab408f9540f55698, type: 3}
       propertyPath: m_AnchorMax.y
-      value: 0
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 2285910790979838274, guid: e6128256ba1d5cd4ab408f9540f55698, type: 3}
       propertyPath: m_AnchorMin.x
@@ -2427,7 +2436,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 2285910790979838274, guid: e6128256ba1d5cd4ab408f9540f55698, type: 3}
       propertyPath: m_AnchorMin.y
-      value: 0
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 2285910790979838274, guid: e6128256ba1d5cd4ab408f9540f55698, type: 3}
       propertyPath: m_SizeDelta.x
@@ -2439,10 +2448,14 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 2285910790979838274, guid: e6128256ba1d5cd4ab408f9540f55698, type: 3}
       propertyPath: m_AnchoredPosition.x
-      value: 0
+      value: 24
       objectReference: {fileID: 0}
     - target: {fileID: 2285910790979838274, guid: e6128256ba1d5cd4ab408f9540f55698, type: 3}
       propertyPath: m_AnchoredPosition.y
+      value: -22
+      objectReference: {fileID: 0}
+    - target: {fileID: 2670240149032626186, guid: e6128256ba1d5cd4ab408f9540f55698, type: 3}
+      propertyPath: m_IsActive
       value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 3484977361614115478, guid: e6128256ba1d5cd4ab408f9540f55698, type: 3}
@@ -2451,7 +2464,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 3484977361614115478, guid: e6128256ba1d5cd4ab408f9540f55698, type: 3}
       propertyPath: m_AnchorMax.y
-      value: 0
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 3484977361614115478, guid: e6128256ba1d5cd4ab408f9540f55698, type: 3}
       propertyPath: m_AnchorMin.x
@@ -2459,23 +2472,23 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 3484977361614115478, guid: e6128256ba1d5cd4ab408f9540f55698, type: 3}
       propertyPath: m_AnchorMin.y
-      value: 0
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 3484977361614115478, guid: e6128256ba1d5cd4ab408f9540f55698, type: 3}
       propertyPath: m_SizeDelta.x
-      value: 0
+      value: 48
       objectReference: {fileID: 0}
     - target: {fileID: 3484977361614115478, guid: e6128256ba1d5cd4ab408f9540f55698, type: 3}
       propertyPath: m_SizeDelta.y
-      value: 0
+      value: 34
       objectReference: {fileID: 0}
     - target: {fileID: 3484977361614115478, guid: e6128256ba1d5cd4ab408f9540f55698, type: 3}
       propertyPath: m_AnchoredPosition.x
-      value: 0
+      value: 72
       objectReference: {fileID: 0}
     - target: {fileID: 3484977361614115478, guid: e6128256ba1d5cd4ab408f9540f55698, type: 3}
       propertyPath: m_AnchoredPosition.y
-      value: 0
+      value: -22
       objectReference: {fileID: 0}
     - target: {fileID: 5530350508439876142, guid: e6128256ba1d5cd4ab408f9540f55698, type: 3}
       propertyPath: m_Name
@@ -3177,6 +3190,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: a85617ee4505a8b41813af581b73c2d4, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::NtingCampus.Gameplay.Rooms.CampusGameplayFacilityMarker
+  facilityId: 
+  ownerFacilityId: 
+  legacyServiceStationId: 
   displayName: Classroom Blackboard
   facilityType: 11
   floorIndex: 1
@@ -3227,6 +3243,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: a85617ee4505a8b41813af581b73c2d4, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::NtingCampus.Gameplay.Rooms.CampusGameplayFacilityMarker
+  facilityId: 
+  ownerFacilityId: 
+  legacyServiceStationId: 
   displayName: Classroom Student Desk
   facilityType: 12
   floorIndex: 1
@@ -3277,6 +3296,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: a85617ee4505a8b41813af581b73c2d4, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::NtingCampus.Gameplay.Rooms.CampusGameplayFacilityMarker
+  facilityId: 
+  ownerFacilityId: 
+  legacyServiceStationId: 
   displayName: Classroom Podium
   facilityType: 13
   floorIndex: 1
@@ -3327,6 +3349,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: a85617ee4505a8b41813af581b73c2d4, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::NtingCampus.Gameplay.Rooms.CampusGameplayFacilityMarker
+  facilityId: 
+  ownerFacilityId: 
+  legacyServiceStationId: 
   displayName: Dorm Bed
   facilityType: 14
   floorIndex: 1
@@ -3377,6 +3402,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: a85617ee4505a8b41813af581b73c2d4, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::NtingCampus.Gameplay.Rooms.CampusGameplayFacilityMarker
+  facilityId: 
+  ownerFacilityId: 
+  legacyServiceStationId: 
   displayName: Office Desk
   facilityType: 15
   floorIndex: 1
@@ -3427,6 +3455,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: a85617ee4505a8b41813af581b73c2d4, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::NtingCampus.Gameplay.Rooms.CampusGameplayFacilityMarker
+  facilityId: 
+  ownerFacilityId: 
+  legacyServiceStationId: 
   displayName: Bulletin Board
   facilityType: 16
   floorIndex: 1

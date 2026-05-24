@@ -24,9 +24,17 @@
     {
       "Id": "worker_stands",
       "FacilityTypes": [ "WorkerStandPoint" ]
+    },
+    {
+      "Id": "goods_shelves",
+      "FacilityTypes": [ "GoodsShelf" ]
+    },
+    {
+      "Id": "checkout_points",
+      "FacilityTypes": [ "CheckoutPoint" ]
     }
   ],
-  "ActionDefinitions": [
+  "ActionSteps": [
     {
       "Id": "attend_student_desk",
       "TargetKind": "StudentDesk",
@@ -41,6 +49,16 @@
       "ExecuteActionId": "campus.facility.service_window.use",
       "StopDistance": 0.18,
       "Requirements": [ "CanOrderMeal" ]
+    },
+    {
+      "Id": "pickup_own_served_canteen_item",
+      "TargetKind": "DroppedStorageItem",
+      "ActionMode": "PressInteract",
+      "Owner": "Self",
+      "SourceLocation": "canteen_window",
+      "SourceContainerPrefix": "canteen_window_order",
+      "StopDistance": 0.12,
+      "Requirements": [ "HasOwnServedCanteenItem" ]
     },
     {
       "Id": "roam_corridor",
@@ -78,6 +96,66 @@
       "TargetKind": "PrimaryWorkstation",
       "ActionMode": "NoOp",
       "StopDistance": 0.16
+    },
+    {
+      "Id": "pick_goods_from_shelf",
+      "TargetKind": "RoomFacility",
+      "RoomType": "RetailArea",
+      "FacilityGroupId": "goods_shelves",
+      "ActionMode": "DomainAction",
+      "ExecuteActionId": "campus.retail.shelf.pick_one",
+      "StopDistance": 0.18
+    },
+    {
+      "Id": "checkout_retail_goods",
+      "TargetKind": "RoomFacility",
+      "RoomType": "RetailArea",
+      "FacilityGroupId": "checkout_points",
+      "ActionMode": "PressInteractionAction",
+      "ExecuteActionId": "campus.retail.checkout",
+      "StopDistance": 0.18
+    }
+  ],
+  "ActionChains": [
+    {
+      "Id": "attend_student_desk",
+      "Steps": [ "attend_student_desk" ]
+    },
+    {
+      "Id": "eat_canteen_meal",
+      "Steps": [ "order_meal_at_service_window", "pickup_own_served_canteen_item" ]
+    },
+    {
+      "Id": "pickup_served_canteen_meal",
+      "Steps": [ "pickup_own_served_canteen_item" ]
+    },
+    {
+      "Id": "roam_corridor",
+      "Steps": [ "roam_corridor" ]
+    },
+    {
+      "Id": "rest_in_dorm",
+      "Steps": [ "rest_in_dorm" ]
+    },
+    {
+      "Id": "roam_common_area",
+      "Steps": [ "roam_common_area" ]
+    },
+    {
+      "Id": "teach_at_podium",
+      "Steps": [ "teach_at_podium" ]
+    },
+    {
+      "Id": "return_to_office_desk",
+      "Steps": [ "return_to_office_desk" ]
+    },
+    {
+      "Id": "attend_primary_workstation",
+      "Steps": [ "attend_primary_workstation" ]
+    },
+    {
+      "Id": "buy_retail_goods",
+      "Steps": [ "pick_goods_from_shelf", "checkout_retail_goods" ]
     }
   ],
   "ScheduleTemplates": [
@@ -90,15 +168,23 @@
           "ScheduleWindows": [ "ClassSession" ],
           "IntentKind": "AttendAssignedDesk",
           "IntentLabel": "Class",
-          "ActionId": "attend_student_desk",
+          "ActionChainId": "attend_student_desk",
           "Score": 60
+        },
+        {
+          "Id": "student_pickup_served_meal",
+          "ScheduleWindows": [ "MealPeak" ],
+          "IntentKind": "Roam",
+          "IntentLabel": "Meal",
+          "ActionChainId": "pickup_served_canteen_meal",
+          "Score": 55
         },
         {
           "Id": "student_meal_peak",
           "ScheduleWindows": [ "MealPeak" ],
           "IntentKind": "Roam",
           "IntentLabel": "Meal",
-          "ActionId": "order_meal_at_service_window",
+          "ActionChainId": "eat_canteen_meal",
           "Score": 50
         },
         {
@@ -106,7 +192,7 @@
           "ScheduleWindows": [ "Break" ],
           "IntentKind": "Roam",
           "IntentLabel": "Break",
-          "ActionId": "roam_corridor",
+          "ActionChainId": "roam_corridor",
           "Score": 30
         },
         {
@@ -114,7 +200,7 @@
           "ScheduleWindows": [ "DormWindow" ],
           "IntentKind": "RestInDorm",
           "IntentLabel": "Dorm",
-          "ActionId": "rest_in_dorm",
+          "ActionChainId": "rest_in_dorm",
           "Score": 25
         },
         {
@@ -122,7 +208,7 @@
           "ScheduleWindows": [ "StudentFreeMovement" ],
           "IntentKind": "Roam",
           "IntentLabel": "Free",
-          "ActionId": "roam_common_area",
+          "ActionChainId": "roam_common_area",
           "Score": 20
         }
       ]
@@ -136,7 +222,7 @@
           "ScheduleWindows": [ "ClassSession" ],
           "IntentKind": "TeachAssignedClass",
           "IntentLabel": "Teach",
-          "ActionId": "teach_at_podium",
+          "ActionChainId": "teach_at_podium",
           "Score": 60
         },
         {
@@ -144,7 +230,7 @@
           "ScheduleWindows": [ "TeacherOfficeWindow" ],
           "IntentKind": "ReturnToOfficeDesk",
           "IntentLabel": "Office",
-          "ActionId": "return_to_office_desk",
+          "ActionChainId": "return_to_office_desk",
           "Score": 40
         }
       ]
@@ -159,7 +245,7 @@
           "ScheduleWindows": [ "MealPeak" ],
           "IntentKind": "AttendPrimaryWorkstation",
           "IntentLabel": "MealDuty",
-          "ActionId": "attend_primary_workstation",
+          "ActionChainId": "attend_primary_workstation",
           "Score": 60
         },
         {
@@ -167,7 +253,7 @@
           "ScheduleWindows": [ "StaffOffDuty" ],
           "IntentKind": "Roam",
           "IntentLabel": "OffDuty",
-          "ActionId": "roam_common_area",
+          "ActionChainId": "roam_common_area",
           "Score": 20
         },
         {
@@ -175,7 +261,7 @@
           "ScheduleWindows": [ "Always" ],
           "IntentKind": "Roam",
           "IntentLabel": "Common",
-          "ActionId": "roam_common_area",
+          "ActionChainId": "roam_common_area",
           "Score": 10
         }
       ]

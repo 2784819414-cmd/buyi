@@ -35,6 +35,7 @@ namespace NtingCampus.Gameplay.Characters
             }
 
             bool completed = opportunity.TryExecute(npc.Runtime);
+            npc.CompleteActionChainStep(opportunity, completed);
             intent.ActionOpportunity = null;
             npc.RequestDecisionSoon();
 
@@ -56,6 +57,7 @@ namespace NtingCampus.Gameplay.Characters
                 intent.Kind,
                 intent.Label,
                 opportunity.ArrivalHoldSeconds);
+            holdIntent.ActionId = intent.ActionId;
             holdIntent.RoomId = intent.RoomId;
             holdIntent.TargetPosition = intent.TargetPosition;
             holdIntent.StopDistance = intent.StopDistance;

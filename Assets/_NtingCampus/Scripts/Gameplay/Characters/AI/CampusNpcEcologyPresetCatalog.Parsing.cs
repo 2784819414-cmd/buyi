@@ -67,22 +67,7 @@ namespace NtingCampus.Gameplay.Characters
 
         private static string[] ParseRequirementIds(string[] values)
         {
-            List<string> result = new List<string>();
-            if (values == null)
-            {
-                return result.ToArray();
-            }
-
-            for (int i = 0; i < values.Length; i++)
-            {
-                string requirementId = NormalizeId(values[i]);
-                if (!string.IsNullOrEmpty(requirementId))
-                {
-                    result.Add(requirementId);
-                }
-            }
-
-            return result.ToArray();
+            return NormalizeIds(values);
         }
 
         private static CampusTeacherDuty ParseTeacherDutyMask(string[] values)

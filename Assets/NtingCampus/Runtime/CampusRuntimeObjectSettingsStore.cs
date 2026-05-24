@@ -155,6 +155,11 @@ namespace NtingCampusMapEditor
                 CampusRuntimeImportLibrary.NormalizeSerializedPath(settings.Rotation180SpritePath, importRoot);
             settings.Rotation270SpritePath =
                 CampusRuntimeImportLibrary.NormalizeSerializedPath(settings.Rotation270SpritePath, importRoot);
+            settings.RetailShelf = settings.RetailShelf ?? new CampusRuntimeRetailShelfData();
+            CampusRuntimeObjectAuthoring.NormalizeRetailShelfData(settings.RetailShelf);
+            settings.ProtectedStockContainer =
+                settings.ProtectedStockContainer ?? new CampusRuntimeProtectedStockContainerData();
+            CampusRuntimeObjectAuthoring.NormalizeProtectedStockContainerData(settings.ProtectedStockContainer);
         }
     }
 }
