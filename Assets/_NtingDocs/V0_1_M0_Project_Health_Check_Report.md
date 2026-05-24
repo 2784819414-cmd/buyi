@@ -83,7 +83,7 @@ ProjectSync 文件：`Assets/NtingCampus/UserGeneratedRuntimeContent/CampusMap_P
 
 ## 储物 UI 检查
 
-- `_Nting/UI/Storage` 脚本编译通过。
+- `_NtingCampus/UI` 脚本编译通过。
 - `测试箱.prefab` 具备：
   - `CampusPlacedObject.IsStorageContainer = true`
   - `CampusSimpleInteractable.DefaultActionId = open_storage`
@@ -94,7 +94,7 @@ ProjectSync 文件：`Assets/NtingCampus/UserGeneratedRuntimeContent/CampusMap_P
 
 ## Missing 引用列表
 
-检查范围：`CampusMap.unity`、`Assets/NtingCampus/Prefabs`、`Assets/_Nting/UI/Storage/Prefabs`、ProjectSync 引用。
+检查范围：`CampusMap.unity`、`Assets/NtingCampus/Prefabs`、`Assets/_NtingCampus/UI/Storage/Prefabs`、ProjectSync 引用。
 
 - Missing Script：未发现 `m_Script: {fileID: 0}`。
 - Missing Prefab：未发现缺失 GUID。`CampusMap.unity` 的测试人物 Prefab GUID 可解析。

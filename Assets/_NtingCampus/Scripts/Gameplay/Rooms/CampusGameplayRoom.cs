@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using NtingCampus.UI.Runtime.Gameplay;
 using NtingCampusMapEditor;
 using UnityEngine;
 
@@ -136,6 +137,7 @@ namespace NtingCampus.Gameplay.Rooms
 
         [SerializeField] private string roomId = string.Empty;
         [SerializeField] private string sourceRoomName = string.Empty;
+        [SerializeField] private CampusLocalizedText localizedDisplayName = default;
         [SerializeField] private CampusRoomType roomType;
         [SerializeField] private CampusRoomTypeSource roomTypeSource;
         [SerializeField] private int floorIndex = 1;
@@ -152,6 +154,7 @@ namespace NtingCampus.Gameplay.Rooms
 
         public string RoomId => roomId;
         public string SourceRoomName => sourceRoomName;
+        public CampusLocalizedText LocalizedDisplayName => localizedDisplayName;
         public CampusRoomType RoomType => roomType;
         public CampusRoomTypeSource RoomTypeSource => roomTypeSource;
         public int FloorIndex => floorIndex;
@@ -166,6 +169,30 @@ namespace NtingCampus.Gameplay.Rooms
         public IReadOnlyList<CampusRuntimeRoomMarker> Markers => markers;
         public IReadOnlyList<CampusGameplayRoomMarker> GameplayMarkers => gameplayMarkers;
         public IReadOnlyList<FacilityRecord> Facilities => facilities;
+        public bool HasDisplayName => localizedDisplayName.HasAnyText || !string.IsNullOrWhiteSpace(sourceRoomName);
+
+        public string GetDisplayName(CampusDisplayLanguage language)
+        {
+            if (localizedDisplayName.HasAnyText)
+            {
+                return localizedDisplayName.Get(language, ResolveFallbackDisplayName(language));
+            }
+
+            return ResolveFallbackDisplayName(language);
+        }
+
+        public string GetPrimaryDisplayName()
+        {
+            if (localizedDisplayName.HasAnyText)
+            {
+                return localizedDisplayName.ResolvePrimary(sourceRoomName, ResolveCatalogPrimaryDisplayName());
+            }
+
+            string fallback = ResolvePrimaryFallbackDisplayName();
+            return string.IsNullOrWhiteSpace(fallback)
+                ? CampusRoomTextCatalog.GetLocalizedText(CampusRoomType.Unknown).ResolvePrimary()
+                : fallback;
+        }
 
         internal void Bind(
             string id,
@@ -179,6 +206,9 @@ namespace NtingCampus.Gameplay.Rooms
             roomId = string.IsNullOrWhiteSpace(id) ? string.Empty : id.Trim();
             sourceRoomName = string.IsNullOrWhiteSpace(roomName) ? string.Empty : roomName.Trim();
             roomType = type;
+            localizedDisplayName = type == CampusRoomType.Unknown
+                ? default
+                : CampusRoomTextCatalog.GetLocalizedText(type);
             roomTypeSource = type == CampusRoomType.Unknown
                 ? CampusRoomTypeSource.Unknown
                 : CampusRoomTypeSource.LegacyNameInference;
@@ -213,6 +243,7 @@ namespace NtingCampus.Gameplay.Rooms
             if (gameplayRoomMarker != null)
             {
                 gameplayMarkers.Add(gameplayRoomMarker);
+                localizedDisplayName = gameplayRoomMarker.LocalizedDisplayName;
             }
 
             markerCount = Mathf.Max(1, bounds.size.x * bounds.size.y);
@@ -329,6 +360,48 @@ namespace NtingCampus.Gameplay.Rooms
             isValid = valid;
             isUsableForGameplay = usableForGameplay;
             validationSummary = string.IsNullOrWhiteSpace(summary) ? string.Empty : summary.Trim();
+        }
+
+        private string ResolveFallbackDisplayName(CampusDisplayLanguage language)
+        {
+            if (roomTypeSource == CampusRoomTypeSource.ExplicitGameplayMarker &&
+                !string.IsNullOrWhiteSpace(sourceRoomName))
+            {
+                return sourceRoomName.Trim();
+            }
+
+            if (roomType != CampusRoomType.Unknown)
+            {
+                return CampusRoomTextCatalog.Get(language, roomType);
+            }
+
+            if (!string.IsNullOrWhiteSpace(sourceRoomName))
+            {
+                return sourceRoomName.Trim();
+            }
+
+            return CampusRoomTextCatalog.Get(language, CampusRoomType.Unknown);
+        }
+
+        private string ResolveCatalogPrimaryDisplayName()
+        {
+            return CampusRoomTextCatalog.GetLocalizedText(roomType).ResolvePrimary();
+        }
+
+        private string ResolvePrimaryFallbackDisplayName()
+        {
+            if (!string.IsNullOrWhiteSpace(sourceRoomName) &&
+                roomTypeSource == CampusRoomTypeSource.ExplicitGameplayMarker)
+            {
+                return sourceRoomName.Trim();
+            }
+
+            if (roomType != CampusRoomType.Unknown)
+            {
+                return ResolveCatalogPrimaryDisplayName();
+            }
+
+            return string.IsNullOrWhiteSpace(sourceRoomName) ? string.Empty : sourceRoomName.Trim();
         }
     }
 }

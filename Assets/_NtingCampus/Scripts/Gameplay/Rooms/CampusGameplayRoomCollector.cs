@@ -234,12 +234,13 @@ namespace NtingCampus.Gameplay.Rooms
                 }
 
                 CampusGameplayRoom room = new CampusGameplayRoom();
+                string primaryDisplayName = gameplayMarker.GetPrimaryDisplayName();
                 string roomId = string.IsNullOrWhiteSpace(gameplayMarker.RoomIdOverride)
-                    ? BuildRoomId(gameplayMarker.RoomDisplayName, gameplayMarker.FloorIndex, i + 1)
+                    ? BuildRoomId(primaryDisplayName, gameplayMarker.FloorIndex, i + 1)
                     : NormalizeKey(gameplayMarker.RoomIdOverride);
-                string roomName = string.IsNullOrWhiteSpace(gameplayMarker.RoomDisplayName)
+                string roomName = string.IsNullOrWhiteSpace(primaryDisplayName)
                     ? gameplayMarker.RoomType.ToString()
-                    : gameplayMarker.RoomDisplayName;
+                    : primaryDisplayName;
                 room.BindFromGameplayMarker(
                     roomId,
                     roomName,

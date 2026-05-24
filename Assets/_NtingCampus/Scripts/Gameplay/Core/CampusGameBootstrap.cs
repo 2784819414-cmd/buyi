@@ -28,8 +28,7 @@ namespace NtingCampus.Gameplay.Core
         [SerializeField] private CampusInventoryTransferService inventoryTransferService;
         [SerializeField] private CampusSanctionService sanctionService;
         [SerializeField] private CampusEconomyService economyService;
-        [SerializeField] private CampusEconomyHudController economyHudController;
-        [SerializeField] private CampusHandHudController handHudController;
+        [SerializeField] private CampusGameplayHudController gameplayHudController;
         [SerializeField] private CampusPlayerInventoryController playerInventoryController;
         [SerializeField] private CampusGameState gameState = new CampusGameState();
         [SerializeField] private CampusResourceState resourceState = new CampusResourceState();
@@ -52,8 +51,7 @@ namespace NtingCampus.Gameplay.Core
         public CampusInventoryTransferService InventoryTransferService => inventoryTransferService;
         public CampusSanctionService SanctionService => sanctionService;
         public CampusEconomyService EconomyService => economyService;
-        public CampusEconomyHudController EconomyHudController => economyHudController;
-        public CampusHandHudController HandHudController => handHudController;
+        public CampusGameplayHudController GameplayHudController => gameplayHudController;
         public CampusPlayerInventoryController PlayerInventoryController => playerInventoryController;
 
         public static CampusGameBootstrap EnsureSceneBootstrap()
@@ -76,8 +74,7 @@ namespace NtingCampus.Gameplay.Core
             bootstrap.EnsureInventoryTransferService();
             bootstrap.EnsureSanctionService();
             bootstrap.EnsureEconomyService();
-            bootstrap.EnsureEconomyHudController();
-            bootstrap.EnsureHandHudController();
+            bootstrap.EnsureGameplayHudController();
             bootstrap.EnsurePlayerInventoryController();
             bootstrap.EnsureSettingsOverlay();
             bootstrap.EnsureLaunchSelectionApplier();
@@ -136,11 +133,8 @@ namespace NtingCampus.Gameplay.Core
             playerInventoryController = EnsurePlayerInventoryController();
             playerInventoryController.Initialize(this);
 
-            economyHudController = EnsureEconomyHudController();
-            economyHudController.Initialize(this);
-
-            handHudController = EnsureHandHudController();
-            handHudController.Initialize(this);
+            gameplayHudController = EnsureGameplayHudController();
+            gameplayHudController.Initialize(this);
 
             isInitialized = true;
             eventLog.AddLog(CampusCoreTextCatalog.Format(
@@ -166,8 +160,7 @@ namespace NtingCampus.Gameplay.Core
             EnsureLaunchSelectionApplier();
             EnsurePlayerInventoryController();
             EnsureInventoryTransferService();
-            EnsureEconomyHudController();
-            EnsureHandHudController();
+            EnsureGameplayHudController();
         }
 
         private void OnDestroy()
@@ -231,36 +224,20 @@ namespace NtingCampus.Gameplay.Core
             return playerInventoryController;
         }
 
-        private CampusEconomyHudController EnsureEconomyHudController()
+        private CampusGameplayHudController EnsureGameplayHudController()
         {
-            if (economyHudController != null)
+            if (gameplayHudController != null)
             {
-                return economyHudController;
+                return gameplayHudController;
             }
 
-            economyHudController = GetComponent<CampusEconomyHudController>();
-            if (economyHudController == null)
+            gameplayHudController = GetComponent<CampusGameplayHudController>();
+            if (gameplayHudController == null)
             {
-                economyHudController = gameObject.AddComponent<CampusEconomyHudController>();
+                gameplayHudController = gameObject.AddComponent<CampusGameplayHudController>();
             }
 
-            return economyHudController;
-        }
-
-        private CampusHandHudController EnsureHandHudController()
-        {
-            if (handHudController != null)
-            {
-                return handHudController;
-            }
-
-            handHudController = GetComponent<CampusHandHudController>();
-            if (handHudController == null)
-            {
-                handHudController = gameObject.AddComponent<CampusHandHudController>();
-            }
-
-            return handHudController;
+            return gameplayHudController;
         }
 
         private CampusTimeController EnsureTimeController()

@@ -69,7 +69,7 @@ namespace NtingCampus.Gameplay.Rooms
                     issues.Add(new ValidationIssue(Severity.Error, room.RoomId, "Duplicate room id."));
                 }
 
-                if (string.IsNullOrWhiteSpace(room.SourceRoomName))
+                if (!room.HasDisplayName)
                 {
                     issues.Add(new ValidationIssue(Severity.Warning, room.RoomId, "Room marker name is empty."));
                 }

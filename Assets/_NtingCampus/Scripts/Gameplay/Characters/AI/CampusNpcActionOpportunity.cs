@@ -108,6 +108,7 @@ namespace NtingCampus.Gameplay.Characters
         public int ChainStepIndex { get; private set; }
         public int ChainStepCount { get; private set; }
         public bool AdvancesActionChain { get; private set; } = true;
+        public string CompletionKey { get; private set; } = string.Empty;
 
         public UnityEngine.Object Target => Action != null ? Action.Target : null;
 
@@ -116,13 +117,15 @@ namespace NtingCampus.Gameplay.Characters
             string actionChainId,
             int stepIndex,
             int stepCount,
-            bool advancesActionChain)
+            bool advancesActionChain,
+            string completionKey)
         {
             ScheduleEntryId = string.IsNullOrWhiteSpace(scheduleEntryId) ? string.Empty : scheduleEntryId.Trim();
             ActionChainId = string.IsNullOrWhiteSpace(actionChainId) ? string.Empty : actionChainId.Trim();
             ChainStepIndex = Mathf.Max(0, stepIndex);
             ChainStepCount = Mathf.Max(1, stepCount);
             AdvancesActionChain = advancesActionChain;
+            CompletionKey = string.IsNullOrWhiteSpace(completionKey) ? string.Empty : completionKey.Trim();
         }
 
         public static CampusNpcActionOpportunity MoveTo(

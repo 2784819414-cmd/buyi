@@ -36,6 +36,18 @@ namespace NtingCampus.Gameplay.Canteen
                 return false;
             }
 
+            if (CampusCanteenMealRules.HasOwnServedCanteenItem(actor))
+            {
+                message = CampusCanteenTextCatalog.Get(CampusCanteenTextId.PendingMealLog);
+                return false;
+            }
+
+            if (!CampusCanteenMealRules.CanReceiveMenuItem(actor))
+            {
+                message = CampusCanteenTextCatalog.Get(CampusCanteenTextId.HandsFullLog);
+                return false;
+            }
+
             StorageMemory memory = StorageMemory.GetOrCreate();
             if (memory == null)
             {

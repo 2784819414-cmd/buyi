@@ -47,6 +47,7 @@
       "RoomType": "ServiceArea",
       "ActionMode": "PressInteractionAction",
       "ExecuteActionId": "campus.facility.service_window.use",
+      "RepeatPolicy": "OnceUntilScheduleChange",
       "StopDistance": 0.18,
       "Requirements": [ "CanOrderMeal" ]
     },

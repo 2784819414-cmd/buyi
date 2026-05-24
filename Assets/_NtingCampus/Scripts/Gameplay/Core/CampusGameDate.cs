@@ -49,7 +49,7 @@ namespace NtingCampus.Gameplay.Core
             }
             catch (ArgumentOutOfRangeException)
             {
-                dateTime = new DateTime(2021, 9, 1);
+                dateTime = DefaultStartDate.ToDateTime();
                 return false;
             }
         }

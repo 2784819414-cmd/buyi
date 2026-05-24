@@ -11,7 +11,7 @@
 当前项目已经具备三块可复用基础：
 
 - 地图/交互/光照基础：`Assets/NtingCampus` 已有运行时地图编辑器、Tilemap 楼层、摆放物、门、交互锚点、测试玩家、日夜光照和阴影系统。
-- 储物 UI 基础：`Assets/_Nting/UI/Storage` 已有格子容器、物品定义、拖拽 UI、PlayerPrefs 临时保存、测试箱交互接入。
+- 储物 UI 基础：`Assets/_NtingCampus/UI` 已有格子容器、物品定义、拖拽 UI、PlayerPrefs 临时保存、测试箱交互接入。
 - 玩法核心起点：`Assets/_NtingCampus/Scripts/Gameplay/Core` 已有 `CampusGameBootstrap`、`CampusTimeController`、`CampusTimeSchedule`、`CampusResourceState`、`CampusEventLog` 和 IMGUI Debug 面板。
 
 当前最大的缺口不是美术，也不是 Shader，而是玩法域对象缺失：房间语义、学生/老师数据、日程 AI、事件卡、恶作剧、制裁、招募、结算、正式 UI 和存档还没有统一的 gameplay 层。
@@ -43,7 +43,7 @@
 - V0.1 不重写地图编辑器、不改 Shader、不改美术。
 - 新增 gameplay 适配层读取 `CampusMapRoot`、`CampusFloorRoot`、`CampusPlacedObject` 和 `CampusRuntimeRoomMarker`，不要把玩法规则塞进 `CampusRuntimeMapEditor.cs` 这个大文件。
 
-### 1.2 `Assets/_Nting/UI/Storage`
+### 1.2 `Assets/_NtingCampus/UI`
 
 已有基础：
 

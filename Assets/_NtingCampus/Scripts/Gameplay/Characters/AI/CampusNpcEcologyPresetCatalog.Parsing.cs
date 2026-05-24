@@ -154,6 +154,13 @@ namespace NtingCampus.Gameplay.Characters
             return Enum.TryParse(value, true, out actionMode);
         }
 
+        private static CampusNpcEcologyActionRepeatPolicy ParseRepeatPolicy(string value)
+        {
+            return Enum.TryParse(value, true, out CampusNpcEcologyActionRepeatPolicy repeatPolicy)
+                ? repeatPolicy
+                : CampusNpcEcologyActionRepeatPolicy.Always;
+        }
+
         private static bool TryParseFacilityType(string value, out CampusFacilityType facilityType)
         {
             return Enum.TryParse(value, true, out facilityType);

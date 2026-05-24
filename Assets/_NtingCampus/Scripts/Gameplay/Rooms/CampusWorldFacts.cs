@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using NtingCampus.Gameplay.Characters;
 using NtingCampus.Gameplay.Core;
+using NtingCampus.UI.Runtime.Gameplay;
 using NtingCampusMapEditor;
 using UnityEngine;
 
@@ -13,6 +14,7 @@ namespace NtingCampus.Gameplay.Rooms
         {
             public string RoomId = string.Empty;
             public string DisplayName = string.Empty;
+            public CampusLocalizedText LocalizedDisplayName = default;
             public CampusRoomType RoomType = CampusRoomType.Unknown;
             public CampusRoomTypeSource RoomTypeSource = CampusRoomTypeSource.Unknown;
             public int FloorIndex = 1;
@@ -20,6 +22,18 @@ namespace NtingCampus.Gameplay.Rooms
             public Vector3 WorldCenter;
             public bool IsUsableForGameplay;
             public bool HasExplicitRoomType;
+
+            public string GetDisplayName(CampusDisplayLanguage language)
+            {
+                if (LocalizedDisplayName.HasAnyText)
+                {
+                    return LocalizedDisplayName.Get(language, DisplayName);
+                }
+
+                return string.IsNullOrWhiteSpace(DisplayName)
+                    ? CampusRoomTextCatalog.Get(language, RoomType)
+                    : DisplayName.Trim();
+            }
         }
 
         public sealed class FacilityFact
@@ -192,7 +206,8 @@ namespace NtingCampus.Gameplay.Rooms
             RoomFact fact = new RoomFact
             {
                 RoomId = NormalizeId(room.RoomId),
-                DisplayName = string.IsNullOrWhiteSpace(room.SourceRoomName) ? room.RoomType.ToString() : room.SourceRoomName.Trim(),
+                DisplayName = room.GetPrimaryDisplayName(),
+                LocalizedDisplayName = room.LocalizedDisplayName,
                 RoomType = room.RoomType,
                 RoomTypeSource = room.RoomTypeSource,
                 FloorIndex = Mathf.Max(1, room.FloorIndex),

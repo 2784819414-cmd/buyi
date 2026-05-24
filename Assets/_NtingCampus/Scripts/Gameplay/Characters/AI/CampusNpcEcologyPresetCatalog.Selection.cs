@@ -31,6 +31,7 @@ namespace NtingCampus.Gameplay.Characters
                     if (!MatchesEntry(entry, npc) ||
                         !TryResolveActionChain(entry, out ActionChainRecord actionChain) ||
                         !TryResolveCurrentActionStep(npc, entry, actionChain, out int stepIndex, out ActionDefinitionRecord actionStep) ||
+                        IsActionStepRepeatBlocked(npc, entry, actionChain, stepIndex, actionStep) ||
                         !PassesRuntimeRequirements(actionStep, npc) ||
                         !TryBuildChainStepOpportunity(npc, entry, actionChain, stepIndex, actionStep, out CampusNpcActionOpportunity opportunity))
                     {
@@ -245,7 +246,8 @@ namespace NtingCampus.Gameplay.Characters
                     actionChain.Id,
                     stepIndex,
                     actionChain.StepIds.Length,
-                    advancesChain);
+                    advancesChain,
+                    BuildActionStepCompletionKey(entry, actionChain, stepIndex, actionStep));
                 return true;
             }
 
@@ -255,6 +257,38 @@ namespace NtingCampus.Gameplay.Characters
             }
 
             return false;
+        }
+
+        private static bool IsActionStepRepeatBlocked(
+            CampusNpcAiRuntime npc,
+            ScheduleEntryRecord entry,
+            ActionChainRecord actionChain,
+            int stepIndex,
+            ActionDefinitionRecord actionStep)
+        {
+            if (npc == null ||
+                entry == null ||
+                actionChain == null ||
+                actionStep == null ||
+                actionStep.RepeatPolicy == CampusNpcEcologyActionRepeatPolicy.Always ||
+                npc.IsActiveActionChain(entry.Id, actionChain.Id))
+            {
+                return false;
+            }
+
+            return npc.HasCompletedActionStep(BuildActionStepCompletionKey(entry, actionChain, stepIndex, actionStep));
+        }
+
+        private static string BuildActionStepCompletionKey(
+            ScheduleEntryRecord entry,
+            ActionChainRecord actionChain,
+            int stepIndex,
+            ActionDefinitionRecord actionStep)
+        {
+            string entryId = NormalizeId(entry != null ? entry.Id : string.Empty);
+            string chainId = NormalizeId(actionChain != null ? actionChain.Id : string.Empty);
+            string stepId = NormalizeId(actionStep != null ? actionStep.Id : string.Empty);
+            return entryId + ":" + chainId + ":" + stepIndex + ":" + stepId;
         }
 
         private static bool PassesRuntimeRequirements(

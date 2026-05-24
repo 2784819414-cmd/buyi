@@ -17,7 +17,8 @@ namespace NtingCampus.Gameplay.Canteen
         OrderButton = 10,
         CloseButton = 11,
         InsufficientFundsLog = 12,
-        OrderFailedLog = 13
+        OrderFailedLog = 13,
+        PendingMealLog = 14
     }
 
     internal static class CampusCanteenTextCatalog
@@ -45,6 +46,7 @@ namespace NtingCampus.Gameplay.Canteen
                 CampusCanteenTextId.CloseButton => Resolve(language, "\u5173\u95ed", "Close"),
                 CampusCanteenTextId.InsufficientFundsLog => Resolve(language, "\u4f59\u989d\u4e0d\u8db3\uff0c\u9700\u8981 {0}\u3002", "Not enough money. Need {0}."),
                 CampusCanteenTextId.OrderFailedLog => Resolve(language, "\u70b9\u9910\u5931\u8d25\u3002", "Order failed."),
+                CampusCanteenTextId.PendingMealLog => Resolve(language, "\u5df2\u6709\u672a\u53d6\u8d70\u7684\u9910\u54c1\u3002", "There is already an unclaimed meal."),
                 _ => string.Empty
             };
         }

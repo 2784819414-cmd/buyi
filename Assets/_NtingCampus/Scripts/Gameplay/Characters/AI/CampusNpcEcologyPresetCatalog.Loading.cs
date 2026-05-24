@@ -146,6 +146,7 @@ namespace NtingCampus.Gameplay.Characters
                 SourceLocation = NormalizeId(file.SourceLocation),
                 SourceContainerPrefix = NormalizeId(file.SourceContainerPrefix),
                 DefinitionId = NormalizeId(file.DefinitionId),
+                RepeatPolicy = ParseRepeatPolicy(file.RepeatPolicy),
                 StopDistance = Mathf.Max(0.05f, file.StopDistance),
                 RequirementIds = ParseRequirementIds(file.Requirements)
             };

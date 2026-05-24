@@ -34,6 +34,8 @@ namespace NtingCampus.Gameplay.Characters
         private string activeActionChainEntryId = string.Empty;
         private string activeActionChainId = string.Empty;
         private int activeActionChainStepIndex;
+        private readonly HashSet<string> completedActionStepKeys =
+            new HashSet<string>(StringComparer.OrdinalIgnoreCase);
 
         public readonly CampusNpcNavigatorHandle Navigator = new CampusNpcNavigatorHandle();
 
@@ -117,8 +119,15 @@ namespace NtingCampus.Gameplay.Characters
             Segment = currentSegment;
             roomTargets.Clear();
             ClearActionChainProgress();
+            completedActionStepKeys.Clear();
             nextSenseTime = UnityEngine.Time.time + ResolveSenseOffset(PersonalSeed);
             RequestDecisionSoon();
+        }
+
+        public bool HasCompletedActionStep(string completionKey)
+        {
+            string normalizedKey = NormalizeId(completionKey);
+            return !string.IsNullOrEmpty(normalizedKey) && completedActionStepKeys.Contains(normalizedKey);
         }
 
         public bool IsActiveActionChain(string entryId, string actionChainId)
@@ -150,6 +159,11 @@ namespace NtingCampus.Gameplay.Characters
             if (!IsActiveActionChain(opportunity.ScheduleEntryId, opportunity.ActionChainId))
             {
                 return;
+            }
+
+            if (succeeded && !string.IsNullOrWhiteSpace(opportunity.CompletionKey))
+            {
+                completedActionStepKeys.Add(opportunity.CompletionKey.Trim());
             }
 
             if (!opportunity.AdvancesActionChain)

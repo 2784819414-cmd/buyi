@@ -2,26 +2,26 @@
 
 ## 1. 新增文件
 
-- `Assets/_Nting/UI/Storage/Scripts/StorageContainerModel.cs`
-- `Assets/_Nting/UI/Storage/Scripts/StorageItemModel.cs`
-- `Assets/_Nting/UI/Storage/Scripts/StorageItemDefinition.cs`
-- `Assets/_Nting/UI/Storage/Scripts/StorageItemRegistry.cs`
-- `Assets/_Nting/UI/Storage/Scripts/StorageMemory.cs`
-- `Assets/_Nting/UI/Storage/Scripts/StorageMemorySaveData.cs`
-- `Assets/_Nting/UI/Storage/Scripts/StorageWindowUI.cs`
-- `Assets/_Nting/UI/Storage/Scripts/StorageGridUI.cs`
-- `Assets/_Nting/UI/Storage/Scripts/StorageSlotUI.cs`
-- `Assets/_Nting/UI/Storage/Scripts/StorageItemView.cs`
-- `Assets/_Nting/UI/Storage/Scripts/StorageDragController.cs`
-- `Assets/_Nting/UI/Storage/Scripts/StorageDemoBootstrap.cs`
-- `Assets/_Nting/UI/Storage/Scripts/StorageBoxGraphic.cs`
-- `Assets/_Nting/UI/Storage/Scripts/StorageUIUtility.cs`
-- `Assets/_Nting/UI/Storage/Prefabs/StorageWindow.prefab`
-- `Assets/_Nting/UI/Storage/Prefabs/StorageGrid.prefab`
-- `Assets/_Nting/UI/Storage/Prefabs/StorageSlot.prefab`
-- `Assets/_Nting/UI/Storage/Prefabs/StorageItemView.prefab`
-- `Assets/_Nting/UI/Storage/Resources/StorageItemRegistry.asset`
-- `Assets/_Nting/UI/Storage/Resources/StorageItems/*.asset`
+- `Assets/_NtingCampus/UI/Scripts/Storage/StorageContainerModel.cs`
+- `Assets/_NtingCampus/UI/Scripts/Storage/StorageItemModel.cs`
+- `Assets/_NtingCampus/UI/Scripts/Storage/StorageItemDefinition.cs`
+- `Assets/_NtingCampus/UI/Scripts/Storage/StorageItemRegistry.cs`
+- `Assets/_NtingCampus/UI/Scripts/Storage/StorageMemory.cs`
+- `Assets/_NtingCampus/UI/Scripts/Storage/StorageMemorySaveData.cs`
+- `Assets/_NtingCampus/UI/Scripts/Storage/StorageWindowUI.cs`
+- `Assets/_NtingCampus/UI/Scripts/Storage/StorageGridUI.cs`
+- `Assets/_NtingCampus/UI/Scripts/Storage/StorageSlotUI.cs`
+- `Assets/_NtingCampus/UI/Scripts/Storage/StorageItemView.cs`
+- `Assets/_NtingCampus/UI/Scripts/Storage/StorageDragController.cs`
+- `Assets/_NtingCampus/UI/Scripts/Storage/StorageDemoBootstrap.cs`
+- `Assets/_NtingCampus/UI/Scripts/Storage/StorageBoxGraphic.cs`
+- `Assets/_NtingCampus/UI/Scripts/Storage/StorageUIUtility.cs`
+- `Assets/_NtingCampus/UI/Storage/Prefabs/StorageWindow.prefab`
+- `Assets/_NtingCampus/UI/Storage/Prefabs/StorageGrid.prefab`
+- `Assets/_NtingCampus/UI/Storage/Prefabs/StorageSlot.prefab`
+- `Assets/_NtingCampus/UI/Storage/Prefabs/StorageItemView.prefab`
+- `Assets/_NtingCampus/UI/Storage/Resources/StorageItemRegistry.asset`
+- `Assets/_NtingCampus/UI/Storage/Resources/StorageItems/*.asset`
 
 ## 2. 如何打开测试 UI
 

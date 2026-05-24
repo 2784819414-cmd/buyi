@@ -41,6 +41,12 @@ namespace NtingCampus.Gameplay.Characters
         PressInteractionAction = 3
     }
 
+    internal enum CampusNpcEcologyActionRepeatPolicy
+    {
+        Always = 0,
+        OnceUntilScheduleChange = 1
+    }
+
     internal static partial class CampusNpcEcologyPresetCatalog
     {
         [Serializable]
@@ -74,6 +80,7 @@ namespace NtingCampus.Gameplay.Characters
             public string SourceLocation = string.Empty;
             public string SourceContainerPrefix = string.Empty;
             public string DefinitionId = string.Empty;
+            public string RepeatPolicy = string.Empty;
             public float StopDistance = 0.18f;
             public string[] Requirements = Array.Empty<string>();
         }
@@ -136,6 +143,7 @@ namespace NtingCampus.Gameplay.Characters
             public string SourceLocation = string.Empty;
             public string SourceContainerPrefix = string.Empty;
             public string DefinitionId = string.Empty;
+            public CampusNpcEcologyActionRepeatPolicy RepeatPolicy = CampusNpcEcologyActionRepeatPolicy.Always;
             public float StopDistance = 0.18f;
             public string[] RequirementIds = Array.Empty<string>();
         }
