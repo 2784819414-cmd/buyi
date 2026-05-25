@@ -4,9 +4,9 @@ namespace NtingCampus.Gameplay.Characters
     {
         private static float CalculateOpportunityScore(
             CampusNpcAiRuntime npc,
-            ScheduleTemplateRecord template,
+            NpcDecisionProfileRecord profile,
             ScheduleEntryRecord entry,
-            ActionDefinitionRecord actionDefinition,
+            ActionRecord action,
             CampusNpcActionOpportunity opportunity)
         {
             return entry != null ? entry.Score : 0f;

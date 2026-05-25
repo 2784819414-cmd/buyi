@@ -1,60 +1,101 @@
 {
   "EnableSelectionDebug": false,
-  "FacilityGroups": [
+  "ActionCatalog": [
+    {
+      "ActionId": "campus.npc.attend_student_desk",
+      "ActionMode": "NoOp"
+    },
+    {
+      "ActionId": "campus.facility.service_window.use",
+      "ActionMode": "PressInteractionAction",
+      "RepeatPolicy": "OnceUntilScheduleChange"
+    },
+    {
+      "ActionId": "campus.storage.pickup",
+      "ActionMode": "PressInteract"
+    },
+    {
+      "ActionId": "campus.npc.roam_corridor",
+      "ActionMode": "NoOp"
+    },
+    {
+      "ActionId": "campus.npc.rest_in_dorm",
+      "ActionMode": "NoOp"
+    },
+    {
+      "ActionId": "campus.npc.roam_common_area",
+      "ActionMode": "NoOp"
+    },
+    {
+      "ActionId": "campus.npc.teach_at_podium",
+      "ActionMode": "NoOp"
+    },
+    {
+      "ActionId": "campus.npc.return_to_office_desk",
+      "ActionMode": "NoOp"
+    },
+    {
+      "ActionId": "campus.npc.attend_primary_workstation",
+      "ActionMode": "NoOp"
+    },
+    {
+      "ActionId": "campus.retail.shelf.pick_one",
+      "ActionMode": "DomainAction"
+    },
+    {
+      "ActionId": "campus.retail.checkout",
+      "ActionMode": "PressInteractionAction"
+    }
+  ],
+  "ActionTargetRules": [
     {
       "Id": "student_desks",
+      "TargetKind": "StudentDesk",
       "FacilityTypes": [ "StudentDesk" ]
     },
     {
       "Id": "podiums",
+      "TargetKind": "TeacherPodium",
       "FacilityTypes": [ "Podium", "Blackboard" ]
     },
     {
       "Id": "office_desks",
+      "TargetKind": "OfficeDesk",
       "FacilityTypes": [ "OfficeDesk", "Desk" ]
     },
     {
       "Id": "workstations",
+      "TargetKind": "PrimaryWorkstation",
       "FacilityTypes": [ "OfficeDesk", "Desk", "Storage" ]
     },
     {
       "Id": "service_windows",
+      "TargetKind": "ServiceStation",
       "FacilityTypes": [ "ServiceWindow" ]
     },
     {
       "Id": "worker_stands",
+      "TargetKind": "PrimaryWorkstation",
       "FacilityTypes": [ "WorkerStandPoint" ]
     },
     {
-      "Id": "goods_shelves",
-      "FacilityTypes": [ "GoodsShelf" ]
-    },
-    {
-      "Id": "checkout_points",
-      "FacilityTypes": [ "CheckoutPoint" ]
-    }
-  ],
-  "ActionSteps": [
-    {
-      "Id": "attend_student_desk",
+      "Id": "attend_student_desk_target",
+      "ActionId": "campus.npc.attend_student_desk",
       "TargetKind": "StudentDesk",
-      "ActionMode": "NoOp",
       "StopDistance": 0.16
     },
     {
-      "Id": "order_meal_at_service_window",
+      "Id": "order_meal_service_window_target",
+      "ActionId": "campus.facility.service_window.use",
       "TargetKind": "ServiceStation",
       "RoomType": "ServiceArea",
-      "ActionMode": "PressInteractionAction",
-      "ExecuteActionId": "campus.facility.service_window.use",
-      "RepeatPolicy": "OnceUntilScheduleChange",
       "StopDistance": 0.18,
       "Requirements": [ "CanOrderMeal" ]
     },
     {
-      "Id": "pickup_own_served_canteen_item",
+      "Id": "pickup_own_served_canteen_item_target",
+      "ActionId": "campus.storage.pickup",
       "TargetKind": "DroppedStorageItem",
-      "ActionMode": "PressInteract",
       "Owner": "Self",
       "SourceLocation": "canteen_window",
       "SourceContainerPrefix": "canteen_window_order",
@@ -62,104 +103,102 @@
       "Requirements": [ "HasOwnServedCanteenItem" ]
     },
     {
-      "Id": "roam_corridor",
+      "Id": "roam_corridor_target",
+      "ActionId": "campus.npc.roam_corridor",
       "TargetKind": "RoomType",
       "RoomType": "Corridor",
-      "ActionMode": "NoOp",
       "StopDistance": 0.22
     },
     {
-      "Id": "rest_in_dorm",
+      "Id": "rest_in_dorm_target",
+      "ActionId": "campus.npc.rest_in_dorm",
       "TargetKind": "Dorm",
-      "ActionMode": "NoOp",
       "StopDistance": 0.22
     },
     {
-      "Id": "roam_common_area",
+      "Id": "roam_common_area_target",
+      "ActionId": "campus.npc.roam_common_area",
       "TargetKind": "Common",
-      "ActionMode": "NoOp",
       "StopDistance": 0.22
     },
     {
-      "Id": "teach_at_podium",
+      "Id": "teach_at_podium_target",
+      "ActionId": "campus.npc.teach_at_podium",
       "TargetKind": "TeacherPodium",
-      "ActionMode": "NoOp",
       "StopDistance": 0.18
     },
     {
-      "Id": "return_to_office_desk",
+      "Id": "return_to_office_desk_target",
+      "ActionId": "campus.npc.return_to_office_desk",
       "TargetKind": "OfficeDesk",
-      "ActionMode": "NoOp",
       "StopDistance": 0.18
     },
     {
-      "Id": "attend_primary_workstation",
+      "Id": "attend_primary_workstation_target",
+      "ActionId": "campus.npc.attend_primary_workstation",
       "TargetKind": "PrimaryWorkstation",
-      "ActionMode": "NoOp",
       "StopDistance": 0.16
     },
     {
-      "Id": "pick_goods_from_shelf",
+      "Id": "retail_shelf_goods_target",
+      "ActionId": "campus.retail.shelf.pick_one",
       "TargetKind": "RoomFacility",
       "RoomType": "RetailArea",
-      "FacilityGroupId": "goods_shelves",
-      "ActionMode": "DomainAction",
-      "ExecuteActionId": "campus.retail.shelf.pick_one",
+      "FacilityTypes": [ "GoodsShelf" ],
       "StopDistance": 0.18
     },
     {
-      "Id": "checkout_retail_goods",
+      "Id": "retail_checkout_target",
+      "ActionId": "campus.retail.checkout",
       "TargetKind": "RoomFacility",
       "RoomType": "RetailArea",
-      "FacilityGroupId": "checkout_points",
-      "ActionMode": "PressInteractionAction",
-      "ExecuteActionId": "campus.retail.checkout",
+      "FacilityTypes": [ "CheckoutPoint" ],
       "StopDistance": 0.18
     }
   ],
   "ActionChains": [
     {
       "Id": "attend_student_desk",
-      "Steps": [ "attend_student_desk" ]
+      "ActionIds": [ "campus.npc.attend_student_desk" ]
     },
     {
       "Id": "eat_canteen_meal",
-      "Steps": [ "order_meal_at_service_window", "pickup_own_served_canteen_item" ]
+      "ActionIds": [ "campus.facility.service_window.use", "campus.storage.pickup" ]
     },
     {
       "Id": "pickup_served_canteen_meal",
-      "Steps": [ "pickup_own_served_canteen_item" ]
+      "ActionIds": [ "campus.storage.pickup" ]
     },
     {
       "Id": "roam_corridor",
-      "Steps": [ "roam_corridor" ]
+      "ActionIds": [ "campus.npc.roam_corridor" ]
     },
     {
       "Id": "rest_in_dorm",
-      "Steps": [ "rest_in_dorm" ]
+      "ActionIds": [ "campus.npc.rest_in_dorm" ]
     },
     {
       "Id": "roam_common_area",
-      "Steps": [ "roam_common_area" ]
+      "ActionIds": [ "campus.npc.roam_common_area" ]
     },
     {
       "Id": "teach_at_podium",
-      "Steps": [ "teach_at_podium" ]
+      "ActionIds": [ "campus.npc.teach_at_podium" ]
     },
     {
       "Id": "return_to_office_desk",
-      "Steps": [ "return_to_office_desk" ]
+      "ActionIds": [ "campus.npc.return_to_office_desk" ]
     },
     {
       "Id": "attend_primary_workstation",
-      "Steps": [ "attend_primary_workstation" ]
+      "ActionIds": [ "campus.npc.attend_primary_workstation" ]
     },
     {
       "Id": "buy_retail_goods",
-      "Steps": [ "pick_goods_from_shelf", "checkout_retail_goods" ]
+      "ActionIds": [ "campus.retail.shelf.pick_one", "campus.retail.checkout" ]
     }
   ],
-  "ScheduleTemplates": [
+  "NpcDecisionProfiles": [
     {
       "Id": "student_default",
       "Role": "Student",

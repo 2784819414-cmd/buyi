@@ -12,40 +12,74 @@ namespace NtingCampus.Gameplay.Characters
         private static bool TryBuildOpportunity(
             CampusNpcAiRuntime npc,
             ScheduleEntryRecord entry,
-            ActionDefinitionRecord actionDefinition,
+            ActionRecord action,
             out CampusNpcActionOpportunity opportunity)
         {
             opportunity = null;
-            if (entry == null || actionDefinition == null)
+            if (entry == null ||
+                action == null ||
+                string.IsNullOrEmpty(action.ActionId) ||
+                !Data.ActionTargetRulesByActionId.TryGetValue(action.ActionId, out List<ActionTargetRuleRecord> targetRules))
             {
                 return false;
             }
 
-            switch (actionDefinition.TargetKind)
+            for (int i = 0; i < targetRules.Count; i++)
+            {
+                ActionTargetRuleRecord targetRule = targetRules[i];
+                if (!PassesRuntimeRequirements(targetRule, npc))
+                {
+                    continue;
+                }
+
+                if (TryBuildOpportunityForTargetRule(npc, entry, action, targetRule, out opportunity))
+                {
+                    return true;
+                }
+            }
+
+            return false;
+        }
+
+        private static bool TryBuildOpportunityForTargetRule(
+            CampusNpcAiRuntime npc,
+            ScheduleEntryRecord entry,
+            ActionRecord action,
+            ActionTargetRuleRecord targetRule,
+            out CampusNpcActionOpportunity opportunity)
+        {
+            opportunity = null;
+            if (entry == null || action == null || targetRule == null)
+            {
+                return false;
+            }
+
+            switch (targetRule.TargetKind)
             {
                 case CampusNpcEcologyTargetKind.RoomFacility:
-                    return TryBuildRoomFacilityOpportunity(npc, entry, actionDefinition, out opportunity);
+                    return TryBuildRoomFacilityOpportunity(npc, entry, action, targetRule, out opportunity);
                 case CampusNpcEcologyTargetKind.ServiceStation:
-                    return TryBuildServiceStationOpportunity(npc, entry, actionDefinition, out opportunity);
+                    return TryBuildServiceStationOpportunity(npc, entry, action, targetRule, out opportunity);
                 default:
-                    if (!TryResolveTarget(npc, entry, actionDefinition, out ResolvedTarget target) ||
-                        !TryBuildAction(actionDefinition, target, out CampusCharacterAction action))
+                    if (!TryResolveTarget(npc, entry, targetRule, action, out ResolvedTarget target) ||
+                        !TryBuildAction(action, target, out CampusCharacterAction characterAction))
                     {
                         return false;
                     }
 
-                    return TryCreateOpportunity(entry, actionDefinition, target, action, out opportunity);
+                    return TryCreateOpportunity(entry, action, targetRule, target, characterAction, out opportunity);
             }
         }
 
         private static bool TryBuildRoomFacilityOpportunity(
             CampusNpcAiRuntime npc,
             ScheduleEntryRecord entry,
-            ActionDefinitionRecord actionDefinition,
+            ActionRecord action,
+            ActionTargetRuleRecord targetRule,
             out CampusNpcActionOpportunity opportunity)
         {
             opportunity = null;
-            if (!TryResolveTargetRoom(npc, actionDefinition, out CampusGameplayRoom room))
+            if (!TryResolveTargetRoom(npc, targetRule, out CampusGameplayRoom room))
             {
                 return false;
             }
@@ -53,21 +87,22 @@ namespace NtingCampus.Gameplay.Characters
             return TryBuildRoomScopedFacilityOpportunity(
                 npc,
                 entry,
-                actionDefinition,
+                action,
+                targetRule,
                 room,
-                TryResolveNearestFacilityTarget,
                 out opportunity);
         }
 
         private static bool TryBuildServiceStationOpportunity(
             CampusNpcAiRuntime npc,
             ScheduleEntryRecord entry,
-            ActionDefinitionRecord actionDefinition,
+            ActionRecord action,
+            ActionTargetRuleRecord targetRule,
             out CampusNpcActionOpportunity opportunity)
         {
             opportunity = null;
-            if (!TryResolveServiceStationRoom(npc, actionDefinition, out CampusGameplayRoom room) ||
-                !TryResolveServiceStation(room, npc, entry, actionDefinition, out CampusServiceStation station))
+            if (!TryResolveServiceStationRoom(npc, action, targetRule, out CampusGameplayRoom room) ||
+                !TryResolveServiceStation(room, npc, entry, action, out CampusServiceStation station))
             {
                 return false;
             }
@@ -81,17 +116,18 @@ namespace NtingCampus.Gameplay.Characters
 
             if (canServeNow)
             {
-                if (!TryBuildAction(actionDefinition, target, out CampusCharacterAction action))
+                if (!TryBuildAction(action, target, out CampusCharacterAction characterAction))
                 {
                     return false;
                 }
 
-                return TryCreateOpportunity(entry, actionDefinition, target, action, out opportunity);
+                return TryCreateOpportunity(entry, action, targetRule, target, characterAction, out opportunity);
             }
 
             return TryCreateHoldOpportunity(
                 entry,
-                actionDefinition,
+                action,
+                targetRule,
                 target,
                 TargetRetryHoldSeconds,
                 out opportunity);
@@ -100,13 +136,13 @@ namespace NtingCampus.Gameplay.Characters
         private static bool TryBuildRoomScopedFacilityOpportunity(
             CampusNpcAiRuntime npc,
             ScheduleEntryRecord entry,
-            ActionDefinitionRecord actionDefinition,
+            ActionRecord action,
+            ActionTargetRuleRecord targetRule,
             CampusGameplayRoom room,
-            RoomScopedTargetResolver resolver,
             out CampusNpcActionOpportunity opportunity)
         {
             opportunity = null;
-            if (npc == null || room == null || resolver == null)
+            if (npc == null || room == null || targetRule == null)
             {
                 return false;
             }
@@ -116,15 +152,16 @@ namespace NtingCampus.Gameplay.Characters
                 return TryCreateAreaOpportunity(
                     npc,
                     entry,
-                    actionDefinition,
+                    action,
+                    targetRule,
                     room,
                     0f,
                     out opportunity);
             }
 
-            if (resolver(npc, room, entry, actionDefinition, out ResolvedTarget target) &&
-                TryBuildAction(actionDefinition, target, out CampusCharacterAction action) &&
-                TryCreateOpportunity(entry, actionDefinition, target, action, out opportunity))
+            if (TryResolveNearestFacilityTarget(npc, room, entry, targetRule, out ResolvedTarget target) &&
+                TryBuildAction(action, target, out CampusCharacterAction characterAction) &&
+                TryCreateOpportunity(entry, action, targetRule, target, characterAction, out opportunity))
             {
                 return true;
             }
@@ -132,19 +169,25 @@ namespace NtingCampus.Gameplay.Characters
             return TryCreateAreaOpportunity(
                 npc,
                 entry,
-                actionDefinition,
+                action,
+                targetRule,
                 room,
                 TargetRetryHoldSeconds,
                 out opportunity);
         }
 
         private static bool TryBuildAction(
-            ActionDefinitionRecord actionDefinition,
+            ActionRecord action,
             ResolvedTarget target,
-            out CampusCharacterAction action)
+            out CampusCharacterAction characterAction)
         {
-            action = CampusCharacterAction.NoOp();
-            switch (actionDefinition.ActionMode)
+            characterAction = CampusCharacterAction.NoOp();
+            if (action == null)
+            {
+                return false;
+            }
+
+            switch (action.ActionMode)
             {
                 case CampusNpcEcologyActionMode.NoOp:
                     return true;
@@ -155,32 +198,31 @@ namespace NtingCampus.Gameplay.Characters
                         return false;
                     }
 
-                    action = CampusCharacterAction.PressInteract(target.TargetObject);
+                    characterAction = CampusCharacterAction.PressInteract(target.TargetObject);
                     return true;
 
                 case CampusNpcEcologyActionMode.PressInteractionAction:
-                    if (target.TargetObject == null ||
-                        string.IsNullOrWhiteSpace(actionDefinition.ExecuteActionId))
+                    if (target.TargetObject == null || string.IsNullOrWhiteSpace(action.ActionId))
                     {
                         return false;
                     }
 
-                    action = CampusCharacterAction.PressInteractionAction(
+                    characterAction = CampusCharacterAction.PressInteractionAction(
                         target.TargetObject,
-                        actionDefinition.ExecuteActionId,
-                        actionDefinition.Payload);
+                        action.ActionId,
+                        action.Payload);
                     return true;
 
                 case CampusNpcEcologyActionMode.DomainAction:
-                    if (string.IsNullOrWhiteSpace(actionDefinition.ExecuteActionId))
+                    if (string.IsNullOrWhiteSpace(action.ActionId))
                     {
                         return false;
                     }
 
-                    action = CampusCharacterAction.DomainAction(
-                        actionDefinition.ExecuteActionId,
+                    characterAction = CampusCharacterAction.DomainAction(
+                        action.ActionId,
                         target.TargetObject,
-                        actionDefinition.Payload);
+                        action.Payload);
                     return true;
 
                 default:
@@ -190,25 +232,25 @@ namespace NtingCampus.Gameplay.Characters
 
         private static bool TryCreateOpportunity(
             ScheduleEntryRecord entry,
-            ActionDefinitionRecord actionDefinition,
+            ActionRecord action,
+            ActionTargetRuleRecord targetRule,
             ResolvedTarget target,
-            CampusCharacterAction action,
+            CampusCharacterAction characterAction,
             out CampusNpcActionOpportunity opportunity)
         {
             opportunity = null;
-            if (entry == null || actionDefinition == null || !target.IsValid)
+            if (entry == null || action == null || targetRule == null || !target.IsValid)
             {
                 return false;
             }
 
             string intentLabel = string.IsNullOrWhiteSpace(entry.IntentLabel) ? entry.Id : entry.IntentLabel;
-            string actionId = string.IsNullOrWhiteSpace(entry.Id) ? actionDefinition.Id : entry.Id;
             opportunity = CampusNpcActionOpportunity.MoveTo(
-                actionId,
-                action,
+                action.ActionId,
+                characterAction,
                 target.Position,
                 target.RoomId,
-                actionDefinition.StopDistance,
+                targetRule.StopDistance,
                 entry.Score,
                 entry.IntentKind,
                 intentLabel,
@@ -220,13 +262,14 @@ namespace NtingCampus.Gameplay.Characters
         private static bool TryCreateAreaOpportunity(
             CampusNpcAiRuntime npc,
             ScheduleEntryRecord entry,
-            ActionDefinitionRecord actionDefinition,
+            ActionRecord action,
+            ActionTargetRuleRecord targetRule,
             CampusGameplayRoom room,
             float arrivalHoldSeconds,
             out CampusNpcActionOpportunity opportunity)
         {
             opportunity = null;
-            if (entry == null || actionDefinition == null)
+            if (entry == null || action == null || targetRule == null)
             {
                 return false;
             }
@@ -241,20 +284,20 @@ namespace NtingCampus.Gameplay.Characters
             {
                 return TryCreateOpportunity(
                     entry,
-                    actionDefinition,
+                    action,
+                    targetRule,
                     areaTarget,
                     CampusCharacterAction.NoOp(),
                     out opportunity);
             }
 
             string intentLabel = string.IsNullOrWhiteSpace(entry.IntentLabel) ? entry.Id : entry.IntentLabel;
-            string actionId = string.IsNullOrWhiteSpace(entry.Id) ? actionDefinition.Id : entry.Id;
             opportunity = CampusNpcActionOpportunity.MoveToAndHold(
-                actionId,
+                action.ActionId,
                 CampusCharacterAction.NoOp(),
                 areaTarget.Position,
                 areaTarget.RoomId,
-                actionDefinition.StopDistance,
+                targetRule.StopDistance,
                 entry.Score,
                 entry.IntentKind,
                 intentLabel,
@@ -266,25 +309,25 @@ namespace NtingCampus.Gameplay.Characters
 
         private static bool TryCreateHoldOpportunity(
             ScheduleEntryRecord entry,
-            ActionDefinitionRecord actionDefinition,
+            ActionRecord action,
+            ActionTargetRuleRecord targetRule,
             ResolvedTarget target,
             float arrivalHoldSeconds,
             out CampusNpcActionOpportunity opportunity)
         {
             opportunity = null;
-            if (entry == null || actionDefinition == null || !target.IsValid)
+            if (entry == null || action == null || targetRule == null || !target.IsValid)
             {
                 return false;
             }
 
             string intentLabel = string.IsNullOrWhiteSpace(entry.IntentLabel) ? entry.Id : entry.IntentLabel;
-            string actionId = string.IsNullOrWhiteSpace(entry.Id) ? actionDefinition.Id : entry.Id;
             opportunity = CampusNpcActionOpportunity.MoveToAndHold(
-                actionId,
+                action.ActionId,
                 CampusCharacterAction.NoOp(),
                 target.Position,
                 target.RoomId,
-                actionDefinition.StopDistance,
+                targetRule.StopDistance,
                 entry.Score,
                 entry.IntentKind,
                 intentLabel,
@@ -297,12 +340,18 @@ namespace NtingCampus.Gameplay.Characters
         private static bool TryResolveTarget(
             CampusNpcAiRuntime npc,
             ScheduleEntryRecord entry,
-            ActionDefinitionRecord actionDefinition,
+            ActionTargetRuleRecord targetRule,
+            ActionRecord action,
             out ResolvedTarget target)
         {
             target = default;
+            if (npc == null || targetRule == null)
+            {
+                return false;
+            }
+
             CampusNpcPersonalProfile profile = npc.Profile;
-            switch (actionDefinition.TargetKind)
+            switch (targetRule.TargetKind)
             {
                 case CampusNpcEcologyTargetKind.StudentDesk:
                     return TryResolveAssignedFacilityTarget(
@@ -378,21 +427,26 @@ namespace NtingCampus.Gameplay.Characters
                                out target);
 
                 case CampusNpcEcologyTargetKind.RoomType:
-                    return TryResolveNearestRoomTarget(npc, actionDefinition.RoomType, entry, out target);
+                    return TryResolveNearestRoomTarget(npc, targetRule.RoomType, entry, out target);
 
                 case CampusNpcEcologyTargetKind.DroppedStorageItem:
-                    return TryResolveDroppedStorageItemTarget(npc, actionDefinition, out target);
+                    return TryResolveDroppedStorageItemTarget(npc, targetRule, out target);
 
                 case CampusNpcEcologyTargetKind.None:
+                    if (npc.Runtime == null || npc.Data == null)
+                    {
+                        return false;
+                    }
+
                     target = CreateResolvedTarget(
-                        npc != null ? npc.Runtime : null,
+                        npc.Runtime,
                         npc.Runtime.transform.position,
                         npc.Data.CurrentRoomId,
                         false,
                         BuildRoomScopedTargetId(
                             npc.Data.CurrentRoomId,
                             string.IsNullOrWhiteSpace(entry != null ? entry.Id : string.Empty)
-                                ? actionDefinition.Id
+                                ? action != null ? action.ActionId : string.Empty
                                 : entry.Id));
                     return true;
 
@@ -452,11 +506,11 @@ namespace NtingCampus.Gameplay.Characters
 
         private static bool TryResolveDroppedStorageItemTarget(
             CampusNpcAiRuntime npc,
-            ActionDefinitionRecord actionDefinition,
+            ActionTargetRuleRecord targetRule,
             out ResolvedTarget target)
         {
             target = default;
-            if (npc == null || npc.Runtime == null || actionDefinition == null)
+            if (npc == null || npc.Runtime == null || targetRule == null)
             {
                 return false;
             }
@@ -470,7 +524,7 @@ namespace NtingCampus.Gameplay.Characters
             for (int i = 0; i < items.Length; i++)
             {
                 CampusDroppedStorageItem item = items[i];
-                if (!MatchesDroppedStorageItemFilter(npc, item, actionDefinition))
+                if (!MatchesDroppedStorageItemFilter(npc, item, targetRule))
                 {
                     continue;
                 }
@@ -588,33 +642,33 @@ namespace NtingCampus.Gameplay.Characters
         private static bool MatchesDroppedStorageItemFilter(
             CampusNpcAiRuntime npc,
             CampusDroppedStorageItem item,
-            ActionDefinitionRecord actionDefinition)
+            ActionTargetRuleRecord targetRule)
         {
-            if (npc == null || item == null || actionDefinition == null)
+            if (npc == null || item == null || targetRule == null)
             {
                 return false;
             }
 
-            if (string.Equals(actionDefinition.Owner, "Self", StringComparison.OrdinalIgnoreCase) &&
+            if (string.Equals(targetRule.Owner, "Self", StringComparison.OrdinalIgnoreCase) &&
                 !string.Equals(item.OwnerId, npc.Data != null ? npc.Data.Id : string.Empty, StringComparison.OrdinalIgnoreCase))
             {
                 return false;
             }
 
-            if (!string.IsNullOrEmpty(actionDefinition.SourceLocation) &&
-                !string.Equals(item.SourceLocation, actionDefinition.SourceLocation, StringComparison.OrdinalIgnoreCase))
+            if (!string.IsNullOrEmpty(targetRule.SourceLocation) &&
+                !string.Equals(item.SourceLocation, targetRule.SourceLocation, StringComparison.OrdinalIgnoreCase))
             {
                 return false;
             }
 
-            if (!string.IsNullOrEmpty(actionDefinition.SourceContainerPrefix) &&
-                !NormalizeId(item.SourceContainerId).StartsWith(actionDefinition.SourceContainerPrefix, StringComparison.OrdinalIgnoreCase))
+            if (!string.IsNullOrEmpty(targetRule.SourceContainerPrefix) &&
+                !NormalizeId(item.SourceContainerId).StartsWith(targetRule.SourceContainerPrefix, StringComparison.OrdinalIgnoreCase))
             {
                 return false;
             }
 
-            return string.IsNullOrEmpty(actionDefinition.DefinitionId) ||
-                   string.Equals(item.DefinitionId, actionDefinition.DefinitionId, StringComparison.OrdinalIgnoreCase);
+            return string.IsNullOrEmpty(targetRule.DefinitionId) ||
+                   string.Equals(item.DefinitionId, targetRule.DefinitionId, StringComparison.OrdinalIgnoreCase);
         }
 
         private static string ResolveDroppedItemRoomId(CampusNpcAiRuntime npc, CampusDroppedStorageItem item)
@@ -683,30 +737,29 @@ namespace NtingCampus.Gameplay.Characters
 
         private static bool TryResolveTargetRoom(
             CampusNpcAiRuntime npc,
-            ActionDefinitionRecord actionDefinition,
+            ActionTargetRuleRecord targetRule,
             out CampusGameplayRoom room)
         {
             room = null;
             if (npc == null ||
                 npc.WorldService == null ||
-                actionDefinition == null ||
-                actionDefinition.RoomType == CampusRoomType.Unknown)
+                targetRule == null ||
+                targetRule.RoomType == CampusRoomType.Unknown)
             {
                 return false;
             }
 
             List<CampusGameplayRoom> rooms = CampusNpcRoomSelector.GetRooms(
                 npc.WorldService,
-                actionDefinition.RoomType);
+                targetRule.RoomType);
             if (rooms.Count == 0)
             {
                 return false;
             }
 
-            if (actionDefinition.TargetKind == CampusNpcEcologyTargetKind.RoomFacility)
+            if (targetRule.TargetKind == CampusNpcEcologyTargetKind.RoomFacility)
             {
-                CampusFacilityType[] facilityTypes = GetFacilityGroup(actionDefinition.FacilityGroupId);
-                if (facilityTypes.Length == 0)
+                if (targetRule.FacilityTypes.Length == 0)
                 {
                     return false;
                 }
@@ -714,7 +767,7 @@ namespace NtingCampus.Gameplay.Characters
                 List<CampusGameplayRoom> candidateRooms = new List<CampusGameplayRoom>();
                 for (int i = 0; i < rooms.Count; i++)
                 {
-                    if (HasAnyFacility(rooms[i], facilityTypes))
+                    if (HasAnyFacility(rooms[i], targetRule.FacilityTypes))
                     {
                         candidateRooms.Add(rooms[i]);
                     }
@@ -737,20 +790,22 @@ namespace NtingCampus.Gameplay.Characters
 
         private static bool TryResolveServiceStationRoom(
             CampusNpcAiRuntime npc,
-            ActionDefinitionRecord actionDefinition,
+            ActionRecord action,
+            ActionTargetRuleRecord targetRule,
             out CampusGameplayRoom room)
         {
             room = null;
             if (npc == null ||
                 npc.WorldService == null ||
-                actionDefinition == null ||
-                string.IsNullOrEmpty(actionDefinition.ExecuteActionId))
+                action == null ||
+                targetRule == null ||
+                string.IsNullOrEmpty(action.ActionId))
             {
                 return false;
             }
 
-            List<CampusGameplayRoom> rooms = actionDefinition.RoomType != CampusRoomType.Unknown
-                ? CampusNpcRoomSelector.GetRooms(npc.WorldService, actionDefinition.RoomType)
+            List<CampusGameplayRoom> rooms = targetRule.RoomType != CampusRoomType.Unknown
+                ? CampusNpcRoomSelector.GetRooms(npc.WorldService, targetRule.RoomType)
                 : new List<CampusGameplayRoom>(npc.WorldService.RoomRegistry != null
                     ? npc.WorldService.RoomRegistry.Rooms
                     : Array.Empty<CampusGameplayRoom>());
@@ -764,7 +819,7 @@ namespace NtingCampus.Gameplay.Characters
             {
                 CampusGameplayRoom candidateRoom = rooms[i];
                 if (candidateRoom == null ||
-                    CampusServiceStationCatalog.Collect(candidateRoom, actionDefinition.ExecuteActionId).Count == 0)
+                    CampusServiceStationCatalog.Collect(candidateRoom, action.ActionId).Count == 0)
                 {
                     continue;
                 }
@@ -821,17 +876,16 @@ namespace NtingCampus.Gameplay.Characters
             CampusNpcAiRuntime npc,
             CampusGameplayRoom room,
             ScheduleEntryRecord entry,
-            ActionDefinitionRecord actionDefinition,
+            ActionTargetRuleRecord targetRule,
             out ResolvedTarget target)
         {
             target = default;
-            CampusFacilityType[] facilityTypes = GetFacilityGroup(actionDefinition.FacilityGroupId);
-            if (npc == null || room == null || facilityTypes.Length == 0)
+            if (npc == null || room == null || targetRule == null || targetRule.FacilityTypes.Length == 0)
             {
                 return false;
             }
 
-            List<CampusGameplayRoom.FacilityRecord> facilities = CampusNpcFacilitySelector.Collect(room, facilityTypes);
+            List<CampusGameplayRoom.FacilityRecord> facilities = CampusNpcFacilitySelector.Collect(room, targetRule.FacilityTypes);
             if (facilities.Count == 0)
             {
                 return false;
@@ -869,18 +923,18 @@ namespace NtingCampus.Gameplay.Characters
             CampusGameplayRoom room,
             CampusNpcAiRuntime npc,
             ScheduleEntryRecord entry,
-            ActionDefinitionRecord actionDefinition,
+            ActionRecord action,
             out CampusServiceStation station)
         {
             station = default;
-            if (room == null || actionDefinition == null)
+            if (room == null || action == null)
             {
                 return false;
             }
 
             List<CampusServiceStation> stations = CampusServiceStationCatalog.Collect(
                 room,
-                actionDefinition.ExecuteActionId);
+                action.ActionId);
             if (stations.Count == 0)
             {
                 return false;
@@ -1012,6 +1066,20 @@ namespace NtingCampus.Gameplay.Characters
             CampusGameplayRoom currentRoom = npc.WorldService.FindRoomForRuntime(npc.Runtime);
             return currentRoom != null &&
                    string.Equals(currentRoom.RoomId, room.RoomId, StringComparison.OrdinalIgnoreCase);
+        }
+
+        private static bool PassesRuntimeRequirements(
+            ActionTargetRuleRecord targetRule,
+            CampusNpcAiRuntime npc)
+        {
+            if (targetRule == null || npc == null)
+            {
+                return false;
+            }
+
+            return CampusNpcActionRequirementCatalog.PassesAll(
+                npc.Runtime,
+                targetRule.RequirementIds);
         }
 
         private static ResolvedTarget CreateResolvedTarget(

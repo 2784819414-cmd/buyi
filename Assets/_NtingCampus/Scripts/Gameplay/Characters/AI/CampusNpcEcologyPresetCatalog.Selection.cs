@@ -16,37 +16,36 @@ namespace NtingCampus.Gameplay.Characters
 
             SelectedEntry best = default;
             bool hasBest = false;
-            IReadOnlyList<ScheduleTemplateRecord> templates = Data.ScheduleTemplates;
-            for (int templateIndex = 0; templateIndex < templates.Count; templateIndex++)
+            IReadOnlyList<NpcDecisionProfileRecord> profiles = Data.NpcDecisionProfiles;
+            for (int profileIndex = 0; profileIndex < profiles.Count; profileIndex++)
             {
-                ScheduleTemplateRecord template = templates[templateIndex];
-                if (!MatchesTemplate(template, npc))
+                NpcDecisionProfileRecord profile = profiles[profileIndex];
+                if (!MatchesProfile(profile, npc))
                 {
                     continue;
                 }
 
-                for (int entryIndex = 0; entryIndex < template.Entries.Count; entryIndex++)
+                for (int entryIndex = 0; entryIndex < profile.Entries.Count; entryIndex++)
                 {
-                    ScheduleEntryRecord entry = template.Entries[entryIndex];
+                    ScheduleEntryRecord entry = profile.Entries[entryIndex];
                     if (!MatchesEntry(entry, npc) ||
                         !TryResolveActionChain(entry, out ActionChainRecord actionChain) ||
-                        !TryResolveCurrentActionStep(npc, entry, actionChain, out int stepIndex, out ActionDefinitionRecord actionStep) ||
-                        IsActionStepRepeatBlocked(npc, entry, actionChain, stepIndex, actionStep) ||
-                        !PassesRuntimeRequirements(actionStep, npc) ||
-                        !TryBuildChainStepOpportunity(npc, entry, actionChain, stepIndex, actionStep, out CampusNpcActionOpportunity opportunity))
+                        !TryResolveCurrentAction(npc, entry, actionChain, out int stepIndex, out ActionRecord action) ||
+                        IsActionRepeatBlocked(npc, entry, actionChain, stepIndex, action) ||
+                        !TryBuildChainActionOpportunity(npc, entry, actionChain, stepIndex, action, out CampusNpcActionOpportunity opportunity))
                     {
                         continue;
                     }
 
                     float finalScore = CalculateOpportunityScore(
                         npc,
-                        template,
+                        profile,
                         entry,
-                        actionStep,
+                        action,
                         opportunity);
                     if (!hasBest || finalScore > best.Score)
                     {
-                        best = new SelectedEntry(template, entry, actionChain, actionStep, stepIndex, opportunity, finalScore);
+                        best = new SelectedEntry(profile, entry, actionChain, action, stepIndex, opportunity, finalScore);
                         hasBest = true;
                     }
                 }
@@ -63,34 +62,34 @@ namespace NtingCampus.Gameplay.Characters
             return true;
         }
 
-        private static bool MatchesTemplate(ScheduleTemplateRecord template, CampusNpcAiRuntime npc)
+        private static bool MatchesProfile(NpcDecisionProfileRecord profile, CampusNpcAiRuntime npc)
         {
             CampusCharacterData data = npc.Data;
-            if (template == null || data == null || data.Role != template.Role)
+            if (profile == null || data == null || data.Role != profile.Role)
             {
                 return false;
             }
 
-            if (template.CharacterIds.Length > 0 && !ContainsId(template.CharacterIds, data.Id))
+            if (profile.CharacterIds.Length > 0 && !ContainsId(profile.CharacterIds, data.Id))
             {
                 return false;
             }
 
-            if (template.TeacherDutyMask != CampusTeacherDuty.None &&
-                (data.TeacherDuty & template.TeacherDutyMask) == 0)
+            if (profile.TeacherDutyMask != CampusTeacherDuty.None &&
+                (data.TeacherDuty & profile.TeacherDutyMask) == 0)
             {
                 return false;
             }
 
-            if (template.StaffDutyMask != CampusStaffDuty.None &&
-                (data.StaffDuty & template.StaffDutyMask) == 0)
+            if (profile.StaffDutyMask != CampusStaffDuty.None &&
+                (data.StaffDuty & profile.StaffDutyMask) == 0)
             {
                 return false;
             }
 
-            for (int i = 0; i < template.Traits.Length; i++)
+            for (int i = 0; i < profile.Traits.Length; i++)
             {
-                if (!data.HasTrait(template.Traits[i]))
+                if (!data.HasTrait(profile.Traits[i]))
                 {
                     return false;
                 }
@@ -203,16 +202,16 @@ namespace NtingCampus.Gameplay.Characters
             return Data.ActionChains.TryGetValue(entry.ActionChainId, out actionChain);
         }
 
-        private static bool TryResolveCurrentActionStep(
+        private static bool TryResolveCurrentAction(
             CampusNpcAiRuntime npc,
             ScheduleEntryRecord entry,
             ActionChainRecord actionChain,
             out int stepIndex,
-            out ActionDefinitionRecord actionStep)
+            out ActionRecord action)
         {
             stepIndex = 0;
-            actionStep = null;
-            if (entry == null || actionChain == null || actionChain.StepIds.Length == 0)
+            action = null;
+            if (entry == null || actionChain == null || actionChain.ActionIds.Length == 0)
             {
                 return false;
             }
@@ -220,34 +219,34 @@ namespace NtingCampus.Gameplay.Characters
             if (npc != null &&
                 npc.TryGetActiveActionChainStep(entry.Id, actionChain.Id, out int activeStepIndex) &&
                 activeStepIndex >= 0 &&
-                activeStepIndex < actionChain.StepIds.Length)
+                activeStepIndex < actionChain.ActionIds.Length)
             {
                 stepIndex = activeStepIndex;
             }
 
-            return Data.ActionSteps.TryGetValue(actionChain.StepIds[stepIndex], out actionStep);
+            return Data.ActionCatalog.TryGetValue(actionChain.ActionIds[stepIndex], out action);
         }
 
-        private static bool TryBuildChainStepOpportunity(
+        private static bool TryBuildChainActionOpportunity(
             CampusNpcAiRuntime npc,
             ScheduleEntryRecord entry,
             ActionChainRecord actionChain,
             int stepIndex,
-            ActionDefinitionRecord actionStep,
+            ActionRecord action,
             out CampusNpcActionOpportunity opportunity)
         {
-            if (TryBuildOpportunity(npc, entry, actionStep, out opportunity))
+            if (TryBuildOpportunity(npc, entry, action, out opportunity))
             {
                 bool advancesChain = opportunity.Action != null &&
                                      (opportunity.Action.Kind != CampusCharacterActionKind.NoOp ||
-                                      actionStep.ActionMode == CampusNpcEcologyActionMode.NoOp);
+                                      action.ActionMode == CampusNpcEcologyActionMode.NoOp);
                 opportunity.AssignActionChain(
                     entry.Id,
                     actionChain.Id,
                     stepIndex,
-                    actionChain.StepIds.Length,
+                    actionChain.ActionIds.Length,
                     advancesChain,
-                    BuildActionStepCompletionKey(entry, actionChain, stepIndex, actionStep));
+                    BuildActionCompletionKey(entry, actionChain, stepIndex, action));
                 return true;
             }
 
@@ -259,69 +258,55 @@ namespace NtingCampus.Gameplay.Characters
             return false;
         }
 
-        private static bool IsActionStepRepeatBlocked(
+        private static bool IsActionRepeatBlocked(
             CampusNpcAiRuntime npc,
             ScheduleEntryRecord entry,
             ActionChainRecord actionChain,
             int stepIndex,
-            ActionDefinitionRecord actionStep)
+            ActionRecord action)
         {
             if (npc == null ||
                 entry == null ||
                 actionChain == null ||
-                actionStep == null ||
-                actionStep.RepeatPolicy == CampusNpcEcologyActionRepeatPolicy.Always ||
+                action == null ||
+                action.RepeatPolicy == CampusNpcEcologyActionRepeatPolicy.Always ||
                 npc.IsActiveActionChain(entry.Id, actionChain.Id))
             {
                 return false;
             }
 
-            return npc.HasCompletedActionStep(BuildActionStepCompletionKey(entry, actionChain, stepIndex, actionStep));
+            return npc.HasCompletedActionStep(BuildActionCompletionKey(entry, actionChain, stepIndex, action));
         }
 
-        private static string BuildActionStepCompletionKey(
+        private static string BuildActionCompletionKey(
             ScheduleEntryRecord entry,
             ActionChainRecord actionChain,
             int stepIndex,
-            ActionDefinitionRecord actionStep)
+            ActionRecord action)
         {
             string entryId = NormalizeId(entry != null ? entry.Id : string.Empty);
             string chainId = NormalizeId(actionChain != null ? actionChain.Id : string.Empty);
-            string stepId = NormalizeId(actionStep != null ? actionStep.Id : string.Empty);
-            return entryId + ":" + chainId + ":" + stepIndex + ":" + stepId;
-        }
-
-        private static bool PassesRuntimeRequirements(
-            ActionDefinitionRecord actionDefinition,
-            CampusNpcAiRuntime npc)
-        {
-            if (actionDefinition == null || npc == null)
-            {
-                return false;
-            }
-
-            return CampusNpcActionRequirementCatalog.PassesAll(
-                npc.Runtime,
-                actionDefinition.RequirementIds);
+            string actionId = NormalizeId(action != null ? action.ActionId : string.Empty);
+            return entryId + ":" + chainId + ":" + stepIndex + ":" + actionId;
         }
 
         private static void LogSelection(CampusNpcAiRuntime npc, SelectedEntry selected)
         {
             if (!EnableSelectionDebug ||
                 npc == null ||
-                selected.Template == null ||
+                selected.Profile == null ||
                 selected.Entry == null ||
-                selected.ActionStep == null)
+                selected.Action == null)
             {
                 return;
             }
 
             Debug.Log(
                 "[NpcSchedule] npc=" + (npc.Data != null ? npc.Data.Id : string.Empty) +
-                " template=" + selected.Template.Id +
+                " profile=" + selected.Profile.Id +
                 " entry=" + selected.Entry.Id +
                 " chain=" + selected.ActionChain.Id +
-                " step=" + selected.ActionStep.Id +
+                " action=" + selected.Action.ActionId +
                 " score=" + selected.Score.ToString("0.###"));
         }
     }

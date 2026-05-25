@@ -20,8 +20,8 @@ namespace NtingCampus.Gameplay.Characters
                 return Array.Empty<CampusFacilityType>();
             }
 
-            return Data.FacilityGroups.TryGetValue(normalizedId, out CampusFacilityType[] facilityTypes)
-                ? facilityTypes
+            return Data.ActionTargetRules.TryGetValue(normalizedId, out ActionTargetRuleRecord targetRule)
+                ? targetRule.FacilityTypes
                 : Array.Empty<CampusFacilityType>();
         }
 

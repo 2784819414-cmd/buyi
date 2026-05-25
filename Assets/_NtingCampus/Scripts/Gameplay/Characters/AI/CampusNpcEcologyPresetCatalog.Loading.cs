@@ -1,6 +1,5 @@
 using System;
 using System.Collections.Generic;
-using NtingCampus.Gameplay.Core;
 using NtingCampus.Gameplay.Rooms;
 using NtingCampusMapEditor;
 using UnityEngine;
@@ -40,39 +39,15 @@ namespace NtingCampus.Gameplay.Characters
             }
 
             data.EnableSelectionDebug = file.EnableSelectionDebug;
-            ParseFacilityGroups(data, file.FacilityGroups);
-            ParseActionSteps(data, file.ActionSteps);
+            ParseActionCatalog(data, file.ActionCatalog);
+            ParseActionTargetRules(data, file.ActionTargetRules);
             ParseActionChains(data, file.ActionChains);
-            ParseScheduleTemplates(data, file.ScheduleTemplates);
+            ParseNpcDecisionProfiles(data, file.NpcDecisionProfiles);
             ValidateData(data);
             return data;
         }
 
-        private static void ParseFacilityGroups(EcologyPresetData data, List<FacilityGroupFileRecord> groups)
-        {
-            if (groups == null)
-            {
-                return;
-            }
-
-            for (int i = 0; i < groups.Count; i++)
-            {
-                FacilityGroupFileRecord group = groups[i];
-                string groupId = NormalizeId(group != null ? group.Id : string.Empty);
-                if (string.IsNullOrEmpty(groupId))
-                {
-                    continue;
-                }
-
-                CampusFacilityType[] facilityTypes = ParseFacilityTypes(group.FacilityTypes);
-                if (facilityTypes.Length > 0)
-                {
-                    data.FacilityGroups[groupId] = facilityTypes;
-                }
-            }
-        }
-
-        private static void ParseActionSteps(EcologyPresetData data, List<ActionStepFileRecord> files)
+        private static void ParseActionCatalog(EcologyPresetData data, List<ActionCatalogFileRecord> files)
         {
             if (files == null)
             {
@@ -81,10 +56,27 @@ namespace NtingCampus.Gameplay.Characters
 
             for (int i = 0; i < files.Count; i++)
             {
-                ActionDefinitionRecord step = ParseActionStep(files[i]);
-                if (step != null && !string.IsNullOrEmpty(step.Id))
+                ActionRecord action = ParseAction(files[i]);
+                if (action != null && !string.IsNullOrEmpty(action.ActionId))
                 {
-                    data.ActionSteps[step.Id] = step;
+                    data.ActionCatalog[action.ActionId] = action;
+                }
+            }
+        }
+
+        private static void ParseActionTargetRules(EcologyPresetData data, List<ActionTargetRuleFileRecord> files)
+        {
+            if (files == null)
+            {
+                return;
+            }
+
+            for (int i = 0; i < files.Count; i++)
+            {
+                ActionTargetRuleRecord targetRule = ParseActionTargetRule(files[i]);
+                if (targetRule != null && !string.IsNullOrEmpty(targetRule.Id))
+                {
+                    data.ActionTargetRules[targetRule.Id] = targetRule;
                 }
             }
         }
@@ -106,7 +98,7 @@ namespace NtingCampus.Gameplay.Characters
             }
         }
 
-        private static void ParseScheduleTemplates(EcologyPresetData data, List<ScheduleTemplateFileRecord> files)
+        private static void ParseNpcDecisionProfiles(EcologyPresetData data, List<NpcDecisionProfileFileRecord> files)
         {
             if (files == null)
             {
@@ -115,38 +107,48 @@ namespace NtingCampus.Gameplay.Characters
 
             for (int i = 0; i < files.Count; i++)
             {
-                ScheduleTemplateRecord template = ParseTemplate(files[i]);
-                if (template != null && template.Entries.Count > 0)
+                NpcDecisionProfileRecord profile = ParseDecisionProfile(files[i]);
+                if (profile != null && profile.Entries.Count > 0)
                 {
-                    data.ScheduleTemplates.Add(template);
+                    data.NpcDecisionProfiles.Add(profile);
                 }
             }
         }
 
-        private static ActionDefinitionRecord ParseActionStep(ActionStepFileRecord file)
+        private static ActionRecord ParseAction(ActionCatalogFileRecord file)
         {
-            if (file == null ||
-                !TryParseTargetKind(file.TargetKind, out CampusNpcEcologyTargetKind targetKind) ||
-                !TryParseActionMode(file.ActionMode, out CampusNpcEcologyActionMode actionMode))
+            if (file == null || !TryParseActionMode(file.ActionMode, out CampusNpcEcologyActionMode actionMode))
             {
                 return null;
             }
 
-            string executeActionId = NormalizeId(file.ExecuteActionId);
-            return new ActionDefinitionRecord
+            return new ActionRecord
+            {
+                ActionId = NormalizeId(file.ActionId),
+                ActionMode = actionMode,
+                Payload = file.Payload ?? string.Empty,
+                RepeatPolicy = ParseRepeatPolicy(file.RepeatPolicy)
+            };
+        }
+
+        private static ActionTargetRuleRecord ParseActionTargetRule(ActionTargetRuleFileRecord file)
+        {
+            if (file == null || !TryParseTargetKind(file.TargetKind, out CampusNpcEcologyTargetKind targetKind))
+            {
+                return null;
+            }
+
+            return new ActionTargetRuleRecord
             {
                 Id = NormalizeId(file.Id),
+                ActionId = NormalizeId(file.ActionId),
                 TargetKind = targetKind,
                 RoomType = ParseRoomType(file.RoomType),
-                FacilityGroupId = NormalizeId(file.FacilityGroupId),
-                ActionMode = actionMode,
-                ExecuteActionId = executeActionId,
-                Payload = file.Payload ?? string.Empty,
+                FacilityTypes = ParseFacilityTypes(file.FacilityTypes),
                 Owner = NormalizeId(file.Owner),
                 SourceLocation = NormalizeId(file.SourceLocation),
                 SourceContainerPrefix = NormalizeId(file.SourceContainerPrefix),
                 DefinitionId = NormalizeId(file.DefinitionId),
-                RepeatPolicy = ParseRepeatPolicy(file.RepeatPolicy),
                 StopDistance = Mathf.Max(0.05f, file.StopDistance),
                 RequirementIds = ParseRequirementIds(file.Requirements)
             };
@@ -162,18 +164,18 @@ namespace NtingCampus.Gameplay.Characters
             return new ActionChainRecord
             {
                 Id = NormalizeId(file.Id),
-                StepIds = NormalizeIds(file.Steps)
+                ActionIds = NormalizeIds(file.ActionIds)
             };
         }
 
-        private static ScheduleTemplateRecord ParseTemplate(ScheduleTemplateFileRecord file)
+        private static NpcDecisionProfileRecord ParseDecisionProfile(NpcDecisionProfileFileRecord file)
         {
             if (file == null || !TryParseRole(file.Role, out CampusCharacterRole role))
             {
                 return null;
             }
 
-            ScheduleTemplateRecord record = new ScheduleTemplateRecord
+            NpcDecisionProfileRecord record = new NpcDecisionProfileRecord
             {
                 Id = NormalizeId(file.Id),
                 Role = role,
@@ -240,71 +242,122 @@ namespace NtingCampus.Gameplay.Characters
                 return;
             }
 
-            ValidateActionSteps(data);
+            ValidateActionCatalog(data);
+            ValidateActionTargetRules(data);
+            RebuildActionTargetRuleIndex(data);
+            ValidateActionCatalogTargets(data);
             ValidateActionChains(data);
-            ValidateScheduleTemplates(data);
+            ValidateNpcDecisionProfiles(data);
         }
 
-        private static void ValidateActionSteps(EcologyPresetData data)
+        private static void ValidateActionCatalog(EcologyPresetData data)
         {
-            List<string> invalidStepIds = new List<string>();
-            foreach (KeyValuePair<string, ActionDefinitionRecord> pair in data.ActionSteps)
+            List<string> invalidActionIds = new List<string>();
+            foreach (KeyValuePair<string, ActionRecord> pair in data.ActionCatalog)
             {
-                if (!IsValidActionStep(pair.Value, data))
+                if (pair.Value == null || string.IsNullOrEmpty(pair.Value.ActionId))
                 {
-                    invalidStepIds.Add(pair.Key);
+                    invalidActionIds.Add(pair.Key);
                 }
             }
 
-            for (int i = 0; i < invalidStepIds.Count; i++)
+            for (int i = 0; i < invalidActionIds.Count; i++)
             {
-                data.ActionSteps.Remove(invalidStepIds[i]);
+                data.ActionCatalog.Remove(invalidActionIds[i]);
             }
         }
 
-        private static bool IsValidActionStep(ActionDefinitionRecord step, EcologyPresetData data)
+        private static void ValidateActionTargetRules(EcologyPresetData data)
         {
-            if (step == null || string.IsNullOrEmpty(step.Id))
+            List<string> invalidRuleIds = new List<string>();
+            foreach (KeyValuePair<string, ActionTargetRuleRecord> pair in data.ActionTargetRules)
+            {
+                if (!IsValidActionTargetRule(pair.Value, data))
+                {
+                    invalidRuleIds.Add(pair.Key);
+                }
+            }
+
+            for (int i = 0; i < invalidRuleIds.Count; i++)
+            {
+                data.ActionTargetRules.Remove(invalidRuleIds[i]);
+            }
+        }
+
+        private static bool IsValidActionTargetRule(ActionTargetRuleRecord targetRule, EcologyPresetData data)
+        {
+            if (targetRule == null || string.IsNullOrEmpty(targetRule.Id))
             {
                 return false;
             }
 
-            if ((step.ActionMode == CampusNpcEcologyActionMode.DomainAction ||
-                 step.ActionMode == CampusNpcEcologyActionMode.PressInteractionAction) &&
-                string.IsNullOrEmpty(step.ExecuteActionId))
+            if (!string.IsNullOrEmpty(targetRule.ActionId) &&
+                !data.ActionCatalog.ContainsKey(targetRule.ActionId))
             {
-                Debug.LogWarning("[CampusNpcEcologyPresetCatalog] ActionStep '" + step.Id + "' is missing ExecuteActionId.");
+                Debug.LogWarning("[CampusNpcEcologyPresetCatalog] ActionTargetRule '" + targetRule.Id + "' references unknown ActionId '" + targetRule.ActionId + "'.");
                 return false;
             }
 
-            if (step.TargetKind == CampusNpcEcologyTargetKind.RoomFacility)
+            if (targetRule.TargetKind == CampusNpcEcologyTargetKind.RoomFacility &&
+                targetRule.FacilityTypes.Length == 0)
             {
-                if (string.IsNullOrEmpty(step.FacilityGroupId))
-                {
-                    Debug.LogWarning("[CampusNpcEcologyPresetCatalog] RoomFacility ActionStep '" + step.Id + "' is missing FacilityGroupId.");
-                    return false;
-                }
-
-                if (!data.FacilityGroups.ContainsKey(step.FacilityGroupId))
-                {
-                    Debug.LogWarning("[CampusNpcEcologyPresetCatalog] ActionStep '" + step.Id + "' references unknown FacilityGroup '" + step.FacilityGroupId + "'.");
-                    return false;
-                }
+                Debug.LogWarning("[CampusNpcEcologyPresetCatalog] RoomFacility ActionTargetRule '" + targetRule.Id + "' is missing FacilityTypes.");
+                return false;
             }
 
-            for (int requirementIndex = 0; requirementIndex < step.RequirementIds.Length; requirementIndex++)
+            for (int requirementIndex = 0; requirementIndex < targetRule.RequirementIds.Length; requirementIndex++)
             {
-                string requirementId = step.RequirementIds[requirementIndex];
+                string requirementId = targetRule.RequirementIds[requirementIndex];
                 if (CampusNpcActionRequirementCatalog.IsKnownRequirement(requirementId))
                 {
                     continue;
                 }
 
-                Debug.LogWarning("[CampusNpcEcologyPresetCatalog] ActionStep '" + step.Id + "' references unknown Requirement '" + requirementId + "'.");
+                Debug.LogWarning("[CampusNpcEcologyPresetCatalog] ActionTargetRule '" + targetRule.Id + "' references unknown Requirement '" + requirementId + "'.");
                 return false;
             }
 
             return true;
+        }
+
+        private static void RebuildActionTargetRuleIndex(EcologyPresetData data)
+        {
+            data.ActionTargetRulesByActionId.Clear();
+            foreach (ActionTargetRuleRecord targetRule in data.ActionTargetRules.Values)
+            {
+                if (targetRule == null || string.IsNullOrEmpty(targetRule.ActionId))
+                {
+                    continue;
+                }
+
+                if (!data.ActionTargetRulesByActionId.TryGetValue(targetRule.ActionId, out List<ActionTargetRuleRecord> targetRules))
+                {
+                    targetRules = new List<ActionTargetRuleRecord>();
+                    data.ActionTargetRulesByActionId[targetRule.ActionId] = targetRules;
+                }
+
+                targetRules.Add(targetRule);
+            }
+        }
+
+        private static void ValidateActionCatalogTargets(EcologyPresetData data)
+        {
+            List<string> invalidActionIds = new List<string>();
+            foreach (KeyValuePair<string, ActionRecord> pair in data.ActionCatalog)
+            {
+                if (data.ActionTargetRulesByActionId.ContainsKey(pair.Key))
+                {
+                    continue;
+                }
+
+                Debug.LogWarning("[CampusNpcEcologyPresetCatalog] ActionCatalog action '" + pair.Key + "' has no ActionTargetRules row.");
+                invalidActionIds.Add(pair.Key);
+            }
+
+            for (int i = 0; i < invalidActionIds.Count; i++)
+            {
+                data.ActionCatalog.Remove(invalidActionIds[i]);
+            }
         }
 
         private static void ValidateActionChains(EcologyPresetData data)
@@ -326,58 +379,58 @@ namespace NtingCampus.Gameplay.Characters
 
         private static bool IsValidActionChain(ActionChainRecord chain, EcologyPresetData data)
         {
-            if (chain == null || string.IsNullOrEmpty(chain.Id) || chain.StepIds.Length == 0)
+            if (chain == null || string.IsNullOrEmpty(chain.Id) || chain.ActionIds.Length == 0)
             {
                 return false;
             }
 
-            for (int i = 0; i < chain.StepIds.Length; i++)
+            for (int i = 0; i < chain.ActionIds.Length; i++)
             {
-                string stepId = chain.StepIds[i];
-                if (data.ActionSteps.ContainsKey(stepId))
+                string actionId = chain.ActionIds[i];
+                if (data.ActionCatalog.ContainsKey(actionId))
                 {
                     continue;
                 }
 
-                Debug.LogWarning("[CampusNpcEcologyPresetCatalog] ActionChain '" + chain.Id + "' references unknown ActionStep '" + stepId + "'.");
+                Debug.LogWarning("[CampusNpcEcologyPresetCatalog] ActionChain '" + chain.Id + "' references unknown ActionId '" + actionId + "'.");
                 return false;
             }
 
             return true;
         }
 
-        private static void ValidateScheduleTemplates(EcologyPresetData data)
+        private static void ValidateNpcDecisionProfiles(EcologyPresetData data)
         {
-            if (data.ScheduleTemplates.Count == 0)
+            if (data.NpcDecisionProfiles.Count == 0)
             {
-                Debug.LogWarning("[CampusNpcEcologyPresetCatalog] No schedule templates were loaded from " + PresetFileName + ".");
+                Debug.LogWarning("[CampusNpcEcologyPresetCatalog] No NPC decision profiles were loaded from " + PresetFileName + ".");
                 return;
             }
 
-            for (int templateIndex = data.ScheduleTemplates.Count - 1; templateIndex >= 0; templateIndex--)
+            for (int profileIndex = data.NpcDecisionProfiles.Count - 1; profileIndex >= 0; profileIndex--)
             {
-                ScheduleTemplateRecord template = data.ScheduleTemplates[templateIndex];
-                ValidateTemplateEntries(template, data);
-                if (template == null || template.Entries.Count > 0)
+                NpcDecisionProfileRecord profile = data.NpcDecisionProfiles[profileIndex];
+                ValidateProfileEntries(profile, data);
+                if (profile == null || profile.Entries.Count > 0)
                 {
                     continue;
                 }
 
-                Debug.LogWarning("[CampusNpcEcologyPresetCatalog] Template '" + template.Id + "' has no valid entries and was ignored.");
-                data.ScheduleTemplates.RemoveAt(templateIndex);
+                Debug.LogWarning("[CampusNpcEcologyPresetCatalog] NPC decision profile '" + profile.Id + "' has no valid entries and was ignored.");
+                data.NpcDecisionProfiles.RemoveAt(profileIndex);
             }
         }
 
-        private static void ValidateTemplateEntries(ScheduleTemplateRecord template, EcologyPresetData data)
+        private static void ValidateProfileEntries(NpcDecisionProfileRecord profile, EcologyPresetData data)
         {
-            if (template == null)
+            if (profile == null)
             {
                 return;
             }
 
-            for (int entryIndex = template.Entries.Count - 1; entryIndex >= 0; entryIndex--)
+            for (int entryIndex = profile.Entries.Count - 1; entryIndex >= 0; entryIndex--)
             {
-                ScheduleEntryRecord entry = template.Entries[entryIndex];
+                ScheduleEntryRecord entry = profile.Entries[entryIndex];
                 if (entry != null &&
                     !string.IsNullOrEmpty(entry.ActionChainId) &&
                     data.ActionChains.ContainsKey(entry.ActionChainId))
@@ -387,8 +440,8 @@ namespace NtingCampus.Gameplay.Characters
 
                 string entryId = entry != null ? entry.Id : string.Empty;
                 string actionChainId = entry != null ? entry.ActionChainId : string.Empty;
-                Debug.LogWarning("[CampusNpcEcologyPresetCatalog] Template '" + template.Id + "' entry '" + entryId + "' references unknown ActionChainId '" + actionChainId + "'.");
-                template.Entries.RemoveAt(entryIndex);
+                Debug.LogWarning("[CampusNpcEcologyPresetCatalog] NPC decision profile '" + profile.Id + "' entry '" + entryId + "' references unknown ActionChainId '" + actionChainId + "'.");
+                profile.Entries.RemoveAt(entryIndex);
             }
         }
     }
