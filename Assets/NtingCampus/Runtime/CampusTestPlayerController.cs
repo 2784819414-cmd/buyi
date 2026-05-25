@@ -1,7 +1,4 @@
 using UnityEngine;
-#if ENABLE_INPUT_SYSTEM
-using UnityEngine.InputSystem;
-#endif
 using NtingCampus.Gameplay.Characters;
 
 namespace NtingCampusMapEditor
@@ -18,13 +15,13 @@ namespace NtingCampusMapEditor
 
         public float MoveSpeed => CampusCharacterMovementTuning.ResolvePlayerMoveSpeed();
         public int FloorIndex = 1;
-        public KeyCode InteractKey = KeyCode.E;
         public float InteractionForwardOffset = 0.28f;
         public float InteractionRadius = 0.82f;
         public float InteractionRefreshIntervalSeconds = 0.1f;
         public LayerMask InteractionMask = Physics2D.AllLayers;
 
         private CampusCharacterBodyController bodyController;
+        private CampusCharacterStaminaController staminaController;
         private CampusInteractionController interactionController;
         private Vector2 moveInput;
         private Vector2 facingDirection = Vector2.down;
@@ -55,13 +52,14 @@ namespace NtingCampusMapEditor
         private void UpdateFreeMoveState()
         {
             controlState = PlayerControlState.FreeMove;
-            moveInput = ReadMoveInput();
+            moveInput = CampusGameplayInputBindings.ReadMoveInput();
+            bool wantsSprint = CampusGameplayInputBindings.IsHeld(CampusGameplayInputActionId.Sprint);
             if (moveInput.sqrMagnitude > 0.0001f)
             {
                 facingDirection = moveInput.normalized;
             }
 
-            ConfigureBodyController();
+            ConfigureBodyController(ResolveMoveSpeed(moveInput, wantsSprint));
             bodyController.SetMovementInput(moveInput);
             UpdateInteractionState();
         }
@@ -71,7 +69,7 @@ namespace NtingCampusMapEditor
             ConfigureInteractionController();
             interactionController.enabled = true;
             interactionController.SetFacingDirection(facingDirection);
-            bool interactPressed = CampusInteractionInput.WasKeyPressed(InteractKey);
+            bool interactPressed = CampusGameplayInputBindings.WasPressed(CampusGameplayInputActionId.Interact);
             if (interactPressed)
             {
                 interactionController.TryInteractCurrent();
@@ -85,7 +83,7 @@ namespace NtingCampusMapEditor
         {
             controlState = PlayerControlState.Disabled;
             moveInput = Vector2.zero;
-            ConfigureBodyController();
+            ConfigureBodyController(MoveSpeed);
             bodyController.StopMovement();
             ConfigureInteractionController();
             if (interactionController != null)
@@ -112,7 +110,8 @@ namespace NtingCampusMapEditor
             moveInput = Vector2.zero;
             controlState = enabled ? PlayerControlState.FreeMove : PlayerControlState.Disabled;
             EnsureBodyController();
-            ConfigureBodyController();
+            EnsureStaminaController();
+            ConfigureBodyController(MoveSpeed);
             bodyController.SetMovementEnabled(enabled);
             bodyController.StopMovement();
 
@@ -136,7 +135,28 @@ namespace NtingCampusMapEditor
             }
         }
 
-        private void ConfigureBodyController()
+        private void EnsureStaminaController()
+        {
+            if (staminaController == null)
+            {
+                staminaController = GetComponent<CampusCharacterStaminaController>();
+            }
+
+            if (staminaController == null)
+            {
+                staminaController = gameObject.AddComponent<CampusCharacterStaminaController>();
+            }
+
+            staminaController.EnsureSetup();
+        }
+
+        private float ResolveMoveSpeed(Vector2 input, bool wantsSprint)
+        {
+            EnsureStaminaController();
+            return staminaController.ResolveMoveSpeed(input, wantsSprint, Time.deltaTime);
+        }
+
+        private void ConfigureBodyController(float moveSpeed)
         {
             EnsureBodyController();
             if (bodyController == null)
@@ -144,9 +164,14 @@ namespace NtingCampusMapEditor
                 return;
             }
 
-            bodyController.MoveSpeed = MoveSpeed;
+            bodyController.MoveSpeed = moveSpeed;
             bodyController.FloorIndex = FloorIndex;
             bodyController.EnsureSetup();
+        }
+
+        private void ConfigureBodyController()
+        {
+            ConfigureBodyController(MoveSpeed);
         }
 
         private void ConfigureInteractionController()
@@ -161,7 +186,6 @@ namespace NtingCampusMapEditor
                 interactionController = gameObject.AddComponent<CampusInteractionController>();
             }
 
-            interactionController.InteractKey = InteractKey;
             interactionController.PollInput = false;
             interactionController.RefreshEveryFrame = false;
             interactionController.RefreshIntervalSeconds = InteractionRefreshIntervalSeconds;
@@ -173,88 +197,5 @@ namespace NtingCampusMapEditor
             sensor.InteractionMask = InteractionMask;
             sensor.SetFacingDirection(facingDirection);
         }
-
-        private static Vector2 ReadMoveInput()
-        {
-#if ENABLE_INPUT_SYSTEM
-            if (TryReadMoveInputFromInputSystem(out Vector2 inputSystemMove))
-            {
-                return inputSystemMove;
-            }
-#endif
-
-#if ENABLE_LEGACY_INPUT_MANAGER
-            return ReadMoveInputFromLegacyInputManager();
-#else
-            return Vector2.zero;
-#endif
-        }
-
-#if ENABLE_LEGACY_INPUT_MANAGER
-        private static Vector2 ReadMoveInputFromLegacyInputManager()
-        {
-            float x = 0f;
-            float y = 0f;
-            if (Input.GetKey(KeyCode.A) || Input.GetKey(KeyCode.LeftArrow))
-            {
-                x -= 1f;
-            }
-
-            if (Input.GetKey(KeyCode.D) || Input.GetKey(KeyCode.RightArrow))
-            {
-                x += 1f;
-            }
-
-            if (Input.GetKey(KeyCode.S) || Input.GetKey(KeyCode.DownArrow))
-            {
-                y -= 1f;
-            }
-
-            if (Input.GetKey(KeyCode.W) || Input.GetKey(KeyCode.UpArrow))
-            {
-                y += 1f;
-            }
-
-            return new Vector2(x, y);
-        }
-#endif
-
-#if ENABLE_INPUT_SYSTEM
-        private static bool TryReadMoveInputFromInputSystem(out Vector2 move)
-        {
-            move = Vector2.zero;
-            Keyboard keyboard = Keyboard.current;
-            if (keyboard == null)
-            {
-                return false;
-            }
-
-            float x = 0f;
-            float y = 0f;
-            if (keyboard.aKey.isPressed || keyboard.leftArrowKey.isPressed)
-            {
-                x -= 1f;
-            }
-
-            if (keyboard.dKey.isPressed || keyboard.rightArrowKey.isPressed)
-            {
-                x += 1f;
-            }
-
-            if (keyboard.sKey.isPressed || keyboard.downArrowKey.isPressed)
-            {
-                y -= 1f;
-            }
-
-            if (keyboard.wKey.isPressed || keyboard.upArrowKey.isPressed)
-            {
-                y += 1f;
-            }
-
-            move = new Vector2(x, y);
-            return true;
-        }
-#endif
-
     }
 }

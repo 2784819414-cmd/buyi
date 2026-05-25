@@ -12,11 +12,6 @@ namespace NtingCampus.Gameplay.Modes
         [SerializeField] private CampusGameBootstrap bootstrap;
         [SerializeField] private CampusCharacterRuntime playerRuntime;
         [SerializeField] private CampusGodViewCameraController cameraController;
-        [SerializeField] private KeyCode toggleModeKey = KeyCode.Tab;
-        [SerializeField] private KeyCode pauseKey = KeyCode.Alpha1;
-        [SerializeField] private KeyCode normalSpeedKey = KeyCode.Alpha2;
-        [SerializeField] private KeyCode fastSpeedKey = KeyCode.Alpha3;
-        [SerializeField] private KeyCode maxSpeedKey = KeyCode.Alpha4;
         [SerializeField, Min(2f)] private float maxDebugTimeScale = 200f;
 
         private bool isInitialized;
@@ -69,27 +64,27 @@ namespace NtingCampus.Gameplay.Modes
 
             SyncModeWithRuntimeMapEditor();
 
-            if (!IsRuntimeMapEditorOpen() && CampusInteractionInput.WasKeyPressed(toggleModeKey))
+            if (!IsRuntimeMapEditorOpen() && CampusGameplayInputBindings.WasPressed(CampusGameplayInputActionId.ToggleMode))
             {
                 ToggleMode();
             }
 
-            if (CampusInteractionInput.WasKeyPressed(pauseKey))
+            if (CampusGameplayInputBindings.WasPressed(CampusGameplayInputActionId.TimePause))
             {
                 bootstrap.TimeController.TogglePauseTime(true);
             }
 
-            if (CampusInteractionInput.WasKeyPressed(normalSpeedKey))
+            if (CampusGameplayInputBindings.WasPressed(CampusGameplayInputActionId.TimeNormalSpeed))
             {
                 bootstrap.TimeController.SetSpeedMode(CampusTimeSpeedMode.Normal);
             }
 
-            if (CampusInteractionInput.WasKeyPressed(fastSpeedKey))
+            if (CampusGameplayInputBindings.WasPressed(CampusGameplayInputActionId.TimeFastSpeed))
             {
                 bootstrap.TimeController.SetSpeedMode(CampusTimeSpeedMode.Fast);
             }
 
-            if (CampusInteractionInput.WasKeyPressed(maxSpeedKey))
+            if (CampusGameplayInputBindings.WasPressed(CampusGameplayInputActionId.TimeMaxSpeed))
             {
                 bootstrap.TimeController.SetCustomTimeScale(maxDebugTimeScale);
             }

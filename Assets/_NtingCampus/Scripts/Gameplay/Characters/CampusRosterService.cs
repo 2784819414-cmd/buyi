@@ -280,6 +280,7 @@ namespace NtingCampus.Gameplay.Characters
             }
 
             EnsureBodyController(runtime);
+            EnsureStaminaController(runtime);
             CampusHeldItemVisual heldItemVisual = runtime.GetComponent<CampusHeldItemVisual>();
             if (heldItemVisual == null)
             {
@@ -311,6 +312,22 @@ namespace NtingCampus.Gameplay.Characters
             }
 
             body.EnsureSetup();
+        }
+
+        private static void EnsureStaminaController(CampusCharacterRuntime runtime)
+        {
+            if (runtime == null)
+            {
+                return;
+            }
+
+            CampusCharacterStaminaController stamina = runtime.GetComponent<CampusCharacterStaminaController>();
+            if (stamina == null)
+            {
+                stamina = runtime.gameObject.AddComponent<CampusCharacterStaminaController>();
+            }
+
+            stamina.EnsureSetup();
         }
 
         private void SyncCurrentRoomsFromWorld()

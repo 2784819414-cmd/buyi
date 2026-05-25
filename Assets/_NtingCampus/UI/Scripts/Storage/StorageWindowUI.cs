@@ -7,9 +7,6 @@ using NtingCampusMapEditor;
 using UnityEngine;
 using UnityEngine.EventSystems;
 using UnityEngine.UI;
-#if ENABLE_INPUT_SYSTEM
-using UnityEngine.InputSystem;
-#endif
 
 namespace Nting.Storage
 {
@@ -25,7 +22,6 @@ namespace Nting.Storage
         public StorageDragController DragController;
 
         public StorageGridUI[] PocketGrids = new StorageGridUI[4];
-        public StorageGridUI[] HandGrids = new StorageGridUI[2];
         public StorageGridUI BackpackGrid;
         public StorageGridUI ExternalGrid;
 
@@ -33,27 +29,25 @@ namespace Nting.Storage
         public Text LeftMetaText;
         public Text RightTitleText;
         public Text RightMetaText;
-        public Text SelectedItemNameText;
-        public Text SelectedItemMetaText;
-        public Text StatusText;
         public Text BackpackTabLabel;
         public Text PocketTabLabel;
         public Button PocketTabButton;
         public Button BackpackTabButton;
-        public Button UseItemButton;
 
-        private Text windowEyebrowText;
-        private Text windowTitleText;
-        private Text windowHintText;
         private Text noBackpackTitleText;
         private Text noBackpackMetaText;
-        private Text itemInfoLabelText;
-        private Text statusLabelText;
         private readonly Text[] pocketTitleTexts = new Text[4];
         private const float DefaultGridCellSize = 52f;
         private const float MinimumGridCellSize = 28f;
         private const int WindowSortingOrder = 32000;
         private const int DragSortingOrder = 32760;
+        private const float TwoPanelLeftX = 28f;
+        private const float TwoPanelCenterX = 710f;
+        private const float TwoPanelRightX = 810f;
+        private const float SinglePanelX = 419f;
+        private const float BodyY = 36f;
+        private const float PanelWidth = 662f;
+        private const float PanelHeight = 640f;
 
         private readonly List<MonoBehaviour> suppressedMapEditors = new List<MonoBehaviour>();
         private readonly List<bool> suppressedMapEditorStates = new List<bool>();
@@ -68,6 +62,10 @@ namespace Nting.Storage
         private GameObject pocketPage;
         private GameObject backpackPage;
         private GameObject noBackpackHint;
+        private RectTransform leftPanelRect;
+        private RectTransform centerPanelRect;
+        private RectTransform rightPanelRect;
+        private RectTransform closeButtonRect;
         private RectTransform backpackGridPad;
         private RectTransform externalGridPad;
         private GameObject visibleRoot;
@@ -75,9 +73,12 @@ namespace Nting.Storage
         private GameObject groundDropSource;
         private GameObject transferActor;
         private IStorageTransferHandler transferHandler = StorageDefaultTransferHandler.Instance;
+        private StorageItemTooltipUI itemTooltip;
         private Tween visibilityTween;
 
         public bool IsOpen => visibleRoot != null && visibleRoot.activeSelf;
+
+        private bool UsesSinglePanelLayout => externalContainer == null;
 
         private void Awake()
         {
@@ -144,7 +145,6 @@ namespace Nting.Storage
             DragLayer.gameObject.SetActive(true);
             ShowAnimated();
             SuppressMapEditorOverlay();
-            AttachSharedHandGridsFromScene();
             RefreshLocalizedText();
             RefreshPages();
             SelectItem(null);
@@ -164,26 +164,6 @@ namespace Nting.Storage
         public void SetTransferHandler(IStorageTransferHandler handler)
         {
             transferHandler = handler ?? StorageDefaultTransferHandler.Instance;
-        }
-
-        public void SetSharedHandGrids(StorageGridUI[] grids)
-        {
-            if (HandGrids == null || HandGrids.Length != 2)
-            {
-                HandGrids = new StorageGridUI[2];
-            }
-
-            HandGrids[0] = grids != null && grids.Length > 0 ? grids[0] : null;
-            HandGrids[1] = grids != null && grids.Length > 1 ? grids[1] : null;
-        }
-
-        private void AttachSharedHandGridsFromScene()
-        {
-            CampusGameplayHudView hudView = FindFirstObjectByType<CampusGameplayHudView>(FindObjectsInactive.Include);
-            if (hudView != null)
-            {
-                hudView.AttachHandGridsToStorageWindow(this);
-            }
         }
 
         public StorageTransferContext CreateTransferContext(StorageTransferReason reason)
@@ -248,6 +228,7 @@ namespace Nting.Storage
                 DragController.CancelDrag();
             }
 
+            HideItemTooltip();
             HideAnimated();
             RestoreMapEditorOverlay();
         }
@@ -264,6 +245,8 @@ namespace Nting.Storage
             {
                 DragLayer.gameObject.SetActive(false);
             }
+
+            HideItemTooltip();
         }
 
         public void ShowPocketPage()
@@ -287,14 +270,7 @@ namespace Nting.Storage
         public void RefreshAllGrids()
         {
             RefreshActorCarriedEvidenceState();
-
-            for (int handIndex = 0; handIndex < HandGrids.Length; handIndex++)
-            {
-                if (HandGrids[handIndex] != null)
-                {
-                    HandGrids[handIndex].Bind(handIndex < hands.Length ? hands[handIndex] : null, this);
-                }
-            }
+            ApplyCurrentLayout();
 
             if (pocketPage != null && pocketPage.activeSelf)
             {
@@ -322,7 +298,6 @@ namespace Nting.Storage
             }
 
             RefreshHeaders();
-            RefreshUseButton();
         }
 
         public void SelectItem(StorageItemModel item)
@@ -334,35 +309,43 @@ namespace Nting.Storage
         {
             selectedItem = item;
             selectedItemGrid = sourceGrid;
-            RefreshUseButton();
+        }
 
-            if (SelectedItemNameText == null || SelectedItemMetaText == null)
+        public void ShowItemTooltip(StorageItemModel item, StorageGridUI sourceGrid, Vector2 screenPosition)
+        {
+            if (item == null || Root == null || itemTooltip == null)
             {
                 return;
             }
 
-            if (item == null)
-            {
-                SelectedItemNameText.text = StorageTextCatalog.Get(StorageTextId.NoItemSelected);
-                SelectedItemMetaText.text = StorageTextCatalog.Get(StorageTextId.InspectItemHint);
-                return;
-            }
-
-            SelectedItemNameText.text = item.GetDisplayName();
-            SelectedItemMetaText.text = BuildSelectedItemMeta(
+            itemTooltip.Show(
                 item,
-                sourceGrid != null ? sourceGrid.Container : null);
+                sourceGrid != null ? sourceGrid.Container : null,
+                Root,
+                screenPosition,
+                Canvas != null ? Canvas.worldCamera : null);
+        }
+
+        public void MoveItemTooltip(Vector2 screenPosition)
+        {
+            if (Root == null || itemTooltip == null)
+            {
+                return;
+            }
+
+            itemTooltip.Move(Root, screenPosition, Canvas != null ? Canvas.worldCamera : null);
+        }
+
+        public void HideItemTooltip()
+        {
+            if (itemTooltip != null)
+            {
+                itemTooltip.Hide();
+            }
         }
 
         public void ShowStatus(string message, bool warning)
         {
-            if (StatusText == null)
-            {
-                return;
-            }
-
-            StatusText.text = message;
-            StatusText.color = warning ? StoragePalette.InvalidBorder : StoragePalette.TextSecondary;
         }
 
         public bool TryUseSelectedItem()
@@ -517,57 +500,6 @@ namespace Nting.Storage
                 : null;
         }
 
-        private static string BuildSelectedItemMeta(
-            StorageItemModel item,
-            StorageContainerModel container)
-        {
-            if (item == null)
-            {
-                return string.Empty;
-            }
-
-            string description = item.GetDescription();
-            string meta = item.CurrentWidth + "x" + item.CurrentHeight + "  " +
-                          item.Weight.ToString("0.#") + "kg";
-            if (!string.IsNullOrWhiteSpace(description))
-            {
-                meta += "  " + description;
-            }
-
-            if (item.IsUsable)
-            {
-                meta += "  [" + StorageTextCatalog.Get(StorageTextId.UsableFromHand) + "]";
-            }
-
-            if (CampusProtectedTransferState.ShouldDisplayPendingCheckout(item, container))
-            {
-                meta += "  [" + StorageTextCatalog.Get(StorageTextId.PendingCheckout);
-                if (!string.IsNullOrWhiteSpace(item.SourceLocation))
-                {
-                    meta += " " + StorageTextCatalog.Get(StorageTextId.From) + " " + item.SourceLocation;
-                }
-
-                meta += "]";
-            }
-            else if (item.IsStolenEvidence)
-            {
-                meta += "  [" + StorageTextCatalog.Get(StorageTextId.Stolen);
-                if (!string.IsNullOrWhiteSpace(item.SourceLocation))
-                {
-                    meta += " " + StorageTextCatalog.Get(StorageTextId.From) + " " + item.SourceLocation;
-                }
-
-                if (item.SuspicionRisk > 0)
-                {
-                    meta += ", " + StorageTextCatalog.Get(StorageTextId.Risk) + " " + item.SuspicionRisk;
-                }
-
-                meta += "]";
-            }
-
-            return meta;
-        }
-
         private static void ConfigureGridCellSize(StorageGridUI grid, StorageContainerModel model, float maxWidth, float maxHeight, float defaultCellSize)
         {
             if (grid == null || model == null)
@@ -609,18 +541,9 @@ namespace Nting.Storage
 
         private void RefreshLocalizedText()
         {
-            SetText(windowEyebrowText, StorageTextCatalog.Get(StorageTextId.WindowEyebrow));
-            SetText(windowTitleText, StorageTextCatalog.Get(StorageTextId.WindowTitle));
-            SetText(windowHintText, StorageTextCatalog.Get(StorageTextId.WindowHint));
             SetText(noBackpackTitleText, StorageTextCatalog.Get(StorageTextId.NoBackpack));
             SetText(noBackpackMetaText, StorageTextCatalog.Get(StorageTextId.NoBackpackPage));
-            SetText(itemInfoLabelText, StorageTextCatalog.Get(StorageTextId.ItemInfo));
-            SetText(statusLabelText, StorageTextCatalog.Get(StorageTextId.Status));
             SetText(PocketTabLabel, StorageTextCatalog.Get(StorageTextId.PocketTab));
-            if (UseItemButton != null)
-            {
-                SetText(UseItemButton.GetComponentInChildren<Text>(), StorageTextCatalog.Get(StorageTextId.Use));
-            }
 
             SetText(pocketTitleTexts[0], StorageTextCatalog.Get(StorageTextId.LeftChestPocket));
             SetText(pocketTitleTexts[1], StorageTextCatalog.Get(StorageTextId.RightChestPocket));
@@ -629,11 +552,38 @@ namespace Nting.Storage
             RefreshHeaders();
         }
 
+        private void ApplyCurrentLayout()
+        {
+            bool singlePanel = UsesSinglePanelLayout;
+            SetTopLeft(leftPanelRect, singlePanel ? SinglePanelX : TwoPanelLeftX, BodyY, PanelWidth, PanelHeight);
+            SetTopLeft(centerPanelRect, TwoPanelCenterX, BodyY, 80f, PanelHeight);
+            SetTopLeft(rightPanelRect, TwoPanelRightX, BodyY, PanelWidth, PanelHeight);
+            SetTopLeft(closeButtonRect, singlePanel ? SinglePanelX + PanelWidth - 52f : 1428f, 18f, 42f, 34f);
+
+            if (centerPanelRect != null)
+            {
+                centerPanelRect.gameObject.SetActive(!singlePanel);
+            }
+
+            if (rightPanelRect != null)
+            {
+                rightPanelRect.gameObject.SetActive(!singlePanel);
+            }
+        }
+
         private static void SetText(Text target, string value)
         {
             if (target != null)
             {
                 target.text = value;
+            }
+        }
+
+        private static void SetTopLeft(RectTransform rect, float x, float y, float width, float height)
+        {
+            if (rect != null)
+            {
+                StorageUIUtility.SetTopLeft(rect, x, y, width, height);
             }
         }
 
@@ -855,61 +805,36 @@ namespace Nting.Storage
 
         private void CreateWindow()
         {
-            RectTransform shadow = CreateBox(Root, "WindowShadow", new Vector2(12f, -10f), new Vector2(1510f, 830f),
-                StoragePalette.WindowShadow, Color.clear, 18f, 0f, true);
-
             WindowPanel = CreateBox(Root, "StorageWindow", Vector2.zero, new Vector2(1500f, 820f),
-                StoragePalette.Window, StoragePalette.WindowBorder, 18f, 1.6f, true);
-            shadow.SetSiblingIndex(1);
+                Color.clear, Color.clear, 18f, 0f, true);
             WindowPanel.SetAsLastSibling();
 
-            CreateWindowTrim(WindowPanel);
-            CreateHeader(WindowPanel);
+            CreateWindowControls(WindowPanel);
             CreateBody(WindowPanel);
-            CreateFooter(WindowPanel);
+            itemTooltip = StorageItemTooltipUI.Create(Root);
         }
 
-        private void CreateWindowTrim(RectTransform parent)
+        private void CreateWindowControls(RectTransform parent)
         {
-            CreateBox(parent, "WindowSoftVignette", new Vector2(18f, -18f), new Vector2(1464f, 784f),
-                new Color(0.05f, 0.065f, 0.06f, 0.1f), Color.clear, 14f, 0f, false);
-        }
-
-        private void CreateHeader(RectTransform parent)
-        {
-            RectTransform header = CreateBox(parent, "Header", new Vector2(28f, -24f), new Vector2(1444f, 82f),
-                new Color(StoragePalette.PanelRaised.r, StoragePalette.PanelRaised.g, StoragePalette.PanelRaised.b, 0.64f), StoragePalette.PanelBorder, 14f, 1f, false);
-
-            CreateBox(header, "HeaderAccent", new Vector2(18f, -14f), new Vector2(4f, 54f),
-                StoragePalette.Accent, Color.clear, 2f, 0f, false);
-
-            windowEyebrowText = StorageUIUtility.CreateText("WindowLabel", header, StorageTextCatalog.Get(StorageTextId.WindowEyebrow), 12, TextAnchor.MiddleLeft, StoragePalette.Paper);
-            StorageUIUtility.SetTopLeft(windowEyebrowText.rectTransform, 34f, 10f, 240f, 18f);
-
-            windowTitleText = StorageUIUtility.CreateText("TitleText", header, StorageTextCatalog.Get(StorageTextId.WindowTitle), 30, TextAnchor.MiddleLeft, StoragePalette.TextPrimary);
-            StorageUIUtility.SetTopLeft(windowTitleText.rectTransform, 34f, 29f, 340f, 38f);
-
-            windowHintText = StorageUIUtility.CreateText("HintText", header, StorageTextCatalog.Get(StorageTextId.WindowHint), 15, TextAnchor.MiddleLeft, StoragePalette.TextSecondary);
-            StorageUIUtility.SetTopLeft(windowHintText.rectTransform, 420f, 42f, 730f, 24f);
-
-            Button close = StorageUIUtility.CreateButton("CloseButton", header, "×", Close,
+            Button close = StorageUIUtility.CreateButton("CloseButton", parent, StorageTextCatalog.Get(StorageTextId.CloseButton), Close,
                 StoragePalette.ButtonNormal, StoragePalette.PanelBorder);
-            RectTransform closeRect = close.GetComponent<RectTransform>();
-            StorageUIUtility.SetAnchor(closeRect, new Vector2(1f, 1f), new Vector2(1f, 1f), new Vector2(1f, 1f));
-            closeRect.anchoredPosition = new Vector2(-20f, -21f);
-            closeRect.sizeDelta = new Vector2(42f, 34f);
+            closeButtonRect = close.GetComponent<RectTransform>();
+            StorageUIUtility.SetTopLeft(closeButtonRect, 1428f, 18f, 42f, 34f);
             StorageUIUtility.StyleButton(close, StoragePalette.ButtonNormal, Color.clear, 0f, 9f, StoragePalette.TextSecondary);
         }
 
         private void CreateBody(RectTransform parent)
         {
-            RectTransform leftPanel = CreateBox(parent, "LeftPanel_PlayerStorage", new Vector2(28f, -122f), new Vector2(662f, 552f),
+            RectTransform leftPanel = CreateBox(parent, "LeftPanel_PlayerStorage", new Vector2(TwoPanelLeftX, -BodyY), new Vector2(PanelWidth, PanelHeight),
                 StoragePalette.Panel, StoragePalette.PanelBorder, 14f, 1f, false);
-            RectTransform center = CreateBox(parent, "CenterTransferHint", new Vector2(710f, -122f), new Vector2(80f, 552f),
+            RectTransform center = CreateBox(parent, "CenterTransferHint", new Vector2(TwoPanelCenterX, -BodyY), new Vector2(80f, PanelHeight),
                 new Color(0.12f, 0.145f, 0.14f, 0.18f), Color.clear, 14f, 0f, false);
-            RectTransform rightPanel = CreateBox(parent, "RightPanel_Container", new Vector2(810f, -122f), new Vector2(662f, 552f),
+            RectTransform rightPanel = CreateBox(parent, "RightPanel_Container", new Vector2(TwoPanelRightX, -BodyY), new Vector2(PanelWidth, PanelHeight),
                 StoragePalette.Panel, StoragePalette.PanelBorder, 14f, 1f, false);
 
+            leftPanelRect = leftPanel;
+            centerPanelRect = center;
+            rightPanelRect = rightPanel;
             CreateTransferColumn(center);
             CreateLeftPanel(leftPanel);
             CreateRightPanel(rightPanel);
@@ -917,7 +842,7 @@ namespace Nting.Storage
 
         private void CreateTransferColumn(RectTransform center)
         {
-            RectTransform badge = CreateBox(center, "TransferBadge", new Vector2(17f, -248f), new Vector2(46f, 46f),
+            RectTransform badge = CreateBox(center, "TransferBadge", new Vector2(17f, -292f), new Vector2(46f, 46f),
                 new Color(0.16f, 0.19f, 0.18f, 0.46f), Color.clear, 16f, 0f, false);
             Text arrow = StorageUIUtility.CreateText("TransferArrow", badge, "⇄", 24, TextAnchor.MiddleCenter, StoragePalette.Accent);
             arrow.rectTransform.offsetMin = Vector2.zero;
@@ -987,39 +912,12 @@ namespace Nting.Storage
             RightTitleText = StorageUIUtility.CreateText("RightTitle", panel, StorageTextCatalog.Get(StorageTextId.ExternalContainer), 22, TextAnchor.MiddleLeft, StoragePalette.TextPrimary);
             StorageUIUtility.SetTopLeft(RightTitleText.rectTransform, 22f, 12f, 260f, 34f);
 
-            RightMetaText = StorageUIUtility.CreateText("RightMeta", panel, "4x4  0/12kg", 14, TextAnchor.MiddleRight, StoragePalette.TextSecondary);
+            RightMetaText = StorageUIUtility.CreateText("RightMeta", panel, string.Empty, 14, TextAnchor.MiddleRight, StoragePalette.TextSecondary);
             StorageUIUtility.SetTopLeft(RightMetaText.rectTransform, 340f, 16f, 300f, 28f);
 
             externalGridPad = CreateBox(panel, "GridSoftPad", new Vector2(150f, -130f), new Vector2(360f, 300f),
                 new Color(0.095f, 0.115f, 0.112f, 0.26f), Color.clear, 16f, 0f, false);
             ExternalGrid = CreateGrid(panel, "ContainerGrid", new Vector2(221f, -154f), 52f, 4f);
-        }
-
-        private void CreateFooter(RectTransform parent)
-        {
-            RectTransform footer = CreateBox(parent, "Footer", new Vector2(28f, -698f), new Vector2(1444f, 94f),
-                StoragePalette.Panel, StoragePalette.PanelBorder, 14f, 1f, false);
-
-            itemInfoLabelText = StorageUIUtility.CreateText("InfoLabel", footer, StorageTextCatalog.Get(StorageTextId.ItemInfo), 12, TextAnchor.MiddleLeft, StoragePalette.PaperDim);
-            StorageUIUtility.SetTopLeft(itemInfoLabelText.rectTransform, 24f, 12f, 160f, 18f);
-
-            SelectedItemNameText = StorageUIUtility.CreateText("SelectedItemName", footer, StorageTextCatalog.Get(StorageTextId.NoItemSelected), 18, TextAnchor.MiddleLeft, StoragePalette.TextPrimary);
-            StorageUIUtility.SetTopLeft(SelectedItemNameText.rectTransform, 24f, 28f, 560f, 28f);
-
-            SelectedItemMetaText = StorageUIUtility.CreateText("SelectedItemMeta", footer, StorageTextCatalog.Get(StorageTextId.InspectItemHint), 14, TextAnchor.MiddleLeft, StoragePalette.TextSecondary);
-            StorageUIUtility.SetTopLeft(SelectedItemMetaText.rectTransform, 24f, 55f, 760f, 24f);
-
-            UseItemButton = StorageUIUtility.CreateButton("UseItemButton", footer, StorageTextCatalog.Get(StorageTextId.Use), () => TryUseSelectedItem(),
-                StoragePalette.TabNormal, Color.clear);
-            RectTransform useRect = UseItemButton.GetComponent<RectTransform>();
-            StorageUIUtility.SetTopLeft(useRect, 960f, 31f, 100f, 36f);
-            RefreshUseButton();
-
-            statusLabelText = StorageUIUtility.CreateText("StatusLabel", footer, StorageTextCatalog.Get(StorageTextId.Status), 12, TextAnchor.MiddleRight, StoragePalette.PaperDim);
-            StorageUIUtility.SetTopLeft(statusLabelText.rectTransform, 1080f, 12f, 340f, 18f);
-
-            StatusText = StorageUIUtility.CreateText("StatusHint", footer, string.Empty, 15, TextAnchor.MiddleRight, StoragePalette.TextSecondary);
-            StorageUIUtility.SetTopLeft(StatusText.rectTransform, 1080f, 35f, 340f, 44f);
         }
 
         private void CreateDragLayer()
@@ -1099,24 +997,6 @@ namespace Nting.Storage
             StorageUIUtility.StyleButton(button, fill, selected ? border : Color.clear, selected ? 1f : 0f, 9f, text);
         }
 
-        private void RefreshUseButton()
-        {
-            if (UseItemButton == null)
-            {
-                return;
-            }
-
-            bool canUse = StorageItemUseUtility.CanUse(selectedItem);
-            UseItemButton.interactable = canUse;
-            StorageUIUtility.StyleButton(
-                UseItemButton,
-                canUse ? StoragePalette.ButtonNormal : StoragePalette.TabNormal,
-                canUse ? StoragePalette.SlotHoverBorder : Color.clear,
-                canUse ? 1f : 0f,
-                9f,
-                canUse ? StoragePalette.TextPrimary : StoragePalette.TextMuted);
-        }
-
         private RectTransform CreateBox(Transform parent, string name, Vector2 position, Vector2 size, Color fill, Color border, float radius, float borderWidth, bool centered)
         {
             return StorageUIUtility.CreateBox(
@@ -1135,19 +1015,7 @@ namespace Nting.Storage
 
         private static bool WasEscapePressed()
         {
-#if ENABLE_INPUT_SYSTEM
-            Keyboard keyboard = Keyboard.current;
-            if (keyboard != null && keyboard.escapeKey.wasPressedThisFrame)
-            {
-                return true;
-            }
-#endif
-
-#if ENABLE_LEGACY_INPUT_MANAGER
-            return Input.GetKeyDown(KeyCode.Escape);
-#else
-            return false;
-#endif
+            return CampusGameplayInputBindings.WasPressed(CampusGameplayInputActionId.Settings);
         }
 
         private static void EnsureEventSystem()

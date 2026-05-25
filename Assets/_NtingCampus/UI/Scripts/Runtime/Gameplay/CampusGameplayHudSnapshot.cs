@@ -18,12 +18,9 @@ namespace NtingCampus.UI.Runtime.Gameplay
             string headingLabel,
             string areaSubtitle,
             int money,
-            int divinePower,
+            int staminaCurrent,
+            int staminaMax,
             string backpackStatus,
-            bool backpackEquipped,
-            string interactionKeyText,
-            string interactionText,
-            bool interactionAvailable,
             int pendingCheckoutCount,
             int pendingCheckoutTotal,
             bool canAffordCheckout)
@@ -41,14 +38,11 @@ namespace NtingCampus.UI.Runtime.Gameplay
             HeadingLabel = headingLabel ?? string.Empty;
             AreaSubtitle = areaSubtitle ?? string.Empty;
             Money = money;
-            DivinePower = divinePower;
+            StaminaCurrent = staminaCurrent;
+            StaminaMax = staminaMax;
             BackpackStatus = backpackStatus ?? string.Empty;
-            BackpackEquipped = backpackEquipped;
-            InteractionKeyText = interactionKeyText ?? string.Empty;
-            InteractionText = interactionText ?? string.Empty;
-            InteractionAvailable = interactionAvailable;
-            PendingCheckoutCount = pendingCheckoutCount;
-            PendingCheckoutTotal = pendingCheckoutTotal;
+            PendingCheckoutCount = Math.Max(0, pendingCheckoutCount);
+            PendingCheckoutTotal = Math.Max(0, pendingCheckoutTotal);
             CanAffordCheckout = canAffordCheckout;
         }
 
@@ -65,12 +59,9 @@ namespace NtingCampus.UI.Runtime.Gameplay
         public string HeadingLabel { get; }
         public string AreaSubtitle { get; }
         public int Money { get; }
-        public int DivinePower { get; }
+        public int StaminaCurrent { get; }
+        public int StaminaMax { get; }
         public string BackpackStatus { get; }
-        public bool BackpackEquipped { get; }
-        public string InteractionKeyText { get; }
-        public string InteractionText { get; }
-        public bool InteractionAvailable { get; }
         public int PendingCheckoutCount { get; }
         public int PendingCheckoutTotal { get; }
         public bool CanAffordCheckout { get; }
@@ -91,12 +82,9 @@ namespace NtingCampus.UI.Runtime.Gameplay
                    HeadingLabel == other.HeadingLabel &&
                    AreaSubtitle == other.AreaSubtitle &&
                    Money == other.Money &&
-                   DivinePower == other.DivinePower &&
+                   StaminaCurrent == other.StaminaCurrent &&
+                   StaminaMax == other.StaminaMax &&
                    BackpackStatus == other.BackpackStatus &&
-                   BackpackEquipped == other.BackpackEquipped &&
-                   InteractionKeyText == other.InteractionKeyText &&
-                   InteractionText == other.InteractionText &&
-                   InteractionAvailable == other.InteractionAvailable &&
                    PendingCheckoutCount == other.PendingCheckoutCount &&
                    PendingCheckoutTotal == other.PendingCheckoutTotal &&
                    CanAffordCheckout == other.CanAffordCheckout;
@@ -124,12 +112,9 @@ namespace NtingCampus.UI.Runtime.Gameplay
                 hashCode = (hashCode * 397) ^ HeadingLabel.GetHashCode();
                 hashCode = (hashCode * 397) ^ AreaSubtitle.GetHashCode();
                 hashCode = (hashCode * 397) ^ Money;
-                hashCode = (hashCode * 397) ^ DivinePower;
+                hashCode = (hashCode * 397) ^ StaminaCurrent;
+                hashCode = (hashCode * 397) ^ StaminaMax;
                 hashCode = (hashCode * 397) ^ BackpackStatus.GetHashCode();
-                hashCode = (hashCode * 397) ^ BackpackEquipped.GetHashCode();
-                hashCode = (hashCode * 397) ^ InteractionKeyText.GetHashCode();
-                hashCode = (hashCode * 397) ^ InteractionText.GetHashCode();
-                hashCode = (hashCode * 397) ^ InteractionAvailable.GetHashCode();
                 hashCode = (hashCode * 397) ^ PendingCheckoutCount;
                 hashCode = (hashCode * 397) ^ PendingCheckoutTotal;
                 hashCode = (hashCode * 397) ^ CanAffordCheckout.GetHashCode();

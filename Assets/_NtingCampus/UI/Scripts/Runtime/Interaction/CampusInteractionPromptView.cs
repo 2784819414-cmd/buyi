@@ -78,6 +78,12 @@ namespace NtingCampusMapEditor
 
             EnsureView();
             CampusInteractionPromptData prompt = target.Prompt;
+            if (prompt.HideVisual)
+            {
+                HideImmediate();
+                return;
+            }
+
             targetAnchor = prompt.Anchor != null ? prompt.Anchor : target.TargetTransform;
             targetOffset = prompt.WorldOffset;
             hasTarget = targetAnchor != null;

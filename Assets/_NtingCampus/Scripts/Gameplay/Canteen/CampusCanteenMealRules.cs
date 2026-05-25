@@ -1,8 +1,8 @@
+using System.Collections.Generic;
 using Nting.Storage;
 using NtingCampus.Gameplay.Characters;
 using NtingCampus.Gameplay.Inventory;
 using NtingCampusMapEditor;
-using UnityEngine;
 
 namespace NtingCampus.Gameplay.Canteen
 {
@@ -20,10 +20,8 @@ namespace NtingCampus.Gameplay.Canteen
                 return false;
             }
 
-            CampusDroppedStorageItem[] items = Object.FindObjectsByType<CampusDroppedStorageItem>(
-                FindObjectsInactive.Exclude,
-                FindObjectsSortMode.None);
-            for (int i = 0; i < items.Length; i++)
+            IReadOnlyList<CampusDroppedStorageItem> items = CampusDroppedStorageItemRegistry.ActiveItems;
+            for (int i = 0; i < items.Count; i++)
             {
                 CampusDroppedStorageItem item = items[i];
                 if (CampusCanteenServedItemPlacement.IsServedCanteenItem(item) &&

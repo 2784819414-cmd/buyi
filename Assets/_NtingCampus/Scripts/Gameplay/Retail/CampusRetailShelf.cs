@@ -298,19 +298,7 @@ namespace NtingCampus.Gameplay.Retail
         private List<CampusDroppedStorageItem> CollectDisplayItems(string shelfId)
         {
             List<CampusDroppedStorageItem> items = new List<CampusDroppedStorageItem>();
-            CampusDroppedStorageItem[] candidates = FindObjectsByType<CampusDroppedStorageItem>(FindObjectsInactive.Exclude, FindObjectsSortMode.None);
-            for (int i = 0; i < candidates.Length; i++)
-            {
-                CampusDroppedStorageItem candidate = candidates[i];
-                if (candidate == null ||
-                    !string.Equals(candidate.SourceContainerId, shelfId, StringComparison.OrdinalIgnoreCase))
-                {
-                    continue;
-                }
-
-                items.Add(candidate);
-            }
-
+            CampusDroppedStorageItemRegistry.CollectBySourceContainer(shelfId, items);
             return items;
         }
 

@@ -10,7 +10,9 @@ namespace Nting.Storage
         public const string RightChestPocketContainerId = "pocket_right_chest";
         public const string LeftPantsPocketContainerId = "pocket_left_pants";
         public const string RightPantsPocketContainerId = "pocket_right_pants";
+        public const string BackpackEquipmentContainerId = "backpack_slot";
         public const string BackpackContainerId = "school_backpack";
+        public const string BackpackItemDefinitionId = "school_backpack";
 
         private const string StarterItemsSeedFlag = "storage_player_starter_items_seeded";
         private const string RegistryResourcePath = "StorageItemRegistry";

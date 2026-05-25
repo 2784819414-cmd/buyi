@@ -6,7 +6,7 @@ using UnityEngine.UI;
 namespace Nting.Storage
 {
     [DisallowMultipleComponent]
-    public sealed class StorageItemView : MonoBehaviour, IPointerClickHandler, IBeginDragHandler, IDragHandler, IEndDragHandler, IPointerEnterHandler, IPointerExitHandler
+    public sealed class StorageItemView : MonoBehaviour, IPointerClickHandler, IBeginDragHandler, IDragHandler, IEndDragHandler, IPointerEnterHandler, IPointerMoveHandler, IPointerExitHandler
     {
         private enum ItemAlertBadgeState
         {
@@ -156,6 +156,7 @@ namespace Nting.Storage
                 return;
             }
 
+            window.HideItemTooltip();
             window.DragController.BeginDrag(this, eventData);
         }
 
@@ -179,12 +180,28 @@ namespace Nting.Storage
         {
             hovered = true;
             RefreshVisual();
+            if (window != null)
+            {
+                window.ShowItemTooltip(item, ownerGrid, eventData.position);
+            }
+        }
+
+        public void OnPointerMove(PointerEventData eventData)
+        {
+            if (window != null)
+            {
+                window.MoveItemTooltip(eventData.position);
+            }
         }
 
         public void OnPointerExit(PointerEventData eventData)
         {
             hovered = false;
             RefreshVisual();
+            if (window != null)
+            {
+                window.HideItemTooltip();
+            }
         }
 
         private void EnsureVisual()

@@ -79,7 +79,7 @@ namespace NtingCampusMapEditor
                     Color swatchColor = swatchResolver != null ? swatchResolver(roomName) : Color.white;
                     entries.Add(new CampusRuntimeMapEditorChecklistEntryReadModel(
                         label,
-                        actual + "/" + required,
+                        actual.ToString(),
                         actual >= required,
                         swatchColor));
                 }

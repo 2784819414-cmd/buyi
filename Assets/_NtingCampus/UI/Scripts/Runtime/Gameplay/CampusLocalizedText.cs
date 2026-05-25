@@ -8,18 +8,45 @@ namespace NtingCampus.UI.Runtime.Gameplay
     {
         [SerializeField] private string chinese;
         [SerializeField] private string english;
+        [SerializeField] private string traditionalChinese;
+        [SerializeField] private string russian;
+        [SerializeField] private string japanese;
 
         public CampusLocalizedText(string chineseText, string englishText)
+            : this(chineseText, englishText, string.Empty, string.Empty, string.Empty)
+        {
+        }
+
+        public CampusLocalizedText(
+            string chineseText,
+            string englishText,
+            string traditionalChineseText,
+            string russianText,
+            string japaneseText)
         {
             chinese = string.IsNullOrWhiteSpace(chineseText) ? string.Empty : chineseText.Trim();
             english = string.IsNullOrWhiteSpace(englishText) ? string.Empty : englishText.Trim();
+            traditionalChinese = string.IsNullOrWhiteSpace(traditionalChineseText) ? string.Empty : traditionalChineseText.Trim();
+            russian = string.IsNullOrWhiteSpace(russianText) ? string.Empty : russianText.Trim();
+            japanese = string.IsNullOrWhiteSpace(japaneseText) ? string.Empty : japaneseText.Trim();
         }
 
-        public bool HasAnyText => !string.IsNullOrWhiteSpace(chinese) || !string.IsNullOrWhiteSpace(english);
+        public bool HasAnyText =>
+            !string.IsNullOrWhiteSpace(chinese) ||
+            !string.IsNullOrWhiteSpace(english) ||
+            !string.IsNullOrWhiteSpace(traditionalChinese) ||
+            !string.IsNullOrWhiteSpace(russian) ||
+            !string.IsNullOrWhiteSpace(japanese);
 
         public string Chinese => chinese;
 
         public string English => english;
+
+        public string TraditionalChinese => traditionalChinese;
+
+        public string Russian => russian;
+
+        public string Japanese => japanese;
 
         public string Current(params string[] fallbacks)
         {
@@ -28,12 +55,13 @@ namespace NtingCampus.UI.Runtime.Gameplay
 
         public string Get(CampusDisplayLanguage language, params string[] fallbacks)
         {
-            string resolved = language switch
-            {
-                CampusDisplayLanguage.English => ResolveEnglishFirst(),
-                CampusDisplayLanguage.Bilingual => ResolveBilingual(),
-                _ => ResolveChineseFirst()
-            };
+            string resolved = CampusDisplayLanguageCatalog.Resolve(
+                language,
+                chinese,
+                english,
+                traditionalChinese,
+                russian,
+                japanese);
 
             if (!string.IsNullOrWhiteSpace(resolved))
             {
@@ -55,44 +83,22 @@ namespace NtingCampus.UI.Runtime.Gameplay
                 return english;
             }
 
+            if (!string.IsNullOrWhiteSpace(traditionalChinese))
+            {
+                return traditionalChinese;
+            }
+
+            if (!string.IsNullOrWhiteSpace(russian))
+            {
+                return russian;
+            }
+
+            if (!string.IsNullOrWhiteSpace(japanese))
+            {
+                return japanese;
+            }
+
             return ResolveFallback(fallbacks);
-        }
-
-        private string ResolveChineseFirst()
-        {
-            if (!string.IsNullOrWhiteSpace(chinese))
-            {
-                return chinese;
-            }
-
-            return string.IsNullOrWhiteSpace(english) ? string.Empty : english;
-        }
-
-        private string ResolveEnglishFirst()
-        {
-            if (!string.IsNullOrWhiteSpace(english))
-            {
-                return english;
-            }
-
-            return string.IsNullOrWhiteSpace(chinese) ? string.Empty : chinese;
-        }
-
-        private string ResolveBilingual()
-        {
-            bool hasChinese = !string.IsNullOrWhiteSpace(chinese);
-            bool hasEnglish = !string.IsNullOrWhiteSpace(english);
-            if (hasChinese && hasEnglish)
-            {
-                return chinese + " / " + english;
-            }
-
-            if (hasChinese)
-            {
-                return chinese;
-            }
-
-            return hasEnglish ? english : string.Empty;
         }
 
         private static string ResolveFallback(string[] fallbacks)

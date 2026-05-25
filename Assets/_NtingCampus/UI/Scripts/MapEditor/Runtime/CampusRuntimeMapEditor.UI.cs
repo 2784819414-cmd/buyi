@@ -144,7 +144,7 @@ namespace NtingCampusMapEditor
                 roomNames,
                 roomRequiredCounts,
                 GetAreaPresetLabel,
-                GetRoomMarkerCount,
+                GetRoomRegionCount,
                 CampusRuntimeGameplayOverlayPalette.ResolveRoomNameColor);
         }
 
@@ -484,7 +484,7 @@ namespace NtingCampusMapEditor
             for (int i = 0; i < roomNames.Count; i++)
             {
                 Rect rowRect = new Rect(0f, y, viewRect.width, 34f);
-                int count = GetRoomMarkerCount(roomNames[i]);
+                int count = GetRoomRegionCount(roomNames[i]);
                 int required = roomRequiredCounts[i];
                 if (GUI.Button(rowRect, GUIContent.none, i == selectedRoomIndex ? selectedButtonStyle : buttonStyle))
                 {
@@ -497,7 +497,7 @@ namespace NtingCampusMapEditor
             }
 
             y += 12f;
-            GUI.Label(new Rect(0f, y, viewRect.width, 48f), Tr("\u533a\u57df\u68c0\u67e5\u6e05\u5355\u4f1a\u5b9e\u65f6\u7edf\u8ba1\u8fd0\u884c\u65f6\u6807\u8bb0\uff0c\u5e76\u968f JSON \u5bfc\u51fa\u3002", "The area checklist counts runtime area markers in real time and is included in exported JSON."), mutedStyle);
+            GUI.Label(new Rect(0f, y, viewRect.width, 48f), Tr("\u533a\u57df\u68c0\u67e5\u6e05\u5355\u4f1a\u5b9e\u65f6\u7edf\u8ba1\u8fde\u901a\u533a\u57df\uff0c\u5e76\u968f JSON \u5bfc\u51fa\u3002", "The area checklist counts connected area regions in real time and is included in exported JSON."), mutedStyle);
             y += 58f;
 
             GUI.Label(new Rect(0f, y, viewRect.width, 26f), Tr("\u670d\u52a1\u7ad9\u70b9", "Service Station Points"), headerStyle);
@@ -1722,7 +1722,7 @@ namespace NtingCampusMapEditor
         {
             DrawAreaColorSwatch(new Rect(rect.x + 10f, rect.y + 8f, 18f, 18f), roomName);
             GUI.Label(new Rect(rect.x + 38f, rect.y + 4f, rect.width - 108f, 26f), GetAreaPresetLabel(roomName), bodyStyle);
-            GUI.Label(new Rect(rect.xMax - 68f, rect.y + 4f, 60f, 26f), count + "/" + required, count >= required ? bodyStyle : warningStyle);
+            GUI.Label(new Rect(rect.xMax - 68f, rect.y + 4f, 60f, 26f), count.ToString(), count >= required ? bodyStyle : warningStyle);
         }
 
         private void DrawAreaColorSwatch(Rect rect, string roomName)
@@ -2891,6 +2891,19 @@ namespace NtingCampusMapEditor
         private CampusPlacedObject ApplyRuntimeObjectSettings(GameObject target, CampusRuntimeObjectSettings settings)
         {
             CampusPlacedObject placed = EnsureRuntimePlacedObject(target);
+            if (settings != null)
+            {
+                settings.ObjectId = objectDefinitionCatalog.NormalizeObjectId(settings.ObjectId);
+                settings.TypeId = objectDefinitionCatalog.ResolveTypeId(settings.ObjectId, settings.TypeId);
+                string displayName = objectDefinitionCatalog.ResolveDisplayNameText(
+                    settings.ObjectId,
+                    settings.DisplayNameOverride);
+                if (!string.IsNullOrWhiteSpace(displayName))
+                {
+                    settings.DisplayNameOverride = displayName;
+                }
+            }
+
             return CampusRuntimeObjectAuthoring.ApplySettings(
                 target,
                 placed,
@@ -2903,16 +2916,35 @@ namespace NtingCampusMapEditor
 
         private void SaveRuntimeObjectSettings(CampusRuntimeObjectSettings settings)
         {
+            if (settings != null)
+            {
+                settings.ObjectId = objectDefinitionCatalog.NormalizeObjectId(settings.ObjectId);
+                settings.TypeId = objectDefinitionCatalog.ResolveTypeId(settings.ObjectId, settings.TypeId);
+            }
+
             CampusRuntimeObjectSettingsStore.Save(GetImportRootFolder(), settings);
             RefreshImportAssetDatabaseIfProjectBacked();
         }
 
         private CampusRuntimeObjectSettings LoadRuntimeObjectSettings(string objectId)
         {
-            return CampusRuntimeObjectSettingsStore.Load(
-                GetImportRootFolder(),
-                objectId,
-                message => Debug.LogWarning("[NtingCampusRuntimeMapEditor] " + message));
+            List<string> lookupIds = objectDefinitionCatalog.GetSettingsLookupIds(objectId);
+            for (int i = 0; i < lookupIds.Count; i++)
+            {
+                CampusRuntimeObjectSettings settings = CampusRuntimeObjectSettingsStore.Load(
+                    GetImportRootFolder(),
+                    lookupIds[i],
+                    message => Debug.LogWarning("[NtingCampusRuntimeMapEditor] " + message));
+                if (settings == null)
+                {
+                    continue;
+                }
+
+                settings.ObjectId = objectDefinitionCatalog.NormalizeObjectId(settings.ObjectId);
+                return settings;
+            }
+
+            return null;
         }
 
         private void AssignRuntimeObjectDirectionSprite(CampusPlacedObject placed, int rotation90Index, bool hasOverride, string spritePath, string objectName)
@@ -3625,7 +3657,7 @@ namespace NtingCampusMapEditor
                 }
             }
 
-            InvalidateRoomMarkerCountCache();
+            InvalidateRoomRegionCountCache();
         }
 
         private void ClearRoomDefinitions()
@@ -3643,19 +3675,19 @@ namespace NtingCampusMapEditor
                 }
             }
 
-            InvalidateRoomMarkerCountCache();
+            InvalidateRoomRegionCountCache();
         }
 
-        private int GetRoomMarkerCount(string roomName)
+        private int GetRoomRegionCount(string roomName)
         {
             if (!CampusRuntimeAreaPresetCatalog.TryResolveRoomName(roomName, out string targetRoomName))
             {
                 return 0;
             }
 
-            EnsureRoomMarkerCountCache();
+            EnsureRoomRegionCountCache();
             int count;
-            if (roomMarkerCountsByName.TryGetValue(targetRoomName, out count))
+            if (roomRegionCountsByName.TryGetValue(targetRoomName, out count))
             {
                 return count;
             }
@@ -3670,9 +3702,9 @@ namespace NtingCampusMapEditor
                 return;
             }
 
-            if (force || roomMarkerCountCacheDirty)
+            if (force || roomRegionCountCacheDirty)
             {
-                RebuildRoomMarkerCountCache();
+                RebuildRoomRegionCountCache();
             }
 
             if (force || editableLightCacheDirty)
@@ -3683,41 +3715,28 @@ namespace NtingCampusMapEditor
 
         private void InvalidateOpenPanelCaches()
         {
-            InvalidateRoomMarkerCountCache();
+            InvalidateRoomRegionCountCache();
             InvalidateEditableLightCache();
         }
 
-        private void InvalidateRoomMarkerCountCache()
+        private void InvalidateRoomRegionCountCache()
         {
-            roomMarkerCountCacheDirty = true;
+            roomRegionCountCacheDirty = true;
         }
 
-        private void EnsureRoomMarkerCountCache()
+        private void EnsureRoomRegionCountCache()
         {
-            if (roomMarkerCountCacheDirty)
+            if (roomRegionCountCacheDirty)
             {
-                RebuildRoomMarkerCountCache();
+                RebuildRoomRegionCountCache();
             }
         }
 
-        private void RebuildRoomMarkerCountCache()
+        private void RebuildRoomRegionCountCache()
         {
-            roomMarkerCountsByName.Clear();
             CampusRuntimeRoomMarker[] markers = FindObjectsByType<CampusRuntimeRoomMarker>(FindObjectsInactive.Include, FindObjectsSortMode.None);
-            for (int i = 0; i < markers.Length; i++)
-            {
-                CampusRuntimeRoomMarker marker = markers[i];
-                if (marker == null || !CampusRuntimeAreaPresetCatalog.TryResolveRoomName(marker.RoomName, out string markerRoomName))
-                {
-                    continue;
-                }
-
-                int count;
-                roomMarkerCountsByName.TryGetValue(markerRoomName, out count);
-                roomMarkerCountsByName[markerRoomName] = count + 1;
-            }
-
-            roomMarkerCountCacheDirty = false;
+            CampusRuntimeAreaRegionCounter.CountRegionsByRoomName(markers, roomRegionCountsByName);
+            roomRegionCountCacheDirty = false;
         }
 
         private void InvalidateEditableLightCache()
@@ -3814,7 +3833,7 @@ namespace NtingCampusMapEditor
                 return Tr("\u670d\u52a1\u7ad9\u70b9", "Service Station Point");
             }
 
-            return Tr(preset.ChineseLabel, preset.EnglishLabel);
+            return Tr(preset.Label);
         }
 
         private string GetGameplayPresetDisplayName(CampusRuntimeGameplayMarkerPreset preset)
@@ -3824,7 +3843,7 @@ namespace NtingCampusMapEditor
                 return Tr("\u670d\u52a1\u7ad9\u70b9", "Service Station Point");
             }
 
-            return Tr(preset.ChineseDisplayName, preset.EnglishDisplayName);
+            return Tr(preset.DisplayName);
         }
 
         private float GetGameplayOwnerSelectionHeight()
@@ -3998,7 +4017,7 @@ namespace NtingCampusMapEditor
                 return Tr("NPC", "NPC");
             }
 
-            return Tr(preset.ChineseLabel, preset.EnglishLabel);
+            return Tr(preset.Label);
         }
 
         private bool TryResolveGameplayMarkerCell(Component component, out int floorIndex, out Vector3Int cell)
@@ -4153,13 +4172,20 @@ namespace NtingCampusMapEditor
 
         private GameObject ResolvePrefab(CampusRuntimeObjectSnapshot objectSnapshot)
         {
-            if (objectSnapshot.PaletteIndex >= 0 && objectSnapshot.PaletteIndex < objectPrefabs.Count && objectPrefabs[objectSnapshot.PaletteIndex] != null)
+            int objectIdIndex = FindPrefabIndexByName(objectSnapshot.ObjectId);
+            if (objectIdIndex >= 0)
+            {
+                return objectPrefabs[objectIdIndex];
+            }
+
+            if (objectSnapshot.PaletteIndex >= 0 &&
+                objectSnapshot.PaletteIndex < objectPrefabs.Count &&
+                objectPrefabs[objectSnapshot.PaletteIndex] != null)
             {
                 return objectPrefabs[objectSnapshot.PaletteIndex];
             }
 
-            int index = FindPrefabIndexByName(objectSnapshot.ObjectId);
-            return index >= 0 ? objectPrefabs[index] : null;
+            return null;
         }
 
         private int FindPrefabIndexByName(string objectId)
@@ -4169,6 +4195,7 @@ namespace NtingCampusMapEditor
                 return -1;
             }
 
+            string normalizedObjectId = objectDefinitionCatalog.NormalizeObjectId(objectId);
             for (int i = 0; i < objectPrefabs.Count; i++)
             {
                 GameObject prefab = objectPrefabs[i];
@@ -4177,7 +4204,14 @@ namespace NtingCampusMapEditor
                     continue;
                 }
 
-                if (prefab.name == objectId || CampusObjectNames.GetDisplayName(prefab.name) == CampusObjectNames.GetDisplayName(objectId))
+                CampusPlacedObject placed = prefab.GetComponent<CampusPlacedObject>();
+                string prefabObjectId = placed != null && !string.IsNullOrWhiteSpace(placed.ObjectId)
+                    ? placed.ObjectId.Trim()
+                    : prefab.name;
+                if (objectDefinitionCatalog.ObjectIdsMatch(prefabObjectId, normalizedObjectId) ||
+                    objectDefinitionCatalog.ObjectIdsMatch(prefab.name, normalizedObjectId) ||
+                    prefab.name == objectId ||
+                    CampusObjectNames.GetDisplayName(prefab.name) == CampusObjectNames.GetDisplayName(objectId))
                 {
                     return i;
                 }
@@ -4856,9 +4890,25 @@ namespace NtingCampusMapEditor
             return CampusRuntimeEditorTextCatalog.Get(displayLanguage, id);
         }
 
-        private string Tr(string chinese, string english)
+        private string Tr(
+            string chinese,
+            string english,
+            string traditionalChinese = null,
+            string russian = null,
+            string japanese = null)
         {
-            return CampusRuntimeEditorTextCatalog.Get(displayLanguage, chinese, english);
+            return CampusRuntimeEditorTextCatalog.Get(
+                displayLanguage,
+                chinese,
+                english,
+                traditionalChinese,
+                russian,
+                japanese);
+        }
+
+        private string Tr(CampusLocalizedTextEntry text)
+        {
+            return text.Get(displayLanguage);
         }
 
         private string TrFormat(string chinese, string english, params object[] args)

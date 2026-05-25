@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using NtingCampus.UI.Runtime.Gameplay;
 using UnityEngine;
 
 namespace NtingCampusMapEditor
@@ -7,19 +8,18 @@ namespace NtingCampusMapEditor
     internal sealed class CampusRuntimeAreaPreset
     {
         public readonly string RoomName;
-        public readonly string ChineseLabel;
-        public readonly string EnglishLabel;
+        public readonly CampusLocalizedTextEntry Label;
         public readonly int RequiredCount;
 
         public CampusRuntimeAreaPreset(
             string roomName,
-            string chineseLabel,
-            string englishLabel,
+            CampusLocalizedTextEntry label,
             int requiredCount)
         {
             RoomName = roomName;
-            ChineseLabel = chineseLabel;
-            EnglishLabel = englishLabel;
+            Label = label.HasAnyText
+                ? label
+                : new CampusLocalizedTextEntry(roomName, roomName);
             RequiredCount = requiredCount < 0 ? 0 : requiredCount;
         }
     }
@@ -43,17 +43,17 @@ namespace NtingCampusMapEditor
 
         private static readonly CampusRuntimeAreaPreset[] BuiltInPresets =
         {
-            new CampusRuntimeAreaPreset("Classroom", "\u6559\u5ba4", "Classroom", 2),
-            new CampusRuntimeAreaPreset("Corridor", "\u8d70\u5eca", "Corridor", 1),
-            new CampusRuntimeAreaPreset("Office", "\u529e\u516c\u5ba4", "Office", 1),
-            new CampusRuntimeAreaPreset("CommonActivityZone", "\u516c\u5171\u6d3b\u52a8\u533a", "Common Activity Zone", 1),
-            new CampusRuntimeAreaPreset("Outdoor", "\u5ba4\u5916", "Outdoor", 1),
-            new CampusRuntimeAreaPreset("Dormitory", "\u5bbf\u820d", "Dormitory", 0),
-            new CampusRuntimeAreaPreset("Restroom", "\u536b\u751f\u95f4", "Restroom", 0),
-            new CampusRuntimeAreaPreset("Library", "\u56fe\u4e66\u9986", "Library", 0),
-            new CampusRuntimeAreaPreset("Stairwell", "\u697c\u68af\u95f4", "Stairwell", 0),
-            new CampusRuntimeAreaPreset("HumanResources", "\u4eba\u4e8b\u5904", "Human Resources", 0),
-            new CampusRuntimeAreaPreset("ShrineRoom", "\u795e\u9f9b\u5ba4", "Shrine Room", 0)
+            new CampusRuntimeAreaPreset("Classroom", new CampusLocalizedTextEntry("\u6559\u5ba4", "Classroom", "\u6559\u5ba4", "\u041a\u043b\u0430\u0441\u0441", "\u6559\u5ba4"), 2),
+            new CampusRuntimeAreaPreset("Corridor", new CampusLocalizedTextEntry("\u8d70\u5eca", "Corridor", "\u8d70\u5eca", "\u041a\u043e\u0440\u0438\u0434\u043e\u0440", "\u5eca\u4e0b"), 1),
+            new CampusRuntimeAreaPreset("Office", new CampusLocalizedTextEntry("\u529e\u516c\u5ba4", "Office", "\u8fa6\u516c\u5ba4", "\u041a\u0430\u0431\u0438\u043d\u0435\u0442", "\u8077\u54e1\u5ba4"), 1),
+            new CampusRuntimeAreaPreset("CommonActivityZone", new CampusLocalizedTextEntry("\u516c\u5171\u6d3b\u52a8\u533a", "Common Activity Zone", "\u516c\u5171\u6d3b\u52d5\u5340", "\u041e\u0431\u0449\u0430\u044f \u0437\u043e\u043d\u0430", "\u5171\u7528\u6d3b\u52d5\u30a8\u30ea\u30a2"), 1),
+            new CampusRuntimeAreaPreset("Outdoor", new CampusLocalizedTextEntry("\u5ba4\u5916", "Outdoor", "\u5ba4\u5916", "\u0423\u043b\u0438\u0446\u0430", "\u5c4b\u5916"), 1),
+            new CampusRuntimeAreaPreset("Dormitory", new CampusLocalizedTextEntry("\u5bbf\u820d", "Dormitory", "\u5bbf\u820d", "\u041e\u0431\u0449\u0435\u0436\u0438\u0442\u0438\u0435", "\u5bee"), 0),
+            new CampusRuntimeAreaPreset("Restroom", new CampusLocalizedTextEntry("\u536b\u751f\u95f4", "Restroom", "\u885b\u751f\u9593", "\u0422\u0443\u0430\u043b\u0435\u0442", "\u30c8\u30a4\u30ec"), 0),
+            new CampusRuntimeAreaPreset("Library", new CampusLocalizedTextEntry("\u56fe\u4e66\u9986", "Library", "\u5716\u66f8\u9928", "\u0411\u0438\u0431\u043b\u0438\u043e\u0442\u0435\u043a\u0430", "\u56f3\u66f8\u5ba4"), 0),
+            new CampusRuntimeAreaPreset("Stairwell", new CampusLocalizedTextEntry("\u697c\u68af\u95f4", "Stairwell", "\u6a13\u68af\u9593", "\u041b\u0435\u0441\u0442\u043d\u0438\u0446\u0430", "\u968e\u6bb5\u5ba4"), 0),
+            new CampusRuntimeAreaPreset("HumanResources", new CampusLocalizedTextEntry("\u4eba\u4e8b\u5904", "Human Resources", "\u4eba\u4e8b\u8655", "\u041e\u0442\u0434\u0435\u043b \u043a\u0430\u0434\u0440\u043e\u0432", "\u4eba\u4e8b\u8ab2"), 0),
+            new CampusRuntimeAreaPreset("ShrineRoom", new CampusLocalizedTextEntry("\u795e\u9f9b\u5ba4", "Shrine Room", "\u795e\u9f95\u5ba4", "\u041a\u043e\u043c\u043d\u0430\u0442\u0430 \u0441\u0432\u044f\u0442\u044b\u043d\u0438", "\u795e\u68da\u5ba4"), 0)
         };
 
         internal static bool TryResolveRoomName(string roomName, out string presetRoomName)
@@ -75,8 +75,7 @@ namespace NtingCampusMapEditor
                 }
 
                 if (key == NormalizeKey(preset.RoomName) ||
-                    key == NormalizeKey(preset.EnglishLabel) ||
-                    key == NormalizeKey(preset.ChineseLabel))
+                    MatchesLabelKey(key, preset.Label))
                 {
                     presetRoomName = preset.RoomName;
                     return true;
@@ -133,8 +132,13 @@ namespace NtingCampusMapEditor
 
                     loaded.Add(new CampusRuntimeAreaPreset(
                         record.RoomName.Trim(),
-                        string.IsNullOrWhiteSpace(record.ChineseLabel) ? record.RoomName.Trim() : record.ChineseLabel.Trim(),
-                        string.IsNullOrWhiteSpace(record.EnglishLabel) ? record.RoomName.Trim() : record.EnglishLabel.Trim(),
+                        BuildTextEntry(
+                            record.ChineseLabel,
+                            record.EnglishLabel,
+                            record.TraditionalChineseLabel,
+                            record.RussianLabel,
+                            record.JapaneseLabel,
+                            record.RoomName),
                         record.RequiredCount));
                 }
 
@@ -219,6 +223,42 @@ namespace NtingCampusMapEditor
             return false;
         }
 
+        private static bool MatchesLabelKey(string key, CampusLocalizedTextEntry label)
+        {
+            return key == NormalizeKey(label.Chinese) ||
+                   key == NormalizeKey(label.English) ||
+                   key == NormalizeKey(label.TraditionalChinese) ||
+                   key == NormalizeKey(label.Russian) ||
+                   key == NormalizeKey(label.Japanese);
+        }
+
+        private static CampusLocalizedTextEntry BuildTextEntry(
+            string chinese,
+            string english,
+            string traditionalChinese,
+            string russian,
+            string japanese,
+            string fallback)
+        {
+            string cleanFallback = Clean(fallback);
+            return new CampusLocalizedTextEntry(
+                FirstNonEmpty(chinese, cleanFallback),
+                FirstNonEmpty(english, cleanFallback),
+                Clean(traditionalChinese),
+                Clean(russian),
+                Clean(japanese));
+        }
+
+        private static string FirstNonEmpty(string value, string fallback)
+        {
+            return string.IsNullOrWhiteSpace(value) ? fallback : value.Trim();
+        }
+
+        private static string Clean(string value)
+        {
+            return string.IsNullOrWhiteSpace(value) ? string.Empty : value.Trim();
+        }
+
         private static string NormalizeKey(string value)
         {
             if (string.IsNullOrWhiteSpace(value))
@@ -264,6 +304,9 @@ namespace NtingCampusMapEditor
             public string RoomName = string.Empty;
             public string ChineseLabel = string.Empty;
             public string EnglishLabel = string.Empty;
+            public string TraditionalChineseLabel = string.Empty;
+            public string RussianLabel = string.Empty;
+            public string JapaneseLabel = string.Empty;
             public int RequiredCount = 0;
         }
     }

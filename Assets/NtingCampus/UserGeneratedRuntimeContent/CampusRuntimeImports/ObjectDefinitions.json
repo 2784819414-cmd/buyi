@@ -1,0 +1,114 @@
+{
+    "Objects": [
+        {
+            "ObjectId": "door_1x1",
+            "SourceObjectId": "门",
+            "TypeId": "Door",
+            "DisplayName": {
+                "chinese": "门",
+                "english": "Door"
+            },
+            "LegacyObjectIds": [ "门" ]
+        },
+        {
+            "ObjectId": "canteen_service_window_1x1",
+            "SourceObjectId": "新物体_1x1",
+            "TypeId": "ServiceWindow",
+            "DisplayName": {
+                "chinese": "窗口",
+                "english": "Service Window"
+            },
+            "LegacyObjectIds": [ "新物体_1x1" ]
+        },
+        {
+            "ObjectId": "canteen_checkout_2x1",
+            "SourceObjectId": "收银台_2x1",
+            "TypeId": "CheckoutPoint",
+            "DisplayName": {
+                "chinese": "收银台",
+                "english": "Checkout Counter"
+            },
+            "LegacyObjectIds": [ "收银台_2x1" ]
+        },
+        {
+            "ObjectId": "retail_shelf_container_2x1",
+            "SourceObjectId": "",
+            "TypeId": "GoodsShelf",
+            "DisplayName": {
+                "chinese": "超市货架（容器）",
+                "english": "Retail Shelf (Container)"
+            },
+            "LegacyObjectIds": [ "builtin_retail_shelf_container" ]
+        },
+        {
+            "ObjectId": "retail_shelf_display_2x1",
+            "SourceObjectId": "",
+            "TypeId": "GoodsShelf",
+            "DisplayName": {
+                "chinese": "超市货架（直摆）",
+                "english": "Retail Shelf (Display)"
+            },
+            "LegacyObjectIds": [ "builtin_retail_shelf_display" ]
+        },
+        {
+            "ObjectId": "bookshelf_variant_2x1",
+            "SourceObjectId": "书架2_2x1",
+            "TypeId": "",
+            "DisplayName": {
+                "chinese": "书架2",
+                "english": "Bookshelf 2"
+            },
+            "LegacyObjectIds": [ "书架2_2x1" ]
+        },
+        {
+            "ObjectId": "bookshelf_2x1",
+            "SourceObjectId": "书架_2x1",
+            "TypeId": "",
+            "DisplayName": {
+                "chinese": "书架1",
+                "english": "Bookshelf 1"
+            },
+            "LegacyObjectIds": [ "书架_2x1" ]
+        },
+        {
+            "ObjectId": "storage_rack_2x1",
+            "SourceObjectId": "储物架_2x1",
+            "TypeId": "Storage",
+            "DisplayName": {
+                "chinese": "储物架",
+                "english": "Storage Rack"
+            },
+            "LegacyObjectIds": [ "储物架_2x1" ]
+        },
+        {
+            "ObjectId": "bulletin_board_1x1",
+            "SourceObjectId": "公告栏_1x1",
+            "TypeId": "BulletinBoard",
+            "DisplayName": {
+                "chinese": "公告栏",
+                "english": "Bulletin Board"
+            },
+            "LegacyObjectIds": [ "公告栏_1x1" ]
+        },
+        {
+            "ObjectId": "test_storage_box_1x1",
+            "SourceObjectId": "测试箱",
+            "TypeId": "Storage",
+            "DisplayName": {
+                "chinese": "测试箱",
+                "english": "Test Storage Box"
+            },
+            "LegacyObjectIds": [ "测试箱" ]
+        },
+        {
+            "ObjectId": "goods_shelf_2x1",
+            "SourceObjectId": "货架_2x1",
+            "TypeId": "GoodsShelf",
+            "DisplayName": {
+                "chinese": "货架",
+                "english": "Goods Shelf"
+            },
+            "LegacyObjectIds": [ "货架_2x1" ]
+        }
+    ]
+}

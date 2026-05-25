@@ -8,10 +8,17 @@ namespace NtingCampus.Gameplay.Characters
     public sealed class CampusNpcInteractable : MonoBehaviour, ICampusInteractable, ICampusInteractionActionHandler, ICampusInteractionAvailability, ICampusInteractionPromptProvider
     {
         private ICampusNpcTalkSource talkSource;
+        private CampusNpcSpeechBubble speechBubble;
 
         public void Bind(ICampusNpcTalkSource targetTalkSource)
         {
+            Bind(targetTalkSource, speechBubble);
+        }
+
+        public void Bind(ICampusNpcTalkSource targetTalkSource, CampusNpcSpeechBubble targetSpeechBubble)
+        {
             talkSource = targetTalkSource;
+            speechBubble = targetSpeechBubble;
         }
 
         public void Interact(GameObject actor)
@@ -49,6 +56,7 @@ namespace NtingCampus.Gameplay.Characters
             prompt.WorldOffset = new Vector3(0f, 0.84f, 0f);
             prompt.Priority = 55;
             prompt.IsAvailable = talkSource != null && talkSource.IsTalkAvailable;
+            prompt.HideVisual = speechBubble != null && speechBubble.IsVisible;
             return true;
         }
 

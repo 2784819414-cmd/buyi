@@ -96,6 +96,7 @@ namespace Nting.Storage
         public List<StorageContainerDefinition> Containers = new List<StorageContainerDefinition>();
         public List<string> HandContainerIds = new List<string>();
         public List<string> PocketContainerIds = new List<string>();
+        public string BackpackEquipmentContainerId;
         public string BackpackContainerId;
         public List<StorageStarterItemDefinition> StarterItems = new List<StorageStarterItemDefinition>();
 
@@ -170,6 +171,7 @@ namespace Nting.Storage
             profile.Containers.Add(Carried("pocket_right_chest", StorageTextId.RightChestPocket, 2, 3, 1.5f));
             profile.Containers.Add(Carried("pocket_left_pants", StorageTextId.LeftPantsPocket, 2, 3, 2f));
             profile.Containers.Add(Carried("pocket_right_pants", StorageTextId.RightPantsPocket, 2, 3, 2f));
+            profile.Containers.Add(Carried("backpack_slot", StorageTextId.BackpackEquipmentSlot, 1, 1, 5f, true));
             profile.Containers.Add(Carried("school_backpack", StorageTextId.StudentBackpack, 5, 6, 20f));
             profile.HandContainerIds.AddRange(new[] { "hand_left", "hand_right" });
             profile.PocketContainerIds.AddRange(new[]
@@ -179,7 +181,9 @@ namespace Nting.Storage
                 "pocket_left_pants",
                 "pocket_right_pants"
             });
+            profile.BackpackEquipmentContainerId = "backpack_slot";
             profile.BackpackContainerId = "school_backpack";
+            profile.StarterItems.Add(Starter("backpack_slot", "school_backpack", "school_backpack_player_001", 0, 0));
             profile.StarterItems.Add(Starter("pocket_left_chest", "phone", "phone_player_001", 0, 0));
             profile.StarterItems.Add(Starter("pocket_left_chest", "note", "note_player_001", 1, 0));
             profile.StarterItems.Add(Starter("pocket_right_chest", "key", "key_player_001", 0, 0));

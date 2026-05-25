@@ -210,7 +210,12 @@ namespace NtingCampus.Gameplay.Canteen
         {
             return record == null
                 ? new CampusLocalizedText(string.Empty, string.Empty)
-                : new CampusLocalizedText(record.Chinese, record.English);
+                : new CampusLocalizedText(
+                    record.Chinese,
+                    record.English,
+                    record.TraditionalChinese,
+                    record.Russian,
+                    record.Japanese);
         }
 
         private static CampusCanteenMenuItem CreateMigrationDefault()
@@ -219,9 +224,9 @@ namespace NtingCampus.Gameplay.Canteen
                 MigrationDefaultMenuItemId,
                 MigrationDefaultItemDefinitionId,
                 8,
-                new CampusLocalizedText("\u4fbf\u5f53", "Lunch Box"),
-                new CampusLocalizedText("\u70b9\u9910", "Order Meal"),
-                new CampusLocalizedText("\u5df2\u53d6\u5230\u9910\u54c1\u3002", "Meal received."));
+                new CampusLocalizedText("\u4fbf\u5f53", "Lunch Box", "\u4fbf\u7576", "\u041b\u0430\u043d\u0447-\u0431\u043e\u043a\u0441", "\u5f01\u5f53"),
+                new CampusLocalizedText("\u70b9\u9910", "Order Meal", "\u9ede\u9910", "\u0417\u0430\u043a\u0430\u0437\u0430\u0442\u044c \u0435\u0434\u0443", "\u98df\u4e8b\u3092\u6ce8\u6587"),
+                new CampusLocalizedText("\u5df2\u53d6\u5230\u9910\u54c1\u3002", "Meal received.", "\u5df2\u53d6\u5230\u9910\u9ede\u3002", "\u0415\u0434\u0430 \u043f\u043e\u043b\u0443\u0447\u0435\u043d\u0430.", "\u98df\u4e8b\u3092\u53d7\u3051\u53d6\u3063\u305f\u3002"));
         }
 
         private static string NormalizeId(string value)
@@ -274,6 +279,9 @@ namespace NtingCampus.Gameplay.Canteen
         {
             public string Chinese = string.Empty;
             public string English = string.Empty;
+            public string TraditionalChinese = string.Empty;
+            public string Russian = string.Empty;
+            public string Japanese = string.Empty;
         }
     }
 }

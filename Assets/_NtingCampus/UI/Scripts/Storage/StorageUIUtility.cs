@@ -258,21 +258,21 @@ namespace Nting.Storage
 
     public static class StoragePalette
     {
-        public static readonly Color Dimmer = new Color(0.03f, 0.04f, 0.05f, 0.42f);
-        public static readonly Color Window = new Color(0.05f, 0.07f, 0.09f, 0.76f);
-        public static readonly Color WindowBorder = new Color(0.78f, 0.72f, 0.60f, 0.28f);
-        public static readonly Color WindowShadow = new Color(0.01f, 0.02f, 0.03f, 0.58f);
-        public static readonly Color Panel = new Color(0.07f, 0.09f, 0.12f, 0.62f);
-        public static readonly Color PanelRaised = new Color(0.10f, 0.12f, 0.16f, 0.70f);
-        public static readonly Color PanelHeader = new Color(0.13f, 0.16f, 0.20f, 0.68f);
-        public static readonly Color PanelBorder = new Color(0.82f, 0.76f, 0.64f, 0.22f);
-        public static readonly Color PanelInnerBorder = new Color(0.96f, 0.80f, 0.48f, 0.12f);
-        public static readonly Color Divider = new Color(0.92f, 0.84f, 0.62f, 0.14f);
-        public static readonly Color Slot = new Color(0.09f, 0.11f, 0.14f, 0.74f);
-        public static readonly Color SlotHover = new Color(0.12f, 0.15f, 0.19f, 0.82f);
-        public static readonly Color SlotOccupied = new Color(0.07f, 0.09f, 0.12f, 0.78f);
-        public static readonly Color SlotBorder = new Color(0.72f, 0.68f, 0.58f, 0.16f);
-        public static readonly Color SlotHoverBorder = new Color(0.95f, 0.81f, 0.50f, 0.66f);
+        public static readonly Color Dimmer = new Color(0.02f, 0.025f, 0.032f, 0.54f);
+        public static readonly Color Window = new Color(0.045f, 0.055f, 0.07f, 0.88f);
+        public static readonly Color WindowBorder = new Color(0.78f, 0.72f, 0.60f, 0.24f);
+        public static readonly Color WindowShadow = new Color(0.005f, 0.01f, 0.015f, 0.70f);
+        public static readonly Color Panel = new Color(0.055f, 0.068f, 0.086f, 0.76f);
+        public static readonly Color PanelRaised = new Color(0.075f, 0.09f, 0.115f, 0.84f);
+        public static readonly Color PanelHeader = new Color(0.10f, 0.12f, 0.15f, 0.76f);
+        public static readonly Color PanelBorder = new Color(0.82f, 0.76f, 0.64f, 0.18f);
+        public static readonly Color PanelInnerBorder = new Color(0.96f, 0.80f, 0.48f, 0.10f);
+        public static readonly Color Divider = new Color(0.92f, 0.84f, 0.62f, 0.11f);
+        public static readonly Color Slot = new Color(0.075f, 0.088f, 0.11f, 0.82f);
+        public static readonly Color SlotHover = new Color(0.105f, 0.13f, 0.165f, 0.90f);
+        public static readonly Color SlotOccupied = new Color(0.055f, 0.068f, 0.09f, 0.86f);
+        public static readonly Color SlotBorder = new Color(0.72f, 0.68f, 0.58f, 0.14f);
+        public static readonly Color SlotHoverBorder = new Color(0.95f, 0.81f, 0.50f, 0.58f);
         public static readonly Color SlotTopEdge = new Color(1f, 1f, 1f, 0.05f);
         public static readonly Color SlotMark = new Color(0.95f, 0.81f, 0.50f, 0.12f);
         public static readonly Color TextPrimary = new Color(0.97f, 0.97f, 0.95f, 1f);
@@ -287,12 +287,12 @@ namespace Nting.Storage
         public static readonly Color Warning = new Color(0.97f, 0.53f, 0.45f, 1f);
         public static readonly Color Paper = new Color(0.92f, 0.84f, 0.62f, 1f);
         public static readonly Color PaperDim = new Color(0.74f, 0.69f, 0.58f, 0.88f);
-        public static readonly Color TabNormal = new Color(0.10f, 0.12f, 0.16f, 0.62f);
-        public static readonly Color TabSelected = new Color(0.16f, 0.18f, 0.23f, 0.72f);
-        public static readonly Color ButtonNormal = new Color(0.12f, 0.14f, 0.18f, 0.68f);
-        public static readonly Color ButtonHover = new Color(0.16f, 0.19f, 0.24f, 0.76f);
-        public static readonly Color ButtonPressed = new Color(0.09f, 0.11f, 0.14f, 0.82f);
-        public static readonly Color ItemBase = new Color(0.12f, 0.15f, 0.18f, 0.72f);
-        public static readonly Color ItemPlate = new Color(0.05f, 0.06f, 0.08f, 0.76f);
+        public static readonly Color TabNormal = new Color(0.085f, 0.10f, 0.13f, 0.70f);
+        public static readonly Color TabSelected = new Color(0.13f, 0.15f, 0.19f, 0.82f);
+        public static readonly Color ButtonNormal = new Color(0.10f, 0.12f, 0.155f, 0.78f);
+        public static readonly Color ButtonHover = new Color(0.14f, 0.165f, 0.21f, 0.84f);
+        public static readonly Color ButtonPressed = new Color(0.075f, 0.09f, 0.12f, 0.90f);
+        public static readonly Color ItemBase = new Color(0.10f, 0.125f, 0.155f, 0.80f);
+        public static readonly Color ItemPlate = new Color(0.035f, 0.045f, 0.06f, 0.82f);
     }
 }

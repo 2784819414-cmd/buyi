@@ -19,6 +19,7 @@ namespace NtingCampus.UI.Runtime.Gameplay
         private CampusGameplayHudSnapshot lastSnapshot;
         private bool hasSnapshot;
         private int lastHandsHash;
+        private int lastBackpackSlotHash;
         private bool initialized;
 
         public void Initialize(CampusGameBootstrap targetBootstrap)
@@ -57,51 +58,60 @@ namespace NtingCampus.UI.Runtime.Gameplay
             }
 
             CampusCharacterRuntime playerRuntime = ResolvePlayerRuntime();
-            StorageContainerModel[] hands = CampusHandInventoryUtility.ResolveHands(playerRuntime);
-            StorageContainerModel backpack = ResolveBackpack(playerRuntime);
+            CampusCharacterInventory inventory = CampusCharacterInventoryService.GetOrCreateInventory(playerRuntime, true);
+            StorageContainerModel[] hands = inventory != null ? inventory.Hands : System.Array.Empty<StorageContainerModel>();
+            StorageContainerModel backpackSlot = inventory != null ? inventory.BackpackEquipmentSlot : null;
             StorageWindowUI storageWindow = ResolveStorageWindow();
-            CampusGameplayHudSnapshot snapshot = BuildSnapshot(playerRuntime);
+            CampusGameplayHudSnapshot snapshot = BuildSnapshot(playerRuntime, inventory);
             int handsHash = CampusHandInventoryUtility.BuildHandsStateHash(hands);
+            int backpackSlotHash = CampusBackpackInventoryUtility.BuildEquipmentSlotHash(backpackSlot);
 
             bool firstApply = !hasSnapshot;
             bool handsChanged = handsHash != lastHandsHash;
-            bool interactiveWindowChanged = (storageWindow != null && storageWindow.IsOpen) != view.LastInteractiveWindowOpen;
+            bool backpackSlotChanged = backpackSlotHash != lastBackpackSlotHash;
+            bool storageWindowChanged = (storageWindow != null && storageWindow.IsOpen) != view.LastStorageWindowOpen;
             bool snapshotChanged = immediate || firstApply || !snapshot.Equals(lastSnapshot);
-            if (!snapshotChanged && !handsChanged && !interactiveWindowChanged)
+            if (!snapshotChanged && !handsChanged && !backpackSlotChanged && !storageWindowChanged)
             {
                 return;
             }
 
             lastSnapshot = snapshot;
             lastHandsHash = handsHash;
+            lastBackpackSlotHash = backpackSlotHash;
             hasSnapshot = true;
             view.Apply(
                 snapshot,
                 hands,
-                backpack,
+                backpackSlot,
+                playerRuntime,
                 storageWindow,
                 immediate,
-                firstApply || handsChanged || interactiveWindowChanged);
+                firstApply || handsChanged || backpackSlotChanged || storageWindowChanged);
         }
 
-        private CampusGameplayHudSnapshot BuildSnapshot(CampusCharacterRuntime playerRuntime)
+        private CampusGameplayHudSnapshot BuildSnapshot(CampusCharacterRuntime playerRuntime, CampusCharacterInventory inventory)
         {
             CampusTimeController timeController = bootstrap != null ? bootstrap.TimeController : null;
             CampusGameState gameState = bootstrap != null ? bootstrap.GameState : null;
-            CampusResourceState resourceState = bootstrap != null ? bootstrap.ResourceState : null;
             CampusWorldService worldService = bootstrap != null ? bootstrap.WorldService : null;
             CampusInteractionController interactionController = ResolveInteractionController(playerRuntime);
             CampusGameplayRoom currentRoom = worldService != null ? worldService.FindRoomForRuntime(playerRuntime) : null;
+            CampusCharacterStaminaController staminaController =
+                playerRuntime != null ? playerRuntime.GetComponent<CampusCharacterStaminaController>() : null;
             CampusRetailCheckoutSummary pendingSummary = CampusRetailService.BuildPendingSummary(playerRuntime);
 
-            StorageContainerModel backpack = ResolveBackpack(playerRuntime);
-            bool backpackEquipped = backpack != null;
+            StorageContainerModel backpack = inventory != null && inventory.HasBackpack ? inventory.Backpack : null;
             int suspicion = gameState != null ? gameState.PlayerSuspicion : 0;
             int alertness = gameState != null ? gameState.TeacherAlertness : 0;
             int warnings = gameState != null ? gameState.DailyWarningCount : 0;
             int money = playerRuntime != null && playerRuntime.Data != null ? playerRuntime.Data.Money : 0;
-            int divinePower = resourceState != null ? resourceState.DivinePower : 0;
-            CampusInteractionTarget target = interactionController != null ? interactionController.CurrentTarget : default;
+            int staminaCurrent = Mathf.RoundToInt(staminaController != null
+                ? staminaController.CurrentStamina
+                : CampusCharacterStaminaTuning.BaseMaxStamina);
+            int staminaMax = Mathf.RoundToInt(staminaController != null
+                ? staminaController.MaxStamina
+                : CampusCharacterStaminaTuning.BaseMaxStamina);
 
             return new CampusGameplayHudSnapshot(
                 BuildDateText(timeController),
@@ -119,12 +129,9 @@ namespace NtingCampus.UI.Runtime.Gameplay
                 ResolveHeadingLabel(interactionController),
                 ResolveAreaSubtitle(suspicion, warnings),
                 money,
-                divinePower,
+                staminaCurrent,
+                staminaMax,
                 ResolveBackpackStatus(backpack),
-                backpackEquipped,
-                interactionController != null ? CampusInteractionInput.GetKeyLabel(interactionController.InteractKey) : string.Empty,
-                ResolveInteractionText(target),
-                target.IsValid && target.Prompt.IsAvailable,
                 pendingSummary.PendingItemCount,
                 pendingSummary.TotalPrice,
                 money >= pendingSummary.TotalPrice);
@@ -135,12 +142,6 @@ namespace NtingCampus.UI.Runtime.Gameplay
             return bootstrap != null && bootstrap.RosterService != null
                 ? bootstrap.RosterService.PlayerRuntime
                 : null;
-        }
-
-        private static StorageContainerModel ResolveBackpack(CampusCharacterRuntime runtime)
-        {
-            CampusCharacterInventory inventory = CampusCharacterInventoryService.GetOrCreateInventory(runtime, false);
-            return inventory != null ? inventory.Backpack : null;
         }
 
         private CampusInteractionController ResolveInteractionController(CampusCharacterRuntime runtime)
@@ -252,7 +253,8 @@ namespace NtingCampus.UI.Runtime.Gameplay
                 return CampusGameplayHudTextCatalog.Get(CampusGameplayHudTextId.NoBackpack);
             }
 
-            return backpack.CurrentWeight.ToString("0.#") + "/" + backpack.MaxWeight.ToString("0.#") + "kg";
+            string weightUnit = CampusGameplayHudTextCatalog.Get(CampusGameplayHudTextId.WeightUnit);
+            return backpack.CurrentWeight.ToString("0.#") + "/" + backpack.MaxWeight.ToString("0.#") + " " + weightUnit;
         }
 
         private static string ResolveAreaName(CampusGameplayRoom room)
@@ -263,16 +265,6 @@ namespace NtingCampus.UI.Runtime.Gameplay
             }
 
             return room.GetDisplayName(CampusLanguageState.CurrentLanguage);
-        }
-
-        private static string ResolveInteractionText(CampusInteractionTarget target)
-        {
-            if (!target.IsValid)
-            {
-                return CampusGameplayHudTextCatalog.Get(CampusGameplayHudTextId.NoInteraction);
-            }
-
-            return target.Prompt.DisplayText;
         }
     }
 }

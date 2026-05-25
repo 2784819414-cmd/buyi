@@ -120,7 +120,7 @@ namespace NtingCampus.Gameplay.Characters
                 interactable = gameObject.AddComponent<CampusNpcInteractable>();
             }
 
-            interactable.Bind(talkSource);
+            interactable.Bind(talkSource, speechBubble);
         }
 
         private void EnsureInteractionAnchor()

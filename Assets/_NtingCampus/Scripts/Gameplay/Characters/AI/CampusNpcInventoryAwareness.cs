@@ -1,7 +1,6 @@
 using System;
 using System.Collections.Generic;
 using Nting.Storage;
-using NtingCampus.Gameplay.Core;
 using NtingCampus.Gameplay.Events;
 using NtingCampus.Gameplay.Inventory;
 using NtingCampus.Gameplay.Rooms;
@@ -256,7 +255,7 @@ namespace NtingCampus.Gameplay.Characters
             bool shouldIssueSanction = npc.Data.Role == CampusCharacterRole.Teacher ||
                                        npc.Data.Role == CampusCharacterRole.Staff;
 
-            ApplyPersonalReaction(npc, observation, suspicion, shouldIssueSanction);
+            ApplyPersonalReaction(npc, observation, shouldIssueSanction);
             npc.EventHub.PublishItemTheftObserved(new CampusItemTheftObservedEvent(
                 observation.ActorId,
                 npc.Runtime.CharacterId,
@@ -276,7 +275,6 @@ namespace NtingCampus.Gameplay.Characters
         private static void ApplyPersonalReaction(
             CampusNpcAiRuntime npc,
             CampusNpcInventoryObservation observation,
-            int suspicion,
             bool officialWitness)
         {
             if (npc.Data != null && !string.IsNullOrWhiteSpace(observation.ActorId))
@@ -284,28 +282,6 @@ namespace NtingCampus.Gameplay.Characters
                 npc.Data.AddRelationshipSuspicion(observation.ActorId, officialWitness ? 12 : 7);
                 npc.Data.AddRelationshipTrust(observation.ActorId, officialWitness ? -5 : -3);
             }
-
-            CampusGameBootstrap bootstrap = npc.Bootstrap;
-            if (bootstrap == null || bootstrap.GameState == null)
-            {
-                return;
-            }
-
-            if (IsPlayerActor(npc, observation.ActorId))
-            {
-                bootstrap.GameState.AddPlayerSuspicion(officialWitness ? suspicion : Mathf.Max(1, suspicion / 2));
-            }
-
-            bootstrap.GameState.AddCampusChaos(officialWitness ? 4 : 2);
-            bootstrap.GameState.AddCampusOrder(officialWitness ? -3 : -1);
-            if (officialWitness)
-            {
-                bootstrap.GameState.AddTeacherAlertness(4);
-            }
-
-            bootstrap.EventLog?.AddLog(StorageTextCatalog.Format(
-                StorageTextId.MovedItem,
-                observation.ItemDisplayName));
         }
 
         private static bool ShouldReport(
@@ -569,14 +545,6 @@ namespace NtingCampus.Gameplay.Characters
             return !string.IsNullOrWhiteSpace(left) &&
                    !string.IsNullOrWhiteSpace(right) &&
                    string.Equals(left.Trim(), right.Trim(), StringComparison.OrdinalIgnoreCase);
-        }
-
-        private static bool IsPlayerActor(CampusNpcAiRuntime npc, string actorId)
-        {
-            return npc != null &&
-                   npc.RosterService != null &&
-                   npc.RosterService.PlayerRuntime != null &&
-                   IsSameActor(npc.RosterService.PlayerRuntime.CharacterId, actorId);
         }
 
         private static float ResolveReadOffset(int seed)

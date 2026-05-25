@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using Entry = NtingCampus.UI.Runtime.Gameplay.CampusLocalizedTextEntry;
 
 namespace NtingCampus.UI.Runtime.Gameplay
 {
@@ -14,39 +15,25 @@ namespace NtingCampus.UI.Runtime.Gameplay
         Floor = 7,
         Facing = 8,
         Money = 9,
-        DivinePower = 10,
+        Stamina = 10,
         Backpack = 11,
         NoBackpack = 12,
-        PendingCheckout = 13,
-        PendingItems = 14,
-        PendingTotal = 15,
-        ReadyToPay = 16,
-        NotEnoughMoney = 17,
-        NoInteraction = 18,
-        North = 19,
-        South = 20,
-        West = 21,
-        East = 22,
-        WarningSubtitleSafe = 23,
-        WarningSubtitleRisky = 24,
-        LeftHand = 25,
-        RightHand = 26
+        North = 13,
+        South = 14,
+        West = 15,
+        East = 16,
+        WarningSubtitleSafe = 17,
+        WarningSubtitleRisky = 18,
+        WeightUnit = 19,
+        EquippedBackpack = 20,
+        PendingCheckout = 21,
+        PendingCheckoutSummary = 22,
+        ReadyToPay = 23,
+        NotEnoughMoney = 24
     }
 
     public static class CampusGameplayHudTextCatalog
     {
-        private readonly struct Entry
-        {
-            public Entry(string chinese, string english)
-            {
-                Chinese = chinese;
-                English = english;
-            }
-
-            public string Chinese { get; }
-            public string English { get; }
-        }
-
         private static readonly Dictionary<CampusGameplayHudTextId, Entry> Entries = new()
         {
             { CampusGameplayHudTextId.Suspicion, new Entry("可疑度", "Suspicion") },
@@ -59,23 +46,21 @@ namespace NtingCampus.UI.Runtime.Gameplay
             { CampusGameplayHudTextId.Floor, new Entry("楼层", "Floor") },
             { CampusGameplayHudTextId.Facing, new Entry("朝向", "Facing") },
             { CampusGameplayHudTextId.Money, new Entry("金钱", "Money") },
-            { CampusGameplayHudTextId.DivinePower, new Entry("神力", "Divine Power") },
+            { CampusGameplayHudTextId.Stamina, new Entry("体力", "Stamina") },
             { CampusGameplayHudTextId.Backpack, new Entry("背包", "Backpack") },
             { CampusGameplayHudTextId.NoBackpack, new Entry("未装备", "Not Equipped") },
-            { CampusGameplayHudTextId.PendingCheckout, new Entry("待结算", "Pending Checkout") },
-            { CampusGameplayHudTextId.PendingItems, new Entry("物品", "Items") },
-            { CampusGameplayHudTextId.PendingTotal, new Entry("总价", "Total") },
-            { CampusGameplayHudTextId.ReadyToPay, new Entry("余额足够", "Ready To Pay") },
-            { CampusGameplayHudTextId.NotEnoughMoney, new Entry("余额不足", "Not Enough Money") },
-            { CampusGameplayHudTextId.NoInteraction, new Entry("当前没有可交互目标", "No interactable target") },
             { CampusGameplayHudTextId.North, new Entry("北", "North") },
             { CampusGameplayHudTextId.South, new Entry("南", "South") },
             { CampusGameplayHudTextId.West, new Entry("西", "West") },
             { CampusGameplayHudTextId.East, new Entry("东", "East") },
-            { CampusGameplayHudTextId.WarningSubtitleSafe, new Entry("保持安静，低调行事", "Stay quiet. Keep a low profile.") },
-            { CampusGameplayHudTextId.WarningSubtitleRisky, new Entry("注意视线与纪律风险", "Watch line of sight and discipline risk.") },
-            { CampusGameplayHudTextId.LeftHand, new Entry("左手", "Left Hand") },
-            { CampusGameplayHudTextId.RightHand, new Entry("右手", "Right Hand") }
+            { CampusGameplayHudTextId.WarningSubtitleSafe, new Entry("保持安静，低调行事。", "Stay quiet. Keep a low profile.") },
+            { CampusGameplayHudTextId.WarningSubtitleRisky, new Entry("注意视线与纪律风险。", "Watch line of sight and discipline risk.") },
+            { CampusGameplayHudTextId.WeightUnit, new Entry("千克", "kg") },
+            { CampusGameplayHudTextId.EquippedBackpack, new Entry("已装备", "Equipped") },
+            { CampusGameplayHudTextId.PendingCheckout, new Entry("\u5f85\u7ed3\u7b97", "Pending Checkout") },
+            { CampusGameplayHudTextId.PendingCheckoutSummary, new Entry("{0} \u4ef6 / {1}", "{0} items / {1}") },
+            { CampusGameplayHudTextId.ReadyToPay, new Entry("\u524d\u5f80\u6536\u94f6\u53f0\u7ed3\u8d26", "Go to checkout") },
+            { CampusGameplayHudTextId.NotEnoughMoney, new Entry("\u4f59\u989d\u4e0d\u8db3", "Not enough money") }
         };
 
         public static string Get(CampusGameplayHudTextId id)
@@ -89,12 +74,12 @@ namespace NtingCampus.UI.Runtime.Gameplay
                 ? resolved
                 : new Entry(id.ToString(), id.ToString());
 
-            return language switch
-            {
-                CampusDisplayLanguage.English => entry.English,
-                CampusDisplayLanguage.Bilingual => entry.Chinese + " / " + entry.English,
-                _ => entry.Chinese
-            };
+            return entry.Get(language);
+        }
+
+        public static string Format(CampusGameplayHudTextId id, params object[] args)
+        {
+            return string.Format(Get(id), args);
         }
     }
 }

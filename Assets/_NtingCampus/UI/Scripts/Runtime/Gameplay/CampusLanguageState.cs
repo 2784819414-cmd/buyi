@@ -24,6 +24,7 @@ namespace NtingCampus.UI.Runtime.Gameplay
         public static void SetLanguage(CampusDisplayLanguage language)
         {
             EnsureInitialized();
+            language = CampusDisplayLanguageCatalog.Normalize(language);
             if (currentLanguage == language)
             {
                 return;
@@ -48,7 +49,7 @@ namespace NtingCampus.UI.Runtime.Gameplay
                 int storedValue = PlayerPrefs.GetInt(PlayerPrefsKey, (int)CampusDisplayLanguage.Chinese);
                 if (Enum.IsDefined(typeof(CampusDisplayLanguage), storedValue))
                 {
-                    currentLanguage = (CampusDisplayLanguage)storedValue;
+                    currentLanguage = CampusDisplayLanguageCatalog.Normalize((CampusDisplayLanguage)storedValue);
                     return;
                 }
             }
@@ -64,8 +65,13 @@ namespace NtingCampus.UI.Runtime.Gameplay
             {
                 case SystemLanguage.Chinese:
                 case SystemLanguage.ChineseSimplified:
-                case SystemLanguage.ChineseTraditional:
                     return CampusDisplayLanguage.Chinese;
+                case SystemLanguage.ChineseTraditional:
+                    return CampusDisplayLanguage.TraditionalChinese;
+                case SystemLanguage.Russian:
+                    return CampusDisplayLanguage.Russian;
+                case SystemLanguage.Japanese:
+                    return CampusDisplayLanguage.Japanese;
                 default:
                     return CampusDisplayLanguage.English;
             }

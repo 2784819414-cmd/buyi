@@ -69,20 +69,7 @@ namespace NtingCampus.Gameplay.Canteen
                 return 0;
             }
 
-            int count = 0;
-            CampusDroppedStorageItem[] items = Object.FindObjectsByType<CampusDroppedStorageItem>(
-                FindObjectsInactive.Exclude,
-                FindObjectsSortMode.None);
-            for (int i = 0; i < items.Length; i++)
-            {
-                CampusDroppedStorageItem item = items[i];
-                if (item != null && item.SourceContainerId == sourceContainerId)
-                {
-                    count++;
-                }
-            }
-
-            return count;
+            return CampusDroppedStorageItemRegistry.CountBySourceContainer(sourceContainerId);
         }
 
         private static Vector3 ResolveServedWorldPosition(CampusPlacedObject window, int slotIndex)

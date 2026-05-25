@@ -44147,23 +44147,14 @@
                         "AutoRestock": true
                     },
                     "ProtectedStockContainer": {
-                        "Enabled": true,
-                        "ContainerId": "canteen_burger_chicken_container",
+                        "Enabled": false,
+                        "ContainerId": "",
                         "OwnerId": "",
-                        "OwnerRole": "Canteen",
+                        "OwnerRole": "Campus",
                         "AllowTakingContents": true,
                         "SuspicionRisk": 4,
                         "AutoRestock": true,
-                        "StockItems": [
-                            {
-                                "ItemDefinitionId": "canteen_burger",
-                                "StockCount": 6
-                            },
-                            {
-                                "ItemDefinitionId": "canteen_fried_chicken",
-                                "StockCount": 6
-                            }
-                        ]
+                        "StockItems": []
                     }
                 },
                 {
@@ -44259,23 +44250,14 @@
                         "AutoRestock": true
                     },
                     "ProtectedStockContainer": {
-                        "Enabled": true,
-                        "ContainerId": "canteen_burger_chicken_container",
+                        "Enabled": false,
+                        "ContainerId": "",
                         "OwnerId": "",
-                        "OwnerRole": "Canteen",
+                        "OwnerRole": "Campus",
                         "AllowTakingContents": true,
                         "SuspicionRisk": 4,
                         "AutoRestock": true,
-                        "StockItems": [
-                            {
-                                "ItemDefinitionId": "canteen_burger",
-                                "StockCount": 6
-                            },
-                            {
-                                "ItemDefinitionId": "canteen_fried_chicken",
-                                "StockCount": 6
-                            }
-                        ]
+                        "StockItems": []
                     }
                 },
                 {
@@ -44371,23 +44353,14 @@
                         "AutoRestock": true
                     },
                     "ProtectedStockContainer": {
-                        "Enabled": true,
-                        "ContainerId": "canteen_burger_chicken_container",
+                        "Enabled": false,
+                        "ContainerId": "",
                         "OwnerId": "",
-                        "OwnerRole": "Canteen",
+                        "OwnerRole": "Campus",
                         "AllowTakingContents": true,
                         "SuspicionRisk": 4,
                         "AutoRestock": true,
-                        "StockItems": [
-                            {
-                                "ItemDefinitionId": "canteen_burger",
-                                "StockCount": 6
-                            },
-                            {
-                                "ItemDefinitionId": "canteen_fried_chicken",
-                                "StockCount": 6
-                            }
-                        ]
+                        "StockItems": []
                     }
                 },
                 {
@@ -44483,23 +44456,14 @@
                         "AutoRestock": true
                     },
                     "ProtectedStockContainer": {
-                        "Enabled": true,
-                        "ContainerId": "canteen_burger_chicken_container",
+                        "Enabled": false,
+                        "ContainerId": "",
                         "OwnerId": "",
-                        "OwnerRole": "Canteen",
+                        "OwnerRole": "Campus",
                         "AllowTakingContents": true,
                         "SuspicionRisk": 4,
                         "AutoRestock": true,
-                        "StockItems": [
-                            {
-                                "ItemDefinitionId": "canteen_burger",
-                                "StockCount": 6
-                            },
-                            {
-                                "ItemDefinitionId": "canteen_fried_chicken",
-                                "StockCount": 6
-                            }
-                        ]
+                        "StockItems": []
                     }
                 },
                 {
@@ -44595,23 +44559,14 @@
                         "AutoRestock": true
                     },
                     "ProtectedStockContainer": {
-                        "Enabled": true,
-                        "ContainerId": "canteen_burger_chicken_container",
+                        "Enabled": false,
+                        "ContainerId": "",
                         "OwnerId": "",
-                        "OwnerRole": "Canteen",
+                        "OwnerRole": "Campus",
                         "AllowTakingContents": true,
                         "SuspicionRisk": 4,
                         "AutoRestock": true,
-                        "StockItems": [
-                            {
-                                "ItemDefinitionId": "canteen_burger",
-                                "StockCount": 6
-                            },
-                            {
-                                "ItemDefinitionId": "canteen_fried_chicken",
-                                "StockCount": 6
-                            }
-                        ]
+                        "StockItems": []
                     }
                 },
                 {
@@ -44707,23 +44662,14 @@
                         "AutoRestock": true
                     },
                     "ProtectedStockContainer": {
-                        "Enabled": true,
-                        "ContainerId": "canteen_burger_chicken_container",
+                        "Enabled": false,
+                        "ContainerId": "",
                         "OwnerId": "",
-                        "OwnerRole": "Canteen",
+                        "OwnerRole": "Campus",
                         "AllowTakingContents": true,
                         "SuspicionRisk": 4,
                         "AutoRestock": true,
-                        "StockItems": [
-                            {
-                                "ItemDefinitionId": "canteen_burger",
-                                "StockCount": 6
-                            },
-                            {
-                                "ItemDefinitionId": "canteen_fried_chicken",
-                                "StockCount": 6
-                            }
-                        ]
+                        "StockItems": []
                     }
                 },
                 {
@@ -44819,23 +44765,14 @@
                         "AutoRestock": true
                     },
                     "ProtectedStockContainer": {
-                        "Enabled": true,
-                        "ContainerId": "canteen_burger_chicken_container",
+                        "Enabled": false,
+                        "ContainerId": "",
                         "OwnerId": "",
-                        "OwnerRole": "Canteen",
+                        "OwnerRole": "Campus",
                         "AllowTakingContents": true,
                         "SuspicionRisk": 4,
                         "AutoRestock": true,
-                        "StockItems": [
-                            {
-                                "ItemDefinitionId": "canteen_burger",
-                                "StockCount": 6
-                            },
-                            {
-                                "ItemDefinitionId": "canteen_fried_chicken",
-                                "StockCount": 6
-                            }
-                        ]
+                        "StockItems": []
                     }
                 },
                 {
@@ -44931,23 +44868,14 @@
                         "AutoRestock": true
                     },
                     "ProtectedStockContainer": {
-                        "Enabled": true,
-                        "ContainerId": "canteen_burger_chicken_container",
+                        "Enabled": false,
+                        "ContainerId": "",
                         "OwnerId": "",
-                        "OwnerRole": "Canteen",
+                        "OwnerRole": "Campus",
                         "AllowTakingContents": true,
                         "SuspicionRisk": 4,
                         "AutoRestock": true,
-                        "StockItems": [
-                            {
-                                "ItemDefinitionId": "canteen_burger",
-                                "StockCount": 6
-                            },
-                            {
-                                "ItemDefinitionId": "canteen_fried_chicken",
-                                "StockCount": 6
-                            }
-                        ]
+                        "StockItems": []
                     }
                 },
                 {
@@ -45043,23 +44971,14 @@
                         "AutoRestock": true
                     },
                     "ProtectedStockContainer": {
-                        "Enabled": true,
-                        "ContainerId": "canteen_burger_chicken_container",
+                        "Enabled": false,
+                        "ContainerId": "",
                         "OwnerId": "",
-                        "OwnerRole": "Canteen",
+                        "OwnerRole": "Campus",
                         "AllowTakingContents": true,
                         "SuspicionRisk": 4,
                         "AutoRestock": true,
-                        "StockItems": [
-                            {
-                                "ItemDefinitionId": "canteen_burger",
-                                "StockCount": 6
-                            },
-                            {
-                                "ItemDefinitionId": "canteen_fried_chicken",
-                                "StockCount": 6
-                            }
-                        ]
+                        "StockItems": []
                     }
                 },
                 {
@@ -45155,23 +45074,14 @@
                         "AutoRestock": true
                     },
                     "ProtectedStockContainer": {
-                        "Enabled": true,
-                        "ContainerId": "canteen_burger_chicken_container",
+                        "Enabled": false,
+                        "ContainerId": "",
                         "OwnerId": "",
-                        "OwnerRole": "Canteen",
+                        "OwnerRole": "Campus",
                         "AllowTakingContents": true,
                         "SuspicionRisk": 4,
                         "AutoRestock": true,
-                        "StockItems": [
-                            {
-                                "ItemDefinitionId": "canteen_burger",
-                                "StockCount": 6
-                            },
-                            {
-                                "ItemDefinitionId": "canteen_fried_chicken",
-                                "StockCount": 6
-                            }
-                        ]
+                        "StockItems": []
                     }
                 },
                 {
@@ -45267,23 +45177,14 @@
                         "AutoRestock": true
                     },
                     "ProtectedStockContainer": {
-                        "Enabled": true,
-                        "ContainerId": "canteen_burger_chicken_container",
+                        "Enabled": false,
+                        "ContainerId": "",
                         "OwnerId": "",
-                        "OwnerRole": "Canteen",
+                        "OwnerRole": "Campus",
                         "AllowTakingContents": true,
                         "SuspicionRisk": 4,
                         "AutoRestock": true,
-                        "StockItems": [
-                            {
-                                "ItemDefinitionId": "canteen_burger",
-                                "StockCount": 6
-                            },
-                            {
-                                "ItemDefinitionId": "canteen_fried_chicken",
-                                "StockCount": 6
-                            }
-                        ]
+                        "StockItems": []
                     }
                 },
                 {
@@ -45379,23 +45280,14 @@
                         "AutoRestock": true
                     },
                     "ProtectedStockContainer": {
-                        "Enabled": true,
-                        "ContainerId": "canteen_burger_chicken_container",
+                        "Enabled": false,
+                        "ContainerId": "",
                         "OwnerId": "",
-                        "OwnerRole": "Canteen",
+                        "OwnerRole": "Campus",
                         "AllowTakingContents": true,
                         "SuspicionRisk": 4,
                         "AutoRestock": true,
-                        "StockItems": [
-                            {
-                                "ItemDefinitionId": "canteen_burger",
-                                "StockCount": 6
-                            },
-                            {
-                                "ItemDefinitionId": "canteen_fried_chicken",
-                                "StockCount": 6
-                            }
-                        ]
+                        "StockItems": []
                     }
                 },
                 {
@@ -45491,23 +45383,14 @@
                         "AutoRestock": true
                     },
                     "ProtectedStockContainer": {
-                        "Enabled": true,
-                        "ContainerId": "canteen_burger_chicken_container",
+                        "Enabled": false,
+                        "ContainerId": "",
                         "OwnerId": "",
-                        "OwnerRole": "Canteen",
+                        "OwnerRole": "Campus",
                         "AllowTakingContents": true,
                         "SuspicionRisk": 4,
                         "AutoRestock": true,
-                        "StockItems": [
-                            {
-                                "ItemDefinitionId": "canteen_burger",
-                                "StockCount": 6
-                            },
-                            {
-                                "ItemDefinitionId": "canteen_fried_chicken",
-                                "StockCount": 6
-                            }
-                        ]
+                        "StockItems": []
                     }
                 },
                 {
@@ -45603,23 +45486,14 @@
                         "AutoRestock": true
                     },
                     "ProtectedStockContainer": {
-                        "Enabled": true,
-                        "ContainerId": "canteen_burger_chicken_container",
+                        "Enabled": false,
+                        "ContainerId": "",
                         "OwnerId": "",
-                        "OwnerRole": "Canteen",
+                        "OwnerRole": "Campus",
                         "AllowTakingContents": true,
                         "SuspicionRisk": 4,
                         "AutoRestock": true,
-                        "StockItems": [
-                            {
-                                "ItemDefinitionId": "canteen_burger",
-                                "StockCount": 6
-                            },
-                            {
-                                "ItemDefinitionId": "canteen_fried_chicken",
-                                "StockCount": 6
-                            }
-                        ]
+                        "StockItems": []
                     }
                 },
                 {
@@ -45715,23 +45589,14 @@
                         "AutoRestock": true
                     },
                     "ProtectedStockContainer": {
-                        "Enabled": true,
-                        "ContainerId": "canteen_burger_chicken_container",
+                        "Enabled": false,
+                        "ContainerId": "",
                         "OwnerId": "",
-                        "OwnerRole": "Canteen",
+                        "OwnerRole": "Campus",
                         "AllowTakingContents": true,
                         "SuspicionRisk": 4,
                         "AutoRestock": true,
-                        "StockItems": [
-                            {
-                                "ItemDefinitionId": "canteen_burger",
-                                "StockCount": 6
-                            },
-                            {
-                                "ItemDefinitionId": "canteen_fried_chicken",
-                                "StockCount": 6
-                            }
-                        ]
+                        "StockItems": []
                     }
                 },
                 {
@@ -45827,23 +45692,14 @@
                         "AutoRestock": true
                     },
                     "ProtectedStockContainer": {
-                        "Enabled": true,
-                        "ContainerId": "canteen_burger_chicken_container",
+                        "Enabled": false,
+                        "ContainerId": "",
                         "OwnerId": "",
-                        "OwnerRole": "Canteen",
+                        "OwnerRole": "Campus",
                         "AllowTakingContents": true,
                         "SuspicionRisk": 4,
                         "AutoRestock": true,
-                        "StockItems": [
-                            {
-                                "ItemDefinitionId": "canteen_burger",
-                                "StockCount": 6
-                            },
-                            {
-                                "ItemDefinitionId": "canteen_fried_chicken",
-                                "StockCount": 6
-                            }
-                        ]
+                        "StockItems": []
                     }
                 },
                 {
@@ -46190,7 +46046,7 @@
                     }
                 },
                 {
-                    "ObjectId": "新物体_1x1",
+                    "ObjectId": "canteen_service_window_1x1",
                     "TypeId": "ServiceWindow",
                     "DisplayNameOverride": "窗口",
                     "PaletteIndex": 27,
@@ -46265,7 +46121,7 @@
                     }
                 },
                 {
-                    "ObjectId": "新物体_1x1",
+                    "ObjectId": "canteen_service_window_1x1",
                     "TypeId": "ServiceWindow",
                     "DisplayNameOverride": "窗口",
                     "PaletteIndex": 27,
@@ -46420,7 +46276,7 @@
                     }
                 },
                 {
-                    "ObjectId": "新物体_1x1",
+                    "ObjectId": "canteen_service_window_1x1",
                     "TypeId": "ServiceWindow",
                     "DisplayNameOverride": "窗口",
                     "PaletteIndex": 27,
@@ -46495,7 +46351,7 @@
                     }
                 },
                 {
-                    "ObjectId": "新物体_1x1",
+                    "ObjectId": "canteen_service_window_1x1",
                     "TypeId": "ServiceWindow",
                     "DisplayNameOverride": "窗口",
                     "PaletteIndex": 27,
@@ -46570,7 +46426,7 @@
                     }
                 },
                 {
-                    "ObjectId": "新物体_1x1",
+                    "ObjectId": "canteen_service_window_1x1",
                     "TypeId": "ServiceWindow",
                     "DisplayNameOverride": "窗口",
                     "PaletteIndex": 27,
@@ -46645,7 +46501,7 @@
                     }
                 },
                 {
-                    "ObjectId": "新物体_1x1",
+                    "ObjectId": "canteen_service_window_1x1",
                     "TypeId": "ServiceWindow",
                     "DisplayNameOverride": "窗口",
                     "PaletteIndex": 27,
@@ -46720,7 +46576,7 @@
                     }
                 },
                 {
-                    "ObjectId": "新物体_1x1",
+                    "ObjectId": "canteen_service_window_1x1",
                     "TypeId": "ServiceWindow",
                     "DisplayNameOverride": "窗口",
                     "PaletteIndex": 27,
@@ -46795,7 +46651,7 @@
                     }
                 },
                 {
-                    "ObjectId": "新物体_1x1",
+                    "ObjectId": "canteen_service_window_1x1",
                     "TypeId": "ServiceWindow",
                     "DisplayNameOverride": "窗口",
                     "PaletteIndex": 27,
@@ -46870,7 +46726,7 @@
                     }
                 },
                 {
-                    "ObjectId": "门",
+                    "ObjectId": "door_1x1",
                     "TypeId": "Door",
                     "DisplayNameOverride": "",
                     "PaletteIndex": 4,
@@ -46973,7 +46829,7 @@
                     }
                 },
                 {
-                    "ObjectId": "门",
+                    "ObjectId": "door_1x1",
                     "TypeId": "Door",
                     "DisplayNameOverride": "",
                     "PaletteIndex": 4,
@@ -47076,7 +46932,7 @@
                     }
                 },
                 {
-                    "ObjectId": "门",
+                    "ObjectId": "door_1x1",
                     "TypeId": "Door",
                     "DisplayNameOverride": "",
                     "PaletteIndex": 4,
@@ -47179,7 +47035,7 @@
                     }
                 },
                 {
-                    "ObjectId": "门",
+                    "ObjectId": "door_1x1",
                     "TypeId": "Door",
                     "DisplayNameOverride": "",
                     "PaletteIndex": 4,
@@ -47282,7 +47138,7 @@
                     }
                 },
                 {
-                    "ObjectId": "门",
+                    "ObjectId": "door_1x1",
                     "TypeId": "Door",
                     "DisplayNameOverride": "",
                     "PaletteIndex": 4,
@@ -47385,7 +47241,7 @@
                     }
                 },
                 {
-                    "ObjectId": "门",
+                    "ObjectId": "door_1x1",
                     "TypeId": "Door",
                     "DisplayNameOverride": "",
                     "PaletteIndex": 4,
@@ -47488,7 +47344,7 @@
                     }
                 },
                 {
-                    "ObjectId": "门",
+                    "ObjectId": "door_1x1",
                     "TypeId": "Door",
                     "DisplayNameOverride": "",
                     "PaletteIndex": 4,
@@ -47591,7 +47447,7 @@
                     }
                 },
                 {
-                    "ObjectId": "builtin_retail_shelf_display",
+                    "ObjectId": "retail_shelf_display_2x1",
                     "TypeId": "GoodsShelf",
                     "DisplayNameOverride": "超市货架（直摆）",
                     "PaletteIndex": 15,
@@ -47666,7 +47522,7 @@
                     }
                 },
                 {
-                    "ObjectId": "builtin_retail_shelf_display",
+                    "ObjectId": "retail_shelf_display_2x1",
                     "TypeId": "GoodsShelf",
                     "DisplayNameOverride": "超市货架（直摆）",
                     "PaletteIndex": 15,
@@ -47741,7 +47597,7 @@
                     }
                 },
                 {
-                    "ObjectId": "builtin_retail_shelf_container",
+                    "ObjectId": "retail_shelf_container_2x1",
                     "TypeId": "GoodsShelf",
                     "DisplayNameOverride": "超市货架（容器）",
                     "PaletteIndex": 14,
@@ -47816,7 +47672,7 @@
                     }
                 },
                 {
-                    "ObjectId": "builtin_retail_shelf_container",
+                    "ObjectId": "retail_shelf_container_2x1",
                     "TypeId": "GoodsShelf",
                     "DisplayNameOverride": "超市货架（容器）",
                     "PaletteIndex": 14,
@@ -48491,7 +48347,7 @@
                     }
                 },
                 {
-                    "ObjectId": "收银台_2x1",
+                    "ObjectId": "canteen_checkout_2x1",
                     "TypeId": "CheckoutPoint",
                     "DisplayNameOverride": "收银台",
                     "PaletteIndex": 26,
@@ -48566,7 +48422,7 @@
                     }
                 },
                 {
-                    "ObjectId": "收银台_2x1",
+                    "ObjectId": "canteen_checkout_2x1",
                     "TypeId": "CheckoutPoint",
                     "DisplayNameOverride": "收银台",
                     "PaletteIndex": 26,

@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using NtingCampus.UI.Runtime.Gameplay;
+using Entry = NtingCampus.UI.Runtime.Gameplay.CampusLocalizedTextEntry;
 
 namespace NtingCampusMapEditor
 {
@@ -20,18 +21,6 @@ namespace NtingCampusMapEditor
 
     public static class CampusInteractionTextCatalog
     {
-        private readonly struct Entry
-        {
-            public Entry(string chinese, string english)
-            {
-                Chinese = chinese;
-                English = english;
-            }
-
-            public string Chinese { get; }
-            public string English { get; }
-        }
-
         private static readonly Dictionary<CampusInteractionTextId, Entry> Entries =
             new Dictionary<CampusInteractionTextId, Entry>
             {
@@ -59,12 +48,7 @@ namespace NtingCampusMapEditor
                 ? resolved
                 : new Entry(id.ToString(), id.ToString());
 
-            return language switch
-            {
-                CampusDisplayLanguage.English => entry.English,
-                CampusDisplayLanguage.Bilingual => entry.Chinese + " / " + entry.English,
-                _ => entry.Chinese
-            };
+            return entry.Get(language);
         }
 
         public static string Format(CampusInteractionTextId id, params object[] args)

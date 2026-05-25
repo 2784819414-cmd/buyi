@@ -43,7 +43,8 @@ namespace Nting.Storage
             Soap,
             Umbrella,
             Sanitizer,
-            HairTiePack
+            HairTiePack,
+            Backpack
         }
 
         public static bool TryCreate(string definitionId, int width, int height, out Sprite sprite)
@@ -203,6 +204,9 @@ namespace Nting.Storage
                 case IconShape.HairTiePack:
                     DrawHairTiePack(pixels, textureWidth, textureHeight, canvas, recipe);
                     return;
+                case IconShape.Backpack:
+                    DrawBackpack(pixels, textureWidth, textureHeight, canvas, recipe);
+                    return;
                 default:
                     DrawGeneric(pixels, textureWidth, textureHeight, canvas, recipe);
                     return;
@@ -229,6 +233,8 @@ namespace Nting.Storage
                     return Recipe(IconShape.LunchBox, "#C48546", "#F6D4A8", "#5A381C");
                 case "snack":
                     return Recipe(IconShape.PacketWide, "#C86A43", "#F3C497", "#5A2516");
+                case "school_backpack":
+                    return Recipe(IconShape.Backpack, "#3C5E78", "#E1B85C", "#172B3C");
             }
 
             if (normalizedId.Contains("pen") || normalizedId.Contains("pencil") || normalizedId.Contains("highlighter"))
@@ -701,6 +707,34 @@ namespace Nting.Storage
             StrokeRoundedRect(pixels, width, height, body, recipe.Stroke, Mathf.Max(2, body.height / 10), Mathf.RoundToInt(body.height * 0.2f));
             DrawRing(pixels, width, height, new Vector2Int(CenterX(body) - body.width / 6, CenterY(body)), body.height / 4, Mathf.Max(3, body.height / 10), recipe.Accent, recipe.Stroke);
             DrawRing(pixels, width, height, new Vector2Int(CenterX(body) + body.width / 6, CenterY(body)), body.height / 4, Mathf.Max(3, body.height / 10), recipe.Accent, recipe.Stroke);
+        }
+
+        private static void DrawBackpack(Color32[] pixels, int width, int height, RectInt canvas, IconRecipe recipe)
+        {
+            RectInt body = Inset(canvas, canvas.width / 5, canvas.height / 7);
+            body.yMin += canvas.height / 8;
+            body.height = Mathf.Max(1, body.height - canvas.height / 8);
+
+            RectInt flap = new RectInt(
+                body.xMin + body.width / 7,
+                body.yMax - body.height / 3,
+                body.width * 5 / 7,
+                body.height / 3);
+            RectInt pocket = new RectInt(
+                body.xMin + body.width / 4,
+                body.yMin + body.height / 7,
+                body.width / 2,
+                body.height / 4);
+
+            DrawLine(pixels, width, height, body.xMin + body.width / 5, body.yMax - body.height / 10, body.xMin - body.width / 8, body.yMin + body.height / 3, recipe.Stroke, Mathf.Max(3, body.width / 12));
+            DrawLine(pixels, width, height, body.xMax - body.width / 5, body.yMax - body.height / 10, body.xMax + body.width / 8, body.yMin + body.height / 3, recipe.Stroke, Mathf.Max(3, body.width / 12));
+            FillRoundedRect(pixels, width, height, body, recipe.Fill, Mathf.RoundToInt(body.width * 0.16f));
+            StrokeRoundedRect(pixels, width, height, body, recipe.Stroke, Mathf.Max(2, body.width / 18), Mathf.RoundToInt(body.width * 0.16f));
+            FillRoundedRect(pixels, width, height, flap, Color32.Lerp(recipe.Fill, recipe.Stroke, 0.18f), Mathf.RoundToInt(flap.height * 0.28f));
+            StrokeRoundedRect(pixels, width, height, flap, recipe.Stroke, Mathf.Max(2, flap.height / 9), Mathf.RoundToInt(flap.height * 0.28f));
+            FillRoundedRect(pixels, width, height, pocket, recipe.Accent, Mathf.RoundToInt(pocket.height * 0.24f));
+            StrokeRoundedRect(pixels, width, height, pocket, recipe.Stroke, Mathf.Max(2, pocket.height / 8), Mathf.RoundToInt(pocket.height * 0.24f));
+            DrawLine(pixels, width, height, CenterX(body), body.yMin + body.height / 12, CenterX(body), body.yMax - body.height / 10, recipe.Stroke, Mathf.Max(2, body.width / 24));
         }
 
         private static void DrawBatteryCell(Color32[] pixels, int width, int height, RectInt rect, IconRecipe recipe)

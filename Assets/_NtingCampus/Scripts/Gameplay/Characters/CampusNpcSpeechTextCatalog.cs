@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using NtingCampus.UI.Runtime.Gameplay;
+using Entry = NtingCampus.UI.Runtime.Gameplay.CampusLocalizedTextEntry;
 
 namespace NtingCampus.Gameplay.Characters
 {
@@ -12,18 +13,6 @@ namespace NtingCampus.Gameplay.Characters
 
     public static class CampusNpcSpeechTextCatalog
     {
-        private readonly struct Entry
-        {
-            public Entry(string chinese, string english)
-            {
-                Chinese = chinese;
-                English = english;
-            }
-
-            public string Chinese { get; }
-            public string English { get; }
-        }
-
         private static readonly Dictionary<CampusNpcSpeechTextId, Entry> Entries = new()
         {
             { CampusNpcSpeechTextId.GenericScheduledBusy, new Entry("我现在有安排。", "I have something scheduled right now.") },
@@ -37,17 +26,7 @@ namespace NtingCampus.Gameplay.Characters
                 ? resolved
                 : new Entry(id.ToString(), id.ToString());
 
-            return Resolve(CampusLanguageState.CurrentLanguage, entry.Chinese, entry.English);
-        }
-
-        private static string Resolve(CampusDisplayLanguage language, string chinese, string english)
-        {
-            return language switch
-            {
-                CampusDisplayLanguage.English => english,
-                CampusDisplayLanguage.Bilingual => chinese + " / " + english,
-                _ => chinese
-            };
+            return entry.Get(CampusLanguageState.CurrentLanguage);
         }
     }
 }

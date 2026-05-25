@@ -22,17 +22,22 @@ namespace NtingCampus.Gameplay.Characters
         [SerializeField] private Text bubbleText;
         [SerializeField] private float hideAtTime = -1f;
         [SerializeField] private Vector2 bubbleSize = new Vector2(360f, 84f);
+        [SerializeField] private Vector3 worldOffset = new Vector3(0f, 0.42f, 0f);
         [SerializeField] private float worldScale = 0.01f;
         [SerializeField] private Color textColor = Color.white;
-        [SerializeField] private Color shadowColor = new Color(0f, 0f, 0f, 0.75f);
-        [SerializeField] private int fontSize = 28;
+        [SerializeField] private Color shadowColor = new Color(0f, 0f, 0f, 0.9f);
+        [SerializeField] private int fontSize = 32;
         [SerializeField] private float floatAmplitude = 1.8f;
         [SerializeField] private float floatFrequency = 1.3f;
+        [SerializeField] private float durationScale = 0.88f;
+        [SerializeField] private float minimumDurationSeconds = 0.7f;
         [SerializeField] private bool followCameraRotation = false;
         [SerializeField] private Font textFont;
 
         private Sequence visibilityTween;
         private float floatSeed;
+
+        public bool IsVisible => bubbleCanvas != null && bubbleCanvas.enabled && hideAtTime >= 0f;
 
         public void Bind(Transform targetAnchor)
         {
@@ -59,7 +64,7 @@ namespace NtingCampus.Gameplay.Characters
             bubbleText.color = textColor;
             bubbleCanvas.enabled = true;
             bubbleGroup.alpha = 1f;
-            hideAtTime = Time.time + Mathf.Max(0.8f, durationSeconds);
+            hideAtTime = Time.time + ResolveVisibleDuration(durationSeconds);
             AnimateVisible(true);
         }
 
@@ -157,11 +162,11 @@ namespace NtingCampus.Gameplay.Characters
 
             Outline outline = GetOrAdd<Outline>(textRect.gameObject);
             outline.effectColor = shadowColor;
-            outline.effectDistance = new Vector2(2f, -2f);
+            outline.effectDistance = new Vector2(4f, -4f);
 
             Shadow shadow = GetOrAdd<Shadow>(textRect.gameObject);
             shadow.effectColor = shadowColor;
-            shadow.effectDistance = new Vector2(0f, -1f);
+            shadow.effectDistance = new Vector2(0f, -3f);
             shadow.useGraphicAlpha = true;
         }
 
@@ -178,7 +183,7 @@ namespace NtingCampus.Gameplay.Characters
                 bubbleCanvas.worldCamera = camera;
             }
 
-            Vector3 position = anchor.position;
+            Vector3 position = anchor.position + worldOffset;
             Quaternion rotation = followCameraRotation && camera != null ? camera.transform.rotation : Quaternion.identity;
             if (camera != null)
             {
@@ -254,11 +259,11 @@ namespace NtingCampus.Gameplay.Characters
                     bubbleVisualRect.anchoredPosition = new Vector2(0f, -10f);
                 }
 
-                visibilityTween = CampusUiTweenUtility.OpenPanel(bubbleGroup, bubbleVisualRect, 0.16f, 0.92f);
+                visibilityTween = CampusUiTweenUtility.OpenPanel(bubbleGroup, bubbleVisualRect, 0.13f, 0.92f);
                 return;
             }
 
-            visibilityTween = CampusUiTweenUtility.ClosePanel(bubbleGroup, bubbleVisualRect, 0.1f, 0.96f);
+            visibilityTween = CampusUiTweenUtility.ClosePanel(bubbleGroup, bubbleVisualRect, 0.08f, 0.96f);
             visibilityTween.OnComplete(() =>
             {
                 if (bubbleCanvas != null)
@@ -337,6 +342,12 @@ namespace NtingCampus.Gameplay.Characters
             }
 
             visibilityTween = null;
+        }
+
+        private float ResolveVisibleDuration(float requestedDurationSeconds)
+        {
+            float scaledDuration = Mathf.Max(0f, requestedDurationSeconds) * Mathf.Max(0.01f, durationScale);
+            return Mathf.Max(minimumDurationSeconds, scaledDuration);
         }
 
         private static T GetOrAdd<T>(GameObject target) where T : Component

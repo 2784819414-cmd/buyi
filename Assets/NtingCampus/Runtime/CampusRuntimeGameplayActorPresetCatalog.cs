@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using NtingCampus.Gameplay.Characters;
+using NtingCampus.UI.Runtime.Gameplay;
 using UnityEngine;
 
 namespace NtingCampusMapEditor
@@ -25,10 +26,8 @@ namespace NtingCampusMapEditor
         private static readonly CampusRuntimeGameplayActorPreset[] BuiltInPresets =
         {
             new CampusRuntimeGameplayActorPreset(
-                "\u5b66\u751f",
-                "Student",
-                "\u5b66\u751f",
-                "Student",
+                new CampusLocalizedTextEntry("\u5b66\u751f", "Student", "\u5b78\u751f", "\u0423\u0447\u0435\u043d\u0438\u043a", "\u751f\u5f92"),
+                new CampusLocalizedTextEntry("\u5b66\u751f", "Student", "\u5b78\u751f", "\u0423\u0447\u0435\u043d\u0438\u043a", "\u751f\u5f92"),
                 "student",
                 CampusCharacterRole.Student,
                 CampusTeacherDuty.None,
@@ -40,10 +39,8 @@ namespace NtingCampusMapEditor
                 new[] { CampusCharacterTrait.Ordinary },
                 new Color(0.38f, 0.56f, 0.83f, 1f)),
             new CampusRuntimeGameplayActorPreset(
-                "\u6363\u86cb\u5b66\u751f",
-                "Troublemaker",
-                "\u6363\u86cb\u5b66\u751f",
-                "Troublemaker",
+                new CampusLocalizedTextEntry("\u6363\u86cb\u5b66\u751f", "Troublemaker", "\u6417\u86cb\u5b78\u751f", "\u041d\u0430\u0440\u0443\u0448\u0438\u0442\u0435\u043b\u044c", "\u554f\u984c\u5150"),
+                new CampusLocalizedTextEntry("\u6363\u86cb\u5b66\u751f", "Troublemaker", "\u6417\u86cb\u5b78\u751f", "\u041d\u0430\u0440\u0443\u0448\u0438\u0442\u0435\u043b\u044c", "\u554f\u984c\u5150"),
                 "student_trouble",
                 CampusCharacterRole.Student,
                 CampusTeacherDuty.None,
@@ -55,10 +52,8 @@ namespace NtingCampusMapEditor
                 new[] { CampusCharacterTrait.Troublemaker },
                 new Color(0.62f, 0.42f, 0.66f, 1f)),
             new CampusRuntimeGameplayActorPreset(
-                "\u597d\u5b66\u751f",
-                "Good Student",
-                "\u597d\u5b66\u751f",
-                "GoodStudent",
+                new CampusLocalizedTextEntry("\u597d\u5b66\u751f", "Good Student", "\u597d\u5b78\u751f", "\u041e\u0442\u043b\u0438\u0447\u043d\u0438\u043a", "\u512a\u7b49\u751f"),
+                new CampusLocalizedTextEntry("\u597d\u5b66\u751f", "GoodStudent", "\u597d\u5b78\u751f", "\u041e\u0442\u043b\u0438\u0447\u043d\u0438\u043a", "\u512a\u7b49\u751f"),
                 "student_good",
                 CampusCharacterRole.Student,
                 CampusTeacherDuty.None,
@@ -70,10 +65,8 @@ namespace NtingCampusMapEditor
                 new[] { CampusCharacterTrait.GoodStudent },
                 new Color(0.42f, 0.62f, 0.48f, 1f)),
             new CampusRuntimeGameplayActorPreset(
-                "\u8bed\u6587\u8001\u5e08",
-                "World Teacher",
-                "\u8bed\u6587\u8001\u5e08",
-                "WorldTeacher",
+                new CampusLocalizedTextEntry("\u8bed\u6587\u8001\u5e08", "World Teacher", "\u8a9e\u6587\u8001\u5e2b", "\u0423\u0447\u0438\u0442\u0435\u043b\u044c \u044f\u0437\u044b\u043a\u0430", "\u56fd\u8a9e\u6559\u5e2b"),
+                new CampusLocalizedTextEntry("\u8bed\u6587\u8001\u5e08", "WorldTeacher", "\u8a9e\u6587\u8001\u5e2b", "\u0423\u0447\u0438\u0442\u0435\u043b\u044c \u044f\u0437\u044b\u043a\u0430", "\u56fd\u8a9e\u6559\u5e2b"),
                 "teacher_world",
                 CampusCharacterRole.Teacher,
                 CampusTeacherDuty.WorldLanguageTeacher,
@@ -85,10 +78,8 @@ namespace NtingCampusMapEditor
                 new[] { CampusCharacterTrait.Ordinary },
                 new Color(0.48f, 0.48f, 0.52f, 1f)),
             new CampusRuntimeGameplayActorPreset(
-                "\u6570\u5b66\u8001\u5e08",
-                "Math Teacher",
-                "\u6570\u5b66\u8001\u5e08",
-                "MathTeacher",
+                new CampusLocalizedTextEntry("\u6570\u5b66\u8001\u5e08", "Math Teacher", "\u6578\u5b78\u8001\u5e2b", "\u0423\u0447\u0438\u0442\u0435\u043b\u044c \u043c\u0430\u0442\u0435\u043c\u0430\u0442\u0438\u043a\u0438", "\u6570\u5b66\u6559\u5e2b"),
+                new CampusLocalizedTextEntry("\u6570\u5b66\u8001\u5e08", "MathTeacher", "\u6578\u5b78\u8001\u5e2b", "\u0423\u0447\u0438\u0442\u0435\u043b\u044c \u043c\u0430\u0442\u0435\u043c\u0430\u0442\u0438\u043a\u0438", "\u6570\u5b66\u6559\u5e2b"),
                 "teacher_math",
                 CampusCharacterRole.Teacher,
                 CampusTeacherDuty.MathTeacher,
@@ -100,10 +91,8 @@ namespace NtingCampusMapEditor
                 new[] { CampusCharacterTrait.Ordinary },
                 new Color(0.42f, 0.42f, 0.48f, 1f)),
             new CampusRuntimeGameplayActorPreset(
-                "\u804c\u5458",
-                "Staff",
-                "\u804c\u5458",
-                "Staff",
+                new CampusLocalizedTextEntry("\u804c\u5458", "Staff", "\u8077\u54e1", "\u0421\u043e\u0442\u0440\u0443\u0434\u043d\u0438\u043a", "\u8077\u54e1"),
+                new CampusLocalizedTextEntry("\u804c\u5458", "Staff", "\u8077\u54e1", "\u0421\u043e\u0442\u0440\u0443\u0434\u043d\u0438\u043a", "\u8077\u54e1"),
                 "staff",
                 CampusCharacterRole.Staff,
                 CampusTeacherDuty.None,
@@ -140,21 +129,40 @@ namespace NtingCampusMapEditor
                         continue;
                     }
 
-                    string chinese = string.IsNullOrWhiteSpace(record.ChineseLabel) ? record.EnglishLabel : record.ChineseLabel;
-                    string english = string.IsNullOrWhiteSpace(record.EnglishLabel) ? record.ChineseLabel : record.EnglishLabel;
-                    string actorIdPrefix = string.IsNullOrWhiteSpace(record.ActorIdPrefix)
-                        ? NormalizeActorIdPrefix(english)
-                        : record.ActorIdPrefix.Trim();
-                    if (string.IsNullOrWhiteSpace(chinese) || string.IsNullOrWhiteSpace(english) || string.IsNullOrWhiteSpace(actorIdPrefix))
+                    CampusLocalizedTextEntry label = BuildTextEntry(
+                        record.ChineseLabel,
+                        record.EnglishLabel,
+                        record.TraditionalChineseLabel,
+                        record.RussianLabel,
+                        record.JapaneseLabel);
+                    if (!label.HasAnyText)
                     {
                         continue;
                     }
 
+                    string english = !string.IsNullOrWhiteSpace(label.English) ? label.English : label.Get(CampusDisplayLanguage.English);
+                    string actorIdPrefix = string.IsNullOrWhiteSpace(record.ActorIdPrefix)
+                        ? NormalizeActorIdPrefix(english)
+                        : record.ActorIdPrefix.Trim();
+                    if (string.IsNullOrWhiteSpace(actorIdPrefix))
+                    {
+                        continue;
+                    }
+
+                    CampusLocalizedTextEntry namePrefix = BuildTextEntry(
+                        record.ChineseDisplayName,
+                        record.EnglishDisplayName,
+                        record.TraditionalChineseDisplayName,
+                        record.RussianDisplayName,
+                        record.JapaneseDisplayName);
+                    if (!namePrefix.HasAnyText)
+                    {
+                        namePrefix = label;
+                    }
+
                     loaded.Add(new CampusRuntimeGameplayActorPreset(
-                        chinese,
-                        english,
-                        string.IsNullOrWhiteSpace(record.ChineseDisplayName) ? chinese : record.ChineseDisplayName.Trim(),
-                        string.IsNullOrWhiteSpace(record.EnglishDisplayName) ? english : record.EnglishDisplayName.Trim(),
+                        label,
+                        namePrefix,
                         actorIdPrefix,
                         ParseEnum(record.Role, CampusCharacterRole.Student),
                         ParseEnum(record.TeacherDuty, CampusTeacherDuty.None),
@@ -204,6 +212,26 @@ namespace NtingCampusMapEditor
                 : fallback;
         }
 
+        private static CampusLocalizedTextEntry BuildTextEntry(
+            string chinese,
+            string english,
+            string traditionalChinese,
+            string russian,
+            string japanese)
+        {
+            return new CampusLocalizedTextEntry(
+                Clean(chinese),
+                Clean(english),
+                Clean(traditionalChinese),
+                Clean(russian),
+                Clean(japanese));
+        }
+
+        private static string Clean(string value)
+        {
+            return string.IsNullOrWhiteSpace(value) ? string.Empty : value.Trim();
+        }
+
         private static string NormalizeActorIdPrefix(string value)
         {
             return string.IsNullOrWhiteSpace(value)
@@ -222,8 +250,14 @@ namespace NtingCampusMapEditor
         {
             public string ChineseLabel = string.Empty;
             public string EnglishLabel = string.Empty;
+            public string TraditionalChineseLabel = string.Empty;
+            public string RussianLabel = string.Empty;
+            public string JapaneseLabel = string.Empty;
             public string ChineseDisplayName = string.Empty;
             public string EnglishDisplayName = string.Empty;
+            public string TraditionalChineseDisplayName = string.Empty;
+            public string RussianDisplayName = string.Empty;
+            public string JapaneseDisplayName = string.Empty;
             public string ActorIdPrefix = string.Empty;
             public string Role = string.Empty;
             public string TeacherDuty = string.Empty;

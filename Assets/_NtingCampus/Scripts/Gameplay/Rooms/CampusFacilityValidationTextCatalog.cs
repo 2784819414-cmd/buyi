@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using NtingCampus.UI.Runtime.Gameplay;
+using Entry = NtingCampus.UI.Runtime.Gameplay.CampusLocalizedTextEntry;
 
 namespace NtingCampus.Gameplay.Rooms
 {
@@ -14,18 +15,6 @@ namespace NtingCampus.Gameplay.Rooms
 
     public static class CampusFacilityValidationTextCatalog
     {
-        private readonly struct Entry
-        {
-            public Entry(string chinese, string english)
-            {
-                Chinese = chinese;
-                English = english;
-            }
-
-            public string Chinese { get; }
-            public string English { get; }
-        }
-
         private static readonly Dictionary<CampusFacilityValidationTextId, Entry> Entries = new()
         {
             { CampusFacilityValidationTextId.LegacyInference, new Entry("设施类型 {0} 来自旧版物体名或显示名推断。请给源物体设置显式 TypeId，或添加 CampusGameplayFacilityMarker。{1}", "Facility type {0} came from legacy object or display-name inference. Set an explicit TypeId on the source object or add a CampusGameplayFacilityMarker. {1}") },
@@ -46,17 +35,7 @@ namespace NtingCampus.Gameplay.Rooms
                 ? resolved
                 : new Entry(id.ToString(), id.ToString());
 
-            return Resolve(CampusLanguageState.CurrentLanguage, entry.Chinese, entry.English);
-        }
-
-        private static string Resolve(CampusDisplayLanguage language, string chinese, string english)
-        {
-            return language switch
-            {
-                CampusDisplayLanguage.English => english,
-                CampusDisplayLanguage.Bilingual => chinese + " / " + english,
-                _ => chinese
-            };
+            return entry.Get(CampusLanguageState.CurrentLanguage);
         }
     }
 }

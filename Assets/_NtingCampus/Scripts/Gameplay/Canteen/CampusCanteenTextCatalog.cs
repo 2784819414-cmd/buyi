@@ -57,14 +57,15 @@ namespace NtingCampus.Gameplay.Canteen
             return string.IsNullOrWhiteSpace(template) ? string.Empty : string.Format(template, args);
         }
 
-        private static string Resolve(CampusDisplayLanguage language, string chinese, string english)
+        private static string Resolve(
+            CampusDisplayLanguage language,
+            string chinese,
+            string english,
+            string traditionalChinese = null,
+            string russian = null,
+            string japanese = null)
         {
-            return language switch
-            {
-                CampusDisplayLanguage.English => english,
-                CampusDisplayLanguage.Bilingual => chinese + " / " + english,
-                _ => chinese
-            };
+            return CampusDisplayLanguageCatalog.Resolve(language, chinese, english, traditionalChinese, russian, japanese);
         }
     }
 }

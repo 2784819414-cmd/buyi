@@ -194,40 +194,7 @@ namespace NtingCampus.Gameplay.Modes
 
         private static Vector2 ReadMoveInput()
         {
-#if ENABLE_INPUT_SYSTEM
-            if (TryReadMoveInputFromInputSystem(out Vector2 inputSystemMove))
-            {
-                return inputSystemMove;
-            }
-#endif
-
-#if ENABLE_LEGACY_INPUT_MANAGER
-            float x = 0f;
-            float y = 0f;
-            if (Input.GetKey(KeyCode.A) || Input.GetKey(KeyCode.LeftArrow))
-            {
-                x -= 1f;
-            }
-
-            if (Input.GetKey(KeyCode.D) || Input.GetKey(KeyCode.RightArrow))
-            {
-                x += 1f;
-            }
-
-            if (Input.GetKey(KeyCode.S) || Input.GetKey(KeyCode.DownArrow))
-            {
-                y -= 1f;
-            }
-
-            if (Input.GetKey(KeyCode.W) || Input.GetKey(KeyCode.UpArrow))
-            {
-                y += 1f;
-            }
-
-            return new Vector2(x, y);
-#else
-            return Vector2.zero;
-#endif
+            return CampusGameplayInputBindings.ReadMoveInput();
         }
 
         private static float ReadScrollDelta()
@@ -246,41 +213,5 @@ namespace NtingCampus.Gameplay.Modes
 #endif
         }
 
-#if ENABLE_INPUT_SYSTEM
-        private static bool TryReadMoveInputFromInputSystem(out Vector2 move)
-        {
-            move = Vector2.zero;
-            Keyboard keyboard = Keyboard.current;
-            if (keyboard == null)
-            {
-                return false;
-            }
-
-            float x = 0f;
-            float y = 0f;
-            if (keyboard.aKey.isPressed || keyboard.leftArrowKey.isPressed)
-            {
-                x -= 1f;
-            }
-
-            if (keyboard.dKey.isPressed || keyboard.rightArrowKey.isPressed)
-            {
-                x += 1f;
-            }
-
-            if (keyboard.sKey.isPressed || keyboard.downArrowKey.isPressed)
-            {
-                y -= 1f;
-            }
-
-            if (keyboard.wKey.isPressed || keyboard.upArrowKey.isPressed)
-            {
-                y += 1f;
-            }
-
-            move = new Vector2(x, y);
-            return true;
-        }
-#endif
     }
 }

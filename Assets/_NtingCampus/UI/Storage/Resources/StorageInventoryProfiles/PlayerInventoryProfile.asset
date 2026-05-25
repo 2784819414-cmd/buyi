@@ -95,6 +95,20 @@ MonoBehaviour:
     AllowTakingContents: 1
     IsPlayerCarried: 1
     SuspicionRisk: 0
+  - Id: backpack_slot
+    DisplayName: 背包栏
+    LocalizedDisplayName:
+      chinese: 背包栏
+      english: Backpack Slot
+    Columns: 1
+    Rows: 1
+    MaxWeight: 5
+    AccessPolicy: 1
+    OwnerRole: Player
+    AllowTakingContents: 1
+    IsPlayerCarried: 1
+    IsSingleItemSlot: 1
+    SuspicionRisk: 0
   - Id: school_backpack
     DisplayName: 学生书包
     LocalizedDisplayName:
@@ -116,8 +130,14 @@ MonoBehaviour:
   - pocket_right_chest
   - pocket_left_pants
   - pocket_right_pants
+  BackpackEquipmentContainerId: backpack_slot
   BackpackContainerId: school_backpack
   StarterItems:
+  - ContainerId: backpack_slot
+    DefinitionId: school_backpack
+    InstanceId: school_backpack_player_001
+    X: 0
+    Y: 0
   - ContainerId: pocket_left_chest
     DefinitionId: phone
     InstanceId: phone_player_001

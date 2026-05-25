@@ -9,7 +9,6 @@ namespace NtingCampusMapEditor
     {
         public CampusInteractionSensor Sensor;
         public CampusInteractionPromptView PromptView;
-        public KeyCode InteractKey = KeyCode.E;
         public bool PollInput = true;
         public bool RefreshEveryFrame = true;
         public float RefreshIntervalSeconds = 0.1f;
@@ -40,7 +39,7 @@ namespace NtingCampusMapEditor
 
         private void Update()
         {
-            bool interactPressed = PollInput && CampusInteractionInput.WasKeyPressed(InteractKey);
+            bool interactPressed = PollInput && CampusGameplayInputBindings.WasPressed(CampusGameplayInputActionId.Interact);
             if (interactPressed)
             {
                 TryInteractCurrent();
@@ -166,7 +165,7 @@ namespace NtingCampusMapEditor
         {
             if (Sensor != null)
             {
-                Sensor.DefaultKeyText = CampusInteractionInput.GetKeyLabel(InteractKey);
+                Sensor.DefaultKeyText = CampusGameplayInputBindings.GetBindingLabel(CampusGameplayInputActionId.Interact);
             }
         }
     }

@@ -15,6 +15,7 @@ namespace NtingCampusMapEditor
         public int Priority;
         public bool IsAvailable;
         public string UnavailableText;
+        public bool HideVisual;
 
         public static CampusInteractionPromptData Create(string promptText)
         {

@@ -1,22 +1,11 @@
 using System.Collections.Generic;
 using NtingCampus.UI.Runtime.Gameplay;
+using Entry = NtingCampus.UI.Runtime.Gameplay.CampusLocalizedTextEntry;
 
 namespace NtingCampus.Gameplay.Rooms
 {
     public static class CampusRoomTextCatalog
     {
-        private readonly struct Entry
-        {
-            public Entry(string chinese, string english)
-            {
-                Chinese = chinese;
-                English = english;
-            }
-
-            public string Chinese { get; }
-            public string English { get; }
-        }
-
         private static readonly Dictionary<CampusRoomType, Entry> Entries = new Dictionary<CampusRoomType, Entry>
         {
             { CampusRoomType.Unknown, new Entry("\u672A\u77E5\u533A\u57DF", "Unknown Area") },
@@ -51,7 +40,12 @@ namespace NtingCampus.Gameplay.Rooms
             Entry entry = Entries.TryGetValue(roomType, out Entry resolved)
                 ? resolved
                 : Entries[CampusRoomType.Unknown];
-            return new CampusLocalizedText(entry.Chinese, entry.English);
+            return new CampusLocalizedText(
+                entry.Chinese,
+                entry.English,
+                entry.TraditionalChinese,
+                entry.Russian,
+                entry.Japanese);
         }
     }
 }

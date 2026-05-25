@@ -220,14 +220,15 @@ namespace NtingCampus.Gameplay.Core
             return elapsed;
         }
 
-        private static string Resolve(CampusDisplayLanguage language, string chinese, string english)
+        private static string Resolve(
+            CampusDisplayLanguage language,
+            string chinese,
+            string english,
+            string traditionalChinese = null,
+            string russian = null,
+            string japanese = null)
         {
-            return language switch
-            {
-                CampusDisplayLanguage.English => english,
-                CampusDisplayLanguage.Bilingual => chinese + " / " + english,
-                _ => chinese
-            };
+            return CampusDisplayLanguageCatalog.Resolve(language, chinese, english, traditionalChinese, russian, japanese);
         }
 
         private readonly struct SegmentInfo

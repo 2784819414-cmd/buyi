@@ -27,7 +27,6 @@ namespace NtingCampus.UI.Runtime.Gameplay
             public LoadOption Option;
             public RectTransform Root;
             public StorageBoxGraphic Background;
-            public RectTransform Indicator;
             public Button Button;
             public Text TitleText;
             public Text MetaText;
@@ -42,14 +41,71 @@ namespace NtingCampus.UI.Runtime.Gameplay
             public Text Label;
         }
 
+        private sealed class SettingsSectionButtonView
+        {
+            public SettingsSection Section;
+            public CampusPlayerUiTextId LabelId;
+            public Button Button;
+            public Text Label;
+        }
+
+        private sealed class KeyBindingRow
+        {
+            public KeyBindingRow(
+                CampusGameplayInputActionId actionId,
+                Text actionText,
+                Button keyButton,
+                Button resetButton)
+            {
+                ActionId = actionId;
+                ActionText = actionText;
+                KeyButton = keyButton;
+                ResetButton = resetButton;
+            }
+
+            public CampusGameplayInputActionId ActionId { get; }
+            public Text ActionText { get; }
+            public Button KeyButton { get; }
+            public Button ResetButton { get; }
+        }
+
+        private enum StartupPage
+        {
+            Home,
+            Play,
+            Settings,
+            About
+        }
+
+        private enum SettingsSection
+        {
+            Language,
+            KeyBindings
+        }
+
         private const string StartupSceneName = "Startup";
         private const string GameplaySceneName = "CampusMap";
         private const string StartupBackgroundResourcePath = "UI/Startup/startup_background_nostalgia_v1";
         private const string StartupLoadingOverlayResourcePath = "UI/Startup/startup_loading_overlay_v1";
+        private const string StartupLogoChineseResourcePath = "UI/Startup/startup_logo_nting_campus_v1";
+        private const string StartupLogoEnglishResourcePath = "UI/Startup/startup_logo_nting_campus_en_v1";
+        private const string StartupLogoTraditionalChineseResourcePath = "UI/Startup/startup_logo_nting_campus_zh_hant_v1";
+        private const string StartupLogoRussianResourcePath = "UI/Startup/startup_logo_nting_campus_ru_v1";
+        private const string StartupLogoJapaneseResourcePath = "UI/Startup/startup_logo_nting_campus_ja_v1";
         private const int SortingOrder = 40000;
         private const float LoadingProgressWidth = 1288f;
         private const float MinimumLoadingVisibleSeconds = 1.6f;
         private const float LoadingActivationProgress = 0.985f;
+        private static readonly Color StartupBackdropTint = new Color(0.02f, 0.02f, 0.02f, 0.72f);
+        private static readonly Color StartupBackdropImageTint = new Color(1f, 1f, 1f, 0.52f);
+        private static readonly Color StartupMainPanelFill = new Color(0.10f, 0.11f, 0.10f, 0.62f);
+        private static readonly Color StartupMainPanelBorder = new Color(1f, 0.80f, 0.42f, 0.14f);
+        private static readonly Color StartupSectionFill = new Color(0.13f, 0.14f, 0.12f, 0.54f);
+        private static readonly Color StartupSectionBorder = new Color(1f, 0.80f, 0.42f, 0.08f);
+        private static readonly Color StartupCardFill = new Color(1f, 1f, 1f, 0.04f);
+        private static readonly Color StartupCardFillSelected = new Color(1f, 1f, 1f, 0.08f);
+        private static readonly Color StartupFooterFill = new Color(0.08f, 0.09f, 0.08f, 0.60f);
+        private static readonly Color StartupAccent = new Color(1f, 0.75f, 0.30f, 0.86f);
 
         [SerializeField] private bool showOnStartup = true;
         [SerializeField, Min(1f)] private float windowWidth = 1560f;
@@ -60,13 +116,25 @@ namespace NtingCampus.UI.Runtime.Gameplay
         private readonly List<LoadOptionView> mapOptionViews = new List<LoadOptionView>();
         private readonly List<LoadOptionView> saveOptionViews = new List<LoadOptionView>();
         private readonly List<LanguageButtonView> languageButtonViews = new List<LanguageButtonView>();
+        private readonly List<SettingsSectionButtonView> settingsSectionButtonViews = new List<SettingsSectionButtonView>();
+        private readonly List<KeyBindingRow> keyBindingRows = new List<KeyBindingRow>();
+        private readonly Dictionary<CampusDisplayLanguage, Sprite> startupLogoSprites = new Dictionary<CampusDisplayLanguage, Sprite>();
 
         private Canvas canvas;
         private RectTransform canvasRoot;
         private CanvasGroup mainCanvasGroup;
         private CanvasGroup loadingCanvasGroup;
         private RectTransform mainPanel;
+        private RectTransform headerPanel;
         private RectTransform loadingPanel;
+        private RectTransform homePanel;
+        private RectTransform settingsPanel;
+        private RectTransform settingsLanguageContentPanel;
+        private RectTransform settingsKeyBindingContentPanel;
+        private RectTransform mapPanel;
+        private RectTransform savePanel;
+        private RectTransform footerPanel;
+        private RectTransform aboutPanel;
         private RectTransform mapContent;
         private RectTransform saveContent;
         private Text mapCountText;
@@ -77,16 +145,36 @@ namespace NtingCampus.UI.Runtime.Gameplay
         private Button createMapButton;
         private Button refreshButton;
         private Button startButton;
+        private Button homeStartButton;
+        private Button homeSettingsButton;
+        private Button homeAboutButton;
+        private Button playBackButton;
+        private Button settingsBackButton;
+        private Button aboutBackButton;
+        private Button resetAllKeyBindingsButton;
         private Text createMapButtonText;
         private Text refreshButtonText;
         private Text startButtonText;
+        private Text homeStartButtonText;
+        private Text homeSettingsButtonText;
+        private Text homeAboutButtonText;
+        private Text settingsLanguageTitleText;
+        private Text settingsLanguageDescriptionText;
+        private Image homeLogoImage;
+        private Text playBackButtonText;
+        private Text settingsBackButtonText;
+        private Text aboutBackButtonText;
         private Text headerTitleText;
         private Text mapTitleText;
         private Text saveTitleText;
+        private Text aboutTitleText;
+        private Text aboutBodyText;
+        private Text keyBindingSectionTitleText;
+        private Text keyBindingDescriptionText;
+        private Text keyBindingStatusText;
         private Text loadingTitleText;
+        private Text headerSubtitleText;
         private Text loadingStatusText;
-        private Text loadingPercentText;
-        private Text loadingPercentCaptionText;
         private RectTransform loadingFillRect;
         private RectTransform loadingSweepRect;
         private AsyncOperation loadingOperation;
@@ -95,13 +183,18 @@ namespace NtingCampus.UI.Runtime.Gameplay
         private Tween loadingSweepTween;
         private Sprite startupBackgroundSprite;
         private Sprite startupLoadingOverlaySprite;
+        private Sprite startupLogoSprite;
         private string newMapName = string.Empty;
         private string statusMessage = string.Empty;
+        private string keyBindingStatusMessage = string.Empty;
         private float loadingProgress;
         private float displayedLoadingProgress;
         private float loadingVisibleTime;
         private int selectedMapIndex;
         private int selectedSaveIndex;
+        private StartupPage currentPage = StartupPage.Home;
+        private SettingsSection currentSettingsSection = SettingsSection.Language;
+        private CampusGameplayInputActionId? pendingKeyBindingAction;
         private bool isLoading;
         private bool loadingSceneActivationRequested;
 
@@ -152,6 +245,17 @@ namespace NtingCampus.UI.Runtime.Gameplay
 
         private void Update()
         {
+            if (currentPage == StartupPage.Settings &&
+                currentSettingsSection == SettingsSection.KeyBindings &&
+                pendingKeyBindingAction.HasValue)
+            {
+                CapturePendingKeyBinding();
+                if (!isLoading)
+                {
+                    return;
+                }
+            }
+
             if (!isLoading || loadingOperation == null)
             {
                 return;
@@ -354,6 +458,7 @@ namespace NtingCampus.UI.Runtime.Gameplay
             startupLoadingOverlaySprite = startupLoadingOverlaySprite != null
                 ? startupLoadingOverlaySprite
                 : Resources.Load<Sprite>(StartupLoadingOverlayResourcePath);
+            startupLogoSprite = ResolveStartupLogoSprite();
 
             CampusUiRuntimeBuilder.EnsureEventSystem();
             canvas = CampusUiRuntimeBuilder.CreateScreenCanvas(gameObject, "CampusStartupCanvas", SortingOrder);
@@ -369,37 +474,25 @@ namespace NtingCampus.UI.Runtime.Gameplay
                 new Vector2(0.5f, 0.5f),
                 Vector2.zero,
                 new Vector2(windowWidth, windowHeight),
-                new Color(0.24f, 0.22f, 0.18f, 0.88f),
-                new Color(0.92f, 0.66f, 0.28f, 0.50f),
-                1.1f,
-                22f,
+                StartupMainPanelFill,
+                StartupMainPanelBorder,
+                0.95f,
+                18f,
                 false);
             mainCanvasGroup = mainPanel.gameObject.AddComponent<CanvasGroup>();
             mainCanvasGroup.alpha = 1f;
             mainCanvasGroup.interactable = true;
             mainCanvasGroup.blocksRaycasts = true;
 
-            RectTransform shadow = CampusUiRuntimeBuilder.CreatePanel(
-                "StartupPanelShadow",
-                canvasRoot,
-                new Vector2(0.5f, 0.5f),
-                new Vector2(0.5f, 0.5f),
-                new Vector2(0.5f, 0.5f),
-                new Vector2(12f, -12f),
-                new Vector2(windowWidth + 18f, windowHeight + 20f),
-                CampusUiVisualTheme.CardShadow,
-                Color.clear,
-                0f,
-                32f,
-                false);
-            shadow.SetSiblingIndex(mainPanel.GetSiblingIndex());
-
             BuildHeader(mainPanel);
-            BuildLanguageRow(mainPanel);
+            BuildHomePanel(mainPanel);
+            BuildSettingsPanel(mainPanel);
             BuildOptionPanels(mainPanel);
             BuildFooter(mainPanel);
+            BuildAboutPanel(mainPanel);
             BuildLoadingOverlay(canvasRoot);
             RefreshLocalizedText();
+            SetPage(StartupPage.Home);
         }
 
         private void BuildBackdrop(Transform parent)
@@ -417,103 +510,453 @@ namespace NtingCampus.UI.Runtime.Gameplay
                     "BackdropArtwork",
                     backdrop,
                     startupBackgroundSprite,
-                    new Color(1f, 1f, 1f, 0.88f),
+                    StartupBackdropImageTint,
                     false,
                     false);
-                artwork.rectTransform.offsetMin = new Vector2(-20f, -20f);
-                artwork.rectTransform.offsetMax = new Vector2(20f, 20f);
+                artwork.rectTransform.offsetMin = new Vector2(-12f, -12f);
+                artwork.rectTransform.offsetMax = new Vector2(12f, 12f);
             }
 
             RectTransform dimmer = CampusUiRuntimeBuilder.CreateFullScreenPanel(
                 "BackdropDimmer",
                 backdrop,
-                new Color(0.22f, 0.16f, 0.08f, 0.16f),
+                StartupBackdropTint,
                 false);
             dimmer.SetAsLastSibling();
         }
 
         private void BuildHeader(Transform parent)
         {
-            RectTransform header = CampusUiRuntimeBuilder.CreatePanel(
+            headerPanel = CampusUiRuntimeBuilder.CreatePanel(
                 "Header",
                 parent,
                 new Vector2(0f, 1f),
                 new Vector2(0f, 1f),
                 new Vector2(0f, 1f),
                 new Vector2(24f, -24f),
-                new Vector2(windowWidth - 48f, 104f),
-                new Color(0.40f, 0.32f, 0.23f, 0.76f),
-                CampusUiVisualTheme.BorderSoft,
-                1.0f,
-                18f,
-                false);
-
-            RectTransform accent = CampusUiRuntimeBuilder.CreatePanel(
-                "HeaderAccent",
-                header,
-                new Vector2(0f, 1f),
-                new Vector2(1f, 1f),
-                new Vector2(0.5f, 1f),
-                Vector2.zero,
-                new Vector2(0f, 6f),
-                new Color(1f, 0.78f, 0.32f, 0.55f),
+                new Vector2(windowWidth - 48f, 62f),
                 Color.clear,
-                0f,
-                18f,
-                false);
-            accent.offsetMin = new Vector2(24f, -6f);
-            accent.offsetMax = new Vector2(-24f, 0f);
-
-            RectTransform line = CampusUiRuntimeBuilder.CreatePanel(
-                "HeaderRule",
-                header,
-                new Vector2(0f, 0f),
-                new Vector2(1f, 0f),
-                new Vector2(0.5f, 0f),
-                new Vector2(0f, 16f),
-                new Vector2(0f, 2f),
-                new Color(1f, 0.86f, 0.46f, 0.28f),
                 Color.clear,
                 0f,
                 0f,
                 false);
-            line.offsetMin = new Vector2(24f, 16f);
-            line.offsetMax = new Vector2(-24f, 18f);
 
             headerTitleText = CampusUiRuntimeBuilder.CreateText(
                 "Title",
-                header,
+                headerPanel,
                 CampusPlayerUiTextCatalog.Get(CampusPlayerUiTextId.StartupTitle),
-                52,
+                34,
                 TextAnchor.MiddleLeft,
-                CampusUiVisualTheme.TextGold,
+                CampusUiVisualTheme.TextPrimary,
                 FontStyle.Bold);
             headerTitleText.rectTransform.anchorMin = new Vector2(0f, 1f);
             headerTitleText.rectTransform.anchorMax = new Vector2(0f, 1f);
             headerTitleText.rectTransform.pivot = new Vector2(0f, 1f);
-            headerTitleText.rectTransform.anchoredPosition = new Vector2(34f, -20f);
-            headerTitleText.rectTransform.sizeDelta = new Vector2(560f, 58f);
+            headerTitleText.rectTransform.anchoredPosition = new Vector2(24f, -8f);
+            headerTitleText.rectTransform.sizeDelta = new Vector2(420f, 42f);
+
+            headerSubtitleText = CampusUiRuntimeBuilder.CreateText(
+                "Subtitle",
+                headerPanel,
+                CampusPlayerUiTextCatalog.Get(CampusPlayerUiTextId.StartupDescription),
+                16,
+                TextAnchor.MiddleLeft,
+                CampusUiVisualTheme.TextSecondary);
+            headerSubtitleText.rectTransform.anchorMin = new Vector2(0f, 1f);
+            headerSubtitleText.rectTransform.anchorMax = new Vector2(0f, 1f);
+            headerSubtitleText.rectTransform.pivot = new Vector2(0f, 1f);
+            headerSubtitleText.rectTransform.anchoredPosition = new Vector2(30f, -52f);
+            headerSubtitleText.rectTransform.sizeDelta = new Vector2(900f, 26f);
         }
 
-        private void BuildLanguageRow(Transform parent)
+        private void BuildHomePanel(Transform parent)
         {
-            RectTransform row = CampusUiRuntimeBuilder.CreatePanel(
-                "LanguageRow",
+            homePanel = CampusUiRuntimeBuilder.CreatePanel(
+                "HomePanel",
                 parent,
                 new Vector2(0f, 1f),
                 new Vector2(0f, 1f),
                 new Vector2(0f, 1f),
                 new Vector2(24f, -150f),
-                new Vector2(windowWidth - 48f, 50f),
-                new Color(0.18f, 0.20f, 0.17f, 0.58f),
-                new Color(0.90f, 0.70f, 0.38f, 0.26f),
-                0.9f,
-                14f,
+                new Vector2(windowWidth - 48f, 746f),
+                new Color(0.19f, 0.20f, 0.16f, 0.70f),
+                new Color(0.84f, 0.62f, 0.34f, 0.32f),
+                1.05f,
+                18f,
+                false);
+            homePanel.GetComponent<StorageBoxGraphic>()?.SetStyle(Color.clear, Color.clear, 0f, 0f);
+
+            BuildHomeLogo(homePanel);
+
+            homeStartButton = CreateMainMenuButton(
+                homePanel,
+                "HomeStartButton",
+                CampusPlayerUiTextId.StartGame,
+                new Vector2(430f, -300f),
+                () => SetPage(StartupPage.Play),
+                true);
+            homeSettingsButton = CreateMainMenuButton(
+                homePanel,
+                "HomeSettingsButton",
+                CampusPlayerUiTextId.SettingsTitle,
+                new Vector2(430f, -382f),
+                () => SetPage(StartupPage.Settings),
+                false);
+            homeAboutButton = CreateMainMenuButton(
+                homePanel,
+                "HomeAboutButton",
+                CampusPlayerUiTextId.About,
+                new Vector2(430f, -464f),
+                () => SetPage(StartupPage.About),
                 false);
 
-            CreateLanguageButton(row, CampusDisplayLanguage.Chinese, CampusPlayerUiTextId.Chinese, new Vector2(22f, 8f));
-            CreateLanguageButton(row, CampusDisplayLanguage.English, CampusPlayerUiTextId.English, new Vector2(154f, 8f));
-            CreateLanguageButton(row, CampusDisplayLanguage.Bilingual, CampusPlayerUiTextId.Bilingual, new Vector2(286f, 8f));
+            homeStartButtonText = homeStartButton.GetComponentInChildren<Text>();
+            homeSettingsButtonText = homeSettingsButton.GetComponentInChildren<Text>();
+            homeAboutButtonText = homeAboutButton.GetComponentInChildren<Text>();
+        }
+
+        private void BuildHomeLogo(Transform parent)
+        {
+            homeLogoImage = CampusUiRuntimeBuilder.CreateImage(
+                "HomeLogo",
+                parent,
+                ResolveStartupLogoSprite(),
+                Color.white,
+                true,
+                false);
+            homeLogoImage.rectTransform.anchorMin = new Vector2(0.5f, 1f);
+            homeLogoImage.rectTransform.anchorMax = new Vector2(0.5f, 1f);
+            homeLogoImage.rectTransform.pivot = new Vector2(0.5f, 1f);
+            homeLogoImage.rectTransform.anchoredPosition = new Vector2(0f, 140f);
+            homeLogoImage.rectTransform.sizeDelta = new Vector2(880f, 410f);
+            homeLogoImage.gameObject.AddComponent<CampusStartupLogoGlowController>();
+        }
+
+        private Sprite ResolveStartupLogoSprite()
+        {
+            CampusDisplayLanguage language = CampusLanguageState.CurrentLanguage;
+            if (startupLogoSprites.TryGetValue(language, out Sprite cachedSprite) && cachedSprite != null)
+            {
+                return cachedSprite;
+            }
+
+            string resourcePath = ResolveStartupLogoResourcePath(language);
+            Sprite sprite = Resources.Load<Sprite>(resourcePath);
+            if (sprite == null && language != CampusDisplayLanguage.Chinese)
+            {
+                sprite = Resources.Load<Sprite>(StartupLogoChineseResourcePath);
+            }
+
+            if (sprite != null)
+            {
+                startupLogoSprites[language] = sprite;
+            }
+
+            return sprite;
+        }
+
+        private static string ResolveStartupLogoResourcePath(CampusDisplayLanguage language)
+        {
+            switch (CampusDisplayLanguageCatalog.Normalize(language))
+            {
+                case CampusDisplayLanguage.English:
+                    return StartupLogoEnglishResourcePath;
+                case CampusDisplayLanguage.TraditionalChinese:
+                    return StartupLogoTraditionalChineseResourcePath;
+                case CampusDisplayLanguage.Russian:
+                    return StartupLogoRussianResourcePath;
+                case CampusDisplayLanguage.Japanese:
+                    return StartupLogoJapaneseResourcePath;
+                default:
+                    return StartupLogoChineseResourcePath;
+            }
+        }
+
+        private Button CreateMainMenuButton(
+            Transform parent,
+            string name,
+            CampusPlayerUiTextId labelId,
+            Vector2 anchoredPosition,
+            UnityEngine.Events.UnityAction action,
+            bool primary)
+        {
+            Button button = CampusUiRuntimeBuilder.CreateButton(
+                name,
+                parent,
+                CampusPlayerUiTextCatalog.Get(labelId),
+                action,
+                primary ? CampusUiVisualTheme.AccentSoftFill : CampusUiVisualTheme.PanelDim,
+                primary ? CampusUiVisualTheme.Accent : CampusUiVisualTheme.BorderSoft,
+                18f,
+                primary ? 1.35f : 1.05f,
+                CampusUiVisualTheme.TextPrimary,
+                28);
+            RectTransform rect = button.GetComponent<RectTransform>();
+            rect.anchorMin = new Vector2(0f, 1f);
+            rect.anchorMax = new Vector2(0f, 1f);
+            rect.pivot = new Vector2(0f, 1f);
+            rect.anchoredPosition = anchoredPosition;
+            rect.sizeDelta = new Vector2(700f, 64f);
+            return button;
+        }
+
+        private void BuildSettingsPanel(Transform parent)
+        {
+            settingsPanel = CampusUiRuntimeBuilder.CreatePanel(
+                "SettingsPanel",
+                parent,
+                new Vector2(0f, 1f),
+                new Vector2(0f, 1f),
+                new Vector2(0f, 1f),
+                new Vector2(24f, -150f),
+                new Vector2(windowWidth - 48f, 746f),
+                CampusUiVisualTheme.PanelSoft,
+                CampusUiVisualTheme.BorderMuted,
+                1.0f,
+                18f,
+                false);
+
+            ScrollRect selectorScrollRect = CampusUiRuntimeBuilder.CreateScrollView(
+                "StartupSettingsSectionSelector",
+                settingsPanel,
+                new Vector2(windowWidth - 92f, 176f),
+                out RectTransform selectorViewport,
+                out RectTransform selectorContent,
+                CampusUiVisualTheme.PanelRaised,
+                CampusUiVisualTheme.BorderSoft,
+                1.05f,
+                18f);
+
+            RectTransform selectorScrollRectTransform = selectorScrollRect.GetComponent<RectTransform>();
+            selectorScrollRectTransform.anchorMin = new Vector2(0f, 1f);
+            selectorScrollRectTransform.anchorMax = new Vector2(0f, 1f);
+            selectorScrollRectTransform.pivot = new Vector2(0f, 1f);
+            selectorScrollRectTransform.anchoredPosition = new Vector2(22f, -16f);
+            selectorScrollRectTransform.sizeDelta = new Vector2(windowWidth - 92f, 176f);
+
+            selectorViewport.offsetMin = new Vector2(12f, 12f);
+            selectorViewport.offsetMax = new Vector2(-16f, -12f);
+
+            VerticalLayoutGroup selectorLayout = selectorContent.GetComponent<VerticalLayoutGroup>();
+            if (selectorLayout != null)
+            {
+                selectorLayout.padding = new RectOffset(280, 280, 18, 18);
+                selectorLayout.spacing = 12f;
+            }
+
+            CreateSettingsSectionButton(
+                selectorContent,
+                SettingsSection.Language,
+                CampusPlayerUiTextId.Language);
+            CreateSettingsSectionButton(
+                selectorContent,
+                SettingsSection.KeyBindings,
+                CampusPlayerUiTextId.KeyBindingTitle);
+
+            ScrollRect languageScrollRect = CampusUiRuntimeBuilder.CreateScrollView(
+                "StartupSettingsLanguageContent",
+                settingsPanel,
+                new Vector2(windowWidth - 92f, 458f),
+                out RectTransform languageViewport,
+                out RectTransform languageContent,
+                CampusUiVisualTheme.PanelRaised,
+                CampusUiVisualTheme.BorderSoft,
+                1.05f,
+                18f);
+            settingsLanguageContentPanel = languageScrollRect.GetComponent<RectTransform>();
+            settingsLanguageContentPanel.anchorMin = new Vector2(0f, 1f);
+            settingsLanguageContentPanel.anchorMax = new Vector2(0f, 1f);
+            settingsLanguageContentPanel.pivot = new Vector2(0f, 1f);
+            settingsLanguageContentPanel.anchoredPosition = new Vector2(22f, -204f);
+            settingsLanguageContentPanel.sizeDelta = new Vector2(windowWidth - 92f, 458f);
+
+            languageViewport.offsetMin = new Vector2(12f, 12f);
+            languageViewport.offsetMax = new Vector2(-16f, -12f);
+            ConfigureSettingsScrollContent(languageContent);
+
+            RectTransform languageCard = CreateSettingsScrollCard(
+                languageContent,
+                "StartupSettingsLanguageCard",
+                430f);
+            BuildStartupLanguageCard(languageCard);
+
+            ScrollRect keyBindingScrollRect = CampusUiRuntimeBuilder.CreateScrollView(
+                "StartupSettingsKeyBindingContent",
+                settingsPanel,
+                new Vector2(windowWidth - 92f, 458f),
+                out RectTransform keyBindingViewport,
+                out RectTransform keyBindingContent,
+                CampusUiVisualTheme.PanelRaised,
+                CampusUiVisualTheme.BorderSoft,
+                1.05f,
+                18f);
+            settingsKeyBindingContentPanel = keyBindingScrollRect.GetComponent<RectTransform>();
+            settingsKeyBindingContentPanel.anchorMin = new Vector2(0f, 1f);
+            settingsKeyBindingContentPanel.anchorMax = new Vector2(0f, 1f);
+            settingsKeyBindingContentPanel.pivot = new Vector2(0f, 1f);
+            settingsKeyBindingContentPanel.anchoredPosition = new Vector2(22f, -204f);
+            settingsKeyBindingContentPanel.sizeDelta = new Vector2(windowWidth - 92f, 458f);
+
+            keyBindingViewport.offsetMin = new Vector2(12f, 12f);
+            keyBindingViewport.offsetMax = new Vector2(-16f, -12f);
+            ConfigureSettingsScrollContent(keyBindingContent);
+
+            RectTransform keyBindingCard = CreateSettingsScrollCard(
+                keyBindingContent,
+                "StartupSettingsKeyBindingCard",
+                GetStartupKeyBindingCardHeight());
+            BuildStartupKeyBindingCard(keyBindingCard);
+
+            RectTransform footer = CampusUiRuntimeBuilder.CreatePanel(
+                "StartupSettingsFooter",
+                settingsPanel,
+                new Vector2(0f, 0f),
+                new Vector2(1f, 0f),
+                new Vector2(0.5f, 0f),
+                new Vector2(0f, 0f),
+                new Vector2(-32f, 76f),
+                CampusUiVisualTheme.PanelSoft,
+                CampusUiVisualTheme.BorderMuted,
+                1.05f,
+                18f,
+                false);
+
+            settingsBackButton = CampusUiRuntimeBuilder.CreateButton(
+                "SettingsBackButton",
+                footer,
+                CampusPlayerUiTextCatalog.Get(CampusPlayerUiTextId.BackToEscMenu),
+                () => SetPage(StartupPage.Home),
+                CampusUiVisualTheme.PanelDim,
+                CampusUiVisualTheme.BorderSoft,
+                16f,
+                1.1f,
+                CampusUiVisualTheme.TextSecondary,
+                16);
+            settingsBackButtonText = settingsBackButton.GetComponentInChildren<Text>();
+            RectTransform backRect = settingsBackButton.GetComponent<RectTransform>();
+            backRect.anchorMin = new Vector2(1f, 0.5f);
+            backRect.anchorMax = new Vector2(1f, 0.5f);
+            backRect.pivot = new Vector2(1f, 0.5f);
+            backRect.anchoredPosition = new Vector2(-24f, 0f);
+            backRect.sizeDelta = new Vector2(184f, 34f);
+
+            ApplySettingsSectionVisibility();
+            RefreshSettingsSectionVisuals();
+        }
+
+        private void ConfigureSettingsScrollContent(RectTransform content)
+        {
+            if (content == null)
+            {
+                return;
+            }
+
+            VerticalLayoutGroup layout = content.GetComponent<VerticalLayoutGroup>();
+            if (layout != null)
+            {
+                layout.padding = new RectOffset(12, 12, 12, 12);
+                layout.spacing = 12f;
+            }
+        }
+
+        private RectTransform CreateSettingsScrollCard(Transform parent, string name, float height)
+        {
+            RectTransform card = CampusUiRuntimeBuilder.CreatePanel(
+                name,
+                parent,
+                new Vector2(0f, 1f),
+                new Vector2(1f, 1f),
+                new Vector2(0.5f, 1f),
+                Vector2.zero,
+                new Vector2(0f, height),
+                CampusUiVisualTheme.PanelRaised,
+                CampusUiVisualTheme.BorderSoft,
+                1.05f,
+                18f,
+                false);
+
+            LayoutElement layout = card.gameObject.AddComponent<LayoutElement>();
+            layout.preferredHeight = height;
+            layout.minHeight = height;
+            layout.flexibleWidth = 1f;
+            return card;
+        }
+
+        private void CreateSettingsSectionButton(
+            Transform parent,
+            SettingsSection section,
+            CampusPlayerUiTextId labelId)
+        {
+            Button button = CampusUiRuntimeBuilder.CreateButton(
+                "SettingsSection_" + section,
+                parent,
+                CampusPlayerUiTextCatalog.Get(labelId),
+                () => SetSettingsSection(section),
+                CampusUiVisualTheme.PanelDim,
+                CampusUiVisualTheme.BorderSoft,
+                16f,
+                1.05f,
+                CampusUiVisualTheme.TextPrimary,
+                18);
+
+            RectTransform rect = button.GetComponent<RectTransform>();
+            rect.anchorMin = new Vector2(0f, 1f);
+            rect.anchorMax = new Vector2(1f, 1f);
+            rect.pivot = new Vector2(0.5f, 1f);
+            rect.sizeDelta = new Vector2(0f, 44f);
+
+            LayoutElement layout = button.gameObject.AddComponent<LayoutElement>();
+            layout.preferredHeight = 44f;
+            layout.minHeight = 44f;
+            layout.flexibleWidth = 1f;
+
+            settingsSectionButtonViews.Add(new SettingsSectionButtonView
+            {
+                Section = section,
+                LabelId = labelId,
+                Button = button,
+                Label = button.GetComponentInChildren<Text>()
+            });
+        }
+
+        private void BuildStartupLanguageCard(RectTransform card)
+        {
+            settingsLanguageTitleText = CampusUiRuntimeBuilder.CreateText(
+                "StartupSettingsLanguageTitle",
+                card,
+                CampusPlayerUiTextCatalog.Get(CampusPlayerUiTextId.Language),
+                20,
+                TextAnchor.MiddleLeft,
+                CampusUiVisualTheme.TextPrimary,
+                FontStyle.Bold);
+            settingsLanguageTitleText.rectTransform.anchorMin = new Vector2(0f, 1f);
+            settingsLanguageTitleText.rectTransform.anchorMax = new Vector2(0f, 1f);
+            settingsLanguageTitleText.rectTransform.pivot = new Vector2(0f, 1f);
+            settingsLanguageTitleText.rectTransform.anchoredPosition = new Vector2(24f, -18f);
+            settingsLanguageTitleText.rectTransform.sizeDelta = new Vector2(240f, 24f);
+
+            settingsLanguageDescriptionText = CampusUiRuntimeBuilder.CreateText(
+                "StartupSettingsLanguageDescription",
+                card,
+                CampusPlayerUiTextCatalog.Get(CampusPlayerUiTextId.SettingsDescription),
+                15,
+                TextAnchor.UpperLeft,
+                CampusUiVisualTheme.TextSecondary);
+            settingsLanguageDescriptionText.rectTransform.anchorMin = new Vector2(0f, 1f);
+            settingsLanguageDescriptionText.rectTransform.anchorMax = new Vector2(1f, 1f);
+            settingsLanguageDescriptionText.rectTransform.pivot = new Vector2(0.5f, 1f);
+            settingsLanguageDescriptionText.rectTransform.anchoredPosition = new Vector2(24f, -54f);
+            settingsLanguageDescriptionText.rectTransform.sizeDelta = new Vector2(-48f, 44f);
+
+            for (int i = 0; i < CampusDisplayLanguageCatalog.All.Count; i++)
+            {
+                CampusDisplayLanguage language = CampusDisplayLanguageCatalog.All[i];
+                CreateLanguageButton(
+                    card,
+                    language,
+                    CampusPlayerUiTextCatalog.GetLanguageNameTextId(language),
+                    new Vector2(0f, -138f - 56f * i));
+            }
         }
 
         private void CreateLanguageButton(
@@ -527,19 +970,19 @@ namespace NtingCampus.UI.Runtime.Gameplay
                 parent,
                 CampusPlayerUiTextCatalog.Get(labelId),
                 () => SetLanguage(language),
-                CampusLanguageState.CurrentLanguage == language ? new Color(0.78f, 0.49f, 0.16f, 0.88f) : new Color(0.17f, 0.18f, 0.15f, 0.72f),
-                CampusLanguageState.CurrentLanguage == language ? CampusUiVisualTheme.Accent : CampusUiVisualTheme.BorderSoft,
+                CampusLanguageState.CurrentLanguage == language ? StartupAccent : new Color(0.12f, 0.13f, 0.12f, 0.72f),
+                CampusLanguageState.CurrentLanguage == language ? StartupAccent : CampusUiVisualTheme.BorderMuted,
                 12f,
-                1.1f,
+                0.9f,
                 CampusUiVisualTheme.TextPrimary,
                 15);
 
             RectTransform rect = button.GetComponent<RectTransform>();
-            rect.anchorMin = new Vector2(0f, 0.5f);
-            rect.anchorMax = new Vector2(0f, 0.5f);
-            rect.pivot = new Vector2(0f, 0.5f);
+            rect.anchorMin = new Vector2(0.5f, 1f);
+            rect.anchorMax = new Vector2(0.5f, 1f);
+            rect.pivot = new Vector2(0.5f, 1f);
             rect.anchoredPosition = anchoredPosition;
-            rect.sizeDelta = new Vector2(118f, 32f);
+            rect.sizeDelta = new Vector2(300f, 42f);
 
             Text label = button.GetComponentInChildren<Text>();
             languageButtonViews.Add(new LanguageButtonView
@@ -551,15 +994,284 @@ namespace NtingCampus.UI.Runtime.Gameplay
             });
         }
 
+        private void BuildStartupKeyBindingCard(Transform card)
+        {
+            keyBindingSectionTitleText = CampusUiRuntimeBuilder.CreateText(
+                "StartupSettingsKeyBindingTitle",
+                card,
+                CampusPlayerUiTextCatalog.Get(CampusPlayerUiTextId.KeyBindingTitle),
+                20,
+                TextAnchor.MiddleLeft,
+                CampusUiVisualTheme.TextPrimary,
+                FontStyle.Bold);
+            keyBindingSectionTitleText.rectTransform.anchorMin = new Vector2(0f, 1f);
+            keyBindingSectionTitleText.rectTransform.anchorMax = new Vector2(0f, 1f);
+            keyBindingSectionTitleText.rectTransform.pivot = new Vector2(0f, 1f);
+            keyBindingSectionTitleText.rectTransform.anchoredPosition = new Vector2(24f, -18f);
+            keyBindingSectionTitleText.rectTransform.sizeDelta = new Vector2(280f, 24f);
+
+            keyBindingDescriptionText = CampusUiRuntimeBuilder.CreateText(
+                "StartupKeyBindingDescription",
+                card,
+                CampusPlayerUiTextCatalog.Get(CampusPlayerUiTextId.KeyBindingDescription),
+                15,
+                TextAnchor.UpperLeft,
+                CampusUiVisualTheme.TextSecondary);
+            keyBindingDescriptionText.rectTransform.anchorMin = new Vector2(0f, 1f);
+            keyBindingDescriptionText.rectTransform.anchorMax = new Vector2(1f, 1f);
+            keyBindingDescriptionText.rectTransform.pivot = new Vector2(0.5f, 1f);
+            keyBindingDescriptionText.rectTransform.anchoredPosition = new Vector2(24f, -54f);
+            keyBindingDescriptionText.rectTransform.sizeDelta = new Vector2(-236f, 42f);
+
+            resetAllKeyBindingsButton = CampusUiRuntimeBuilder.CreateButton(
+                "StartupResetAllKeyBindingsButton",
+                card,
+                CampusPlayerUiTextCatalog.Get(CampusPlayerUiTextId.KeyBindingResetAll),
+                ResetAllKeyBindings,
+                CampusUiVisualTheme.PanelDim,
+                CampusUiVisualTheme.BorderSoft,
+                14f,
+                1.05f,
+                CampusUiVisualTheme.TextSecondary,
+                14);
+            RectTransform resetAllRect = resetAllKeyBindingsButton.GetComponent<RectTransform>();
+            resetAllRect.anchorMin = new Vector2(1f, 1f);
+            resetAllRect.anchorMax = new Vector2(1f, 1f);
+            resetAllRect.pivot = new Vector2(1f, 1f);
+            resetAllRect.anchoredPosition = new Vector2(-24f, -18f);
+            resetAllRect.sizeDelta = new Vector2(184f, 34f);
+
+            keyBindingRows.Clear();
+            IReadOnlyList<CampusGameplayInputActionId> actions = CampusGameplayInputBindings.RebindableActions;
+            const float leftColumnX = 180f;
+            const float rightColumnX = 762f;
+            const float firstRowY = -110f;
+            const float rowHeight = 46f;
+            int rowsPerColumn = Mathf.CeilToInt(actions.Count * 0.5f);
+
+            for (int i = 0; i < actions.Count; i++)
+            {
+                int column = i / rowsPerColumn;
+                int row = i % rowsPerColumn;
+                float x = column == 0 ? leftColumnX : rightColumnX;
+                float y = firstRowY - row * rowHeight;
+                CreateStartupKeyBindingRow(card, actions[i], new Vector2(x, y));
+            }
+
+            keyBindingStatusText = CampusUiRuntimeBuilder.CreateText(
+                "StartupKeyBindingStatus",
+                card,
+                string.Empty,
+                13,
+                TextAnchor.MiddleLeft,
+                CampusUiVisualTheme.TextMuted);
+            keyBindingStatusText.rectTransform.anchorMin = new Vector2(0f, 0f);
+            keyBindingStatusText.rectTransform.anchorMax = new Vector2(1f, 0f);
+            keyBindingStatusText.rectTransform.pivot = new Vector2(0.5f, 0f);
+            keyBindingStatusText.rectTransform.anchoredPosition = new Vector2(22f, 14f);
+            keyBindingStatusText.rectTransform.sizeDelta = new Vector2(-44f, 24f);
+
+            RefreshKeyBindingRows();
+        }
+
+        private float GetStartupKeyBindingCardHeight()
+        {
+            int rowsPerColumn = Mathf.CeilToInt(CampusGameplayInputBindings.RebindableActions.Count * 0.5f);
+            return 160f + rowsPerColumn * 46f + 56f;
+        }
+
+        private void CreateStartupKeyBindingRow(
+            Transform parent,
+            CampusGameplayInputActionId actionId,
+            Vector2 anchoredPosition)
+        {
+            Text actionText = CampusUiRuntimeBuilder.CreateText(
+                actionId + "_StartupLabel",
+                parent,
+                string.Empty,
+                14,
+                TextAnchor.MiddleLeft,
+                CampusUiVisualTheme.TextPrimary,
+                FontStyle.Bold);
+            actionText.rectTransform.anchorMin = new Vector2(0f, 1f);
+            actionText.rectTransform.anchorMax = new Vector2(0f, 1f);
+            actionText.rectTransform.pivot = new Vector2(0f, 1f);
+            actionText.rectTransform.anchoredPosition = anchoredPosition;
+            actionText.rectTransform.sizeDelta = new Vector2(210f, 32f);
+
+            Button keyButton = CampusUiRuntimeBuilder.CreateButton(
+                actionId + "_StartupKeyButton",
+                parent,
+                string.Empty,
+                () => BeginKeyBinding(actionId),
+                CampusUiVisualTheme.PanelDim,
+                CampusUiVisualTheme.BorderSoft,
+                12f,
+                1.05f,
+                CampusUiVisualTheme.TextPrimary,
+                14);
+            RectTransform keyRect = keyButton.GetComponent<RectTransform>();
+            keyRect.anchorMin = new Vector2(0f, 1f);
+            keyRect.anchorMax = new Vector2(0f, 1f);
+            keyRect.pivot = new Vector2(0f, 1f);
+            keyRect.anchoredPosition = anchoredPosition + new Vector2(218f, 0f);
+            keyRect.sizeDelta = new Vector2(124f, 32f);
+
+            Button resetButton = CampusUiRuntimeBuilder.CreateButton(
+                actionId + "_StartupResetButton",
+                parent,
+                CampusPlayerUiTextCatalog.Get(CampusPlayerUiTextId.KeyBindingReset),
+                () => ResetKeyBinding(actionId),
+                CampusUiVisualTheme.PanelDim,
+                CampusUiVisualTheme.BorderMuted,
+                12f,
+                1.05f,
+                CampusUiVisualTheme.TextSecondary,
+                13);
+            RectTransform resetRect = resetButton.GetComponent<RectTransform>();
+            resetRect.anchorMin = new Vector2(0f, 1f);
+            resetRect.anchorMax = new Vector2(0f, 1f);
+            resetRect.pivot = new Vector2(0f, 1f);
+            resetRect.anchoredPosition = anchoredPosition + new Vector2(352f, 0f);
+            resetRect.sizeDelta = new Vector2(86f, 32f);
+
+            keyBindingRows.Add(new KeyBindingRow(actionId, actionText, keyButton, resetButton));
+        }
+
+        private void BeginKeyBinding(CampusGameplayInputActionId actionId)
+        {
+            pendingKeyBindingAction = actionId;
+            keyBindingStatusMessage = CampusPlayerUiTextCatalog.Format(
+                CampusPlayerUiTextId.KeyBindingWaiting,
+                GetKeyBindingActionLabel(actionId));
+            RefreshKeyBindingRows();
+        }
+
+        private void CapturePendingKeyBinding()
+        {
+            if (!pendingKeyBindingAction.HasValue)
+            {
+                return;
+            }
+
+            if (!CampusInteractionInput.TryReadPressedKeyboardKey(out KeyCode pressedKey))
+            {
+                return;
+            }
+
+            CampusGameplayInputActionId actionId = pendingKeyBindingAction.Value;
+            if (!CampusGameplayInputBindings.TrySetBinding(actionId, pressedKey, out CampusGameplayInputActionId conflict))
+            {
+                keyBindingStatusMessage = CampusPlayerUiTextCatalog.Format(
+                    CampusPlayerUiTextId.KeyBindingConflict,
+                    CampusInteractionInput.GetKeyLabel(pressedKey),
+                    GetKeyBindingActionLabel(conflict));
+                pendingKeyBindingAction = null;
+                RefreshKeyBindingRows();
+                return;
+            }
+
+            keyBindingStatusMessage = CampusPlayerUiTextCatalog.Format(
+                CampusPlayerUiTextId.KeyBindingApplied,
+                GetKeyBindingActionLabel(actionId),
+                CampusInteractionInput.GetKeyLabel(pressedKey));
+            pendingKeyBindingAction = null;
+            RefreshKeyBindingRows();
+        }
+
+        private void ResetKeyBinding(CampusGameplayInputActionId actionId)
+        {
+            CampusGameplayInputBindings.ResetBinding(actionId);
+            pendingKeyBindingAction = null;
+            keyBindingStatusMessage = string.Empty;
+            RefreshKeyBindingRows();
+        }
+
+        private void ResetAllKeyBindings()
+        {
+            CampusGameplayInputBindings.ResetAll();
+            pendingKeyBindingAction = null;
+            keyBindingStatusMessage = string.Empty;
+            RefreshKeyBindingRows();
+        }
+
+        private void RefreshKeyBindingRows()
+        {
+            for (int i = 0; i < keyBindingRows.Count; i++)
+            {
+                KeyBindingRow row = keyBindingRows[i];
+                if (row.ActionText != null)
+                {
+                    row.ActionText.text = GetKeyBindingActionLabel(row.ActionId);
+                }
+
+                bool pending = pendingKeyBindingAction.HasValue && pendingKeyBindingAction.Value == row.ActionId;
+                SetText(row.KeyButton != null ? row.KeyButton.GetComponentInChildren<Text>() : null,
+                    pending
+                        ? CampusPlayerUiTextCatalog.Get(CampusPlayerUiTextId.KeyBindingListening)
+                        : CampusGameplayInputBindings.GetBindingLabel(row.ActionId));
+                SetText(row.ResetButton != null ? row.ResetButton.GetComponentInChildren<Text>() : null,
+                    CampusPlayerUiTextCatalog.Get(CampusPlayerUiTextId.KeyBindingReset));
+
+                StorageBoxGraphic keyGraphic = row.KeyButton != null ? row.KeyButton.targetGraphic as StorageBoxGraphic : null;
+                if (keyGraphic != null)
+                {
+                    keyGraphic.SetStyle(
+                        pending ? CampusUiVisualTheme.AccentSoftFill : CampusUiVisualTheme.PanelDim,
+                        pending ? CampusUiVisualTheme.Accent : CampusUiVisualTheme.BorderSoft,
+                        pending ? 1.35f : 1.05f,
+                        12f);
+                }
+            }
+
+            if (keyBindingStatusText != null)
+            {
+                keyBindingStatusText.text = keyBindingStatusMessage;
+                keyBindingStatusText.color = string.IsNullOrWhiteSpace(keyBindingStatusMessage)
+                    ? CampusUiVisualTheme.TextMuted
+                    : CampusUiVisualTheme.TextGold;
+            }
+        }
+
+        private string GetKeyBindingActionLabel(CampusGameplayInputActionId actionId)
+        {
+            return CampusPlayerUiTextCatalog.Get(GetKeyBindingTextId(actionId));
+        }
+
+        private static CampusPlayerUiTextId GetKeyBindingTextId(CampusGameplayInputActionId actionId)
+        {
+            switch (actionId)
+            {
+                case CampusGameplayInputActionId.MoveUpPrimary: return CampusPlayerUiTextId.InputMoveUpPrimary;
+                case CampusGameplayInputActionId.MoveDownPrimary: return CampusPlayerUiTextId.InputMoveDownPrimary;
+                case CampusGameplayInputActionId.MoveLeftPrimary: return CampusPlayerUiTextId.InputMoveLeftPrimary;
+                case CampusGameplayInputActionId.MoveRightPrimary: return CampusPlayerUiTextId.InputMoveRightPrimary;
+                case CampusGameplayInputActionId.MoveUpSecondary: return CampusPlayerUiTextId.InputMoveUpSecondary;
+                case CampusGameplayInputActionId.MoveDownSecondary: return CampusPlayerUiTextId.InputMoveDownSecondary;
+                case CampusGameplayInputActionId.MoveLeftSecondary: return CampusPlayerUiTextId.InputMoveLeftSecondary;
+                case CampusGameplayInputActionId.MoveRightSecondary: return CampusPlayerUiTextId.InputMoveRightSecondary;
+                case CampusGameplayInputActionId.Interact: return CampusPlayerUiTextId.InputInteract;
+                case CampusGameplayInputActionId.Sprint: return CampusPlayerUiTextId.InputSprint;
+                case CampusGameplayInputActionId.Backpack: return CampusPlayerUiTextId.InputBackpack;
+                case CampusGameplayInputActionId.Settings: return CampusPlayerUiTextId.InputSettings;
+                case CampusGameplayInputActionId.ToggleMode: return CampusPlayerUiTextId.InputToggleMode;
+                case CampusGameplayInputActionId.TimePause: return CampusPlayerUiTextId.InputTimePause;
+                case CampusGameplayInputActionId.TimeNormalSpeed: return CampusPlayerUiTextId.InputTimeNormalSpeed;
+                case CampusGameplayInputActionId.TimeFastSpeed: return CampusPlayerUiTextId.InputTimeFastSpeed;
+                case CampusGameplayInputActionId.TimeMaxSpeed: return CampusPlayerUiTextId.InputTimeMaxSpeed;
+                default: return CampusPlayerUiTextId.KeyBindingTitle;
+            }
+        }
+
         private void BuildOptionPanels(Transform parent)
         {
             CreateOptionPanel(
                 parent,
                 "MapPanel",
                 CampusPlayerUiTextCatalog.Get(CampusPlayerUiTextId.Map),
-                new Vector2(24f, -224f),
-                new Vector2(1008f, 526f),
-                out RectTransform mapPanel,
+                new Vector2(24f, -110f),
+                new Vector2(986f, 598f),
+                out mapPanel,
                 out mapContent,
                 out mapCountText);
 
@@ -567,9 +1279,9 @@ namespace NtingCampus.UI.Runtime.Gameplay
                 parent,
                 "SavePanel",
                 CampusPlayerUiTextCatalog.Get(CampusPlayerUiTextId.Save),
-                new Vector2(1050f, -224f),
-                new Vector2(486f, 526f),
-                out RectTransform savePanel,
+                new Vector2(1026f, -110f),
+                new Vector2(510f, 598f),
+                out savePanel,
                 out saveContent,
                 out saveCountText);
         }
@@ -592,76 +1304,67 @@ namespace NtingCampus.UI.Runtime.Gameplay
                 new Vector2(0f, 1f),
                 position,
                 size,
-                new Color(0.20f, 0.21f, 0.17f, 0.76f),
-                new Color(0.88f, 0.64f, 0.30f, 0.50f),
-                1.1f,
-                18f,
+                new Color(0.09f, 0.10f, 0.09f, 0.42f),
+                new Color(1f, 0.80f, 0.42f, 0.08f),
+                0.75f,
+                12f,
                 false);
-
-            RectTransform accent = CampusUiRuntimeBuilder.CreatePanel(
-                name + "_Accent",
-                panel,
-                new Vector2(0f, 1f),
-                new Vector2(1f, 1f),
-                new Vector2(0.5f, 1f),
-                Vector2.zero,
-                new Vector2(0f, 5f),
-                new Color(1f, 0.75f, 0.24f, 0.42f),
-                Color.clear,
-                0f,
-                18f,
-                false);
-            accent.offsetMin = new Vector2(18f, -5f);
-            accent.offsetMax = new Vector2(-18f, 0f);
 
             Text sectionTitle = CampusUiRuntimeBuilder.CreateText(
                 name + "_Title",
                 panel,
                 title,
-                28,
+                20,
                 TextAnchor.MiddleLeft,
                 CampusUiVisualTheme.TextPrimary,
                 FontStyle.Bold);
             sectionTitle.rectTransform.anchorMin = new Vector2(0f, 1f);
             sectionTitle.rectTransform.anchorMax = new Vector2(0f, 1f);
             sectionTitle.rectTransform.pivot = new Vector2(0f, 1f);
-            sectionTitle.rectTransform.anchoredPosition = new Vector2(24f, -20f);
-            sectionTitle.rectTransform.sizeDelta = new Vector2(360f, 34f);
+            sectionTitle.rectTransform.anchoredPosition = new Vector2(18f, -14f);
+            sectionTitle.rectTransform.sizeDelta = new Vector2(280f, 24f);
 
             countText = CampusUiRuntimeBuilder.CreateText(
                 name + "_Count",
                 panel,
                 string.Empty,
-                13,
+                12,
                 TextAnchor.MiddleRight,
                 CampusUiVisualTheme.TextMuted,
                 FontStyle.Bold);
             countText.rectTransform.anchorMin = new Vector2(1f, 1f);
             countText.rectTransform.anchorMax = new Vector2(1f, 1f);
             countText.rectTransform.pivot = new Vector2(1f, 1f);
-            countText.rectTransform.anchoredPosition = new Vector2(-22f, -18f);
-            countText.rectTransform.sizeDelta = new Vector2(40f, 22f);
+            countText.rectTransform.anchoredPosition = new Vector2(-18f, -14f);
+            countText.rectTransform.sizeDelta = new Vector2(48f, 18f);
 
             ScrollRect scrollRect = CampusUiRuntimeBuilder.CreateScrollView(
                 name + "_Scroll",
                 panel,
-                new Vector2(size.x - 30f, size.y - 90f),
+                new Vector2(size.x - 24f, size.y - 56f),
                 out RectTransform viewport,
                 out content,
-                new Color(0.12f, 0.14f, 0.12f, 0.64f),
-                new Color(0.80f, 0.58f, 0.30f, 0.32f),
-                1.0f,
-                14f);
+                Color.clear,
+                new Color(1f, 0.80f, 0.42f, 0.05f),
+                0.65f,
+                10f);
 
             RectTransform scrollRectTransform = scrollRect.GetComponent<RectTransform>();
             scrollRectTransform.anchorMin = new Vector2(0f, 1f);
             scrollRectTransform.anchorMax = new Vector2(0f, 1f);
             scrollRectTransform.pivot = new Vector2(0f, 1f);
-            scrollRectTransform.anchoredPosition = new Vector2(15f, -68f);
-            scrollRectTransform.sizeDelta = new Vector2(size.x - 30f, size.y - 84f);
+            scrollRectTransform.anchoredPosition = new Vector2(12f, -42f);
+            scrollRectTransform.sizeDelta = new Vector2(size.x - 24f, size.y - 54f);
 
-            viewport.offsetMin = new Vector2(10f, 10f);
-            viewport.offsetMax = new Vector2(-14f, -10f);
+            viewport.offsetMin = new Vector2(4f, 4f);
+            viewport.offsetMax = new Vector2(-10f, -4f);
+
+            VerticalLayoutGroup layout = content.GetComponent<VerticalLayoutGroup>();
+            if (layout != null)
+            {
+                layout.padding = new RectOffset(0, 0, 0, 0);
+                layout.spacing = 8f;
+            }
 
             if (string.Equals(name, "MapPanel", StringComparison.Ordinal))
             {
@@ -675,39 +1378,23 @@ namespace NtingCampus.UI.Runtime.Gameplay
 
         private void BuildFooter(Transform parent)
         {
-            RectTransform footer = CampusUiRuntimeBuilder.CreatePanel(
+            footerPanel = CampusUiRuntimeBuilder.CreatePanel(
                 "Footer",
                 parent,
                 new Vector2(0f, 1f),
                 new Vector2(0f, 1f),
                 new Vector2(0f, 1f),
-                new Vector2(24f, -804f),
-                new Vector2(windowWidth - 48f, 92f),
-                new Color(0.19f, 0.20f, 0.16f, 0.70f),
-                new Color(0.84f, 0.62f, 0.34f, 0.32f),
-                1.05f,
-                14f,
+                new Vector2(24f, -726f),
+                new Vector2(windowWidth - 48f, 74f),
+                new Color(0.08f, 0.09f, 0.08f, 0.40f),
+                new Color(1f, 0.80f, 0.42f, 0.06f),
+                0.7f,
+                12f,
                 false);
-
-            RectTransform rule = CampusUiRuntimeBuilder.CreatePanel(
-                "FooterRule",
-                footer,
-                new Vector2(0f, 1f),
-                new Vector2(1f, 1f),
-                new Vector2(0.5f, 1f),
-                Vector2.zero,
-                new Vector2(0f, 2f),
-                new Color(1f, 0.76f, 0.30f, 0.10f),
-                Color.clear,
-                0f,
-                0f,
-                false);
-            rule.offsetMin = new Vector2(18f, -2f);
-            rule.offsetMax = new Vector2(-18f, 0f);
 
             statusText = CampusUiRuntimeBuilder.CreateText(
                 "Status",
-                footer,
+                footerPanel,
                 string.Empty,
                 13,
                 TextAnchor.MiddleLeft,
@@ -715,12 +1402,12 @@ namespace NtingCampus.UI.Runtime.Gameplay
             statusText.rectTransform.anchorMin = new Vector2(0f, 0f);
             statusText.rectTransform.anchorMax = new Vector2(0f, 1f);
             statusText.rectTransform.pivot = new Vector2(0f, 0.5f);
-            statusText.rectTransform.anchoredPosition = new Vector2(22f, 0f);
-            statusText.rectTransform.sizeDelta = new Vector2(420f, 56f);
+            statusText.rectTransform.anchoredPosition = new Vector2(18f, 0f);
+            statusText.rectTransform.sizeDelta = new Vector2(280f, 44f);
 
             newMapNameField = CampusUiRuntimeBuilder.CreateInputField(
                 "NewMapInput",
-                footer,
+                footerPanel,
                 CampusPlayerUiTextCatalog.Get(CampusPlayerUiTextId.EnterNewMapName),
                 16,
                 CampusUiVisualTheme.TextPrimary,
@@ -730,19 +1417,19 @@ namespace NtingCampus.UI.Runtime.Gameplay
             inputRect.anchorMin = new Vector2(0f, 1f);
             inputRect.anchorMax = new Vector2(0f, 1f);
             inputRect.pivot = new Vector2(0f, 1f);
-            inputRect.anchoredPosition = new Vector2(520f, -28f);
-            inputRect.sizeDelta = new Vector2(320f, 36f);
+            inputRect.anchoredPosition = new Vector2(336f, -20f);
+            inputRect.sizeDelta = new Vector2(298f, 34f);
             newMapNameField.onValueChanged.AddListener(value => newMapName = value ?? string.Empty);
 
             createMapButton = CampusUiRuntimeBuilder.CreateButton(
                 "CreateMapButton",
-                footer,
+                footerPanel,
                 CampusPlayerUiTextCatalog.Get(CampusPlayerUiTextId.CreateNewMap),
                 BeginNewMapLoad,
-                CampusUiVisualTheme.AccentSoftFill,
-                CampusUiVisualTheme.Accent,
+                StartupAccent,
+                StartupAccent,
                 16f,
-                1.1f,
+                0.9f,
                 CampusUiVisualTheme.TextPrimary,
                 16);
             createMapButtonText = createMapButton.GetComponentInChildren<Text>();
@@ -750,18 +1437,18 @@ namespace NtingCampus.UI.Runtime.Gameplay
             createRect.anchorMin = new Vector2(0f, 1f);
             createRect.anchorMax = new Vector2(0f, 1f);
             createRect.pivot = new Vector2(0f, 1f);
-            createRect.anchoredPosition = new Vector2(854f, -28f);
-            createRect.sizeDelta = new Vector2(160f, 36f);
+            createRect.anchoredPosition = new Vector2(648f, -20f);
+            createRect.sizeDelta = new Vector2(146f, 34f);
 
             refreshButton = CampusUiRuntimeBuilder.CreateButton(
                 "RefreshButton",
-                footer,
+                footerPanel,
                 CampusPlayerUiTextCatalog.Get(CampusPlayerUiTextId.Refresh),
                 RebuildOptions,
                 CampusUiVisualTheme.PanelDim,
-                CampusUiVisualTheme.BorderSoft,
+                CampusUiVisualTheme.BorderMuted,
                 16f,
-                1.1f,
+                0.9f,
                 CampusUiVisualTheme.TextSecondary,
                 16);
             refreshButtonText = refreshButton.GetComponentInChildren<Text>();
@@ -769,18 +1456,18 @@ namespace NtingCampus.UI.Runtime.Gameplay
             refreshRect.anchorMin = new Vector2(0f, 1f);
             refreshRect.anchorMax = new Vector2(0f, 1f);
             refreshRect.pivot = new Vector2(0f, 1f);
-            refreshRect.anchoredPosition = new Vector2(1028f, -28f);
-            refreshRect.sizeDelta = new Vector2(126f, 36f);
+            refreshRect.anchoredPosition = new Vector2(806f, -20f);
+            refreshRect.sizeDelta = new Vector2(108f, 34f);
 
             startButton = CampusUiRuntimeBuilder.CreateButton(
                 "StartButton",
-                footer,
+                footerPanel,
                 CampusPlayerUiTextCatalog.Get(CampusPlayerUiTextId.StartGame),
                 BeginGameLoad,
-                CampusUiVisualTheme.AccentSoftFill,
-                CampusUiVisualTheme.Accent,
+                StartupAccent,
+                StartupAccent,
                 18f,
-                1.4f,
+                1.0f,
                 CampusUiVisualTheme.TextPrimary,
                 18);
             startButtonText = startButton.GetComponentInChildren<Text>();
@@ -788,10 +1475,161 @@ namespace NtingCampus.UI.Runtime.Gameplay
             startRect.anchorMin = new Vector2(1f, 1f);
             startRect.anchorMax = new Vector2(1f, 1f);
             startRect.pivot = new Vector2(1f, 1f);
-            startRect.anchoredPosition = new Vector2(-22f, -26f);
-            startRect.sizeDelta = new Vector2(214f, 44f);
+            startRect.anchoredPosition = new Vector2(-18f, -17f);
+            startRect.sizeDelta = new Vector2(204f, 40f);
+
+            playBackButton = CampusUiRuntimeBuilder.CreateButton(
+                "PlayBackButton",
+                footerPanel,
+                CampusPlayerUiTextCatalog.Get(CampusPlayerUiTextId.BackToEscMenu),
+                () => SetPage(StartupPage.Home),
+                CampusUiVisualTheme.PanelDim,
+                CampusUiVisualTheme.BorderMuted,
+                16f,
+                0.9f,
+                CampusUiVisualTheme.TextSecondary,
+                16);
+            playBackButtonText = playBackButton.GetComponentInChildren<Text>();
+            RectTransform backRect = playBackButton.GetComponent<RectTransform>();
+            backRect.anchorMin = new Vector2(1f, 1f);
+            backRect.anchorMax = new Vector2(1f, 1f);
+            backRect.pivot = new Vector2(1f, 1f);
+            backRect.anchoredPosition = new Vector2(-236f, -20f);
+            backRect.sizeDelta = new Vector2(128f, 34f);
 
             RefreshFooterText();
+        }
+
+        private void BuildAboutPanel(Transform parent)
+        {
+            aboutPanel = CampusUiRuntimeBuilder.CreatePanel(
+                "AboutPanel",
+                parent,
+                new Vector2(0f, 1f),
+                new Vector2(0f, 1f),
+                new Vector2(0f, 1f),
+                new Vector2(24f, -150f),
+                new Vector2(windowWidth - 48f, 746f),
+                new Color(0.19f, 0.20f, 0.16f, 0.70f),
+                new Color(0.84f, 0.62f, 0.34f, 0.32f),
+                1.05f,
+                18f,
+                false);
+
+            aboutTitleText = CampusUiRuntimeBuilder.CreateText(
+                "AboutTitle",
+                aboutPanel,
+                string.Empty,
+                34,
+                TextAnchor.MiddleLeft,
+                CampusUiVisualTheme.TextGold,
+                FontStyle.Bold);
+            aboutTitleText.rectTransform.anchorMin = new Vector2(0f, 1f);
+            aboutTitleText.rectTransform.anchorMax = new Vector2(0f, 1f);
+            aboutTitleText.rectTransform.pivot = new Vector2(0f, 1f);
+            aboutTitleText.rectTransform.anchoredPosition = new Vector2(44f, -48f);
+            aboutTitleText.rectTransform.sizeDelta = new Vector2(520f, 46f);
+
+            aboutBodyText = CampusUiRuntimeBuilder.CreateText(
+                "AboutBody",
+                aboutPanel,
+                string.Empty,
+                18,
+                TextAnchor.UpperLeft,
+                CampusUiVisualTheme.TextSecondary);
+            aboutBodyText.rectTransform.anchorMin = new Vector2(0f, 1f);
+            aboutBodyText.rectTransform.anchorMax = new Vector2(1f, 1f);
+            aboutBodyText.rectTransform.pivot = new Vector2(0.5f, 1f);
+            aboutBodyText.rectTransform.anchoredPosition = new Vector2(44f, -112f);
+            aboutBodyText.rectTransform.sizeDelta = new Vector2(-88f, 360f);
+
+            aboutBackButton = CreateMainMenuButton(
+                aboutPanel,
+                "AboutBackButton",
+                CampusPlayerUiTextId.BackToEscMenu,
+                new Vector2(430f, -560f),
+                () => SetPage(StartupPage.Home),
+                false);
+            aboutBackButtonText = aboutBackButton.GetComponentInChildren<Text>();
+        }
+
+        private void SetPage(StartupPage page)
+        {
+            if (page != StartupPage.Settings)
+            {
+                pendingKeyBindingAction = null;
+                keyBindingStatusMessage = string.Empty;
+                RefreshKeyBindingRows();
+            }
+
+            currentPage = page;
+            ApplyPageVisibility();
+            RefreshLocalizedText();
+        }
+
+        private void SetSettingsSection(SettingsSection section)
+        {
+            if (currentSettingsSection == section)
+            {
+                return;
+            }
+
+            if (currentSettingsSection == SettingsSection.KeyBindings)
+            {
+                pendingKeyBindingAction = null;
+                keyBindingStatusMessage = string.Empty;
+            }
+
+            currentSettingsSection = section;
+            ApplySettingsSectionVisibility();
+            RefreshSettingsSectionVisuals();
+            RefreshKeyBindingRows();
+        }
+
+        private void ApplyPageVisibility()
+        {
+            bool home = currentPage == StartupPage.Home;
+            SetPanelChromeVisible(!home);
+            SetVisible(homePanel, currentPage == StartupPage.Home);
+            SetVisible(settingsPanel, currentPage == StartupPage.Settings);
+            SetVisible(mapPanel, currentPage == StartupPage.Play);
+            SetVisible(savePanel, currentPage == StartupPage.Play);
+            SetVisible(footerPanel, currentPage == StartupPage.Play);
+            SetVisible(aboutPanel, currentPage == StartupPage.About);
+            ApplySettingsSectionVisibility();
+        }
+
+        private void ApplySettingsSectionVisibility()
+        {
+            bool showLanguage = currentPage == StartupPage.Settings && currentSettingsSection == SettingsSection.Language;
+            bool showKeyBindings = currentPage == StartupPage.Settings && currentSettingsSection == SettingsSection.KeyBindings;
+            SetVisible(settingsLanguageContentPanel, showLanguage);
+            SetVisible(settingsKeyBindingContentPanel, showKeyBindings);
+        }
+
+        private void SetPanelChromeVisible(bool visible)
+        {
+            SetVisible(headerPanel, visible);
+            if (mainPanel != null)
+            {
+                StorageBoxGraphic graphic = mainPanel.GetComponent<StorageBoxGraphic>();
+                if (graphic != null)
+                {
+                    graphic.SetStyle(
+                        visible ? StartupMainPanelFill : Color.clear,
+                        visible ? StartupMainPanelBorder : Color.clear,
+                        visible ? 0.95f : 0f,
+                        visible ? 18f : 0f);
+                }
+            }
+        }
+
+        private static void SetVisible(RectTransform rect, bool visible)
+        {
+            if (rect != null)
+            {
+                rect.gameObject.SetActive(visible);
+            }
         }
 
         private void BuildLoadingOverlay(Transform parent)
@@ -823,151 +1661,60 @@ namespace NtingCampus.UI.Runtime.Gameplay
                     "LoadingBackdropArtwork",
                     backdrop,
                     loadingArtworkSprite,
-                    new Color(1f, 1f, 1f, 0.92f),
+                    StartupBackdropImageTint,
                     false,
                     false);
-                artwork.rectTransform.offsetMin = new Vector2(-30f, -30f);
-                artwork.rectTransform.offsetMax = new Vector2(30f, 30f);
+                artwork.rectTransform.offsetMin = new Vector2(-14f, -14f);
+                artwork.rectTransform.offsetMax = new Vector2(14f, 14f);
             }
 
             RectTransform dimmer = CampusUiRuntimeBuilder.CreateFullScreenPanel(
                 "LoadingBackdropDimmer",
                 backdrop,
-                new Color(0.40f, 0.27f, 0.12f, 0.22f),
+                StartupBackdropTint,
                 false);
             dimmer.SetAsLastSibling();
 
-            RectTransform page = CampusUiRuntimeBuilder.CreatePanel(
-                "LoadingPage",
-                loadingPanel,
-                new Vector2(0.5f, 0.5f),
-                new Vector2(0.5f, 0.5f),
-                new Vector2(0.5f, 0.5f),
-                Vector2.zero,
-                new Vector2(1520f, 860f),
-                new Color(0.40f, 0.34f, 0.25f, 0.62f),
-                new Color(1f, 0.82f, 0.44f, 0.42f),
-                1f,
-                8f,
-                false);
-            page.SetAsLastSibling();
-            page.localScale = Vector3.one * 0.99f;
-
-            RectTransform topRule = CampusUiRuntimeBuilder.CreatePanel(
-                "LoadingTopRule",
-                page,
-                new Vector2(0f, 1f),
-                new Vector2(1f, 1f),
-                new Vector2(0.5f, 1f),
-                Vector2.zero,
-                new Vector2(0f, 2f),
-                new Color(1f, 0.84f, 0.42f, 0.68f),
-                Color.clear,
-                0f,
-                0f,
-                false);
-            topRule.offsetMin = new Vector2(96f, -2f);
-            topRule.offsetMax = new Vector2(-96f, 0f);
-
-            RectTransform leftRail = CampusUiRuntimeBuilder.CreatePanel(
-                "LoadingLeftRail",
-                page,
-                new Vector2(0f, 0f),
-                new Vector2(0f, 1f),
-                new Vector2(0f, 0.5f),
-                new Vector2(96f, 0f),
-                new Vector2(4f, 0f),
-                new Color(1f, 0.76f, 0.28f, 1f),
-                Color.clear,
-                0f,
-                2f,
-                false);
-            leftRail.offsetMin = new Vector2(96f, 136f);
-            leftRail.offsetMax = new Vector2(100f, -168f);
-
             loadingTitleText = CampusUiRuntimeBuilder.CreateText(
                 "LoadingTitle",
-                page,
+                loadingPanel,
                 CampusPlayerUiTextCatalog.Get(CampusPlayerUiTextId.Loading),
-                64,
+                52,
                 TextAnchor.MiddleLeft,
-                new Color(1f, 0.92f, 0.66f, 1f),
+                CampusUiVisualTheme.TextPrimary,
                 FontStyle.Bold);
-            loadingTitleText.rectTransform.anchorMin = new Vector2(0f, 1f);
-            loadingTitleText.rectTransform.anchorMax = new Vector2(0f, 1f);
+            loadingTitleText.rectTransform.anchorMin = new Vector2(0.18f, 0.72f);
+            loadingTitleText.rectTransform.anchorMax = new Vector2(0.18f, 0.72f);
             loadingTitleText.rectTransform.pivot = new Vector2(0f, 1f);
-            loadingTitleText.rectTransform.anchoredPosition = new Vector2(132f, -154f);
-            loadingTitleText.rectTransform.sizeDelta = new Vector2(420f, 68f);
+            loadingTitleText.rectTransform.anchoredPosition = Vector2.zero;
+            loadingTitleText.rectTransform.sizeDelta = new Vector2(420f, 58f);
 
             loadingStatusText = CampusUiRuntimeBuilder.CreateText(
                 "LoadingStatus",
-                page,
+                loadingPanel,
                 CampusPlayerUiTextCatalog.Get(CampusPlayerUiTextId.LoadingGameplayScene),
                 20,
                 TextAnchor.UpperLeft,
                 CampusUiVisualTheme.TextPrimary);
-            loadingStatusText.rectTransform.anchorMin = new Vector2(0f, 1f);
-            loadingStatusText.rectTransform.anchorMax = new Vector2(0f, 1f);
+            loadingStatusText.rectTransform.anchorMin = new Vector2(0.18f, 0.66f);
+            loadingStatusText.rectTransform.anchorMax = new Vector2(0.18f, 0.66f);
             loadingStatusText.rectTransform.pivot = new Vector2(0f, 1f);
-            loadingStatusText.rectTransform.anchoredPosition = new Vector2(136f, -238f);
+            loadingStatusText.rectTransform.anchoredPosition = Vector2.zero;
             loadingStatusText.rectTransform.sizeDelta = new Vector2(680f, 36f);
-
-            loadingPercentText = CampusUiRuntimeBuilder.CreateText(
-                "LoadingPercent",
-                page,
-                "0%",
-                132,
-                TextAnchor.MiddleRight,
-                new Color(1f, 0.95f, 0.78f, 1f),
-                FontStyle.Bold);
-            loadingPercentText.rectTransform.anchorMin = new Vector2(1f, 0.5f);
-            loadingPercentText.rectTransform.anchorMax = new Vector2(1f, 0.5f);
-            loadingPercentText.rectTransform.pivot = new Vector2(1f, 0.5f);
-            loadingPercentText.rectTransform.anchoredPosition = new Vector2(-128f, -52f);
-            loadingPercentText.rectTransform.sizeDelta = new Vector2(420f, 140f);
-
-            loadingPercentCaptionText = CampusUiRuntimeBuilder.CreateText(
-                "LoadingPercentCaption",
-                page,
-                CampusPlayerUiTextCatalog.Get(CampusPlayerUiTextId.LoadingGameplayScene),
-                15,
-                TextAnchor.MiddleRight,
-                CampusUiVisualTheme.TextSecondary);
-            loadingPercentCaptionText.rectTransform.anchorMin = new Vector2(1f, 0.5f);
-            loadingPercentCaptionText.rectTransform.anchorMax = new Vector2(1f, 0.5f);
-            loadingPercentCaptionText.rectTransform.pivot = new Vector2(1f, 0.5f);
-            loadingPercentCaptionText.rectTransform.anchoredPosition = new Vector2(-132f, 54f);
-            loadingPercentCaptionText.rectTransform.sizeDelta = new Vector2(360f, 24f);
 
             RectTransform progressFrame = CampusUiRuntimeBuilder.CreatePanel(
                 "ProgressFrame",
-                page,
+                loadingPanel,
                 new Vector2(0.5f, 0f),
                 new Vector2(0.5f, 0f),
                 new Vector2(0.5f, 0f),
-                new Vector2(0f, 132f),
+                new Vector2(0f, 168f),
                 new Vector2(LoadingProgressWidth + 8f, 26f),
-                new Color(0.13f, 0.16f, 0.14f, 0.84f),
-                new Color(1f, 0.82f, 0.42f, 0.58f),
-                1.1f,
-                13f,
+                StartupSectionFill,
+                StartupSectionBorder,
+                0.85f,
+                10f,
                 false);
-
-            RectTransform progressInnerShade = CampusUiRuntimeBuilder.CreatePanel(
-                "ProgressInnerShade",
-                progressFrame,
-                new Vector2(0f, 0f),
-                new Vector2(1f, 1f),
-                new Vector2(0.5f, 0.5f),
-                Vector2.zero,
-                Vector2.zero,
-                new Color(1f, 1f, 1f, 0.03f),
-                Color.clear,
-                0f,
-                11f,
-                false);
-            progressInnerShade.offsetMin = new Vector2(3f, 3f);
-            progressInnerShade.offsetMax = new Vector2(-3f, -3f);
 
             loadingFillRect = CampusUiRuntimeBuilder.CreatePanel(
                 "ProgressFill",
@@ -977,29 +1724,13 @@ namespace NtingCampus.UI.Runtime.Gameplay
                 new Vector2(0f, 0.5f),
                 new Vector2(2f, 0f),
                 new Vector2(0f, 18f),
-                new Color(1f, 0.76f, 0.26f, 1f),
+                StartupAccent,
                 Color.clear,
                 0f,
                 10f,
                 false);
             loadingFillRect.anchoredPosition = new Vector2(4f, 0f);
             loadingFillRect.pivot = new Vector2(0f, 0.5f);
-
-            RectTransform fillGlow = CampusUiRuntimeBuilder.CreatePanel(
-                "ProgressFillGlow",
-                loadingFillRect,
-                new Vector2(0f, 0f),
-                new Vector2(1f, 1f),
-                new Vector2(0.5f, 0.5f),
-                Vector2.zero,
-                Vector2.zero,
-                new Color(1f, 1f, 1f, 0.10f),
-                Color.clear,
-                0f,
-                10f,
-                false);
-            fillGlow.offsetMin = new Vector2(0f, 2f);
-            fillGlow.offsetMax = new Vector2(0f, -2f);
 
             loadingSweepRect = CampusUiRuntimeBuilder.CreatePanel(
                 "ProgressSweep",
@@ -1009,7 +1740,7 @@ namespace NtingCampus.UI.Runtime.Gameplay
                 new Vector2(0.5f, 0.5f),
                 new Vector2(-60f, 0f),
                 new Vector2(120f, 18f),
-                new Color(1f, 0.97f, 0.78f, 0.48f),
+                new Color(1f, 1f, 1f, 0.24f),
                 Color.clear,
                 0f,
                 10f,
@@ -1023,41 +1754,6 @@ namespace NtingCampus.UI.Runtime.Gameplay
                 .SetUpdate(true)
                 .Pause();
 
-            RectTransform markerRow = CampusUiRuntimeBuilder.CreatePanel(
-                "ProgressMarkerRow",
-                page,
-                new Vector2(0f, 0f),
-                new Vector2(1f, 0f),
-                new Vector2(0.5f, 0f),
-                new Vector2(0f, 194f),
-                new Vector2(0f, 8f),
-                Color.clear,
-                Color.clear,
-                0f,
-                0f,
-                false);
-            markerRow.offsetMin = new Vector2(132f, 194f);
-            markerRow.offsetMax = new Vector2(-132f, 202f);
-
-            for (int i = 0; i < 5; i++)
-            {
-                float normalized = i / 4f;
-                RectTransform marker = CampusUiRuntimeBuilder.CreatePanel(
-                    "ProgressMarker_" + i,
-                    markerRow,
-                    new Vector2(normalized, 0.5f),
-                    new Vector2(normalized, 0.5f),
-                    new Vector2(0.5f, 0.5f),
-                    Vector2.zero,
-                    new Vector2(i == 0 || i == 4 ? 6f : 4f, i == 0 || i == 4 ? 6f : 4f),
-                    new Color(1f, 0.76f, 0.30f, i == 0 || i == 4 ? 0.42f : 0.22f),
-                    Color.clear,
-                    0f,
-                    3f,
-                    false);
-                marker.anchoredPosition = Vector2.zero;
-            }
-
             ApplyLoadingProgressVisual(0f);
         }
 
@@ -1065,7 +1761,7 @@ namespace NtingCampus.UI.Runtime.Gameplay
         {
             if (headerTitleText != null)
             {
-                headerTitleText.text = CampusPlayerUiTextCatalog.Get(CampusPlayerUiTextId.StartupTitle);
+                headerTitleText.text = ResolveHeaderTitle();
             }
 
             if (mapTitleText != null)
@@ -1083,9 +1779,11 @@ namespace NtingCampus.UI.Runtime.Gameplay
                 loadingTitleText.text = CampusPlayerUiTextCatalog.Get(CampusPlayerUiTextId.Loading);
             }
 
-            if (loadingPercentCaptionText != null && !isLoading)
+            if (headerSubtitleText != null)
             {
-                loadingPercentCaptionText.text = CampusPlayerUiTextCatalog.Get(CampusPlayerUiTextId.PreparingSceneTransition);
+                string subtitle = ResolveHeaderSubtitle();
+                headerSubtitleText.text = subtitle;
+                headerSubtitleText.gameObject.SetActive(!string.IsNullOrWhiteSpace(subtitle));
             }
 
             if (!isLoading && loadingStatusText != null)
@@ -1113,6 +1811,26 @@ namespace NtingCampus.UI.Runtime.Gameplay
                 startButtonText.text = CampusPlayerUiTextCatalog.Get(CampusPlayerUiTextId.StartGame);
             }
 
+            SetText(homeStartButtonText, CampusPlayerUiTextCatalog.Get(CampusPlayerUiTextId.StartGame));
+            SetText(homeSettingsButtonText, CampusPlayerUiTextCatalog.Get(CampusPlayerUiTextId.SettingsTitle));
+            SetText(homeAboutButtonText, CampusPlayerUiTextCatalog.Get(CampusPlayerUiTextId.About));
+            if (homeLogoImage != null)
+            {
+                homeLogoImage.sprite = ResolveStartupLogoSprite();
+            }
+
+            SetText(settingsLanguageTitleText, CampusPlayerUiTextCatalog.Get(CampusPlayerUiTextId.Language));
+            SetText(settingsLanguageDescriptionText, CampusPlayerUiTextCatalog.Get(CampusPlayerUiTextId.SettingsDescription));
+            SetText(keyBindingSectionTitleText, CampusPlayerUiTextCatalog.Get(CampusPlayerUiTextId.KeyBindingTitle));
+            SetText(keyBindingDescriptionText, CampusPlayerUiTextCatalog.Get(CampusPlayerUiTextId.KeyBindingDescription));
+            SetText(playBackButtonText, CampusPlayerUiTextCatalog.Get(CampusPlayerUiTextId.BackToEscMenu));
+            SetText(settingsBackButtonText, CampusPlayerUiTextCatalog.Get(CampusPlayerUiTextId.BackToEscMenu));
+            SetText(aboutBackButtonText, CampusPlayerUiTextCatalog.Get(CampusPlayerUiTextId.BackToEscMenu));
+            SetText(aboutTitleText, CampusPlayerUiTextCatalog.Get(CampusPlayerUiTextId.About));
+            SetText(aboutBodyText, CampusPlayerUiTextCatalog.Get(CampusPlayerUiTextId.AboutDescription));
+            SetText(resetAllKeyBindingsButton != null ? resetAllKeyBindingsButton.GetComponentInChildren<Text>() : null,
+                CampusPlayerUiTextCatalog.Get(CampusPlayerUiTextId.KeyBindingResetAll));
+
             for (int i = 0; i < languageButtonViews.Count; i++)
             {
                 LanguageButtonView view = languageButtonViews[i];
@@ -1124,7 +1842,48 @@ namespace NtingCampus.UI.Runtime.Gameplay
                 view.Label.text = CampusPlayerUiTextCatalog.Get(view.LabelId);
             }
 
+            for (int i = 0; i < settingsSectionButtonViews.Count; i++)
+            {
+                SettingsSectionButtonView view = settingsSectionButtonViews[i];
+                if (view == null || view.Label == null)
+                {
+                    continue;
+                }
+
+                view.Label.text = CampusPlayerUiTextCatalog.Get(view.LabelId);
+            }
+
             RefreshLanguageVisuals();
+            RefreshSettingsSectionVisuals();
+            RefreshKeyBindingRows();
+        }
+
+        private string ResolveHeaderTitle()
+        {
+            switch (currentPage)
+            {
+                case StartupPage.Play:
+                    return CampusPlayerUiTextCatalog.Get(CampusPlayerUiTextId.StartGame);
+                case StartupPage.Settings:
+                    return CampusPlayerUiTextCatalog.Get(CampusPlayerUiTextId.SettingsTitle);
+                case StartupPage.About:
+                    return CampusPlayerUiTextCatalog.Get(CampusPlayerUiTextId.About);
+                default:
+                    return CampusPlayerUiTextCatalog.Get(CampusPlayerUiTextId.StartupTitle);
+            }
+        }
+
+        private string ResolveHeaderSubtitle()
+        {
+            return string.Empty;
+        }
+
+        private static void SetText(Text target, string value)
+        {
+            if (target != null)
+            {
+                target.text = value;
+            }
         }
 
         private void RefreshOptionPanels()
@@ -1148,7 +1907,7 @@ namespace NtingCampus.UI.Runtime.Gameplay
             {
                 LoadOption option = options[i];
                 int optionIndex = i;
-                LoadOptionView view = CreateOptionView(content, option, isMapPanel, () =>
+                LoadOptionView view = CreateOptionView(content, option, () =>
                 {
                     if (isMapPanel)
                     {
@@ -1171,7 +1930,6 @@ namespace NtingCampus.UI.Runtime.Gameplay
         private LoadOptionView CreateOptionView(
             Transform parent,
             LoadOption option,
-            bool isMapPanel,
             Action onClick)
         {
             GameObject cardObject = new GameObject(
@@ -1187,29 +1945,15 @@ namespace NtingCampus.UI.Runtime.Gameplay
             rect.anchorMin = new Vector2(0f, 1f);
             rect.anchorMax = new Vector2(1f, 1f);
             rect.pivot = new Vector2(0.5f, 1f);
-            rect.sizeDelta = new Vector2(0f, 80f);
+            rect.sizeDelta = new Vector2(0f, 68f);
 
             LayoutElement layoutElement = cardObject.GetComponent<LayoutElement>();
-            layoutElement.preferredHeight = 80f;
-            layoutElement.minHeight = 80f;
+            layoutElement.preferredHeight = 68f;
+            layoutElement.minHeight = 68f;
             layoutElement.flexibleWidth = 1f;
 
             StorageBoxGraphic graphic = cardObject.GetComponent<StorageBoxGraphic>();
-            graphic.SetStyle(new Color(0.13f, 0.15f, 0.12f, 0.72f), CampusUiVisualTheme.BorderMuted, 0.9f, 12f);
-
-            RectTransform indicator = CampusUiRuntimeBuilder.CreatePanel(
-                "Indicator",
-                cardObject.transform,
-                new Vector2(0f, 0.5f),
-                new Vector2(0f, 0.5f),
-                new Vector2(0.5f, 0.5f),
-                new Vector2(14f, 0f),
-                new Vector2(5f, 52f),
-                new Color(1f, 0.72f, 0.20f, 0.42f),
-                Color.clear,
-                0f,
-                3f,
-                false);
+            graphic.SetStyle(new Color(1f, 1f, 1f, 0.03f), new Color(1f, 1f, 1f, 0.04f), 0.7f, 9f);
 
             Button button = cardObject.GetComponent<Button>();
             button.targetGraphic = graphic;
@@ -1224,34 +1968,33 @@ namespace NtingCampus.UI.Runtime.Gameplay
                 "Title",
                 cardObject.transform,
                 option.Label,
-                18,
+                16,
                 TextAnchor.MiddleLeft,
                 CampusUiVisualTheme.TextPrimary,
                 FontStyle.Bold);
             titleText.rectTransform.anchorMin = new Vector2(0f, 1f);
             titleText.rectTransform.anchorMax = new Vector2(1f, 1f);
             titleText.rectTransform.pivot = new Vector2(0.5f, 1f);
-            titleText.rectTransform.anchoredPosition = new Vector2(28f, -14f);
-            titleText.rectTransform.sizeDelta = new Vector2(0f, 24f);
+            titleText.rectTransform.anchoredPosition = new Vector2(18f, -10f);
+            titleText.rectTransform.sizeDelta = new Vector2(0f, 20f);
 
             Text metaText = CampusUiRuntimeBuilder.CreateText(
                 "Meta",
                 cardObject.transform,
                 ResolveOptionMeta(option),
-                13,
+                12,
                 TextAnchor.MiddleLeft,
                 CampusUiVisualTheme.TextMuted);
             metaText.rectTransform.anchorMin = new Vector2(0f, 0f);
             metaText.rectTransform.anchorMax = new Vector2(1f, 0f);
             metaText.rectTransform.pivot = new Vector2(0.5f, 0f);
-            metaText.rectTransform.anchoredPosition = new Vector2(28f, 12f);
-            metaText.rectTransform.sizeDelta = new Vector2(0f, 20f);
+            metaText.rectTransform.anchoredPosition = new Vector2(18f, 8f);
+            metaText.rectTransform.sizeDelta = new Vector2(0f, 16f);
 
             return new LoadOptionView
             {
                 Root = rect,
                 Background = graphic,
-                Indicator = indicator,
                 Button = button,
                 TitleText = titleText,
                 MetaText = metaText,
@@ -1271,23 +2014,11 @@ namespace NtingCampus.UI.Runtime.Gameplay
                 }
 
                 view.Background.SetStyle(
-                    selected ? new Color(0.43f, 0.32f, 0.22f, 0.94f) : new Color(0.13f, 0.15f, 0.12f, 0.72f),
-                    selected ? CampusUiVisualTheme.Accent : CampusUiVisualTheme.BorderMuted,
-                    selected ? 1.4f : 0.9f,
-                    selected ? 14f : 12f);
-                if (view.Indicator != null)
-                {
-                    StorageBoxGraphic indicatorGraphic = view.Indicator.GetComponent<StorageBoxGraphic>();
-                    if (indicatorGraphic != null)
-                    {
-                        indicatorGraphic.SetStyle(
-                            selected ? new Color(1f, 0.72f, 0.20f, 0.72f) : new Color(1f, 0.76f, 0.30f, 0.14f),
-                            Color.clear,
-                            0f,
-                            3f);
-                    }
-                }
-                view.TitleText.color = selected ? CampusUiVisualTheme.TextGold : CampusUiVisualTheme.TextPrimary;
+                    selected ? new Color(1f, 0.75f, 0.30f, 0.10f) : new Color(1f, 1f, 1f, 0.02f),
+                    selected ? StartupAccent : new Color(1f, 1f, 1f, 0.04f),
+                    selected ? 0.95f : 0.65f,
+                    9f);
+                view.TitleText.color = selected ? CampusUiVisualTheme.TextPrimary : CampusUiVisualTheme.TextSecondary;
                 view.MetaText.color = selected ? CampusUiVisualTheme.TextSecondary : CampusUiVisualTheme.TextMuted;
                 view.Root.localScale = Vector3.one;
             }
@@ -1400,12 +2131,6 @@ namespace NtingCampus.UI.Runtime.Gameplay
                 float fillWidth = Mathf.Max(2f, LoadingProgressWidth * clampedProgress);
                 loadingFillRect.sizeDelta = new Vector2(fillWidth, 18f);
             }
-
-            if (loadingPercentText != null)
-            {
-                int percentValue = Mathf.RoundToInt(clampedProgress * 100f);
-                loadingPercentText.text = percentValue.ToString("00") + "%";
-            }
         }
 
         private void SetLoadingStatus(string message)
@@ -1413,11 +2138,6 @@ namespace NtingCampus.UI.Runtime.Gameplay
             if (loadingStatusText != null)
             {
                 loadingStatusText.text = message;
-            }
-
-            if (loadingPercentCaptionText != null)
-            {
-                loadingPercentCaptionText.text = message ?? string.Empty;
             }
         }
 
@@ -1539,16 +2259,41 @@ namespace NtingCampus.UI.Runtime.Gameplay
                 if (graphic != null)
                 {
                     graphic.SetStyle(
-                        selected ? CampusUiVisualTheme.AccentSoftFill : CampusUiVisualTheme.PanelDim,
-                        selected ? CampusUiVisualTheme.Accent : CampusUiVisualTheme.BorderSoft,
-                        selected ? 1.4f : 1.1f,
-                        16f);
+                        selected ? StartupAccent : CampusUiVisualTheme.PanelDim,
+                        selected ? StartupAccent : CampusUiVisualTheme.BorderMuted,
+                        selected ? 1.05f : 0.9f,
+                        14f);
                 }
 
-                view.Label.color = selected ? CampusUiVisualTheme.TextGold : CampusUiVisualTheme.TextPrimary;
+                view.Label.color = selected ? CampusUiVisualTheme.TextPrimary : CampusUiVisualTheme.TextSecondary;
             }
 
             RefreshFooterText();
+        }
+
+        private void RefreshSettingsSectionVisuals()
+        {
+            for (int i = 0; i < settingsSectionButtonViews.Count; i++)
+            {
+                SettingsSectionButtonView view = settingsSectionButtonViews[i];
+                if (view == null || view.Button == null || view.Label == null)
+                {
+                    continue;
+                }
+
+                bool selected = currentSettingsSection == view.Section;
+                StorageBoxGraphic graphic = view.Button.targetGraphic as StorageBoxGraphic;
+                if (graphic != null)
+                {
+                    graphic.SetStyle(
+                        selected ? CampusUiVisualTheme.AccentSoftFill : CampusUiVisualTheme.PanelDim,
+                        selected ? CampusUiVisualTheme.Accent : CampusUiVisualTheme.BorderSoft,
+                        selected ? 1.25f : 1.05f,
+                        16f);
+                }
+
+                view.Label.color = selected ? CampusUiVisualTheme.TextPrimary : CampusUiVisualTheme.TextSecondary;
+            }
         }
 
         private string ResolveOptionMeta(LoadOption option)

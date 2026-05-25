@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using NtingCampus.UI.Runtime.Gameplay;
+using Entry = NtingCampus.UI.Runtime.Gameplay.CampusLocalizedTextEntry;
 
 namespace NtingCampus.Gameplay.Core
 {
@@ -17,23 +18,11 @@ namespace NtingCampus.Gameplay.Core
 
     public static class CampusCoreTextCatalog
     {
-        private readonly struct Entry
-        {
-            public Entry(string chinese, string english)
-            {
-                Chinese = chinese;
-                English = english;
-            }
-
-            public string Chinese { get; }
-            public string English { get; }
-        }
-
         private static readonly Dictionary<CampusCoreTextId, Entry> Entries = new()
         {
-            { CampusCoreTextId.GameplayBootstrapInitialized, new Entry("[系统] {0} 玩法启动完成。神力={1}，天数={2}，秩序={3}，混乱={4}。", "[System] {0} gameplay bootstrap initialized. DivinePower={1}, Day={2}, Order={3}, Chaos={4}.") },
+            { CampusCoreTextId.GameplayBootstrapInitialized, new Entry("[系统] {0} 玩法启动完成。天数={1}，秩序={2}，混乱={3}。", "[System] {0} gameplay bootstrap initialized. Day={1}, Order={2}, Chaos={3}.") },
             { CampusCoreTextId.EmptyEvent, new Entry("（空事件）", "(empty event)") },
-            { CampusCoreTextId.SwitchedStudentBodyMode, new Entry("[系统] 已切换到学生身体模式。", "[System] Switched to student body mode.") },
+            { CampusCoreTextId.SwitchedStudentBodyMode, new Entry("[系统] 已切换到学生身份模式。", "[System] Switched to student body mode.") },
             { CampusCoreTextId.SwitchedGodViewMode, new Entry("[系统] 已切换到神视角模式。", "[System] Switched to god view mode.") },
             { CampusCoreTextId.EventRecorded, new Entry("[事件] {0}", "[Event] {0}") },
             { CampusCoreTextId.TestTimeAdjusted, new Entry("[测试] 时间已调整为 {0} {1}（{2}）。", "[Test] Time adjusted to {0} {1} ({2}).") },
@@ -52,7 +41,7 @@ namespace NtingCampus.Gameplay.Core
                 ? resolved
                 : new Entry(id.ToString(), id.ToString());
 
-            return Resolve(language, entry.Chinese, entry.English);
+            return entry.Get(language);
         }
 
         public static string Format(CampusCoreTextId id, params object[] args)
@@ -60,14 +49,5 @@ namespace NtingCampus.Gameplay.Core
             return string.Format(Get(id), args);
         }
 
-        private static string Resolve(CampusDisplayLanguage language, string chinese, string english)
-        {
-            return language switch
-            {
-                CampusDisplayLanguage.English => english,
-                CampusDisplayLanguage.Bilingual => chinese + " / " + english,
-                _ => chinese
-            };
-        }
     }
 }

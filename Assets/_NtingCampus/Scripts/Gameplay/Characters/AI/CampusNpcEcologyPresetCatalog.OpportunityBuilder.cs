@@ -517,13 +517,11 @@ namespace NtingCampus.Gameplay.Characters
                 return false;
             }
 
-            CampusDroppedStorageItem[] items = UnityEngine.Object.FindObjectsByType<CampusDroppedStorageItem>(
-                FindObjectsInactive.Exclude,
-                FindObjectsSortMode.None);
+            IReadOnlyList<CampusDroppedStorageItem> items = CampusDroppedStorageItemRegistry.ActiveItems;
             CampusDroppedStorageItem best = null;
             float bestDistance = float.MaxValue;
             Vector3 npcPosition = npc.Runtime.transform.position;
-            for (int i = 0; i < items.Length; i++)
+            for (int i = 0; i < items.Count; i++)
             {
                 CampusDroppedStorageItem item = items[i];
                 if (!MatchesDroppedStorageItemFilter(npc, item, targetRule))

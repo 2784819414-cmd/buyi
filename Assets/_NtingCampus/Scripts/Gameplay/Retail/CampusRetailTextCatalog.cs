@@ -42,12 +42,7 @@ namespace NtingCampus.Gameplay.Retail
 
         private static string Localize(CampusDisplayLanguage language, string chinese, string english)
         {
-            return language switch
-            {
-                CampusDisplayLanguage.English => english,
-                CampusDisplayLanguage.Bilingual => chinese + " / " + english,
-                _ => chinese
-            };
+            return CampusDisplayLanguageCatalog.Resolve(language, chinese, english);
         }
     }
 }

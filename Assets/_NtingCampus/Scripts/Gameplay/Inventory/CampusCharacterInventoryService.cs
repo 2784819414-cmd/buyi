@@ -48,6 +48,7 @@ namespace NtingCampus.Gameplay.Inventory
                 runtime,
                 ResolveContainers(memory, profile.HandContainerIds, ownerId),
                 ResolveContainers(memory, profile.PocketContainerIds, ownerId),
+                ResolveContainer(memory, profile.BackpackEquipmentContainerId, ownerId),
                 ResolveContainer(memory, profile.BackpackContainerId, ownerId));
         }
 
@@ -68,6 +69,7 @@ namespace NtingCampus.Gameplay.Inventory
                 runtime,
                 TryResolveExistingContainers(memory, profile.HandContainerIds, ownerId),
                 TryResolveExistingContainers(memory, profile.PocketContainerIds, ownerId),
+                TryResolveExistingContainer(memory, profile.BackpackEquipmentContainerId, ownerId),
                 TryResolveExistingContainer(memory, profile.BackpackContainerId, ownerId));
             return HasAnyExistingContainer(inventory);
         }
@@ -91,7 +93,7 @@ namespace NtingCampus.Gameplay.Inventory
 
         private static CampusCharacterInventory CreateEmptyInventory(CampusCharacterRuntime runtime)
         {
-            return new CampusCharacterInventory(runtime, null, null, null);
+            return new CampusCharacterInventory(runtime, null, null, null, null);
         }
 
         private static bool HasInventoryOwner(CampusCharacterRuntime runtime)
@@ -315,6 +317,7 @@ namespace NtingCampus.Gameplay.Inventory
         {
             return HasAnyContainer(inventory != null ? inventory.Hands : null) ||
                    HasAnyContainer(inventory != null ? inventory.Pockets : null) ||
+                   (inventory != null && inventory.BackpackEquipmentSlot != null) ||
                    (inventory != null && inventory.Backpack != null);
         }
 

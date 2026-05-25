@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using NtingCampus.UI.Runtime.Gameplay;
+using Entry = NtingCampus.UI.Runtime.Gameplay.CampusLocalizedTextEntry;
 
 namespace Nting.Storage
 {
@@ -58,23 +59,16 @@ namespace Nting.Storage
         ItemHasNoGroundSprite = 50,
         NoFreeFloorCellNearby = 51,
         PendingCheckout = 52,
-        HandsFullPickup = 53
+        HandsFullPickup = 53,
+        CloseButton = 54,
+        BackpackEquipmentSlot = 55,
+        BackpackAlreadyEquipped = 56,
+        BackpackEquipped = 57,
+        BackpackDropped = 58
     }
 
     public static class StorageTextCatalog
     {
-        private readonly struct Entry
-        {
-            public Entry(string chinese, string english)
-            {
-                Chinese = chinese;
-                English = english;
-            }
-
-            public string Chinese { get; }
-            public string English { get; }
-        }
-
         private static readonly Dictionary<StorageTextId, Entry> Entries = new()
         {
             { StorageTextId.WindowEyebrow, new Entry("物品收纳", "Inventory") },
@@ -130,7 +124,12 @@ namespace Nting.Storage
             { StorageTextId.ItemHasNoGroundSprite, new Entry("物品没有地面精灵。", "Item has no ground sprite.") },
             { StorageTextId.NoFreeFloorCellNearby, new Entry("附近没有可用的地面格。", "No free floor cell nearby.") },
             { StorageTextId.PendingCheckout, new Entry("待结算", "Pending Checkout") },
-            { StorageTextId.HandsFullPickup, new Entry("手上已经拿不下更多东西了。", "My hands are already full.") }
+            { StorageTextId.HandsFullPickup, new Entry("手上已经拿不下更多东西了。", "My hands are already full.") },
+            { StorageTextId.CloseButton, new Entry("×", "×") },
+            { StorageTextId.BackpackEquipmentSlot, new Entry("背包栏", "Backpack Slot") },
+            { StorageTextId.BackpackAlreadyEquipped, new Entry("已经装备了背包。", "Backpack is already equipped.") },
+            { StorageTextId.BackpackEquipped, new Entry("已装备背包。", "Equipped backpack.") },
+            { StorageTextId.BackpackDropped, new Entry("已放下背包。", "Dropped backpack.") }
         };
 
         public static string Get(StorageTextId id)
@@ -157,14 +156,15 @@ namespace Nting.Storage
             return string.Format(Get(language, id), args);
         }
 
-        public static string Resolve(CampusDisplayLanguage language, string chinese, string english)
+        public static string Resolve(
+            CampusDisplayLanguage language,
+            string chinese,
+            string english,
+            string traditionalChinese = null,
+            string russian = null,
+            string japanese = null)
         {
-            return language switch
-            {
-                CampusDisplayLanguage.English => english,
-                CampusDisplayLanguage.Bilingual => chinese + " / " + english,
-                _ => chinese
-            };
+            return CampusDisplayLanguageCatalog.Resolve(language, chinese, english, traditionalChinese, russian, japanese);
         }
     }
 }

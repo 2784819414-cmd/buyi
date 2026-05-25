@@ -42,7 +42,7 @@ namespace NtingCampus.Gameplay.Canteen
 
         private void Update()
         {
-            if (Input.GetKeyDown(KeyCode.Escape))
+            if (NtingCampusMapEditor.CampusGameplayInputBindings.WasPressed(NtingCampusMapEditor.CampusGameplayInputActionId.Settings))
             {
                 Close();
             }

@@ -35,6 +35,16 @@ namespace NtingCampusMapEditor
         public bool StolenDuringSession;
         public int SuspicionRisk;
 
+        private void OnEnable()
+        {
+            CampusDroppedStorageItemRegistry.Register(this);
+        }
+
+        private void OnDisable()
+        {
+            CampusDroppedStorageItemRegistry.Unregister(this);
+        }
+
         public void Interact(GameObject actor)
         {
             CampusCharacterActionExecutor.TryPickUpDroppedItem(ResolveActorRuntime(actor), this, out _);
@@ -92,6 +102,19 @@ namespace NtingCampusMapEditor
             context.SourceLocation = SourceLocation;
             context.OwnerId = OwnerId;
             context.ForceIllegal = ShouldMarkPickupIllegal(actorRuntime);
+            if (CampusBackpackEquipmentService.IsBackpackItem(item))
+            {
+                if (!CampusBackpackEquipmentService.TryPickUpBackpack(actorRuntime, item, null, context, out result))
+                {
+                    WritePickupLog(result.Message);
+                    return false;
+                }
+
+                WritePickupLog(result.Message);
+                Destroy(gameObject);
+                return true;
+            }
+
             CampusInventoryTransferService service = CampusInventoryTransferService.Resolve();
             if (!service.TryPickUpIntoHands(memory, item, context, out result))
             {

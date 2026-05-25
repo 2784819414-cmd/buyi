@@ -9,19 +9,84 @@ namespace NtingCampus.Gameplay.Inventory
             CampusCharacterRuntime owner,
             StorageContainerModel[] hands,
             StorageContainerModel[] pockets,
+            StorageContainerModel backpackEquipmentSlot,
             StorageContainerModel backpack)
         {
             Owner = owner;
             Hands = hands ?? System.Array.Empty<StorageContainerModel>();
             Pockets = pockets ?? System.Array.Empty<StorageContainerModel>();
+            BackpackEquipmentSlot = backpackEquipmentSlot;
             Backpack = backpack;
         }
 
         public CampusCharacterRuntime Owner { get; }
         public StorageContainerModel[] Hands { get; }
         public StorageContainerModel[] Pockets { get; }
+        public StorageContainerModel BackpackEquipmentSlot { get; }
         public StorageContainerModel Backpack { get; }
-        public bool HasBackpack => Backpack != null;
+        public StorageItemModel EquippedBackpack => CampusBackpackInventoryUtility.ResolveEquippedBackpack(BackpackEquipmentSlot);
+        public bool HasBackpack => Backpack != null && EquippedBackpack != null;
+    }
+
+    public static class CampusBackpackInventoryUtility
+    {
+        public static StorageContainerModel ResolveEquipmentSlot(CampusCharacterRuntime runtime)
+        {
+            if (runtime == null)
+            {
+                return null;
+            }
+
+            CampusCharacterInventory inventory = CampusCharacterInventoryService.GetOrCreateInventory(runtime, false);
+            return inventory != null ? inventory.BackpackEquipmentSlot : null;
+        }
+
+        public static StorageItemModel ResolveEquippedBackpack(StorageContainerModel equipmentSlot)
+        {
+            return equipmentSlot != null &&
+                   equipmentSlot.Items != null &&
+                   equipmentSlot.Items.Count > 0
+                ? equipmentSlot.Items[0]
+                : null;
+        }
+
+        public static StorageItemModel ResolveEquippedBackpack(CampusCharacterRuntime runtime)
+        {
+            return ResolveEquippedBackpack(ResolveEquipmentSlot(runtime));
+        }
+
+        public static int BuildBackpackStateHash(CampusCharacterRuntime runtime)
+        {
+            return BuildEquipmentSlotHash(ResolveEquipmentSlot(runtime));
+        }
+
+        public static int BuildEquipmentSlotHash(StorageContainerModel equipmentSlot)
+        {
+            StorageItemModel item = ResolveEquippedBackpack(equipmentSlot);
+            unchecked
+            {
+                int hash = 17;
+                hash = CombineHash(hash, equipmentSlot != null ? equipmentSlot.Id : string.Empty);
+                hash = CombineHash(hash, item != null ? item.InstanceId : string.Empty);
+                hash = CombineHash(hash, item != null ? item.DefinitionId : string.Empty);
+                return hash;
+            }
+        }
+
+        private static int CombineHash(int hash, string value)
+        {
+            if (string.IsNullOrWhiteSpace(value))
+            {
+                return hash * 31;
+            }
+
+            for (int i = 0; i < value.Length; i++)
+            {
+                hash = hash * 31 + value[i];
+            }
+
+            return hash;
+        }
     }
 
     public static class CampusHandInventoryUtility

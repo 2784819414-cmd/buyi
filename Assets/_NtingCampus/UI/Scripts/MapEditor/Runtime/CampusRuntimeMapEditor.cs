@@ -113,8 +113,8 @@ namespace NtingCampusMapEditor
         private const float AmbientLightIntensity = 0.3f;
         private const float PlacedLightIntensity = 1.15f;
         private const int PaletteTileSize = 92;
-        private const string BuiltInRetailShelfContainerObjectId = "builtin_retail_shelf_container";
-        private const string BuiltInRetailShelfDisplayObjectId = "builtin_retail_shelf_display";
+        private const string BuiltInRetailShelfContainerObjectId = "retail_shelf_container_2x1";
+        private const string BuiltInRetailShelfDisplayObjectId = "retail_shelf_display_2x1";
         private const int ToolbarButtonWidth = 110;
         private const float ZoomStep = 0.12f;
         private const float PanelMargin = 28f;
@@ -187,7 +187,7 @@ namespace NtingCampusMapEditor
         private bool suppressPlayerSaveScheduling;
         private bool importLibraryMigrationChecked;
         private bool gameplayActorCacheInitialized;
-        private bool roomMarkerCountCacheDirty = true;
+        private bool roomRegionCountCacheDirty = true;
         private bool editableLightCacheDirty = true;
         private float playerSaveDueTime;
         private float nextSceneReferenceRetryTime;
@@ -253,11 +253,12 @@ namespace NtingCampusMapEditor
         private readonly List<Sprite> importedSprites = new List<Sprite>();
         private readonly CampusRuntimeMapEditorObjectSettingsSession objectSettingsSession =
             new CampusRuntimeMapEditorObjectSettingsSession();
+        private CampusRuntimeObjectDefinitionCatalog objectDefinitionCatalog = CampusRuntimeObjectDefinitionCatalog.Empty;
         private readonly List<UnityEngine.Object> importedAssets = new List<UnityEngine.Object>();
         private readonly Dictionary<string, Texture2D> importedTextureCache = new Dictionary<string, Texture2D>(StringComparer.OrdinalIgnoreCase);
         private readonly Dictionary<string, long> importedTextureRevisionCache = new Dictionary<string, long>(StringComparer.OrdinalIgnoreCase);
         private readonly Dictionary<string, Sprite> runtimeObjectSpriteCache = new Dictionary<string, Sprite>(StringComparer.OrdinalIgnoreCase);
-        private readonly Dictionary<string, int> roomMarkerCountsByName = new Dictionary<string, int>(StringComparer.OrdinalIgnoreCase);
+        private readonly Dictionary<string, int> roomRegionCountsByName = new Dictionary<string, int>(StringComparer.OrdinalIgnoreCase);
         private readonly List<Light2D> editableLights = new List<Light2D>();
         private readonly List<string> pendingDroppedPaths = new List<string>();
         private readonly List<string> undoSnapshots = new List<string>();
@@ -561,6 +562,9 @@ namespace NtingCampusMapEditor
 
         private void LoadUserImports()
         {
+            objectDefinitionCatalog = CampusRuntimeObjectDefinitionCatalog.Load(
+                GetImportRootFolder(),
+                message => Debug.LogWarning("[NtingCampusRuntimeMapEditor] " + message));
             LoadImportedTiles(GetFloorImportFolder(), floorTiles);
             LoadImportedTiles(GetWallImportFolder(), wallTiles);
             LoadImportedObjects(GetObjectImportFolder());
@@ -662,6 +666,12 @@ namespace NtingCampusMapEditor
             for (int i = 0; i < definitions.Count; i++)
             {
                 RuntimeImportedObjectDefinition definition = definitions[i];
+                string objectId = objectDefinitionCatalog.ResolveObjectIdForSource(definition.ObjectName);
+                if (string.IsNullOrWhiteSpace(objectId))
+                {
+                    objectId = definition.ObjectName;
+                }
+
                 Texture2D texture = LoadImportedTexture(definition.BaseSpritePath);
                 if (texture == null)
                 {
@@ -669,9 +679,9 @@ namespace NtingCampusMapEditor
                 }
 
                 Vector2Int footprint = ResolveImportedObjectFootprint(definition.ObjectName, texture);
-                Sprite sprite = CreateObjectSprite(texture, definition.ObjectName, footprint);
+                Sprite sprite = CreateObjectSprite(texture, objectId, footprint);
 
-                GameObject prefab = new GameObject(definition.ObjectName);
+                GameObject prefab = new GameObject(objectId);
                 prefab.hideFlags = HideFlags.DontSave;
                 prefab.transform.SetParent(root, false);
                 prefab.SetActive(false);
@@ -680,7 +690,12 @@ namespace NtingCampusMapEditor
                 collider.isTrigger = false;
                 collider.size = new Vector2(footprint.x, footprint.y);
                 CampusPlacedObject placed = prefab.AddComponent<CampusPlacedObject>();
-                placed.ObjectId = definition.ObjectName;
+                placed.ObjectId = objectId;
+                placed.TypeId = objectDefinitionCatalog.ResolveTypeId(objectId, placed.TypeId);
+                placed.LocalizedDisplayNameOverride =
+                    objectDefinitionCatalog.ResolveDisplayName(objectId, placed.LocalizedDisplayNameOverride);
+                placed.DisplayNameOverride =
+                    objectDefinitionCatalog.ResolveDisplayNameText(objectId, placed.DisplayNameOverride);
                 placed.FootprintSize = footprint;
                 placed.BlocksMovement = true;
                 if (definition.HasDirectionalSprites)
@@ -696,7 +711,7 @@ namespace NtingCampusMapEditor
                                 rotation90,
                                 true,
                                 definition.DirectionSpritePaths[rotation90],
-                                definition.ObjectName);
+                                objectId);
                         }
                     }
 
@@ -714,7 +729,12 @@ namespace NtingCampusMapEditor
             AddBuiltInRetailShelfPrefab(
                 root,
                 BuiltInRetailShelfContainerObjectId,
-                new CampusLocalizedText("超市货架（容器）", "Retail Shelf (Container)"),
+                new CampusLocalizedText(
+                    "超市货架（容器）",
+                    "Retail Shelf (Container)",
+                    "超市貨架（容器）",
+                    "Полка магазина (контейнер)",
+                    "売店棚（コンテナ）"),
                 CampusRetailShelfMode.Container,
                 "retail_water",
                 true,
@@ -727,7 +747,12 @@ namespace NtingCampusMapEditor
             AddBuiltInRetailShelfPrefab(
                 root,
                 BuiltInRetailShelfDisplayObjectId,
-                new CampusLocalizedText("超市货架（直摆）", "Retail Shelf (Display)"),
+                new CampusLocalizedText(
+                    "超市货架（直摆）",
+                    "Retail Shelf (Display)",
+                    "超市貨架（直擺）",
+                    "Полка магазина (витрина)",
+                    "売店棚（陳列）"),
                 CampusRetailShelfMode.DirectPickupDisplay,
                 "retail_potato_chips",
                 false,
@@ -1012,13 +1037,11 @@ namespace NtingCampusMapEditor
                 Mathf.Clamp(newObjectFootprintY, 1, 32));
 
             EnsureImportFolders();
-            string safeName = CampusRuntimeImportLibrary.SanitizeFileName(displayName);
-            if (safeName == "_")
-            {
-                safeName = "Object";
-            }
-
-            string path = CampusRuntimeImportLibrary.MakeUniquePath(Path.Combine(GetObjectImportFolder(), safeName + "_" + footprint.x + "x" + footprint.y + ".png"));
+            string objectId = CampusRuntimeObjectDefinitionCatalog.BuildStableObjectId(
+                displayName,
+                footprint,
+                CandidateObjectIdExists);
+            string path = CampusRuntimeImportLibrary.MakeUniquePath(Path.Combine(GetObjectImportFolder(), objectId + ".png"));
             Texture2D texture = CreateGeneratedObjectTexture(footprint, newObjectColor);
             try
             {
@@ -1036,7 +1059,6 @@ namespace NtingCampusMapEditor
                 DestroyRuntimeObject(texture);
             }
 
-            string objectId = Path.GetFileNameWithoutExtension(path);
             LoadRuntimeResources();
             int prefabIndex = FindPrefabIndexByName(objectId);
             if (prefabIndex < 0)
@@ -1075,6 +1097,14 @@ namespace NtingCampusMapEditor
 
             SchedulePlayerMapSave();
             SetStatus(TrFormat("\u5df2\u521b\u5efa\u7269\u4f53\uff1a{0} {1}x{2}", "Created object: {0} {1}x{2}", displayName, footprint.x, footprint.y));
+        }
+
+        private bool CandidateObjectIdExists(string objectId)
+        {
+            return !string.IsNullOrWhiteSpace(objectId) &&
+                   (FindPrefabIndexByName(objectId) >= 0 ||
+                    File.Exists(CampusRuntimeImportLibrary.GetObjectSettingsPath(GetImportRootFolder(), objectId)) ||
+                    File.Exists(Path.Combine(GetObjectImportFolder(), objectId + ".png")));
         }
 
         private Texture2D CreateGeneratedObjectTexture(Vector2Int footprint, Color baseColor)
@@ -1559,7 +1589,7 @@ namespace NtingCampusMapEditor
         {
             CampusRuntimeAreaPreset preset = GetAreaPreset(roomName);
             return preset != null
-                ? Tr(preset.ChineseLabel, preset.EnglishLabel)
+                ? Tr(preset.Label)
                 : roomName;
         }
 
@@ -2290,7 +2320,9 @@ namespace NtingCampusMapEditor
                 placed = instance.AddComponent<CampusPlacedObject>();
             }
 
-            placed.ObjectId = prefab.name;
+            placed.ObjectId = prefabPlaced != null && !string.IsNullOrWhiteSpace(prefabPlaced.ObjectId)
+                ? prefabPlaced.ObjectId.Trim()
+                : prefab.name;
             placed.TypeId = prefabPlaced != null ? prefabPlaced.TypeId : string.Empty;
             placed.FloorIndex = floor.FloorIndex;
             placed.Cell = cell;
@@ -2476,7 +2508,7 @@ namespace NtingCampusMapEditor
             marker.Cell = cell;
             marker.HideMarkerVisual = false;
             AddRoomMarkerVisual(markerObject, floor);
-            InvalidateRoomMarkerCountCache();
+            InvalidateRoomRegionCountCache();
             floor.MarkUsedBoundsDirty();
             SchedulePlayerMapSave();
             if (rebuildGameplayRooms)
@@ -3350,7 +3382,7 @@ namespace NtingCampusMapEditor
 
             if (erased)
             {
-                InvalidateRoomMarkerCountCache();
+                InvalidateRoomRegionCountCache();
             }
 
             return erased;
@@ -4611,7 +4643,8 @@ namespace NtingCampusMapEditor
                 return objectSnapshot;
             }
 
-            objectSnapshot.ObjectId = string.IsNullOrEmpty(placed.ObjectId) ? placed.gameObject.name : placed.ObjectId;
+            objectSnapshot.ObjectId = objectDefinitionCatalog.NormalizeObjectId(
+                string.IsNullOrEmpty(placed.ObjectId) ? placed.gameObject.name : placed.ObjectId);
             objectSnapshot.DisplayNameOverride = placed.DisplayNameOverride;
             objectSnapshot.TypeId = CampusRuntimeObjectAuthoring.ResolveTypeIdForPlacedObject(placed);
             if (!string.IsNullOrEmpty(objectSnapshot.TypeId) && string.IsNullOrWhiteSpace(placed.TypeId))
@@ -4727,13 +4760,15 @@ namespace NtingCampusMapEditor
                 CampusSceneInstanceUtility.NormalizeSceneInstance(instance);
                 instance.SetActive(true);
                 objectSnapshot.ObjectId = string.IsNullOrWhiteSpace(objectSnapshot.ObjectId)
-                    ? prefab.name
-                    : objectSnapshot.ObjectId.Trim();
+                    ? objectDefinitionCatalog.NormalizeObjectId(prefab.name)
+                    : objectDefinitionCatalog.NormalizeObjectId(objectSnapshot.ObjectId);
                 string displayName = string.IsNullOrWhiteSpace(objectSnapshot.DisplayNameOverride)
                     ? GetObjectDisplayName(prefab)
                     : objectSnapshot.DisplayNameOverride.Trim();
+                displayName = objectDefinitionCatalog.ResolveDisplayNameText(objectSnapshot.ObjectId, displayName);
                 objectSnapshot.TypeId =
                     CampusRuntimeObjectAuthoring.ResolveTypeIdForSnapshot(objectSnapshot, prefab, displayName);
+                objectSnapshot.TypeId = objectDefinitionCatalog.ResolveTypeId(objectSnapshot.ObjectId, objectSnapshot.TypeId);
                 instance.name = displayName + "_F" + floor.FloorIndex + "_" + objectSnapshot.Cell.x + "_" + objectSnapshot.Cell.y;
                 CampusPlacedObject placed = instance.GetComponent<CampusPlacedObject>();
                 if (placed == null)
@@ -4938,7 +4973,7 @@ namespace NtingCampusMapEditor
                 }
             }
 
-            InvalidateRoomMarkerCountCache();
+            InvalidateRoomRegionCountCache();
         }
 
         private void CaptureLights(List<CampusRuntimeLightSnapshot> output)

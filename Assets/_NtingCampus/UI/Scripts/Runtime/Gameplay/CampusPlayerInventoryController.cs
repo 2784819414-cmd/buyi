@@ -1,6 +1,7 @@
 ﻿using Nting.Storage;
 using NtingCampus.Gameplay.Characters;
 using NtingCampus.Gameplay.Core;
+using NtingCampus.Gameplay.Inventory;
 using NtingCampusMapEditor;
 using UnityEngine;
 
@@ -10,10 +11,6 @@ namespace NtingCampus.UI.Runtime.Gameplay
     public sealed class CampusPlayerInventoryController : MonoBehaviour
     {
         [SerializeField] private CampusGameBootstrap bootstrap;
-        [SerializeField] private KeyCode backpackKey = KeyCode.B;
-        [SerializeField] private bool backpackEquipped = true;
-
-        public KeyCode BackpackKey => backpackKey;
 
         public void Initialize(CampusGameBootstrap targetBootstrap)
         {
@@ -30,7 +27,7 @@ namespace NtingCampus.UI.Runtime.Gameplay
 
         private void Update()
         {
-            if (CampusInteractionInput.WasKeyPressed(backpackKey))
+            if (CampusGameplayInputBindings.WasPressed(CampusGameplayInputActionId.Backpack))
             {
                 ToggleBackpack();
             }
@@ -51,9 +48,10 @@ namespace NtingCampus.UI.Runtime.Gameplay
         public void OpenBackpack()
         {
             CampusCharacterRuntime runtime = ResolvePlayerRuntime();
+            CampusCharacterInventory inventory = CampusCharacterInventoryService.GetOrCreateInventory(runtime, true);
             CampusCharacterActionExecutor.TryExecute(
                 runtime,
-                CampusCharacterAction.OpenInventoryView(null, ResolvePlayerObject(runtime), backpackEquipped),
+                CampusCharacterAction.OpenInventoryView(null, ResolvePlayerObject(runtime), inventory != null && inventory.HasBackpack),
                 out _);
         }
 

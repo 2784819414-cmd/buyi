@@ -103,6 +103,7 @@ namespace NtingCampus.Gameplay.Characters
     public static class CampusCharacterMovementTuning
     {
         public const float PlayerMoveSpeed = 7f;
+        public const float PlayerSprintSpeedMultiplier = 1.55f;
         public const float NpcWalkSpeed = 2.7f;
         public const float NpcPersonalSpeedMultiplierMin = 0.9f;
         public const float NpcPersonalSpeedMultiplierMax = 1.12f;
@@ -110,6 +111,11 @@ namespace NtingCampus.Gameplay.Characters
         public static float ResolvePlayerMoveSpeed()
         {
             return PlayerMoveSpeed;
+        }
+
+        public static float ResolvePlayerSprintSpeed()
+        {
+            return PlayerMoveSpeed * PlayerSprintSpeedMultiplier;
         }
 
         public static float ResolveNpcMoveSpeed(int personalSeed)

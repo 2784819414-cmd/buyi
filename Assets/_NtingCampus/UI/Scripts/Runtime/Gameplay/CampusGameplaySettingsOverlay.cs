@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using DG.Tweening;
 using Nting.Storage;
 using NtingCampus.Gameplay.Core;
@@ -11,24 +12,49 @@ namespace NtingCampus.UI.Runtime.Gameplay
     [DisallowMultipleComponent]
     public sealed class CampusGameplaySettingsOverlay : MonoBehaviour
     {
+        private sealed class LanguageButtonView
+        {
+            public CampusDisplayLanguage Language;
+            public CampusPlayerUiTextId LabelId;
+            public Button Button;
+        }
+
         private const string StartupSceneName = "Startup";
-        private const int SortingOrder = 39500;
+        private const int SortingOrder = 32767;
         private const float MainPanelWidth = 1720f;
         private const float MainPanelHeight = 760f;
         private const float MainPanelPadding = 20f;
         private const float MainPanelContentWidth = MainPanelWidth - MainPanelPadding * 2f;
 
-        [SerializeField] private CampusGameBootstrap bootstrap;
-        [SerializeField] private KeyCode toggleKey = KeyCode.Escape;
+        private enum OverlayPage
+        {
+            Home,
+            SettingsMenu,
+            Language,
+            KeyBindings,
+            TimeMenu,
+            TimeControl,
+            TimeTest
+        }
 
+        [SerializeField] private CampusGameBootstrap bootstrap;
         private Canvas canvas;
         private RectTransform canvasRoot;
         private RectTransform backdropPanel;
         private RectTransform mainPanel;
         private CanvasGroup mainCanvasGroup;
         private RectTransform scrollContent;
+        private RectTransform homeCard;
+        private RectTransform settingsMenuCard;
+        private RectTransform timeMenuCard;
+        private RectTransform languageCard;
+        private RectTransform keyBindingCard;
+        private RectTransform timeControlCard;
+        private RectTransform timeTestCard;
+        private RectTransform footerPanel;
         private CanvasGroup loadingCanvasGroup;
         private Tween mainPanelTween;
+        private OverlayPage currentPage = OverlayPage.Home;
         private bool isVisible;
         private bool pauseCaptured;
         private CampusGameplayPauseState pauseState;
@@ -41,7 +67,11 @@ namespace NtingCampus.UI.Runtime.Gameplay
 
         private Text titleText;
         private Text subtitleText;
+        private Text homeSectionTitleText;
         private Text languageSectionTitleText;
+        private Text keyBindingSectionTitleText;
+        private Text keyBindingDescriptionText;
+        private Text keyBindingStatusText;
         private Text timeControlSectionTitleText;
         private Text timeControlDescriptionText;
         private Text timeControlStateText;
@@ -53,14 +83,21 @@ namespace NtingCampus.UI.Runtime.Gameplay
         private Text timeTestStatusText;
         private Text footerHintText;
 
-        private Button chineseButton;
-        private Button englishButton;
-        private Button bilingualButton;
+        private readonly List<LanguageButtonView> languageButtonViews = new List<LanguageButtonView>();
+        private Button menuContinueButton;
+        private Button menuSettingsButton;
+        private Button menuTimeButton;
+        private Button menuReturnButton;
+        private Button settingsLanguageButton;
+        private Button settingsKeyBindingButton;
+        private Button timeControlMenuButton;
+        private Button timeTestMenuButton;
+        private Button resetAllKeyBindingsButton;
         private Button pauseButton;
         private Button resumeButton;
         private Button timeResetButton;
         private Button timeApplyButton;
-        private Button returnButton;
+        private Button backButton;
         private Button continueButton;
 
         private InputField yearField;
@@ -68,6 +105,9 @@ namespace NtingCampus.UI.Runtime.Gameplay
         private InputField dayField;
         private InputField hourField;
         private InputField minuteField;
+        private readonly List<KeyBindingRow> keyBindingRows = new List<KeyBindingRow>();
+        private CampusGameplayInputActionId? pendingKeyBindingAction;
+        private string keyBindingStatusMessage = string.Empty;
 
         private void Awake()
         {
@@ -86,8 +126,26 @@ namespace NtingCampus.UI.Runtime.Gameplay
         private void Update()
         {
             bootstrap = bootstrap != null ? bootstrap : CampusGameBootstrap.Instance;
-            if (!CampusInteractionInput.WasKeyPressed(toggleKey))
+            if (isVisible && pendingKeyBindingAction.HasValue)
             {
+                CapturePendingKeyBinding();
+                return;
+            }
+
+            if (!CampusGameplayInputBindings.WasPressed(CampusGameplayInputActionId.Settings))
+            {
+                return;
+            }
+
+            if (isVisible)
+            {
+                if (currentPage != OverlayPage.Home)
+                {
+                    ReturnToParentPage();
+                    return;
+                }
+
+                SetVisible(false);
                 return;
             }
 
@@ -97,7 +155,7 @@ namespace NtingCampus.UI.Runtime.Gameplay
                 return;
             }
 
-            SetVisible(!isVisible);
+            SetVisible(true);
         }
 
         private void OnDisable()
@@ -125,7 +183,7 @@ namespace NtingCampus.UI.Runtime.Gameplay
                 "Backdrop",
                 canvasRoot,
                 CampusUiVisualTheme.Overlay,
-                false);
+                true);
             backdrop.SetAsFirstSibling();
             backdropPanel = backdrop;
             backdropPanel.gameObject.SetActive(false);
@@ -156,23 +214,9 @@ namespace NtingCampus.UI.Runtime.Gameplay
 
         private void BuildHeader(Transform parent)
         {
-            RectTransform header = CampusUiRuntimeBuilder.CreatePanel(
-                "Header",
-                parent,
-                new Vector2(0f, 1f),
-                new Vector2(1f, 1f),
-                new Vector2(0.5f, 1f),
-                new Vector2(0f, -22f),
-                new Vector2(-MainPanelPadding * 2f, 112f),
-                CampusUiVisualTheme.PanelRaised,
-                CampusUiVisualTheme.BorderSoft,
-                1.15f,
-                22f,
-                false);
-
             titleText = CampusUiRuntimeBuilder.CreateText(
                 "Title",
-                header,
+                parent,
                 string.Empty,
                 42,
                 TextAnchor.MiddleLeft,
@@ -186,29 +230,16 @@ namespace NtingCampus.UI.Runtime.Gameplay
 
             subtitleText = CampusUiRuntimeBuilder.CreateText(
                 "Subtitle",
-                header,
+                parent,
                 string.Empty,
                 17,
                 TextAnchor.UpperLeft,
                 CampusUiVisualTheme.TextSecondary);
-            subtitleText.rectTransform.anchorMin = new Vector2(0f, 0f);
-            subtitleText.rectTransform.anchorMax = new Vector2(0f, 0f);
-            subtitleText.rectTransform.pivot = new Vector2(0f, 0f);
-            subtitleText.rectTransform.anchoredPosition = new Vector2(30f, 16f);
+            subtitleText.rectTransform.anchorMin = new Vector2(0f, 1f);
+            subtitleText.rectTransform.anchorMax = new Vector2(0f, 1f);
+            subtitleText.rectTransform.pivot = new Vector2(0f, 1f);
+            subtitleText.rectTransform.anchoredPosition = new Vector2(30f, -64f);
             subtitleText.rectTransform.sizeDelta = new Vector2(700f, 42f);
-
-            Text tip = CampusUiRuntimeBuilder.CreateText(
-                "Tip",
-                header,
-                CampusPlayerUiTextCatalog.Get(CampusPlayerUiTextId.Continue),
-                14,
-                TextAnchor.LowerRight,
-                CampusUiVisualTheme.TextMuted);
-            tip.rectTransform.anchorMin = new Vector2(1f, 0f);
-            tip.rectTransform.anchorMax = new Vector2(1f, 0f);
-            tip.rectTransform.pivot = new Vector2(1f, 0f);
-            tip.rectTransform.anchoredPosition = new Vector2(-28f, 16f);
-            tip.rectTransform.sizeDelta = new Vector2(260f, 32f);
         }
 
         private void BuildScrollArea(Transform parent)
@@ -241,14 +272,26 @@ namespace NtingCampus.UI.Runtime.Gameplay
             viewport.offsetMin = new Vector2(10f, 10f);
             viewport.offsetMax = new Vector2(-10f, -10f);
 
-            RectTransform languageCard = CreateSectionCard(scrollContent, "LanguageCard", 96f, out languageSectionTitleText);
+            homeCard = CreateSectionCard(scrollContent, "HomeCard", 430f, out homeSectionTitleText);
+            BuildHomeCard(homeCard);
+
+            settingsMenuCard = CreateSectionCard(scrollContent, "SettingsMenuCard", 250f, out Text settingsMenuTitleText);
+            BuildSettingsMenuCard(settingsMenuCard);
+
+            languageCard = CreateSectionCard(scrollContent, "LanguageCard", 112f, out languageSectionTitleText);
             BuildLanguageCard(languageCard);
 
-            RectTransform controlCard = CreateSectionCard(scrollContent, "TimeControlCard", 154f, out timeControlSectionTitleText);
-            BuildTimeControlCard(controlCard);
+            keyBindingCard = CreateSectionCard(scrollContent, "KeyBindingCard", 450f, out keyBindingSectionTitleText);
+            BuildKeyBindingCard(keyBindingCard);
 
-            RectTransform testCard = CreateSectionCard(scrollContent, "TimeTestCard", 256f, out timeTestSectionTitleText);
-            BuildTimeTestCard(testCard);
+            timeMenuCard = CreateSectionCard(scrollContent, "TimeMenuCard", 250f, out Text timeMenuTitleText);
+            BuildTimeMenuCard(timeMenuCard);
+
+            timeControlCard = CreateSectionCard(scrollContent, "TimeControlCard", 154f, out timeControlSectionTitleText);
+            BuildTimeControlCard(timeControlCard);
+
+            timeTestCard = CreateSectionCard(scrollContent, "TimeTestCard", 256f, out timeTestSectionTitleText);
+            BuildTimeTestCard(timeTestCard);
         }
 
         private RectTransform CreateSectionCard(Transform parent, string name, float height, out Text sectionTitle)
@@ -289,6 +332,116 @@ namespace NtingCampus.UI.Runtime.Gameplay
             return card;
         }
 
+        private void BuildHomeCard(RectTransform card)
+        {
+            menuContinueButton = CreateHomeButton(
+                card,
+                "HomeContinueButton",
+                CampusPlayerUiTextId.Continue,
+                new Vector2(370f, -86f),
+                () => SetVisible(false),
+                CampusUiVisualTheme.AccentSoftFill,
+                CampusUiVisualTheme.Accent);
+
+            menuSettingsButton = CreateHomeButton(
+                card,
+                "HomeSettingsButton",
+                CampusPlayerUiTextId.SettingsTitle,
+                new Vector2(370f, -164f),
+                () => SetPage(OverlayPage.SettingsMenu),
+                CampusUiVisualTheme.PanelDim,
+                CampusUiVisualTheme.BorderSoft);
+
+            menuTimeButton = CreateHomeButton(
+                card,
+                "HomeTimeButton",
+                CampusPlayerUiTextId.AdjustTime,
+                new Vector2(370f, -242f),
+                () => SetPage(OverlayPage.TimeMenu),
+                CampusUiVisualTheme.PanelDim,
+                CampusUiVisualTheme.BorderSoft);
+
+            menuReturnButton = CreateHomeButton(
+                card,
+                "HomeReturnButton",
+                CampusPlayerUiTextId.ReturnToMainMenu,
+                new Vector2(370f, -320f),
+                ReturnToMainMenu,
+                CampusUiVisualTheme.PanelDim,
+                CampusUiVisualTheme.BorderSoft);
+        }
+
+        private void BuildSettingsMenuCard(RectTransform card)
+        {
+            settingsLanguageButton = CreateHomeButton(
+                card,
+                "SettingsLanguageButton",
+                CampusPlayerUiTextId.Language,
+                new Vector2(370f, -86f),
+                () => SetPage(OverlayPage.Language),
+                CampusUiVisualTheme.PanelDim,
+                CampusUiVisualTheme.BorderSoft);
+
+            settingsKeyBindingButton = CreateHomeButton(
+                card,
+                "SettingsKeyBindingButton",
+                CampusPlayerUiTextId.KeyBindingTitle,
+                new Vector2(370f, -164f),
+                () => SetPage(OverlayPage.KeyBindings),
+                CampusUiVisualTheme.PanelDim,
+                CampusUiVisualTheme.BorderSoft);
+        }
+
+        private void BuildTimeMenuCard(RectTransform card)
+        {
+            timeControlMenuButton = CreateHomeButton(
+                card,
+                "TimeControlMenuButton",
+                CampusPlayerUiTextId.TimeControlTitle,
+                new Vector2(370f, -86f),
+                () => SetPage(OverlayPage.TimeControl),
+                CampusUiVisualTheme.PanelDim,
+                CampusUiVisualTheme.BorderSoft);
+
+            timeTestMenuButton = CreateHomeButton(
+                card,
+                "TimeTestMenuButton",
+                CampusPlayerUiTextId.TimeTestTitle,
+                new Vector2(370f, -164f),
+                () => SetPage(OverlayPage.TimeTest),
+                CampusUiVisualTheme.PanelDim,
+                CampusUiVisualTheme.BorderSoft);
+        }
+
+        private Button CreateHomeButton(
+            Transform parent,
+            string name,
+            CampusPlayerUiTextId textId,
+            Vector2 anchoredPosition,
+            UnityEngine.Events.UnityAction action,
+            Color fill,
+            Color border)
+        {
+            Button button = CampusUiRuntimeBuilder.CreateButton(
+                name,
+                parent,
+                CampusPlayerUiTextCatalog.Get(textId),
+                action,
+                fill,
+                border,
+                16f,
+                1.2f,
+                CampusUiVisualTheme.TextPrimary,
+                22);
+            RectTransform rect = button.GetComponent<RectTransform>();
+            rect.anchorMin = new Vector2(0f, 1f);
+            rect.anchorMax = new Vector2(0f, 1f);
+            rect.pivot = new Vector2(0f, 1f);
+            rect.anchoredPosition = anchoredPosition;
+            rect.sizeDelta = new Vector2(940f, 54f);
+            return button;
+        }
+
         private void BuildLanguageCard(RectTransform card)
         {
             Text label = CampusUiRuntimeBuilder.CreateText(
@@ -305,12 +458,19 @@ namespace NtingCampus.UI.Runtime.Gameplay
             label.rectTransform.anchoredPosition = new Vector2(22f, -48f);
             label.rectTransform.sizeDelta = new Vector2(120f, 20f);
 
-            chineseButton = CreateLanguageButton(card, CampusDisplayLanguage.Chinese, CampusPlayerUiTextId.Chinese, new Vector2(132f, -52f));
-            englishButton = CreateLanguageButton(card, CampusDisplayLanguage.English, CampusPlayerUiTextId.English, new Vector2(260f, -52f));
-            bilingualButton = CreateLanguageButton(card, CampusDisplayLanguage.Bilingual, CampusPlayerUiTextId.Bilingual, new Vector2(388f, -52f));
+            languageButtonViews.Clear();
+            for (int i = 0; i < CampusDisplayLanguageCatalog.All.Count; i++)
+            {
+                CampusDisplayLanguage language = CampusDisplayLanguageCatalog.All[i];
+                CreateLanguageButton(
+                    card,
+                    language,
+                    CampusPlayerUiTextCatalog.GetLanguageNameTextId(language),
+                    new Vector2(132f + 172f * i, -56f));
+            }
         }
 
-        private Button CreateLanguageButton(
+        private void CreateLanguageButton(
             Transform parent,
             CampusDisplayLanguage language,
             CampusPlayerUiTextId labelId,
@@ -333,8 +493,136 @@ namespace NtingCampus.UI.Runtime.Gameplay
             rect.anchorMax = new Vector2(0f, 1f);
             rect.pivot = new Vector2(0f, 1f);
             rect.anchoredPosition = anchoredPosition;
-            rect.sizeDelta = new Vector2(120f, 34f);
-            return button;
+            rect.sizeDelta = new Vector2(160f, 36f);
+
+            languageButtonViews.Add(new LanguageButtonView
+            {
+                Language = language,
+                LabelId = labelId,
+                Button = button
+            });
+        }
+
+        private void BuildKeyBindingCard(RectTransform card)
+        {
+            keyBindingDescriptionText = CampusUiRuntimeBuilder.CreateText(
+                "KeyBindingDescription",
+                card,
+                string.Empty,
+                15,
+                TextAnchor.UpperLeft,
+                CampusUiVisualTheme.TextSecondary);
+            keyBindingDescriptionText.rectTransform.anchorMin = new Vector2(0f, 1f);
+            keyBindingDescriptionText.rectTransform.anchorMax = new Vector2(1f, 1f);
+            keyBindingDescriptionText.rectTransform.pivot = new Vector2(0.5f, 1f);
+            keyBindingDescriptionText.rectTransform.anchoredPosition = new Vector2(22f, -48f);
+            keyBindingDescriptionText.rectTransform.sizeDelta = new Vector2(-44f, 34f);
+
+            resetAllKeyBindingsButton = CampusUiRuntimeBuilder.CreateButton(
+                "ResetAllKeyBindingsButton",
+                card,
+                CampusPlayerUiTextCatalog.Get(CampusPlayerUiTextId.KeyBindingResetAll),
+                ResetAllKeyBindings,
+                CampusUiVisualTheme.PanelDim,
+                CampusUiVisualTheme.BorderSoft,
+                14f,
+                1.05f,
+                CampusUiVisualTheme.TextSecondary,
+                14);
+            RectTransform resetAllRect = resetAllKeyBindingsButton.GetComponent<RectTransform>();
+            resetAllRect.anchorMin = new Vector2(1f, 1f);
+            resetAllRect.anchorMax = new Vector2(1f, 1f);
+            resetAllRect.pivot = new Vector2(1f, 1f);
+            resetAllRect.anchoredPosition = new Vector2(-22f, -14f);
+            resetAllRect.sizeDelta = new Vector2(180f, 32f);
+
+            keyBindingRows.Clear();
+            IReadOnlyList<CampusGameplayInputActionId> actions = CampusGameplayInputBindings.RebindableActions;
+            const float leftColumnX = 22f;
+            const float rightColumnX = 826f;
+            const float firstRowY = -88f;
+            const float rowHeight = 38f;
+            int rowsPerColumn = Mathf.CeilToInt(actions.Count * 0.5f);
+
+            for (int i = 0; i < actions.Count; i++)
+            {
+                int column = i / rowsPerColumn;
+                int row = i % rowsPerColumn;
+                float x = column == 0 ? leftColumnX : rightColumnX;
+                float y = firstRowY - row * rowHeight;
+                CreateKeyBindingRow(card, actions[i], new Vector2(x, y));
+            }
+
+            keyBindingStatusText = CampusUiRuntimeBuilder.CreateText(
+                "KeyBindingStatus",
+                card,
+                string.Empty,
+                13,
+                TextAnchor.MiddleLeft,
+                CampusUiVisualTheme.TextMuted);
+            keyBindingStatusText.rectTransform.anchorMin = new Vector2(0f, 0f);
+            keyBindingStatusText.rectTransform.anchorMax = new Vector2(1f, 0f);
+            keyBindingStatusText.rectTransform.pivot = new Vector2(0.5f, 0f);
+            keyBindingStatusText.rectTransform.anchoredPosition = new Vector2(22f, 14f);
+            keyBindingStatusText.rectTransform.sizeDelta = new Vector2(-44f, 22f);
+        }
+
+        private void CreateKeyBindingRow(
+            Transform parent,
+            CampusGameplayInputActionId actionId,
+            Vector2 anchoredPosition)
+        {
+            Text actionText = CampusUiRuntimeBuilder.CreateText(
+                actionId + "_Label",
+                parent,
+                string.Empty,
+                14,
+                TextAnchor.MiddleLeft,
+                CampusUiVisualTheme.TextPrimary,
+                FontStyle.Bold);
+            actionText.rectTransform.anchorMin = new Vector2(0f, 1f);
+            actionText.rectTransform.anchorMax = new Vector2(0f, 1f);
+            actionText.rectTransform.pivot = new Vector2(0f, 1f);
+            actionText.rectTransform.anchoredPosition = anchoredPosition;
+            actionText.rectTransform.sizeDelta = new Vector2(216f, 32f);
+
+            Button keyButton = CampusUiRuntimeBuilder.CreateButton(
+                actionId + "_KeyButton",
+                parent,
+                string.Empty,
+                () => BeginKeyBinding(actionId),
+                CampusUiVisualTheme.PanelDim,
+                CampusUiVisualTheme.BorderSoft,
+                12f,
+                1.05f,
+                CampusUiVisualTheme.TextPrimary,
+                14);
+            RectTransform keyRect = keyButton.GetComponent<RectTransform>();
+            keyRect.anchorMin = new Vector2(0f, 1f);
+            keyRect.anchorMax = new Vector2(0f, 1f);
+            keyRect.pivot = new Vector2(0f, 1f);
+            keyRect.anchoredPosition = anchoredPosition + new Vector2(224f, 0f);
+            keyRect.sizeDelta = new Vector2(132f, 32f);
+
+            Button resetButton = CampusUiRuntimeBuilder.CreateButton(
+                actionId + "_ResetButton",
+                parent,
+                CampusPlayerUiTextCatalog.Get(CampusPlayerUiTextId.KeyBindingReset),
+                () => ResetKeyBinding(actionId),
+                CampusUiVisualTheme.PanelDim,
+                CampusUiVisualTheme.BorderMuted,
+                12f,
+                1.05f,
+                CampusUiVisualTheme.TextSecondary,
+                13);
+            RectTransform resetRect = resetButton.GetComponent<RectTransform>();
+            resetRect.anchorMin = new Vector2(0f, 1f);
+            resetRect.anchorMax = new Vector2(0f, 1f);
+            resetRect.pivot = new Vector2(0f, 1f);
+            resetRect.anchoredPosition = anchoredPosition + new Vector2(366f, 0f);
+            resetRect.sizeDelta = new Vector2(92f, 32f);
+
+            keyBindingRows.Add(new KeyBindingRow(actionId, actionText, keyButton, resetButton));
         }
 
         private void BuildTimeControlCard(RectTransform card)
@@ -509,6 +797,7 @@ namespace NtingCampus.UI.Runtime.Gameplay
                 1.05f,
                 18f,
                 false);
+            footerPanel = footer;
 
             footerHintText = CampusUiRuntimeBuilder.CreateText(
                 "FooterHint",
@@ -523,18 +812,18 @@ namespace NtingCampus.UI.Runtime.Gameplay
             footerHintText.rectTransform.anchoredPosition = new Vector2(22f, 0f);
             footerHintText.rectTransform.sizeDelta = new Vector2(360f, 28f);
 
-            returnButton = CampusUiRuntimeBuilder.CreateButton(
-                "ReturnButton",
+            backButton = CampusUiRuntimeBuilder.CreateButton(
+                "BackButton",
                 footer,
-                CampusPlayerUiTextCatalog.Get(CampusPlayerUiTextId.ReturnToMainMenu),
-                ReturnToMainMenu,
+                CampusPlayerUiTextCatalog.Get(CampusPlayerUiTextId.BackToEscMenu),
+                ReturnToParentPage,
                 CampusUiVisualTheme.PanelDim,
                 CampusUiVisualTheme.BorderSoft,
                 16f,
                 1.1f,
                 CampusUiVisualTheme.TextSecondary,
                 16);
-            RectTransform returnRect = returnButton.GetComponent<RectTransform>();
+            RectTransform returnRect = backButton.GetComponent<RectTransform>();
             returnRect.anchorMin = new Vector2(1f, 0.5f);
             returnRect.anchorMax = new Vector2(1f, 0.5f);
             returnRect.pivot = new Vector2(1f, 0.5f);
@@ -613,21 +902,268 @@ namespace NtingCampus.UI.Runtime.Gameplay
             return field;
         }
 
-        private void RefreshLocalizedText()
+        private void SetPage(OverlayPage page)
         {
+            currentPage = page;
+            pendingKeyBindingAction = null;
+            keyBindingStatusMessage = string.Empty;
+            RefreshPageState();
+        }
+
+        private void ReturnToParentPage()
+        {
+            switch (currentPage)
+            {
+                case OverlayPage.Language:
+                case OverlayPage.KeyBindings:
+                    SetPage(OverlayPage.SettingsMenu);
+                    return;
+                case OverlayPage.TimeControl:
+                case OverlayPage.TimeTest:
+                    SetPage(OverlayPage.TimeMenu);
+                    return;
+                default:
+                    SetPage(OverlayPage.Home);
+                    return;
+            }
+        }
+
+        private void RefreshPageState()
+        {
+            SetCardVisible(homeCard, currentPage == OverlayPage.Home);
+            SetCardVisible(settingsMenuCard, currentPage == OverlayPage.SettingsMenu);
+            SetCardVisible(languageCard, currentPage == OverlayPage.Language);
+            SetCardVisible(keyBindingCard, currentPage == OverlayPage.KeyBindings);
+            SetCardVisible(timeMenuCard, currentPage == OverlayPage.TimeMenu);
+            SetCardVisible(timeControlCard, currentPage == OverlayPage.TimeControl);
+            SetCardVisible(timeTestCard, currentPage == OverlayPage.TimeTest);
+
+            if (footerPanel != null)
+            {
+                footerPanel.gameObject.SetActive(currentPage != OverlayPage.Home);
+            }
+
             if (titleText != null)
             {
-                titleText.text = CampusPlayerUiTextCatalog.Get(CampusPlayerUiTextId.SettingsTitle);
+                titleText.text = ResolvePageTitle();
             }
 
             if (subtitleText != null)
             {
-                subtitleText.text = CampusPlayerUiTextCatalog.Get(CampusPlayerUiTextId.SettingsDescription);
+                subtitleText.text = ResolvePageDescription();
+            }
+
+            if (scrollContent != null)
+            {
+                LayoutRebuilder.ForceRebuildLayoutImmediate(scrollContent);
+            }
+        }
+
+        private static void SetCardVisible(RectTransform card, bool visible)
+        {
+            if (card != null)
+            {
+                card.gameObject.SetActive(visible);
+            }
+        }
+
+        private string ResolvePageTitle()
+        {
+            switch (currentPage)
+            {
+                case OverlayPage.SettingsMenu:
+                    return CampusPlayerUiTextCatalog.Get(CampusPlayerUiTextId.SettingsTitle);
+                case OverlayPage.Language:
+                    return CampusPlayerUiTextCatalog.Get(CampusPlayerUiTextId.Language);
+                case OverlayPage.KeyBindings:
+                    return CampusPlayerUiTextCatalog.Get(CampusPlayerUiTextId.KeyBindingTitle);
+                case OverlayPage.TimeMenu:
+                    return CampusPlayerUiTextCatalog.Get(CampusPlayerUiTextId.AdjustTime);
+                case OverlayPage.TimeControl:
+                    return CampusPlayerUiTextCatalog.Get(CampusPlayerUiTextId.TimeControlTitle);
+                case OverlayPage.TimeTest:
+                    return CampusPlayerUiTextCatalog.Get(CampusPlayerUiTextId.TimeTestTitle);
+                default:
+                    return CampusPlayerUiTextCatalog.Get(CampusPlayerUiTextId.EscMenuTitle);
+            }
+        }
+
+        private string ResolvePageDescription()
+        {
+            switch (currentPage)
+            {
+                case OverlayPage.SettingsMenu:
+                    return CampusPlayerUiTextCatalog.Get(CampusPlayerUiTextId.SettingsDescription);
+                case OverlayPage.Language:
+                    return CampusPlayerUiTextCatalog.Get(CampusPlayerUiTextId.SettingsDescription);
+                case OverlayPage.KeyBindings:
+                    return CampusPlayerUiTextCatalog.Get(CampusPlayerUiTextId.KeyBindingDescription);
+                case OverlayPage.TimeMenu:
+                    return CampusPlayerUiTextCatalog.Get(CampusPlayerUiTextId.TimeSettingsDescription);
+                case OverlayPage.TimeControl:
+                    return CampusPlayerUiTextCatalog.Get(CampusPlayerUiTextId.TimeControlDescription);
+                case OverlayPage.TimeTest:
+                    return CampusPlayerUiTextCatalog.Get(CampusPlayerUiTextId.TimeTestDescription);
+                default:
+                    return CampusPlayerUiTextCatalog.Get(CampusPlayerUiTextId.EscMenuDescription);
+            }
+        }
+
+        private void BeginKeyBinding(CampusGameplayInputActionId actionId)
+        {
+            pendingKeyBindingAction = actionId;
+            keyBindingStatusMessage = CampusPlayerUiTextCatalog.Format(
+                CampusPlayerUiTextId.KeyBindingWaiting,
+                GetKeyBindingActionLabel(actionId));
+            RefreshKeyBindingRows();
+        }
+
+        private void CapturePendingKeyBinding()
+        {
+            if (!pendingKeyBindingAction.HasValue)
+            {
+                return;
+            }
+
+            if (!CampusInteractionInput.TryReadPressedKeyboardKey(out KeyCode pressedKey))
+            {
+                return;
+            }
+
+            CampusGameplayInputActionId actionId = pendingKeyBindingAction.Value;
+            if (!CampusGameplayInputBindings.TrySetBinding(actionId, pressedKey, out CampusGameplayInputActionId conflict))
+            {
+                keyBindingStatusMessage = CampusPlayerUiTextCatalog.Format(
+                    CampusPlayerUiTextId.KeyBindingConflict,
+                    CampusInteractionInput.GetKeyLabel(pressedKey),
+                    GetKeyBindingActionLabel(conflict));
+                pendingKeyBindingAction = null;
+                RefreshKeyBindingRows();
+                return;
+            }
+
+            keyBindingStatusMessage = CampusPlayerUiTextCatalog.Format(
+                CampusPlayerUiTextId.KeyBindingApplied,
+                GetKeyBindingActionLabel(actionId),
+                CampusInteractionInput.GetKeyLabel(pressedKey));
+            pendingKeyBindingAction = null;
+            RefreshKeyBindingRows();
+        }
+
+        private void ResetKeyBinding(CampusGameplayInputActionId actionId)
+        {
+            CampusGameplayInputBindings.ResetBinding(actionId);
+            pendingKeyBindingAction = null;
+            keyBindingStatusMessage = string.Empty;
+            RefreshKeyBindingRows();
+        }
+
+        private void ResetAllKeyBindings()
+        {
+            CampusGameplayInputBindings.ResetAll();
+            pendingKeyBindingAction = null;
+            keyBindingStatusMessage = string.Empty;
+            RefreshKeyBindingRows();
+        }
+
+        private void RefreshKeyBindingRows()
+        {
+            for (int i = 0; i < keyBindingRows.Count; i++)
+            {
+                KeyBindingRow row = keyBindingRows[i];
+                if (row.ActionText != null)
+                {
+                    row.ActionText.text = GetKeyBindingActionLabel(row.ActionId);
+                }
+
+                bool pending = pendingKeyBindingAction.HasValue && pendingKeyBindingAction.Value == row.ActionId;
+                SetButtonText(
+                    row.KeyButton,
+                    pending
+                        ? CampusPlayerUiTextCatalog.Get(CampusPlayerUiTextId.KeyBindingListening)
+                        : CampusGameplayInputBindings.GetBindingLabel(row.ActionId));
+                SetButtonText(row.ResetButton, CampusPlayerUiTextCatalog.Get(CampusPlayerUiTextId.KeyBindingReset));
+
+                StorageBoxGraphic keyGraphic = row.KeyButton != null ? row.KeyButton.targetGraphic as StorageBoxGraphic : null;
+                if (keyGraphic != null)
+                {
+                    keyGraphic.SetStyle(
+                        pending ? CampusUiVisualTheme.AccentSoftFill : CampusUiVisualTheme.PanelDim,
+                        pending ? CampusUiVisualTheme.Accent : CampusUiVisualTheme.BorderSoft,
+                        pending ? 1.4f : 1.05f,
+                        12f);
+                }
+            }
+
+            if (keyBindingStatusText != null)
+            {
+                keyBindingStatusText.text = keyBindingStatusMessage;
+                keyBindingStatusText.color = string.IsNullOrWhiteSpace(keyBindingStatusMessage)
+                    ? CampusUiVisualTheme.TextMuted
+                    : CampusUiVisualTheme.TextGold;
+            }
+        }
+
+        private string GetKeyBindingActionLabel(CampusGameplayInputActionId actionId)
+        {
+            return CampusPlayerUiTextCatalog.Get(GetKeyBindingTextId(actionId));
+        }
+
+        private static CampusPlayerUiTextId GetKeyBindingTextId(CampusGameplayInputActionId actionId)
+        {
+            switch (actionId)
+            {
+                case CampusGameplayInputActionId.MoveUpPrimary: return CampusPlayerUiTextId.InputMoveUpPrimary;
+                case CampusGameplayInputActionId.MoveDownPrimary: return CampusPlayerUiTextId.InputMoveDownPrimary;
+                case CampusGameplayInputActionId.MoveLeftPrimary: return CampusPlayerUiTextId.InputMoveLeftPrimary;
+                case CampusGameplayInputActionId.MoveRightPrimary: return CampusPlayerUiTextId.InputMoveRightPrimary;
+                case CampusGameplayInputActionId.MoveUpSecondary: return CampusPlayerUiTextId.InputMoveUpSecondary;
+                case CampusGameplayInputActionId.MoveDownSecondary: return CampusPlayerUiTextId.InputMoveDownSecondary;
+                case CampusGameplayInputActionId.MoveLeftSecondary: return CampusPlayerUiTextId.InputMoveLeftSecondary;
+                case CampusGameplayInputActionId.MoveRightSecondary: return CampusPlayerUiTextId.InputMoveRightSecondary;
+                case CampusGameplayInputActionId.Interact: return CampusPlayerUiTextId.InputInteract;
+                case CampusGameplayInputActionId.Sprint: return CampusPlayerUiTextId.InputSprint;
+                case CampusGameplayInputActionId.Backpack: return CampusPlayerUiTextId.InputBackpack;
+                case CampusGameplayInputActionId.Settings: return CampusPlayerUiTextId.InputSettings;
+                case CampusGameplayInputActionId.ToggleMode: return CampusPlayerUiTextId.InputToggleMode;
+                case CampusGameplayInputActionId.TimePause: return CampusPlayerUiTextId.InputTimePause;
+                case CampusGameplayInputActionId.TimeNormalSpeed: return CampusPlayerUiTextId.InputTimeNormalSpeed;
+                case CampusGameplayInputActionId.TimeFastSpeed: return CampusPlayerUiTextId.InputTimeFastSpeed;
+                case CampusGameplayInputActionId.TimeMaxSpeed: return CampusPlayerUiTextId.InputTimeMaxSpeed;
+                default: return CampusPlayerUiTextId.KeyBindingTitle;
+            }
+        }
+
+        private void RefreshLocalizedText()
+        {
+            if (titleText != null)
+            {
+                titleText.text = ResolvePageTitle();
+            }
+
+            if (subtitleText != null)
+            {
+                subtitleText.text = ResolvePageDescription();
+            }
+
+            if (homeSectionTitleText != null)
+            {
+                homeSectionTitleText.text = CampusPlayerUiTextCatalog.Get(CampusPlayerUiTextId.EscMenuTitle);
             }
 
             if (languageSectionTitleText != null)
             {
                 languageSectionTitleText.text = CampusPlayerUiTextCatalog.Get(CampusPlayerUiTextId.Language);
+            }
+
+            if (keyBindingSectionTitleText != null)
+            {
+                keyBindingSectionTitleText.text = CampusPlayerUiTextCatalog.Get(CampusPlayerUiTextId.KeyBindingTitle);
+            }
+
+            if (keyBindingDescriptionText != null)
+            {
+                keyBindingDescriptionText.text = CampusPlayerUiTextCatalog.Get(CampusPlayerUiTextId.KeyBindingDescription);
             }
 
             if (timeControlSectionTitleText != null)
@@ -670,19 +1206,33 @@ namespace NtingCampus.UI.Runtime.Gameplay
                 footerHintText.text = CampusPlayerUiTextCatalog.Get(CampusPlayerUiTextId.Continue);
             }
 
-            SetButtonText(chineseButton, CampusPlayerUiTextCatalog.Get(CampusPlayerUiTextId.Chinese));
-            SetButtonText(englishButton, CampusPlayerUiTextCatalog.Get(CampusPlayerUiTextId.English));
-            SetButtonText(bilingualButton, CampusPlayerUiTextCatalog.Get(CampusPlayerUiTextId.Bilingual));
+            for (int i = 0; i < languageButtonViews.Count; i++)
+            {
+                LanguageButtonView view = languageButtonViews[i];
+                SetButtonText(view.Button, CampusPlayerUiTextCatalog.Get(view.LabelId));
+            }
+
+            SetButtonText(menuContinueButton, CampusPlayerUiTextCatalog.Get(CampusPlayerUiTextId.Continue));
+            SetButtonText(menuSettingsButton, CampusPlayerUiTextCatalog.Get(CampusPlayerUiTextId.SettingsTitle));
+            SetButtonText(menuTimeButton, CampusPlayerUiTextCatalog.Get(CampusPlayerUiTextId.AdjustTime));
+            SetButtonText(menuReturnButton, CampusPlayerUiTextCatalog.Get(CampusPlayerUiTextId.ReturnToMainMenu));
+            SetButtonText(settingsLanguageButton, CampusPlayerUiTextCatalog.Get(CampusPlayerUiTextId.Language));
+            SetButtonText(settingsKeyBindingButton, CampusPlayerUiTextCatalog.Get(CampusPlayerUiTextId.KeyBindingTitle));
+            SetButtonText(timeControlMenuButton, CampusPlayerUiTextCatalog.Get(CampusPlayerUiTextId.TimeControlTitle));
+            SetButtonText(timeTestMenuButton, CampusPlayerUiTextCatalog.Get(CampusPlayerUiTextId.TimeTestTitle));
+            SetButtonText(resetAllKeyBindingsButton, CampusPlayerUiTextCatalog.Get(CampusPlayerUiTextId.KeyBindingResetAll));
             SetButtonText(pauseButton, CampusPlayerUiTextCatalog.Get(CampusPlayerUiTextId.TimePause));
             SetButtonText(resumeButton, CampusPlayerUiTextCatalog.Get(CampusPlayerUiTextId.TimeResume));
             SetButtonText(timeResetButton, CampusPlayerUiTextCatalog.Get(CampusPlayerUiTextId.TimeTestReset));
             SetButtonText(timeApplyButton, CampusPlayerUiTextCatalog.Get(CampusPlayerUiTextId.TimeTestApply));
-            SetButtonText(returnButton, CampusPlayerUiTextCatalog.Get(CampusPlayerUiTextId.ReturnToMainMenu));
+            SetButtonText(backButton, CampusPlayerUiTextCatalog.Get(CampusPlayerUiTextId.BackToEscMenu));
             SetButtonText(continueButton, CampusPlayerUiTextCatalog.Get(CampusPlayerUiTextId.Continue));
 
             RefreshLanguageButtons();
+            RefreshKeyBindingRows();
             RefreshTimeControlState();
             RefreshTimeTestStatus();
+            RefreshPageState();
         }
 
         private void SetButtonText(Button button, string text)
@@ -701,9 +1251,11 @@ namespace NtingCampus.UI.Runtime.Gameplay
 
         private void RefreshLanguageButtons()
         {
-            SetLanguageButtonStyle(chineseButton, CampusDisplayLanguage.Chinese);
-            SetLanguageButtonStyle(englishButton, CampusDisplayLanguage.English);
-            SetLanguageButtonStyle(bilingualButton, CampusDisplayLanguage.Bilingual);
+            for (int i = 0; i < languageButtonViews.Count; i++)
+            {
+                LanguageButtonView view = languageButtonViews[i];
+                SetLanguageButtonStyle(view.Button, view.Language);
+            }
         }
 
         private void SetLanguageButtonStyle(Button button, CampusDisplayLanguage language)
@@ -883,7 +1435,16 @@ namespace NtingCampus.UI.Runtime.Gameplay
                     return;
                 }
 
+                if (canvas != null)
+                {
+                    canvas.overrideSorting = true;
+                    canvas.sortingOrder = SortingOrder;
+                    canvas.transform.SetAsLastSibling();
+                }
+
+                SetPage(OverlayPage.Home);
                 SyncTimeDraftFromController();
+                RefreshKeyBindingRows();
                 RefreshTimeControlState();
                 if (!pauseCaptured)
                 {
@@ -919,6 +1480,10 @@ namespace NtingCampus.UI.Runtime.Gameplay
                 CampusGameplayPauseUtility.Resume(bootstrap, pauseState);
                 pauseCaptured = false;
             }
+
+            pendingKeyBindingAction = null;
+            keyBindingStatusMessage = string.Empty;
+            RefreshKeyBindingRows();
 
             if (mainCanvasGroup == null || mainPanel == null)
             {
@@ -958,6 +1523,26 @@ namespace NtingCampus.UI.Runtime.Gameplay
             }
 
             tween = null;
+        }
+
+        private sealed class KeyBindingRow
+        {
+            public KeyBindingRow(
+                CampusGameplayInputActionId actionId,
+                Text actionText,
+                Button keyButton,
+                Button resetButton)
+            {
+                ActionId = actionId;
+                ActionText = actionText;
+                KeyButton = keyButton;
+                ResetButton = resetButton;
+            }
+
+            public CampusGameplayInputActionId ActionId { get; }
+            public Text ActionText { get; }
+            public Button KeyButton { get; }
+            public Button ResetButton { get; }
         }
     }
 }

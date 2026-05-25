@@ -15,7 +15,6 @@ namespace NtingCampus.Gameplay.Core
     public sealed class CampusGameBootstrap : MonoBehaviour
     {
         [SerializeField, Min(1)] private int initialDay = 1;
-        [SerializeField, Min(0)] private int initialDivinePower;
         [SerializeField] private CampusGameStateInitialization initialGameState =
             CampusGameStateInitialization.CreateDefault(1);
         [SerializeField] private CampusTimeController timeController;
@@ -26,12 +25,12 @@ namespace NtingCampus.Gameplay.Core
         [SerializeField] private CampusScheduleService scheduleService;
         [SerializeField] private CampusGameplayEventHub gameplayEventHub;
         [SerializeField] private CampusInventoryTransferService inventoryTransferService;
+        [SerializeField] private CampusObservedIncidentImpactService observedIncidentImpactService;
         [SerializeField] private CampusSanctionService sanctionService;
         [SerializeField] private CampusEconomyService economyService;
         [SerializeField] private CampusGameplayHudController gameplayHudController;
         [SerializeField] private CampusPlayerInventoryController playerInventoryController;
         [SerializeField] private CampusGameState gameState = new CampusGameState();
-        [SerializeField] private CampusResourceState resourceState = new CampusResourceState();
         [SerializeField] private CampusEventLog eventLog = new CampusEventLog();
 
         private bool isInitialized;
@@ -39,7 +38,6 @@ namespace NtingCampus.Gameplay.Core
         public static CampusGameBootstrap Instance { get; private set; }
 
         public CampusGameState GameState => gameState;
-        public CampusResourceState ResourceState => resourceState;
         public CampusEventLog EventLog => eventLog;
         public CampusTimeController TimeController => timeController;
         public CampusModeController ModeController => modeController;
@@ -49,6 +47,7 @@ namespace NtingCampus.Gameplay.Core
         public CampusScheduleService ScheduleService => scheduleService;
         public CampusGameplayEventHub GameplayEventHub => gameplayEventHub;
         public CampusInventoryTransferService InventoryTransferService => inventoryTransferService;
+        public CampusObservedIncidentImpactService ObservedIncidentImpactService => observedIncidentImpactService;
         public CampusSanctionService SanctionService => sanctionService;
         public CampusEconomyService EconomyService => economyService;
         public CampusGameplayHudController GameplayHudController => gameplayHudController;
@@ -72,6 +71,7 @@ namespace NtingCampus.Gameplay.Core
             bootstrap.EnsureScheduleService();
             bootstrap.EnsureGameplayEventHub();
             bootstrap.EnsureInventoryTransferService();
+            bootstrap.EnsureObservedIncidentImpactService();
             bootstrap.EnsureSanctionService();
             bootstrap.EnsureEconomyService();
             bootstrap.EnsureGameplayHudController();
@@ -92,9 +92,6 @@ namespace NtingCampus.Gameplay.Core
             CampusGameStateInitialization gameStateInitialization = initialGameState;
             gameStateInitialization.InitialDay = initialDay;
             gameState.Reset(gameStateInitialization);
-
-            resourceState = new CampusResourceState();
-            resourceState.Reset(initialDivinePower);
 
             eventLog = new CampusEventLog();
 
@@ -124,6 +121,9 @@ namespace NtingCampus.Gameplay.Core
             inventoryTransferService = EnsureInventoryTransferService();
             inventoryTransferService.Initialize(this);
 
+            observedIncidentImpactService = EnsureObservedIncidentImpactService();
+            observedIncidentImpactService.Initialize(this);
+
             sanctionService = EnsureSanctionService();
             sanctionService.Initialize(this);
 
@@ -140,7 +140,6 @@ namespace NtingCampus.Gameplay.Core
             eventLog.AddLog(CampusCoreTextCatalog.Format(
                 CampusCoreTextId.GameplayBootstrapInitialized,
                 timeController.CurrentDateText,
-                resourceState.DivinePower,
                 gameState.Day,
                 gameState.CampusOrder,
                 gameState.CampusChaos));
@@ -160,6 +159,7 @@ namespace NtingCampus.Gameplay.Core
             EnsureLaunchSelectionApplier();
             EnsurePlayerInventoryController();
             EnsureInventoryTransferService();
+            EnsureObservedIncidentImpactService();
             EnsureGameplayHudController();
         }
 
@@ -174,7 +174,6 @@ namespace NtingCampus.Gameplay.Core
         private void OnValidate()
         {
             initialDay = Mathf.Max(1, initialDay);
-            initialDivinePower = Mathf.Max(0, initialDivinePower);
             initialGameState.InitialDay = initialDay;
             initialGameState.InitialCampusOrder = Mathf.Clamp(initialGameState.InitialCampusOrder, CampusGameState.StatMin, CampusGameState.StatMax);
             initialGameState.InitialCampusChaos = Mathf.Clamp(initialGameState.InitialCampusChaos, CampusGameState.StatMin, CampusGameState.StatMax);
@@ -382,6 +381,22 @@ namespace NtingCampus.Gameplay.Core
             }
 
             return sanctionService;
+        }
+
+        private CampusObservedIncidentImpactService EnsureObservedIncidentImpactService()
+        {
+            if (observedIncidentImpactService != null)
+            {
+                return observedIncidentImpactService;
+            }
+
+            observedIncidentImpactService = GetComponent<CampusObservedIncidentImpactService>();
+            if (observedIncidentImpactService == null)
+            {
+                observedIncidentImpactService = gameObject.AddComponent<CampusObservedIncidentImpactService>();
+            }
+
+            return observedIncidentImpactService;
         }
 
         private CampusEconomyService EnsureEconomyService()

@@ -1,16 +1,10 @@
 ﻿using System.Collections.Generic;
 using NtingCampus.Gameplay.Characters;
 using NtingCampus.Gameplay.Core;
+using TextEntry = NtingCampus.UI.Runtime.Gameplay.CampusLocalizedTextEntry;
 
 namespace NtingCampus.UI.Runtime.Gameplay
 {
-    public enum CampusDisplayLanguage
-    {
-        Chinese = 0,
-        English = 1,
-        Bilingual = 2
-    }
-
     public enum CampusGameplayDebugTextId
     {
         GameDate = 0,
@@ -19,7 +13,7 @@ namespace NtingCampus.UI.Runtime.Gameplay
         Schedule = 3,
         Mode = 4,
         Money = 5,
-        DivinePower = 6,
+        RemovedResource = 6,
         TimeScale = 7,
         SpeedMode = 8,
         CameraOrtho = 9,
@@ -276,18 +270,6 @@ namespace NtingCampus.UI.Runtime.Gameplay
 
     public static class CampusGameplayDebugTextCatalog
     {
-        private readonly struct TextEntry
-        {
-            public TextEntry(string chinese, string english)
-            {
-                Chinese = chinese;
-                English = english;
-            }
-
-            public string Chinese { get; }
-            public string English { get; }
-        }
-
         private static readonly Dictionary<CampusGameplayDebugTextId, TextEntry> Entries = new()
         {
             { CampusGameplayDebugTextId.GameDate, new TextEntry("\u6e38\u620f\u65e5\u671f", "Game Date") },
@@ -296,7 +278,7 @@ namespace NtingCampus.UI.Runtime.Gameplay
             { CampusGameplayDebugTextId.Schedule, new TextEntry("\u4f5c\u606f", "Schedule") },
             { CampusGameplayDebugTextId.Mode, new TextEntry("\u6a21\u5f0f", "Mode") },
             { CampusGameplayDebugTextId.Money, new TextEntry("\u91d1\u94b1", "Money") },
-            { CampusGameplayDebugTextId.DivinePower, new TextEntry("\u795e\u529b", "Divine Power") },
+            { CampusGameplayDebugTextId.RemovedResource, new TextEntry("\u5df2\u5220\u9664", "Removed") },
             { CampusGameplayDebugTextId.TimeScale, new TextEntry("\u65f6\u95f4\u500d\u7387", "Time Scale") },
             { CampusGameplayDebugTextId.SpeedMode, new TextEntry("\u901f\u5ea6\u6a21\u5f0f", "Speed Mode") },
             { CampusGameplayDebugTextId.CameraOrtho, new TextEntry("\u76f8\u673a\u6b63\u4ea4", "Camera Ortho") },
@@ -421,18 +403,18 @@ namespace NtingCampus.UI.Runtime.Gameplay
                 ? resolved
                 : new TextEntry(id.ToString(), id.ToString());
 
-            return Get(language, entry.Chinese, entry.English);
+            return entry.Get(language);
         }
 
-        public static string Get(CampusDisplayLanguage language, string chinese, string english)
+        public static string Get(
+            CampusDisplayLanguage language,
+            string chinese,
+            string english,
+            string traditionalChinese = null,
+            string russian = null,
+            string japanese = null)
         {
-            return language switch
-            {
-                CampusDisplayLanguage.Chinese => chinese,
-                CampusDisplayLanguage.English => english,
-                CampusDisplayLanguage.Bilingual => chinese + " / " + english,
-                _ => chinese
-            };
+            return CampusDisplayLanguageCatalog.Resolve(language, chinese, english, traditionalChinese, russian, japanese);
         }
 
         public static string FormatLine(CampusDisplayLanguage language, CampusGameplayDebugTextId id, object value)
@@ -562,18 +544,6 @@ namespace NtingCampus.UI.Runtime.Gameplay
 
     public static class CampusRuntimeEditorTextCatalog
     {
-        private readonly struct TextEntry
-        {
-            public TextEntry(string chinese, string english)
-            {
-                Chinese = chinese;
-                English = english;
-            }
-
-            public string Chinese { get; }
-            public string English { get; }
-        }
-
         private static readonly Dictionary<CampusRuntimeEditorTextId, TextEntry> Entries = new()
         {
             { CampusRuntimeEditorTextId.F10ToggleHintStatus, new TextEntry("F10 \u6253\u5f00\u6216\u5173\u95ed\u8fd0\u884c\u65f6\u5730\u56fe\u7f16\u8f91\u5668\u3002", "F10 opens or closes the runtime map editor.") },
@@ -718,23 +688,29 @@ namespace NtingCampus.UI.Runtime.Gameplay
                 ? resolved
                 : new TextEntry(id.ToString(), id.ToString());
 
-            return Resolve(language, entry.Chinese, entry.English);
+            return entry.Get(language);
         }
 
-        public static string Get(CampusDisplayLanguage language, string chinese, string english)
+        public static string Get(
+            CampusDisplayLanguage language,
+            string chinese,
+            string english,
+            string traditionalChinese = null,
+            string russian = null,
+            string japanese = null)
         {
-            return Resolve(language, chinese, english);
+            return Resolve(language, chinese, english, traditionalChinese, russian, japanese);
         }
 
-        private static string Resolve(CampusDisplayLanguage language, string chinese, string english)
+        private static string Resolve(
+            CampusDisplayLanguage language,
+            string chinese,
+            string english,
+            string traditionalChinese = null,
+            string russian = null,
+            string japanese = null)
         {
-            return language switch
-            {
-                CampusDisplayLanguage.Chinese => chinese,
-                CampusDisplayLanguage.English => english,
-                CampusDisplayLanguage.Bilingual => chinese + " / " + english,
-                _ => chinese
-            };
+            return CampusDisplayLanguageCatalog.Resolve(language, chinese, english, traditionalChinese, russian, japanese);
         }
 
         public static string Format(CampusDisplayLanguage language, CampusRuntimeEditorTextId id, params object[] args)
@@ -770,17 +746,10 @@ namespace NtingCampus.UI.Runtime.Gameplay
 
         public static string FormatPointLightStats(CampusDisplayLanguage language, string intensity, string outer, string inner)
         {
-            if (language == CampusDisplayLanguage.Chinese)
-            {
-                return "\u5f3a\u5ea6 " + intensity + " / \u5916\u534a\u5f84 " + outer + " / \u5185\u534a\u5f84 " + inner;
-            }
-
-            if (language == CampusDisplayLanguage.Bilingual)
-            {
-                return "\u5f3a\u5ea6 / Intensity " + intensity + " / \u5916\u534a\u5f84 / Outer " + outer + " / \u5185\u534a\u5f84 / Inner " + inner;
-            }
-
-            return "Intensity " + intensity + " / Outer " + outer + " / Inner " + inner;
+            string intensityLabel = Resolve(language, "\u5f3a\u5ea6", "Intensity", "\u5f37\u5ea6", "\u0418\u043d\u0442\u0435\u043d\u0441\u0438\u0432\u043d\u043e\u0441\u0442\u044c", "\u5f37\u5ea6");
+            string outerLabel = Resolve(language, "\u5916\u534a\u5f84", "Outer", "\u5916\u534a\u5f91", "\u0412\u043d\u0435\u0448\u043d\u0438\u0439", "\u5916\u5074");
+            string innerLabel = Resolve(language, "\u5185\u534a\u5f84", "Inner", "\u5167\u534a\u5f91", "\u0412\u043d\u0443\u0442\u0440\u0435\u043d\u043d\u0438\u0439", "\u5185\u5074");
+            return intensityLabel + " " + intensity + " / " + outerLabel + " " + outer + " / " + innerLabel + " " + inner;
         }
 
         public static string FormatGameTime(CampusDisplayLanguage language, string time)

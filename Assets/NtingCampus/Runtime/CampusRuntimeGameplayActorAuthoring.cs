@@ -11,10 +11,8 @@ namespace NtingCampusMapEditor
 {
     internal sealed class CampusRuntimeGameplayActorPreset
     {
-        public readonly string ChineseLabel;
-        public readonly string EnglishLabel;
-        public readonly string ChineseNamePrefix;
-        public readonly string EnglishNamePrefix;
+        public readonly CampusLocalizedTextEntry Label;
+        public readonly CampusLocalizedTextEntry NamePrefix;
         public readonly string IdPrefix;
         public readonly CampusCharacterRole Role;
         public readonly CampusTeacherDuty TeacherDuty;
@@ -27,10 +25,8 @@ namespace NtingCampusMapEditor
         public readonly Color Color;
 
         public CampusRuntimeGameplayActorPreset(
-            string chineseLabel,
-            string englishLabel,
-            string chineseNamePrefix,
-            string englishNamePrefix,
+            CampusLocalizedTextEntry label,
+            CampusLocalizedTextEntry namePrefix,
             string idPrefix,
             CampusCharacterRole role,
             CampusTeacherDuty teacherDuty,
@@ -42,10 +38,8 @@ namespace NtingCampusMapEditor
             CampusCharacterTrait[] traits,
             Color color)
         {
-            ChineseLabel = chineseLabel;
-            EnglishLabel = englishLabel;
-            ChineseNamePrefix = chineseNamePrefix;
-            EnglishNamePrefix = englishNamePrefix;
+            Label = label;
+            NamePrefix = namePrefix;
             IdPrefix = idPrefix;
             Role = role;
             TeacherDuty = teacherDuty;
@@ -98,7 +92,7 @@ namespace NtingCampusMapEditor
             {
                 Id = ResolveActorId(preset, draft, ordinal, existingActors),
                 DisplayName = englishName,
-                LocalizedDisplayName = new CampusLocalizedText(chineseName, englishName),
+                LocalizedDisplayName = ResolveLocalizedDisplayName(preset, ordinal, chineseName, englishName),
                 Role = preset != null ? preset.Role : CampusCharacterRole.Student,
                 TeacherDuty = preset != null ? preset.TeacherDuty : CampusTeacherDuty.None,
                 StaffDuty = preset != null ? preset.StaffDuty : CampusStaffDuty.None,
@@ -412,8 +406,8 @@ namespace NtingCampusMapEditor
                 return draft.RequestedChineseName.Trim();
             }
 
-            string prefix = preset != null && !string.IsNullOrWhiteSpace(preset.ChineseNamePrefix)
-                ? preset.ChineseNamePrefix.Trim()
+            string prefix = preset != null && !string.IsNullOrWhiteSpace(preset.NamePrefix.Chinese)
+                ? preset.NamePrefix.Chinese.Trim()
                 : "Actor";
             return prefix + ordinal.ToString(CultureInfo.InvariantCulture);
         }
@@ -428,10 +422,36 @@ namespace NtingCampusMapEditor
                 return draft.RequestedEnglishName.Trim();
             }
 
-            string prefix = preset != null && !string.IsNullOrWhiteSpace(preset.EnglishNamePrefix)
-                ? preset.EnglishNamePrefix.Trim()
+            string prefix = preset != null && !string.IsNullOrWhiteSpace(preset.NamePrefix.English)
+                ? preset.NamePrefix.English.Trim()
                 : "Npc";
             return prefix + ordinal.ToString(CultureInfo.InvariantCulture);
+        }
+
+        private static CampusLocalizedText ResolveLocalizedDisplayName(
+            CampusRuntimeGameplayActorPreset preset,
+            int ordinal,
+            string chineseName,
+            string englishName)
+        {
+            if (preset == null || !preset.NamePrefix.HasAnyText)
+            {
+                return new CampusLocalizedText(chineseName, englishName);
+            }
+
+            return new CampusLocalizedText(
+                chineseName,
+                englishName,
+                BuildNameFromPrefix(preset.NamePrefix.TraditionalChinese, ordinal),
+                BuildNameFromPrefix(preset.NamePrefix.Russian, ordinal),
+                BuildNameFromPrefix(preset.NamePrefix.Japanese, ordinal));
+        }
+
+        private static string BuildNameFromPrefix(string prefix, int ordinal)
+        {
+            return string.IsNullOrWhiteSpace(prefix)
+                ? string.Empty
+                : prefix.Trim() + ordinal.ToString(CultureInfo.InvariantCulture);
         }
 
         private static string ResolveClassId(

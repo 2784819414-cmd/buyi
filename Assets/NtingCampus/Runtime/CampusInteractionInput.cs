@@ -8,6 +8,25 @@ namespace NtingCampusMapEditor
 {
     public static class CampusInteractionInput
     {
+        private static readonly KeyCode[] SupportedKeyboardKeys =
+        {
+            KeyCode.A, KeyCode.B, KeyCode.C, KeyCode.D, KeyCode.E, KeyCode.F, KeyCode.G, KeyCode.H,
+            KeyCode.I, KeyCode.J, KeyCode.K, KeyCode.L, KeyCode.M, KeyCode.N, KeyCode.O, KeyCode.P,
+            KeyCode.Q, KeyCode.R, KeyCode.S, KeyCode.T, KeyCode.U, KeyCode.V, KeyCode.W, KeyCode.X,
+            KeyCode.Y, KeyCode.Z,
+            KeyCode.Alpha0, KeyCode.Alpha1, KeyCode.Alpha2, KeyCode.Alpha3, KeyCode.Alpha4,
+            KeyCode.Alpha5, KeyCode.Alpha6, KeyCode.Alpha7, KeyCode.Alpha8, KeyCode.Alpha9,
+            KeyCode.Keypad0, KeyCode.Keypad1, KeyCode.Keypad2, KeyCode.Keypad3, KeyCode.Keypad4,
+            KeyCode.Keypad5, KeyCode.Keypad6, KeyCode.Keypad7, KeyCode.Keypad8, KeyCode.Keypad9,
+            KeyCode.UpArrow, KeyCode.DownArrow, KeyCode.LeftArrow, KeyCode.RightArrow,
+            KeyCode.Space, KeyCode.Return, KeyCode.KeypadEnter, KeyCode.Escape, KeyCode.Tab,
+            KeyCode.Backspace, KeyCode.Delete,
+            KeyCode.LeftShift, KeyCode.RightShift, KeyCode.LeftControl, KeyCode.RightControl,
+            KeyCode.LeftAlt, KeyCode.RightAlt,
+            KeyCode.F1, KeyCode.F2, KeyCode.F3, KeyCode.F4, KeyCode.F5, KeyCode.F6,
+            KeyCode.F7, KeyCode.F8, KeyCode.F9, KeyCode.F10, KeyCode.F11, KeyCode.F12
+        };
+
         public static bool WasKeyPressed(KeyCode keyCode)
         {
 #if ENABLE_INPUT_SYSTEM
@@ -22,6 +41,38 @@ namespace NtingCampusMapEditor
 #else
             return false;
 #endif
+        }
+
+        public static bool IsKeyHeld(KeyCode keyCode)
+        {
+#if ENABLE_INPUT_SYSTEM
+            if (TryReadHeldFromInputSystem(keyCode, out bool inputSystemHeld))
+            {
+                return inputSystemHeld;
+            }
+#endif
+
+#if ENABLE_LEGACY_INPUT_MANAGER
+            return Input.GetKey(keyCode);
+#else
+            return false;
+#endif
+        }
+
+        public static bool TryReadPressedKeyboardKey(out KeyCode keyCode)
+        {
+            for (int i = 0; i < SupportedKeyboardKeys.Length; i++)
+            {
+                KeyCode candidate = SupportedKeyboardKeys[i];
+                if (WasKeyPressed(candidate))
+                {
+                    keyCode = candidate;
+                    return true;
+                }
+            }
+
+            keyCode = KeyCode.None;
+            return false;
         }
 
         public static string GetKeyLabel(KeyCode keyCode)
@@ -52,6 +103,30 @@ namespace NtingCampusMapEditor
                     return "Esc";
                 case KeyCode.Tab:
                     return "Tab";
+                case KeyCode.Backspace:
+                    return "Backspace";
+                case KeyCode.Delete:
+                    return "Delete";
+                case KeyCode.F1:
+                    return "F1";
+                case KeyCode.F2:
+                    return "F2";
+                case KeyCode.F3:
+                    return "F3";
+                case KeyCode.F4:
+                    return "F4";
+                case KeyCode.F5:
+                    return "F5";
+                case KeyCode.F6:
+                    return "F6";
+                case KeyCode.F7:
+                    return "F7";
+                case KeyCode.F8:
+                    return "F8";
+                case KeyCode.F9:
+                    return "F9";
+                case KeyCode.F10:
+                    return "F10";
                 case KeyCode.F11:
                     return "F11";
                 case KeyCode.F12:
@@ -95,6 +170,25 @@ namespace NtingCampusMapEditor
             }
 
             pressed = key.wasPressedThisFrame;
+            return true;
+        }
+
+        private static bool TryReadHeldFromInputSystem(KeyCode keyCode, out bool held)
+        {
+            held = false;
+            Keyboard keyboard = Keyboard.current;
+            if (keyboard == null)
+            {
+                return false;
+            }
+
+            KeyControl key = GetKeyboardKey(keyboard, keyCode);
+            if (key == null)
+            {
+                return false;
+            }
+
+            held = key.isPressed;
             return true;
         }
 
@@ -159,7 +253,16 @@ namespace NtingCampusMapEditor
                 case KeyCode.Tab: return keyboard.tabKey;
                 case KeyCode.Backspace: return keyboard.backspaceKey;
                 case KeyCode.Delete: return keyboard.deleteKey;
+                case KeyCode.F1: return keyboard.f1Key;
+                case KeyCode.F2: return keyboard.f2Key;
+                case KeyCode.F3: return keyboard.f3Key;
+                case KeyCode.F4: return keyboard.f4Key;
+                case KeyCode.F5: return keyboard.f5Key;
+                case KeyCode.F6: return keyboard.f6Key;
+                case KeyCode.F7: return keyboard.f7Key;
+                case KeyCode.F8: return keyboard.f8Key;
                 case KeyCode.F9: return keyboard.f9Key;
+                case KeyCode.F10: return keyboard.f10Key;
                 case KeyCode.F11: return keyboard.f11Key;
                 case KeyCode.F12: return keyboard.f12Key;
                 case KeyCode.LeftShift: return keyboard.leftShiftKey;

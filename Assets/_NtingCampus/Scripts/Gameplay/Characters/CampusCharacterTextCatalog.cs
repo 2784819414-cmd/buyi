@@ -118,62 +118,41 @@ namespace NtingCampus.Gameplay.Characters
 
         public static string FormatTalkPrompt(CampusDisplayLanguage language, string displayName)
         {
-            return language switch
-            {
-                CampusDisplayLanguage.English => "Talk " + displayName,
-                CampusDisplayLanguage.Bilingual => "交谈 " + displayName + " / Talk " + displayName,
-                _ => "交谈 " + displayName
-            };
+            return Resolve(language, "交谈 " + displayName, "Talk " + displayName);
         }
 
         public static string FormatTalkLog(CampusDisplayLanguage language, string displayName, string line)
         {
-            return language switch
-            {
-                CampusDisplayLanguage.English => "[Talk] " + displayName + ": " + line,
-                CampusDisplayLanguage.Bilingual => "[对话 / Talk] " + displayName + ": " + line,
-                _ => "[对话] " + displayName + "：" + line
-            };
+            return Resolve(language, "[对话] " + displayName + "：" + line, "[Talk] " + displayName + ": " + line);
         }
 
         public static string FormatNpcSpeechLog(CampusDisplayLanguage language, string displayName, string line)
         {
-            return language switch
-            {
-                CampusDisplayLanguage.English => "[NPC] " + displayName + ": " + line,
-                CampusDisplayLanguage.Bilingual => "[NPC] " + displayName + ": " + line,
-                _ => "[NPC] " + displayName + "：" + line
-            };
+            return Resolve(language, "[NPC] " + displayName + "：" + line, "[NPC] " + displayName + ": " + line);
         }
 
         public static string FormatSceneRosterReady(CampusDisplayLanguage language, int studentCount, int teacherCount)
         {
-            return language switch
-            {
-                CampusDisplayLanguage.English => "[System] Scene roster ready. Students=" + studentCount + ", Teachers=" + teacherCount + ".",
-                CampusDisplayLanguage.Bilingual => "[系统 / System] 场景角色列表已就绪。学生=" + studentCount + "，教师=" + teacherCount + " / Scene roster ready. Students=" + studentCount + ", Teachers=" + teacherCount + ".",
-                _ => "[系统] 场景角色列表已就绪。学生=" + studentCount + "，教师=" + teacherCount + "。"
-            };
+            return Resolve(
+                language,
+                "[系统] 场景角色列表已就绪。学生=" + studentCount + "，教师=" + teacherCount + "。",
+                "[System] Scene roster ready. Students=" + studentCount + ", Teachers=" + teacherCount + ".");
         }
 
         public static string FormatPlayerCharacterBound(CampusDisplayLanguage language, string displayName)
         {
-            return language switch
-            {
-                CampusDisplayLanguage.English => "[System] Player character bound to " + displayName + ".",
-                CampusDisplayLanguage.Bilingual => "[系统 / System] 玩家角色已绑定到 " + displayName + " / Player character bound to " + displayName + ".",
-                _ => "[系统] 玩家角色已绑定到 " + displayName + "。"
-            };
+            return Resolve(
+                language,
+                "[系统] 玩家角色已绑定到 " + displayName + "。",
+                "[System] Player character bound to " + displayName + ".");
         }
 
         public static string FormatPlayerControlSwitched(CampusDisplayLanguage language, string displayName)
         {
-            return language switch
-            {
-                CampusDisplayLanguage.English => "[System] Player control switched to " + displayName + ".",
-                CampusDisplayLanguage.Bilingual => "[系统 / System] 玩家控制已切换到 " + displayName + " / Player control switched to " + displayName + ".",
-                _ => "[系统] 玩家控制已切换到 " + displayName + "。"
-            };
+            return Resolve(
+                language,
+                "[系统] 玩家控制已切换到 " + displayName + "。",
+                "[System] Player control switched to " + displayName + ".");
         }
 
         public static string FormatSanctionIssued(CampusDisplayLanguage language, string displayName, CampusSanctionLevel level)
@@ -203,14 +182,23 @@ namespace NtingCampus.Gameplay.Characters
             };
         }
 
-        private static string Resolve(CampusDisplayLanguage language, string chinese, string english)
+        public static string FormatProtectedItemObserved(CampusDisplayLanguage language, string itemDisplayName)
         {
-            return language switch
-            {
-                CampusDisplayLanguage.English => english,
-                CampusDisplayLanguage.Bilingual => chinese + " / " + english,
-                _ => chinese
-            };
+            return Resolve(
+                language,
+                "[事件] 有人目击了受保护物品移动：" + itemDisplayName + "。",
+                "[Incident] Protected item movement was witnessed: " + itemDisplayName + ".");
+        }
+
+        private static string Resolve(
+            CampusDisplayLanguage language,
+            string chinese,
+            string english,
+            string traditionalChinese = null,
+            string russian = null,
+            string japanese = null)
+        {
+            return CampusDisplayLanguageCatalog.Resolve(language, chinese, english, traditionalChinese, russian, japanese);
         }
     }
 }

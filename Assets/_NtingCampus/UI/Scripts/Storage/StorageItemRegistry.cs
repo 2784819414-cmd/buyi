@@ -62,6 +62,7 @@ namespace Nting.Storage
             registry.RegisterRuntimeDefinition(RuntimeDefinition("workbook", "练习册", "Workbook", 2, 1, 0.45f, "边角卷起的练习册。", "A workbook with curled corners.", new Color(0.42f, 0.5f, 0.47f, 1f)));
             registry.RegisterRuntimeDefinition(RuntimeDefinition("pencil_case", "笔袋", "Pencil Case", 2, 1, 0.25f, "普通布面笔袋。", "An ordinary cloth pencil case.", new Color(0.38f, 0.35f, 0.44f, 1f)));
             registry.RegisterRuntimeDefinition(RuntimeDefinition("lunch_box", "饭盒", "Lunch Box", 2, 2, 0.8f, "塑料饭盒，盖子扣得不算紧。", "A plastic lunch box with a loose lid.", new Color(0.45f, 0.42f, 0.34f, 1f)));
+            registry.RegisterRuntimeDefinition(RuntimeDefinition("school_backpack", "学生背包", "School Backpack", 1, 1, 0.8f, "可以携带书本和随身物品的学生背包。", "A student backpack for carrying books and personal items.", new Color(0.24f, 0.36f, 0.48f, 1f)));
             return registry;
         }
 

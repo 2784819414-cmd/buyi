@@ -1,6 +1,7 @@
 using System.Globalization;
 using DG.Tweening;
 using Nting.Storage;
+using NtingCampus.Gameplay.Characters;
 using NtingCampus.Gameplay.Inventory;
 using UnityEngine;
 using UnityEngine.UI;
@@ -12,9 +13,20 @@ namespace NtingCampus.UI.Runtime.Gameplay
     {
         private const string CanvasRootName = "CampusGameplayHudCanvas";
         private const int SortingOrder = 28500;
+        private const int HandNormalSortingOrder = SortingOrder + 10;
+        private const int HandStorageSortingOrder = 32020;
+
+        private static readonly Color HudPanelColor = new Color(0.055f, 0.068f, 0.086f, 0.44f);
+        private static readonly Color HudRaisedPanelColor = new Color(0.075f, 0.09f, 0.115f, 0.50f);
+        private static readonly Color HudPanelBorderColor = new Color(0.82f, 0.76f, 0.64f, 0.10f);
+        private static readonly Color HudShadowColor = new Color(0.005f, 0.01f, 0.015f, 0.24f);
 
         [SerializeField] private Canvas canvas;
         [SerializeField] private RectTransform canvasRoot;
+        [SerializeField] private Canvas handCanvas;
+        [SerializeField] private RectTransform handRoot;
+        [SerializeField] private Canvas tooltipCanvas;
+        [SerializeField] private RectTransform tooltipRoot;
         [SerializeField] private Text dateText;
         [SerializeField] private Text weekdayText;
         [SerializeField] private Text segmentText;
@@ -31,62 +43,70 @@ namespace NtingCampus.UI.Runtime.Gameplay
         [SerializeField] private Text areaBannerTitleText;
         [SerializeField] private Text areaBannerSubtitleText;
         [SerializeField] private Text moneyValueText;
-        [SerializeField] private Text divineValueText;
+        [SerializeField] private Text staminaValueText;
+        [SerializeField] private RectTransform staminaTrack;
+        [SerializeField] private RectTransform staminaFill;
+        [SerializeField] private RectTransform staminaCapRegion;
         [SerializeField] private Text backpackValueText;
-        [SerializeField] private Text interactionKeyText;
-        [SerializeField] private Text interactionText;
-        [SerializeField] private Text pendingCountText;
-        [SerializeField] private Text pendingTotalText;
-        [SerializeField] private Text pendingStatusText;
-        [SerializeField] private CanvasGroup pendingGroup;
-        [SerializeField] private RectTransform pendingCard;
+        [SerializeField] private RectTransform pendingCheckoutRoot;
+        [SerializeField] private CanvasGroup pendingCheckoutGroup;
+        [SerializeField] private Text pendingCheckoutTitleText;
+        [SerializeField] private Text pendingCheckoutSummaryText;
+        [SerializeField] private Text pendingCheckoutStatusText;
+        [SerializeField] private StorageGridUI backpackGrid;
+        [SerializeField] private Text backpackSlotStatusText;
+        [SerializeField] private CampusHudBackpackSlotDragHandler backpackSlotDragHandler;
+        [SerializeField] private CampusHudHandSlotDragHandler[] handSlotDragHandlers = new CampusHudHandSlotDragHandler[2];
 
+        private StorageBoxGraphic staminaFillGraphic;
+        private StorageBoxGraphic staminaCapRegionGraphic;
+        private StorageItemTooltipUI hudItemTooltip;
         private const float AreaBannerHiddenY = 92f;
         private const float AreaBannerVisibleY = 112f;
-        private Sequence pendingTween;
+        private const float PendingCheckoutHiddenX = 320f;
+        private const float PendingCheckoutVisibleX = -24f;
+        private const float StaminaTrackPadding = 2f;
+        private const float StaminaFillHeight = 16f;
+
+        private Sequence pendingCheckoutTween;
         private Sequence areaBannerTween;
         private readonly StorageGridUI[] handGrids = new StorageGridUI[2];
         private string lastAreaBannerKey = string.Empty;
         private bool hasAreaBannerKey;
+        private bool lastPendingCheckoutVisible;
+        private bool hasPendingCheckoutVisibility;
 
-        public bool LastInteractiveWindowOpen { get; private set; }
-
-        public void AttachHandGridsToStorageWindow(StorageWindowUI storageWindow)
-        {
-            if (storageWindow == null)
-            {
-                return;
-            }
-
-            EnsureVisual();
-            storageWindow.SetSharedHandGrids(handGrids);
-        }
+        public bool LastStorageWindowOpen { get; private set; }
 
         public void Apply(
             CampusGameplayHudSnapshot snapshot,
             StorageContainerModel[] hands,
-            StorageContainerModel backpack,
+            StorageContainerModel backpackSlot,
+            CampusCharacterRuntime playerRuntime,
             StorageWindowUI storageWindow,
             bool immediate,
             bool refreshHands)
         {
             EnsureVisual();
             ApplyText(snapshot);
+
             if (refreshHands)
             {
-                ApplyHands(hands, storageWindow);
+                ApplyHands(hands, storageWindow, playerRuntime);
+                ApplyBackpackSlot(backpackSlot, playerRuntime);
             }
 
+            ApplyHandLayer(storageWindow);
             UpdateAreaBanner(snapshot, immediate);
-            ApplyPending(snapshot, immediate);
-            LastInteractiveWindowOpen = storageWindow != null && storageWindow.IsOpen;
+            UpdatePendingCheckoutBar(snapshot, immediate);
+            LastStorageWindowOpen = storageWindow != null && storageWindow.IsOpen;
         }
 
         private void OnDisable()
         {
-            if (pendingTween != null && pendingTween.IsActive())
+            if (pendingCheckoutTween != null && pendingCheckoutTween.IsActive())
             {
-                pendingTween.Kill();
+                pendingCheckoutTween.Kill();
             }
 
             if (areaBannerTween != null && areaBannerTween.IsActive())
@@ -99,7 +119,20 @@ namespace NtingCampus.UI.Runtime.Gameplay
         {
             if (canvas != null &&
                 canvasRoot != null &&
+                handCanvas != null &&
+                handRoot != null &&
                 dateText != null &&
+                moneyValueText != null &&
+                staminaValueText != null &&
+                staminaTrack != null &&
+                staminaFill != null &&
+                staminaCapRegion != null &&
+                pendingCheckoutRoot != null &&
+                pendingCheckoutGroup != null &&
+                pendingCheckoutTitleText != null &&
+                pendingCheckoutSummaryText != null &&
+                pendingCheckoutStatusText != null &&
+                backpackGrid != null &&
                 handGrids[0] != null &&
                 handGrids[1] != null)
             {
@@ -157,12 +190,16 @@ namespace NtingCampus.UI.Runtime.Gameplay
             RectTransform topRightCard = CreatePanel("TopRightCard", new Vector2(-24f, -24f), new Vector2(278f, 150f), true);
             CreateNavigationCard(topRightCard);
 
-            RectTransform bottomLeftCard = CreatePanel("BottomLeftCard", new Vector2(24f, 112f), new Vector2(332f, 176f), false, false);
+            RectTransform bottomLeftCard = CreatePanel("BottomLeftCard", new Vector2(24f, 24f), new Vector2(332f, 176f), false, false);
             CreateStateCard(bottomLeftCard);
 
-            RectTransform bottomRightCard = CreatePanel("BottomRightCard", new Vector2(-24f, 24f), new Vector2(360f, 198f), true, false);
-            CreateInteractionCard(bottomRightCard);
+            CreateHandModule();
+            CreateAreaBanner();
+            CreatePendingCheckoutBar();
+        }
 
+        private void CreateAreaBanner()
+        {
             GameObject areaBannerRootObject = StorageUIUtility.CreateRectObject("AreaBannerRoot", canvasRoot);
             areaBannerRoot = areaBannerRootObject.GetComponent<RectTransform>();
             StorageUIUtility.SetAnchor(areaBannerRoot, new Vector2(0.5f, 0f), new Vector2(0.5f, 0f), new Vector2(0.5f, 0f));
@@ -181,11 +218,12 @@ namespace NtingCampus.UI.Runtime.Gameplay
                 new Vector2(0.5f, 0f),
                 new Vector2(0f, -6f),
                 new Vector2(304f, 92f),
-                StoragePalette.WindowShadow,
+                HudShadowColor,
                 Color.clear,
                 0f,
                 18f);
             areaBannerShadow.SetAsFirstSibling();
+
             RectTransform areaBanner = StorageUIUtility.CreateBox(
                 "AreaBanner",
                 areaBannerRoot,
@@ -194,11 +232,72 @@ namespace NtingCampus.UI.Runtime.Gameplay
                 new Vector2(0.5f, 0f),
                 Vector2.zero,
                 new Vector2(304f, 92f),
-                StoragePalette.Panel,
-                StoragePalette.PanelBorder,
+                HudPanelColor,
+                HudPanelBorderColor,
                 1f,
                 18f);
-            CreateAreaBanner(areaBanner);
+            CreateAreaBannerContent(areaBanner);
+        }
+
+        private void CreatePendingCheckoutBar()
+        {
+            GameObject rootObject = StorageUIUtility.CreateRectObject("PendingCheckoutBarRoot", canvasRoot);
+            pendingCheckoutRoot = rootObject.GetComponent<RectTransform>();
+            StorageUIUtility.SetAnchor(pendingCheckoutRoot, new Vector2(1f, 0.5f), new Vector2(1f, 0.5f), new Vector2(1f, 0.5f));
+            pendingCheckoutRoot.anchoredPosition = new Vector2(PendingCheckoutHiddenX, 0f);
+            pendingCheckoutRoot.sizeDelta = new Vector2(304f, 104f);
+
+            pendingCheckoutGroup = rootObject.AddComponent<CanvasGroup>();
+            pendingCheckoutGroup.alpha = 0f;
+            pendingCheckoutGroup.blocksRaycasts = false;
+            pendingCheckoutGroup.interactable = false;
+
+            RectTransform shadow = StorageUIUtility.CreateBox(
+                "PendingCheckoutBar_Shadow",
+                pendingCheckoutRoot,
+                new Vector2(0.5f, 0.5f),
+                new Vector2(0.5f, 0.5f),
+                new Vector2(0.5f, 0.5f),
+                new Vector2(8f, -6f),
+                new Vector2(292f, 92f),
+                HudShadowColor,
+                Color.clear,
+                0f,
+                18f);
+            shadow.SetAsFirstSibling();
+
+            RectTransform panel = StorageUIUtility.CreateBox(
+                "PendingCheckoutBar",
+                pendingCheckoutRoot,
+                new Vector2(0.5f, 0.5f),
+                new Vector2(0.5f, 0.5f),
+                new Vector2(0.5f, 0.5f),
+                Vector2.zero,
+                new Vector2(292f, 92f),
+                HudRaisedPanelColor,
+                HudPanelBorderColor,
+                1f,
+                18f);
+
+            pendingCheckoutTitleText = CreateLabel(
+                panel,
+                "PendingCheckoutTitle",
+                CampusGameplayHudTextCatalog.Get(CampusGameplayHudTextId.PendingCheckout),
+                13,
+                new Vector2(20f, 14f),
+                new Vector2(180f, 20f));
+            pendingCheckoutSummaryText = CreateValueText(
+                panel,
+                "PendingCheckoutSummary",
+                22,
+                new Vector2(20f, 36f),
+                new Vector2(236f, 28f),
+                StoragePalette.Accent);
+            pendingCheckoutStatusText = CreateMetaText(
+                panel,
+                "PendingCheckoutStatus",
+                new Vector2(20f, 66f),
+                new Vector2(236f, 18f));
         }
 
         private RectTransform CreatePanel(
@@ -219,7 +318,7 @@ namespace NtingCampus.UI.Runtime.Gameplay
                 pivot,
                 anchoredPosition + new Vector2(rightAligned ? -6f : 6f, topAligned ? -6f : 6f),
                 size,
-                StoragePalette.WindowShadow,
+                HudShadowColor,
                 Color.clear,
                 0f,
                 18f);
@@ -233,8 +332,8 @@ namespace NtingCampus.UI.Runtime.Gameplay
                 pivot,
                 anchoredPosition,
                 size,
-                StoragePalette.Panel,
-                StoragePalette.PanelBorder,
+                HudPanelColor,
+                HudPanelBorderColor,
                 1f,
                 18f);
         }
@@ -251,8 +350,8 @@ namespace NtingCampus.UI.Runtime.Gameplay
                 new Vector2(0f, 1f),
                 Vector2.zero,
                 new Vector2(192f, 210f),
-                StoragePalette.PanelRaised,
-                StoragePalette.PanelBorder,
+                HudRaisedPanelColor,
+                HudPanelBorderColor,
                 1f,
                 18f);
 
@@ -275,8 +374,8 @@ namespace NtingCampus.UI.Runtime.Gameplay
                 new Vector2(0f, 1f),
                 new Vector2(0f, -226f),
                 new Vector2(192f, 156f),
-                StoragePalette.PanelRaised,
-                StoragePalette.PanelBorder,
+                HudRaisedPanelColor,
+                HudPanelBorderColor,
                 1f,
                 18f);
 
@@ -298,79 +397,137 @@ namespace NtingCampus.UI.Runtime.Gameplay
         private void CreateStateCard(RectTransform parent)
         {
             CreateLabel(parent, "MoneyLabel", CampusGameplayHudTextCatalog.Get(CampusGameplayHudTextId.Money), 12, new Vector2(18f, 16f), new Vector2(120f, 18f));
-            moneyValueText = CreateValueText(parent, "Money", 20, new Vector2(18f, 34f), new Vector2(120f, 26f), StoragePalette.Accent);
+            moneyValueText = CreateValueText(parent, "Money", 20, new Vector2(18f, 34f), new Vector2(150f, 26f), StoragePalette.Accent);
 
-            CreateLabel(parent, "DivineLabel", CampusGameplayHudTextCatalog.Get(CampusGameplayHudTextId.DivinePower), 12, new Vector2(170f, 16f), new Vector2(120f, 18f));
-            divineValueText = CreateValueText(parent, "Divine", 20, new Vector2(170f, 34f), new Vector2(120f, 26f), StoragePalette.Paper);
+            CreateLabel(parent, "StaminaLabel", CampusGameplayHudTextCatalog.Get(CampusGameplayHudTextId.Stamina), 12, new Vector2(18f, 68f), new Vector2(120f, 18f));
+            staminaValueText = CreateValueText(parent, "StaminaValue", 18, new Vector2(178f, 66f), new Vector2(136f, 22f), StoragePalette.Paper);
+            staminaValueText.alignment = TextAnchor.MiddleRight;
 
-            CreateLabel(parent, "BackpackLabel", CampusGameplayHudTextCatalog.Get(CampusGameplayHudTextId.Backpack), 12, new Vector2(18f, 70f), new Vector2(100f, 18f));
-            backpackValueText = CreateMetaText(parent, "BackpackValue", new Vector2(18f, 90f), new Vector2(220f, 20f));
-
-            CreateLabel(parent, "LeftHandLabel", CampusGameplayHudTextCatalog.Get(CampusGameplayHudTextId.LeftHand), 12, new Vector2(18f, 118f), new Vector2(60f, 18f));
-            CreateLabel(parent, "RightHandLabel", CampusGameplayHudTextCatalog.Get(CampusGameplayHudTextId.RightHand), 12, new Vector2(140f, 118f), new Vector2(60f, 18f));
-            handGrids[0] = CreateHandGrid(parent, "LeftHandDisplay", new Vector2(18f, 94f));
-            handGrids[1] = CreateHandGrid(parent, "RightHandDisplay", new Vector2(140f, 94f));
-        }
-
-        private void CreateInteractionCard(RectTransform parent)
-        {
-            RectTransform interactionCard = StorageUIUtility.CreateBox(
-                "InteractionCard",
+            staminaTrack = StorageUIUtility.CreateBox(
+                "StaminaTrack",
                 parent,
                 new Vector2(0f, 1f),
-                new Vector2(1f, 1f),
-                new Vector2(0.5f, 1f),
-                Vector2.zero,
-                new Vector2(0f, 88f),
-                StoragePalette.PanelRaised,
-                StoragePalette.PanelBorder,
-                1f,
-                16f);
-            interactionCard.offsetMin = new Vector2(0f, -88f);
-            interactionCard.offsetMax = new Vector2(0f, 0f);
-
-            RectTransform keyPlate = StorageUIUtility.CreateBox(
-                "KeyPlate",
-                interactionCard,
-                new Vector2(0f, 0.5f),
-                new Vector2(0f, 0.5f),
-                new Vector2(0f, 0.5f),
-                new Vector2(18f, 0f),
-                new Vector2(64f, 64f),
+                new Vector2(0f, 1f),
+                new Vector2(0f, 1f),
+                new Vector2(18f, -92f),
+                new Vector2(296f, 20f),
                 StoragePalette.ButtonNormal,
                 StoragePalette.PanelBorder,
                 1f,
-                12f);
-            interactionKeyText = StorageUIUtility.CreateText("InteractionKey", keyPlate, string.Empty, 28, TextAnchor.MiddleCenter, StoragePalette.TextPrimary);
-            interactionKeyText.fontStyle = FontStyle.Bold;
-            interactionKeyText.rectTransform.offsetMin = Vector2.zero;
-            interactionKeyText.rectTransform.offsetMax = Vector2.zero;
+                10f);
 
-            interactionText = CreateValueText(interactionCard, "InteractionText", 18, new Vector2(96f, 20f), new Vector2(240f, 48f));
+            staminaFill = StorageUIUtility.CreateBox(
+                "StaminaFill",
+                staminaTrack,
+                new Vector2(0f, 0.5f),
+                new Vector2(0f, 0.5f),
+                new Vector2(0f, 0.5f),
+                new Vector2(StaminaTrackPadding, 0f),
+                new Vector2(0f, StaminaFillHeight),
+                StoragePalette.Accent,
+                Color.clear,
+                0f,
+                8f);
+            staminaFillGraphic = staminaFill.GetComponent<StorageBoxGraphic>();
 
-            pendingCard = StorageUIUtility.CreateBox(
-                "PendingCard",
-                parent,
-                new Vector2(0f, 0f),
-                new Vector2(1f, 0f),
-                new Vector2(0.5f, 0f),
-                Vector2.zero,
-                new Vector2(0f, 88f),
-                StoragePalette.PanelRaised,
-                StoragePalette.PanelBorder,
-                1f,
-                16f);
-            pendingCard.offsetMin = new Vector2(0f, 0f);
-            pendingCard.offsetMax = new Vector2(0f, 88f);
-            pendingGroup = pendingCard.gameObject.AddComponent<CanvasGroup>();
+            staminaCapRegion = StorageUIUtility.CreateBox(
+                "StaminaCapRegion",
+                staminaTrack,
+                new Vector2(1f, 0.5f),
+                new Vector2(1f, 0.5f),
+                new Vector2(1f, 0.5f),
+                new Vector2(-StaminaTrackPadding, 0f),
+                new Vector2(0f, StaminaFillHeight),
+                new Color(0.29f, 0.31f, 0.34f, 0.46f),
+                Color.clear,
+                0f,
+                8f);
+            staminaCapRegionGraphic = staminaCapRegion.GetComponent<StorageBoxGraphic>();
+            staminaCapRegion.SetAsLastSibling();
 
-            CreateLabel(pendingCard, "PendingLabel", CampusGameplayHudTextCatalog.Get(CampusGameplayHudTextId.PendingCheckout), 12, new Vector2(18f, 14f), new Vector2(140f, 18f));
-            pendingCountText = CreateMetaText(pendingCard, "PendingCount", new Vector2(18f, 34f), new Vector2(140f, 20f));
-            pendingTotalText = CreateValueText(pendingCard, "PendingTotal", 20, new Vector2(200f, 24f), new Vector2(120f, 28f), StoragePalette.Accent);
-            pendingStatusText = CreateMetaText(pendingCard, "PendingStatus", new Vector2(18f, 58f), new Vector2(280f, 18f));
+            CreateLabel(parent, "BackpackLabel", CampusGameplayHudTextCatalog.Get(CampusGameplayHudTextId.Backpack), 12, new Vector2(18f, 118f), new Vector2(100f, 18f));
+            backpackValueText = CreateValueText(parent, "BackpackValue", 16, new Vector2(18f, 136f), new Vector2(296f, 22f), StoragePalette.TextPrimary);
         }
 
-        private void CreateAreaBanner(RectTransform parent)
+        private void CreateHandModule()
+        {
+            GameObject handObject = new GameObject(
+                "HandModuleCanvas",
+                typeof(RectTransform),
+                typeof(Canvas),
+                typeof(CanvasScaler),
+                typeof(GraphicRaycaster));
+            handObject.transform.SetParent(canvasRoot, false);
+
+            handRoot = handObject.GetComponent<RectTransform>();
+            StorageUIUtility.SetAnchor(handRoot, new Vector2(1f, 0f), new Vector2(1f, 0f), new Vector2(1f, 0f));
+            handRoot.anchoredPosition = new Vector2(-24f, 24f);
+            handRoot.sizeDelta = new Vector2(194f, 188f);
+
+            handCanvas = handObject.GetComponent<Canvas>();
+            handCanvas.overrideSorting = true;
+            handCanvas.sortingOrder = HandNormalSortingOrder;
+
+            CanvasScaler scaler = handObject.GetComponent<CanvasScaler>();
+            scaler.uiScaleMode = CanvasScaler.ScaleMode.ScaleWithScreenSize;
+            scaler.referenceResolution = new Vector2(1920f, 1080f);
+            scaler.screenMatchMode = CanvasScaler.ScreenMatchMode.MatchWidthOrHeight;
+            scaler.matchWidthOrHeight = 0.5f;
+
+            RectTransform panel = StorageUIUtility.CreateBox(
+                "HandModule",
+                handRoot,
+                new Vector2(0f, 0f),
+                new Vector2(0f, 0f),
+                new Vector2(0f, 0f),
+                Vector2.zero,
+                new Vector2(194f, 188f),
+                HudPanelColor,
+                HudPanelBorderColor,
+                1f,
+                16f);
+
+            CreateLabel(panel, "BackpackSlotLabel", CampusGameplayHudTextCatalog.Get(CampusGameplayHudTextId.Backpack), 12, new Vector2(16f, 10f), new Vector2(84f, 18f));
+            backpackSlotStatusText = CreateMetaText(panel, "BackpackSlotStatus", new Vector2(92f, 10f), new Vector2(86f, 18f));
+            backpackSlotStatusText.alignment = TextAnchor.MiddleRight;
+            backpackGrid = CreateBackpackGrid(panel, "BackpackDisplay", new Vector2(59f, 32f));
+
+            StorageUIUtility.CreateDivider("BackpackHandDivider", panel, 16f, 112f, 162f, 1f);
+            handGrids[0] = CreateHandGrid(panel, "LeftHandDisplay", new Vector2(22f, 124f), 0);
+            handGrids[1] = CreateHandGrid(panel, "RightHandDisplay", new Vector2(106f, 124f), 1);
+            CreateTooltipLayer();
+        }
+
+        private void CreateTooltipLayer()
+        {
+            GameObject tooltipObject = new GameObject(
+                "HudItemTooltipCanvas",
+                typeof(RectTransform),
+                typeof(Canvas),
+                typeof(CanvasScaler));
+            tooltipObject.transform.SetParent(canvasRoot, false);
+
+            tooltipRoot = tooltipObject.GetComponent<RectTransform>();
+            tooltipRoot.anchorMin = Vector2.zero;
+            tooltipRoot.anchorMax = Vector2.one;
+            tooltipRoot.offsetMin = Vector2.zero;
+            tooltipRoot.offsetMax = Vector2.zero;
+
+            tooltipCanvas = tooltipObject.GetComponent<Canvas>();
+            tooltipCanvas.renderMode = RenderMode.ScreenSpaceOverlay;
+            tooltipCanvas.overrideSorting = true;
+            tooltipCanvas.sortingOrder = HandStorageSortingOrder + 1;
+
+            CanvasScaler scaler = tooltipObject.GetComponent<CanvasScaler>();
+            scaler.uiScaleMode = CanvasScaler.ScaleMode.ScaleWithScreenSize;
+            scaler.referenceResolution = new Vector2(1920f, 1080f);
+            scaler.screenMatchMode = CanvasScaler.ScreenMatchMode.MatchWidthOrHeight;
+            scaler.matchWidthOrHeight = 0.5f;
+
+            hudItemTooltip = StorageItemTooltipUI.Create(tooltipRoot);
+        }
+
+        private void CreateAreaBannerContent(RectTransform parent)
         {
             areaBannerTitleText = CreateValueText(parent, "AreaBannerTitle", 20, new Vector2(24f, 18f), new Vector2(240f, 28f));
             areaBannerTitleText.alignment = TextAnchor.MiddleCenter;
@@ -394,55 +551,145 @@ namespace NtingCampus.UI.Runtime.Gameplay
             areaBannerTitleText.text = snapshot.AreaName;
             areaBannerSubtitleText.text = snapshot.AreaSubtitle;
             moneyValueText.text = FormatNumber(snapshot.Money);
-            divineValueText.text = FormatNumber(snapshot.DivinePower);
             backpackValueText.text = snapshot.BackpackStatus;
-            interactionKeyText.text = snapshot.InteractionKeyText;
-            interactionText.text = snapshot.InteractionText;
-            interactionText.color = snapshot.InteractionAvailable ? StoragePalette.TextPrimary : StoragePalette.TextMuted;
-            pendingCountText.text = CampusGameplayHudTextCatalog.Get(CampusGameplayHudTextId.PendingItems) + " " + snapshot.PendingCheckoutCount;
-            pendingTotalText.text = CampusGameplayHudTextCatalog.Get(CampusGameplayHudTextId.PendingTotal) + " " + FormatNumber(snapshot.PendingCheckoutTotal);
-            pendingStatusText.text = CampusGameplayHudTextCatalog.Get(
+            pendingCheckoutTitleText.text = CampusGameplayHudTextCatalog.Get(CampusGameplayHudTextId.PendingCheckout);
+            pendingCheckoutSummaryText.text = CampusGameplayHudTextCatalog.Format(
+                CampusGameplayHudTextId.PendingCheckoutSummary,
+                snapshot.PendingCheckoutCount,
+                FormatNumber(snapshot.PendingCheckoutTotal));
+            pendingCheckoutStatusText.text = CampusGameplayHudTextCatalog.Get(
                 snapshot.CanAffordCheckout
                     ? CampusGameplayHudTextId.ReadyToPay
                     : CampusGameplayHudTextId.NotEnoughMoney);
-            pendingStatusText.color = snapshot.CanAffordCheckout ? StoragePalette.TextSecondary : StoragePalette.Warning;
+            pendingCheckoutStatusText.color = snapshot.CanAffordCheckout ? StoragePalette.TextSecondary : StoragePalette.Warning;
+            UpdateStaminaBar(snapshot.StaminaCurrent, snapshot.StaminaMax);
         }
 
-        private void ApplyHands(StorageContainerModel[] hands, StorageWindowUI storageWindow)
+        private void UpdatePendingCheckoutBar(CampusGameplayHudSnapshot snapshot, bool immediate)
         {
-            if (storageWindow != null && storageWindow.IsOpen)
-            {
-                storageWindow.SetSharedHandGrids(handGrids);
-            }
-
-            BindHandGrid(0, CampusHandInventoryUtility.ResolveHandContainer(hands, 0), storageWindow);
-            BindHandGrid(1, CampusHandInventoryUtility.ResolveHandContainer(hands, 1), storageWindow);
-        }
-
-        private void ApplyPending(CampusGameplayHudSnapshot snapshot, bool immediate)
-        {
-            float targetAlpha = snapshot.ShowPendingCheckout ? 1f : 0f;
-            if (pendingGroup == null || pendingCard == null)
+            if (pendingCheckoutRoot == null || pendingCheckoutGroup == null)
             {
                 return;
             }
 
-            if (pendingTween != null && pendingTween.IsActive())
+            bool visible = snapshot.ShowPendingCheckout;
+            bool visibilityChanged = !hasPendingCheckoutVisibility || lastPendingCheckoutVisible != visible;
+            lastPendingCheckoutVisible = visible;
+            hasPendingCheckoutVisibility = true;
+            if (!visibilityChanged && !immediate)
             {
-                pendingTween.Kill();
+                return;
             }
 
+            if (pendingCheckoutTween != null && pendingCheckoutTween.IsActive())
+            {
+                pendingCheckoutTween.Kill();
+            }
+
+            float targetAlpha = visible ? 1f : 0f;
+            float targetX = visible ? PendingCheckoutVisibleX : PendingCheckoutHiddenX;
             if (immediate)
             {
-                pendingGroup.alpha = targetAlpha;
-                pendingCard.localScale = targetAlpha > 0f ? Vector3.one : Vector3.one * 0.98f;
+                pendingCheckoutGroup.alpha = targetAlpha;
+                pendingCheckoutRoot.anchoredPosition = new Vector2(targetX, 0f);
                 return;
             }
 
-            pendingTween = DOTween.Sequence().SetUpdate(true);
-            pendingTween.Join(pendingGroup.DOFade(targetAlpha, snapshot.ShowPendingCheckout ? 0.22f : 0.14f));
-            pendingTween.Join(pendingCard.DOScale(targetAlpha > 0f ? 1f : 0.98f, snapshot.ShowPendingCheckout ? 0.22f : 0.14f)
-                .SetEase(snapshot.ShowPendingCheckout ? Ease.OutCubic : Ease.InCubic));
+            pendingCheckoutTween = DOTween.Sequence().SetUpdate(true);
+            pendingCheckoutTween.Join(pendingCheckoutGroup.DOFade(targetAlpha, visible ? 0.22f : 0.16f).SetEase(visible ? Ease.OutCubic : Ease.InCubic));
+            pendingCheckoutTween.Join(pendingCheckoutRoot.DOAnchorPosX(targetX, visible ? 0.22f : 0.16f).SetEase(visible ? Ease.OutCubic : Ease.InCubic));
+        }
+
+        private void UpdateStaminaBar(int currentStamina, int maxStamina)
+        {
+            int normalizedCurrent = Mathf.Max(0, currentStamina);
+            int normalizedMax = Mathf.Max(0, maxStamina);
+            float ratio = normalizedMax > 0 ? Mathf.Clamp01((float)normalizedCurrent / normalizedMax) : 0f;
+
+            if (staminaValueText != null)
+            {
+                staminaValueText.text = normalizedCurrent + "/" + normalizedMax;
+            }
+
+            if (staminaFill != null)
+            {
+                float trackWidth = Mathf.Max(0f, staminaTrack != null ? staminaTrack.sizeDelta.x - StaminaTrackPadding * 2f : 0f);
+                float baseMax = Mathf.Max(1f, CampusCharacterStaminaTuning.BaseMaxStamina);
+                float usableWidth = trackWidth * Mathf.Clamp01((float)normalizedMax / baseMax);
+                float fillWidth = trackWidth * Mathf.Clamp01((float)normalizedCurrent / baseMax);
+                staminaFill.sizeDelta = new Vector2(fillWidth, StaminaFillHeight);
+                staminaFill.gameObject.SetActive(trackWidth > 0.01f);
+
+                if (staminaCapRegion != null)
+                {
+                    float capWidth = Mathf.Max(0f, trackWidth - usableWidth);
+                    staminaCapRegion.sizeDelta = new Vector2(capWidth, StaminaFillHeight);
+                    staminaCapRegion.gameObject.SetActive(capWidth > 0.01f);
+                    if (staminaCapRegionGraphic != null)
+                    {
+                        staminaCapRegionGraphic.SetStyle(new Color(0.29f, 0.31f, 0.34f, 0.46f), Color.clear, 0f, 8f);
+                    }
+                }
+            }
+
+            if (staminaFillGraphic != null)
+            {
+                Color fillColor = ratio <= 0.25f ? StoragePalette.Warning : StoragePalette.Accent;
+                staminaFillGraphic.SetStyle(fillColor, Color.clear, 0f, 8f);
+            }
+        }
+
+        private void ApplyHands(StorageContainerModel[] hands, StorageWindowUI storageWindow, CampusCharacterRuntime playerRuntime)
+        {
+            StorageWindowUI ownerWindow = storageWindow != null && storageWindow.IsOpen
+                ? storageWindow
+                : null;
+
+            BindHandGrid(0, CampusHandInventoryUtility.ResolveHandContainer(hands, 0), ownerWindow);
+            BindHandGrid(1, CampusHandInventoryUtility.ResolveHandContainer(hands, 1), ownerWindow);
+            ConfigureHandDragHandler(0, CampusHandInventoryUtility.ResolveHandContainer(hands, 0), ownerWindow, playerRuntime);
+            ConfigureHandDragHandler(1, CampusHandInventoryUtility.ResolveHandContainer(hands, 1), ownerWindow, playerRuntime);
+        }
+
+        private void ApplyBackpackSlot(StorageContainerModel backpackSlot, CampusCharacterRuntime playerRuntime)
+        {
+            if (backpackGrid != null)
+            {
+                backpackGrid.Bind(backpackSlot, null);
+            }
+
+            StorageItemModel backpack = CampusBackpackInventoryUtility.ResolveEquippedBackpack(backpackSlot);
+            if (backpackSlotStatusText != null)
+            {
+                backpackSlotStatusText.text = backpack != null
+                    ? CampusGameplayHudTextCatalog.Get(CampusGameplayHudTextId.EquippedBackpack)
+                    : CampusGameplayHudTextCatalog.Get(CampusGameplayHudTextId.NoBackpack);
+                backpackSlotStatusText.color = backpack != null ? StoragePalette.Accent : StoragePalette.TextMuted;
+            }
+
+            if (backpackSlotDragHandler != null)
+            {
+                backpackSlotDragHandler.Configure(
+                playerRuntime,
+                backpackSlot,
+                tooltipCanvas,
+                tooltipRoot,
+                backpackGrid != null ? backpackGrid.RectTransform : null,
+                hudItemTooltip,
+                tooltipRoot);
+            }
+        }
+
+        private void ApplyHandLayer(StorageWindowUI storageWindow)
+        {
+            if (handCanvas == null || handRoot == null)
+            {
+                return;
+            }
+
+            bool storageOpen = storageWindow != null && storageWindow.IsOpen;
+            handCanvas.sortingOrder = storageOpen ? HandStorageSortingOrder : HandNormalSortingOrder;
+            handRoot.SetAsLastSibling();
         }
 
         private void UpdateAreaBanner(CampusGameplayHudSnapshot snapshot, bool immediate)
@@ -531,7 +778,7 @@ namespace NtingCampus.UI.Runtime.Gameplay
             return text;
         }
 
-        private static StorageGridUI CreateHandGrid(Transform parent, string name, Vector2 position)
+        private StorageGridUI CreateHandGrid(Transform parent, string name, Vector2 position, int index)
         {
             RectTransform slotRoot = StorageUIUtility.CreateBox(
                 name,
@@ -566,6 +813,73 @@ namespace NtingCampus.UI.Runtime.Gameplay
             grid.CellSpacing = 0f;
             grid.RenderItemViews = true;
             grid.DropArea = slotRoot;
+
+            RectTransform dragCatcher = StorageUIUtility.CreateStretchBox(
+                "DragCatcher",
+                slotRoot,
+                Vector2.zero,
+                Vector2.zero,
+                Color.clear,
+                Color.clear,
+                0f,
+                0f,
+                true);
+            if (index >= 0 && index < handSlotDragHandlers.Length)
+            {
+                handSlotDragHandlers[index] = dragCatcher.gameObject.AddComponent<CampusHudHandSlotDragHandler>();
+            }
+
+            return grid;
+        }
+
+        private StorageGridUI CreateBackpackGrid(Transform parent, string name, Vector2 position)
+        {
+            RectTransform slotRoot = StorageUIUtility.CreateBox(
+                name,
+                parent,
+                new Vector2(0f, 1f),
+                new Vector2(0f, 1f),
+                new Vector2(0f, 1f),
+                new Vector2(position.x, -position.y),
+                new Vector2(76f, 76f),
+                StoragePalette.Slot,
+                StoragePalette.SlotBorder,
+                1f,
+                12f,
+                true);
+
+            StorageUIUtility.CreateStretchBox(
+                "Inner",
+                slotRoot,
+                new Vector2(4f, 4f),
+                new Vector2(-4f, -4f),
+                new Color(1f, 1f, 1f, 0.02f),
+                Color.clear,
+                0f,
+                10f);
+
+            GameObject gridObject = StorageUIUtility.CreateRectObject("Grid", slotRoot);
+            RectTransform gridRect = gridObject.GetComponent<RectTransform>();
+            StorageUIUtility.SetAnchor(gridRect, new Vector2(0f, 1f), new Vector2(0f, 1f), new Vector2(0f, 1f));
+            gridRect.anchoredPosition = new Vector2(6f, -6f);
+
+            StorageGridUI grid = gridObject.AddComponent<StorageGridUI>();
+            grid.CellSize = 64f;
+            grid.CellSpacing = 0f;
+            grid.RenderItemViews = true;
+            grid.DropArea = slotRoot;
+
+            RectTransform dragCatcher = StorageUIUtility.CreateStretchBox(
+                "DragCatcher",
+                slotRoot,
+                Vector2.zero,
+                Vector2.zero,
+                Color.clear,
+                Color.clear,
+                0f,
+                0f,
+                true);
+            backpackSlotDragHandler = dragCatcher.gameObject.AddComponent<CampusHudBackpackSlotDragHandler>();
             return grid;
         }
 
@@ -588,8 +902,66 @@ namespace NtingCampus.UI.Runtime.Gameplay
             grid.Bind(hand, ownerWindow);
         }
 
+        private void ConfigureHandDragHandler(
+            int index,
+            StorageContainerModel hand,
+            StorageWindowUI ownerWindow,
+            CampusCharacterRuntime playerRuntime)
+        {
+            if (index < 0 || index >= handSlotDragHandlers.Length)
+            {
+                return;
+            }
+
+            CampusHudHandSlotDragHandler handler = handSlotDragHandlers[index];
+            StorageGridUI grid = index < handGrids.Length ? handGrids[index] : null;
+            if (handler == null)
+            {
+                return;
+            }
+
+            handler.Configure(
+                playerRuntime,
+                hand,
+                tooltipCanvas,
+                tooltipRoot,
+                grid != null ? grid.RectTransform : null,
+                hudItemTooltip,
+                tooltipRoot,
+                ownerWindow == null);
+        }
+
         private void ClearExistingHud()
         {
+            if (areaBannerTween != null && areaBannerTween.IsActive())
+            {
+                areaBannerTween.Kill();
+            }
+
+            lastAreaBannerKey = string.Empty;
+            hasAreaBannerKey = false;
+            lastPendingCheckoutVisible = false;
+            hasPendingCheckoutVisibility = false;
+            staminaFillGraphic = null;
+            staminaCapRegionGraphic = null;
+            staminaCapRegion = null;
+            staminaFill = null;
+            pendingCheckoutRoot = null;
+            pendingCheckoutGroup = null;
+            pendingCheckoutTitleText = null;
+            pendingCheckoutSummaryText = null;
+            pendingCheckoutStatusText = null;
+            tooltipCanvas = null;
+            tooltipRoot = null;
+            hudItemTooltip = null;
+            backpackGrid = null;
+            backpackSlotStatusText = null;
+            backpackSlotDragHandler = null;
+            handGrids[0] = null;
+            handGrids[1] = null;
+            handSlotDragHandlers[0] = null;
+            handSlotDragHandlers[1] = null;
+
             while (canvasRoot.childCount > 0)
             {
                 Transform child = canvasRoot.GetChild(0);
@@ -608,6 +980,5 @@ namespace NtingCampus.UI.Runtime.Gameplay
         {
             return value.ToString("N0", CultureInfo.InvariantCulture);
         }
-
     }
 }

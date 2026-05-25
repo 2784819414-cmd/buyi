@@ -40,15 +40,21 @@ namespace Nting.Storage
                 return cached;
             }
 
+            string iconName = ResolveIconName(definitionId);
+            Sprite icon = LoadResourceSprite(iconName);
+            if (icon != null)
+            {
+                Cache[cacheKey] = icon;
+                return icon;
+            }
+
             if (StorageGeneratedIconFactory.TryCreate(definitionId, width, height, out Sprite generated))
             {
                 Cache[cacheKey] = generated;
                 return generated;
             }
 
-            string iconName = ResolveIconName(definitionId);
-            Sprite icon = LoadResourceSprite(iconName);
-            if (icon == null && iconName != GenericIconName)
+            if (iconName != GenericIconName)
             {
                 icon = LoadResourceSprite(GenericIconName);
             }
