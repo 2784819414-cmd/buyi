@@ -12,6 +12,7 @@ namespace NtingCampus.Gameplay.Characters
         private static bool TryBuildOpportunity(
             CampusNpcAiRuntime npc,
             ScheduleEntryRecord entry,
+            ActionChainRecord actionChain,
             ActionRecord action,
             out CampusNpcActionOpportunity opportunity)
         {
@@ -27,7 +28,8 @@ namespace NtingCampus.Gameplay.Characters
             for (int i = 0; i < targetRules.Count; i++)
             {
                 ActionTargetRuleRecord targetRule = targetRules[i];
-                if (!PassesRuntimeRequirements(targetRule, npc))
+                if (!AppliesToActionChain(targetRule, actionChain) ||
+                    !PassesRuntimeRequirements(targetRule, npc))
                 {
                     continue;
                 }
@@ -359,7 +361,7 @@ namespace NtingCampus.Gameplay.Characters
                         profile != null ? profile.StudentClassroomId : string.Empty,
                         profile != null ? profile.StudentDeskKey : string.Empty,
                         profile != null ? profile.StudentDeskPosition : Vector3.zero,
-                        CampusNpcFacilityGroups.Get(CampusNpcFacilityGroups.StudentDesks),
+                        targetRule.FacilityTypes,
                         out target);
 
                 case CampusNpcEcologyTargetKind.TeacherPodium:
@@ -368,7 +370,7 @@ namespace NtingCampus.Gameplay.Characters
                         profile != null ? profile.TeacherClassroomId : string.Empty,
                         profile != null ? profile.TeacherPodiumKey : string.Empty,
                         profile != null ? profile.TeacherPodiumPosition : Vector3.zero,
-                        CampusNpcFacilityGroups.Get(CampusNpcFacilityGroups.Podiums),
+                        targetRule.FacilityTypes,
                         out target);
 
                 case CampusNpcEcologyTargetKind.OfficeDesk:
@@ -377,7 +379,7 @@ namespace NtingCampus.Gameplay.Characters
                         profile != null ? profile.OfficeRoomId : string.Empty,
                         profile != null ? profile.OfficeDeskKey : string.Empty,
                         profile != null ? profile.OfficeDeskPosition : Vector3.zero,
-                        CampusNpcFacilityGroups.Get(CampusNpcFacilityGroups.OfficeDesks),
+                        targetRule.FacilityTypes,
                         out target);
 
                 case CampusNpcEcologyTargetKind.PrimaryWorkstation:
@@ -386,7 +388,7 @@ namespace NtingCampus.Gameplay.Characters
                         profile != null ? profile.WorkRoomId : string.Empty,
                         profile != null ? profile.PrimaryWorkstationKey : string.Empty,
                         profile != null ? profile.PrimaryWorkstationPosition : Vector3.zero,
-                        ResolvePrimaryWorkstationFacilityTypes(npc),
+                        targetRule.FacilityTypes,
                         out target);
 
                 case CampusNpcEcologyTargetKind.Dorm:
@@ -701,19 +703,6 @@ namespace NtingCampus.Gameplay.Characters
             return string.IsNullOrEmpty(instanceId)
                 ? "dropped_item:" + NormalizeId(item.DefinitionId)
                 : "dropped_item:" + instanceId;
-        }
-
-        private static CampusFacilityType[] ResolvePrimaryWorkstationFacilityTypes(CampusNpcAiRuntime npc)
-        {
-            CampusCharacterData data = npc != null ? npc.Data : null;
-            if (data != null &&
-                data.Role == CampusCharacterRole.Staff &&
-                (data.StaffDuty & CampusStaffDuty.SupportStaff) != 0)
-            {
-                return CampusNpcFacilityGroups.Get(CampusNpcFacilityGroups.WorkerStands);
-            }
-
-            return CampusNpcFacilityGroups.Get(CampusNpcFacilityGroups.Workstations);
         }
 
         private static bool RequiresExactAssignedFacilityNavigation(CampusGameplayRoom.FacilityRecord record)
@@ -1080,6 +1069,18 @@ namespace NtingCampus.Gameplay.Characters
             return CampusNpcActionRequirementCatalog.PassesAll(
                 npc.Runtime,
                 targetRule.RequirementIds);
+        }
+
+        private static bool AppliesToActionChain(
+            ActionTargetRuleRecord targetRule,
+            ActionChainRecord actionChain)
+        {
+            if (targetRule == null || targetRule.ActionChainIds.Length == 0)
+            {
+                return true;
+            }
+
+            return actionChain != null && ContainsId(targetRule.ActionChainIds, actionChain.Id);
         }
 
         private static ResolvedTarget CreateResolvedTarget(

@@ -104,7 +104,7 @@ namespace NtingCampus.Gameplay.Characters
                 runtime,
                 rosterService,
                 classroom,
-                CampusNpcFacilityGroups.Get(CampusNpcFacilityGroups.StudentDesks),
+                CampusNpcFacilityTypeSets.Get(CampusNpcFacilityTypeSets.StudentDesks),
                 peer => peer != null &&
                         peer.Data != null &&
                         peer.Data.Role == CampusCharacterRole.Student &&
@@ -160,7 +160,7 @@ namespace NtingCampus.Gameplay.Characters
                 runtime,
                 rosterService,
                 office,
-                CampusNpcFacilityGroups.Get(CampusNpcFacilityGroups.OfficeDesks),
+                CampusNpcFacilityTypeSets.Get(CampusNpcFacilityTypeSets.OfficeDesks),
                 peer => peer != null &&
                         peer.Data != null &&
                         peer.Data.Role == CampusCharacterRole.Teacher &&
@@ -209,7 +209,7 @@ namespace NtingCampus.Gameplay.Characters
                 runtime,
                 rosterService,
                 workRoom,
-                CampusNpcFacilityGroups.Get(CampusNpcFacilityGroups.ServiceWindows),
+                CampusNpcFacilityTypeSets.Get(CampusNpcFacilityTypeSets.ServiceWindows),
                 peer => peer != null &&
                         peer.Data != null &&
                         BelongsToStaffCohort(peer.Data, staffDutyMask) &&
@@ -397,7 +397,7 @@ namespace NtingCampus.Gameplay.Characters
                 CampusNpcFacilitySelector.FindAssigned(
                     worldService,
                     assignments != null ? assignments.ServiceWindowId : string.Empty,
-                    CampusNpcFacilityGroups.Get(CampusNpcFacilityGroups.ServiceWindows),
+                    CampusNpcFacilityTypeSets.Get(CampusNpcFacilityTypeSets.ServiceWindows),
                     out CampusGameplayRoom serviceWindowRoom,
                     out _))
             {
@@ -424,8 +424,8 @@ namespace NtingCampus.Gameplay.Characters
         private static CampusFacilityType[] ResolveStaffWorkstationFacilityTypes(CampusCharacterData data)
         {
             return data != null && (data.StaffDuty & CampusStaffDuty.SupportStaff) != 0
-                ? CampusNpcFacilityGroups.Get(CampusNpcFacilityGroups.WorkerStands)
-                : CampusNpcFacilityGroups.Get(CampusNpcFacilityGroups.Workstations);
+                ? CampusNpcFacilityTypeSets.Get(CampusNpcFacilityTypeSets.WorkerStands)
+                : CampusNpcFacilityTypeSets.Get(CampusNpcFacilityTypeSets.Workstations);
         }
 
         private static CampusRoomType ResolveStaffWorkRoomType(CampusCharacterData data)

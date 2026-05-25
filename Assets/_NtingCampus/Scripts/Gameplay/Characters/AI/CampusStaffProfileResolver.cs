@@ -76,7 +76,7 @@ namespace NtingCampus.Gameplay.Characters
                 runtime,
                 rosterService,
                 CampusNpcRosterIndexer.IsStaff);
-            CampusFacilityType[] workstationTypes = CampusNpcFacilityGroups.Get(CampusNpcFacilityGroups.Workstations);
+            CampusFacilityType[] workstationTypes = CampusNpcFacilityTypeSets.Get(CampusNpcFacilityTypeSets.Workstations);
 
             if (CampusNpcFacilitySelector.FindAssigned(
                     worldService,
@@ -170,7 +170,7 @@ namespace NtingCampus.Gameplay.Characters
             if (CampusNpcFacilitySelector.FindAssigned(
                     worldService,
                     assignments.ServiceWindowId,
-                    CampusNpcFacilityGroups.Get(CampusNpcFacilityGroups.ServiceWindows),
+                    CampusNpcFacilityTypeSets.Get(CampusNpcFacilityTypeSets.ServiceWindows),
                     out CampusGameplayRoom serviceWindowRoom,
                     out CampusGameplayRoom.FacilityRecord serviceWindow) &&
                 CampusServiceStationCatalog.TryResolveByFacility(serviceWindowRoom, serviceWindow, out station))
@@ -181,7 +181,7 @@ namespace NtingCampus.Gameplay.Characters
             if (CampusNpcFacilitySelector.FindAssigned(
                     worldService,
                     assignments.PrimaryWorkstationId,
-                    CampusNpcFacilityGroups.Get(CampusNpcFacilityGroups.WorkerStands),
+                    CampusNpcFacilityTypeSets.Get(CampusNpcFacilityTypeSets.WorkerStands),
                     out CampusGameplayRoom workerStandRoom,
                     out CampusGameplayRoom.FacilityRecord workerStand) &&
                 CampusServiceStationCatalog.TryResolveByFacility(workerStandRoom, workerStand, out station))

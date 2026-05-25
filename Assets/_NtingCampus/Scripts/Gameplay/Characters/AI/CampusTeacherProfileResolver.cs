@@ -31,7 +31,7 @@ namespace NtingCampus.Gameplay.Characters
             if (CampusNpcFacilitySelector.FindAssigned(
                     worldService,
                     assignments != null ? assignments.TeacherPodiumId : string.Empty,
-                    CampusNpcFacilityGroups.Get(CampusNpcFacilityGroups.Podiums),
+                    CampusNpcFacilityTypeSets.Get(CampusNpcFacilityTypeSets.Podiums),
                     out CampusGameplayRoom assignedClassroom,
                     out CampusGameplayRoom.FacilityRecord assignedPodium))
             {
@@ -42,7 +42,7 @@ namespace NtingCampus.Gameplay.Characters
             }
             else if (CampusNpcFacilitySelector.TryChoose(
                          classroom,
-                         CampusNpcFacilityGroups.Get(CampusNpcFacilityGroups.Podiums),
+                         CampusNpcFacilityTypeSets.Get(CampusNpcFacilityTypeSets.Podiums),
                          teacherIndex,
                          out CampusGameplayRoom.FacilityRecord podium))
             {
@@ -90,7 +90,7 @@ namespace NtingCampus.Gameplay.Characters
             }
             else if (CampusNpcFacilitySelector.TryChooseUnique(
                          office,
-                         CampusNpcFacilityGroups.Get(CampusNpcFacilityGroups.OfficeDesks),
+                         CampusNpcFacilityTypeSets.Get(CampusNpcFacilityTypeSets.OfficeDesks),
                          officeTeacherIndex,
                          out CampusGameplayRoom.FacilityRecord desk))
             {

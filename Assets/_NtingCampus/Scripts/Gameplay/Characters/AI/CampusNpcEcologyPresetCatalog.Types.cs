@@ -73,6 +73,7 @@ namespace NtingCampus.Gameplay.Characters
         {
             public string Id = string.Empty;
             public string ActionId = string.Empty;
+            public string[] ActionChainIds = Array.Empty<string>();
             public string TargetKind = string.Empty;
             public string RoomType = string.Empty;
             public string[] FacilityTypes = Array.Empty<string>();
@@ -80,6 +81,7 @@ namespace NtingCampus.Gameplay.Characters
             public string SourceLocation = string.Empty;
             public string SourceContainerPrefix = string.Empty;
             public string DefinitionId = string.Empty;
+            public int Priority = 0;
             public float StopDistance = 0.18f;
             public string[] Requirements = Array.Empty<string>();
         }
@@ -143,6 +145,7 @@ namespace NtingCampus.Gameplay.Characters
         {
             public string Id = string.Empty;
             public string ActionId = string.Empty;
+            public string[] ActionChainIds = Array.Empty<string>();
             public CampusNpcEcologyTargetKind TargetKind = CampusNpcEcologyTargetKind.None;
             public CampusRoomType RoomType = CampusRoomType.Unknown;
             public CampusFacilityType[] FacilityTypes = Array.Empty<CampusFacilityType>();
@@ -150,6 +153,7 @@ namespace NtingCampus.Gameplay.Characters
             public string SourceLocation = string.Empty;
             public string SourceContainerPrefix = string.Empty;
             public string DefinitionId = string.Empty;
+            public int Priority;
             public float StopDistance = 0.18f;
             public string[] RequirementIds = Array.Empty<string>();
         }

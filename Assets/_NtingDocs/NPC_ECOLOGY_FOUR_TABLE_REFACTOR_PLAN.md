@@ -5,7 +5,7 @@
 NPC routine ecology must be readable from four explicit mod-facing tables:
 
 - `ActionCatalog`: the only source of canonical `ActionId` definitions.
-- `ActionTargetRules`: the only source of target, room, facility, distance, and availability matching rules.
+- `ActionTargetRules`: the only source of target, room, facility, distance, chain scoping, and availability matching rules.
 - `ActionChains`: ordered action sequences that reference `ActionId` values only.
 - `NpcDecisionProfiles`: subjective NPC schedule and preference entries that choose action chains.
 
@@ -14,7 +14,7 @@ The rewrite intentionally drops the old `FacilityGroups`, `ActionSteps`, and `Sc
 ## Ownership Boundaries
 
 - `ActionCatalog` owns action meaning and execution mode.
-- `ActionTargetRules` owns where an action can happen and what facts must be true before it is offered.
+- `ActionTargetRules` owns where an action can happen, which action chains may use that target rule, and what facts must be true before it is offered.
 - `ActionChains` owns sequence only. It must not define targets, payloads, or role conditions.
 - `NpcDecisionProfiles` owns NPC subjective choice inputs: role, character ids, duties, traits, time windows, intent labels, scores, and selected chain ids.
 
@@ -47,6 +47,10 @@ Global systems still provide facts, target queries, validation, and execution on
 - Every `ActionChains.ActionIds` entry must reference `ActionCatalog`.
 - Every `NpcDecisionProfiles.Entries.ActionChainId` must reference `ActionChains`.
 - Every action that can be selected by NPC ecology must have at least one matching `ActionTargetRules` row.
-- Every `ActionTargetRules.ActionId`, when present, must reference `ActionCatalog`.
+- Every `ActionTargetRules.ActionId` is required and must reference `ActionCatalog`.
+- Every `ActionTargetRules.ActionChainIds` entry, when present, must reference `ActionChains`.
+- Target kinds that resolve a facility must define explicit `FacilityTypes` on their own target rule.
 - Every requirement id must be known to `CampusNpcActionRequirementCatalog`.
+- Duplicate table ids are invalid and must be reported instead of overwriting earlier rows.
+- Unknown enum names are invalid and must be reported instead of being treated as defaults.
 - Old table names are not accepted as active gameplay data.

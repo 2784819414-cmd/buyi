@@ -1,6 +1,3 @@
-using System;
-using NtingCampus.Gameplay.Rooms;
-
 namespace NtingCampus.Gameplay.Characters
 {
     internal static partial class CampusNpcEcologyPresetCatalog
@@ -11,19 +8,6 @@ namespace NtingCampus.Gameplay.Characters
         private static EcologyPresetData cachedData;
 
         public static bool EnableSelectionDebug => Data.EnableSelectionDebug;
-
-        public static CampusFacilityType[] GetFacilityGroup(string groupId)
-        {
-            string normalizedId = NormalizeId(groupId);
-            if (string.IsNullOrEmpty(normalizedId))
-            {
-                return Array.Empty<CampusFacilityType>();
-            }
-
-            return Data.ActionTargetRules.TryGetValue(normalizedId, out ActionTargetRuleRecord targetRule)
-                ? targetRule.FacilityTypes
-                : Array.Empty<CampusFacilityType>();
-        }
 
         private static EcologyPresetData Data
         {

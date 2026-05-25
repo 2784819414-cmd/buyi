@@ -8,8 +8,12 @@ namespace NtingCampus.Gameplay.Characters
 {
     internal static partial class CampusNpcEcologyPresetCatalog
     {
-        private static CampusFacilityType[] ParseFacilityTypes(string[] values)
+        private static CampusFacilityType[] ParseFacilityTypes(
+            string[] values,
+            string ownerLabel,
+            out bool hasInvalidValue)
         {
+            hasInvalidValue = false;
             List<CampusFacilityType> result = new List<CampusFacilityType>();
             if (values == null)
             {
@@ -21,14 +25,22 @@ namespace NtingCampus.Gameplay.Characters
                 if (TryParseFacilityType(values[i], out CampusFacilityType facilityType))
                 {
                     result.Add(facilityType);
+                    continue;
                 }
+
+                hasInvalidValue = true;
+                Debug.LogWarning("[CampusNpcEcologyPresetCatalog] " + ownerLabel + " has unknown FacilityType '" + values[i] + "'.");
             }
 
             return result.ToArray();
         }
 
-        private static CampusTimeSegment[] ParseSegments(string[] values)
+        private static CampusTimeSegment[] ParseSegments(
+            string[] values,
+            string ownerLabel,
+            out bool hasInvalidValue)
         {
+            hasInvalidValue = false;
             List<CampusTimeSegment> result = new List<CampusTimeSegment>();
             if (values == null)
             {
@@ -40,14 +52,22 @@ namespace NtingCampus.Gameplay.Characters
                 if (Enum.TryParse(values[i], true, out CampusTimeSegment segment))
                 {
                     result.Add(segment);
+                    continue;
                 }
+
+                hasInvalidValue = true;
+                Debug.LogWarning("[CampusNpcEcologyPresetCatalog] " + ownerLabel + " has unknown Segment '" + values[i] + "'.");
             }
 
             return result.ToArray();
         }
 
-        private static CampusNpcEcologyScheduleWindow[] ParseScheduleWindows(string[] values)
+        private static CampusNpcEcologyScheduleWindow[] ParseScheduleWindows(
+            string[] values,
+            string ownerLabel,
+            out bool hasInvalidValue)
         {
+            hasInvalidValue = false;
             List<CampusNpcEcologyScheduleWindow> result = new List<CampusNpcEcologyScheduleWindow>();
             if (values == null)
             {
@@ -59,7 +79,11 @@ namespace NtingCampus.Gameplay.Characters
                 if (Enum.TryParse(values[i], true, out CampusNpcEcologyScheduleWindow scheduleWindow))
                 {
                     result.Add(scheduleWindow);
+                    continue;
                 }
+
+                hasInvalidValue = true;
+                Debug.LogWarning("[CampusNpcEcologyPresetCatalog] " + ownerLabel + " has unknown ScheduleWindow '" + values[i] + "'.");
             }
 
             return result.ToArray();
@@ -70,8 +94,12 @@ namespace NtingCampus.Gameplay.Characters
             return NormalizeIds(values);
         }
 
-        private static CampusTeacherDuty ParseTeacherDutyMask(string[] values)
+        private static CampusTeacherDuty ParseTeacherDutyMask(
+            string[] values,
+            string ownerLabel,
+            out bool hasInvalidValue)
         {
+            hasInvalidValue = false;
             CampusTeacherDuty mask = CampusTeacherDuty.None;
             if (values == null)
             {
@@ -83,14 +111,22 @@ namespace NtingCampus.Gameplay.Characters
                 if (Enum.TryParse(values[i], true, out CampusTeacherDuty duty))
                 {
                     mask |= duty;
+                    continue;
                 }
+
+                hasInvalidValue = true;
+                Debug.LogWarning("[CampusNpcEcologyPresetCatalog] " + ownerLabel + " has unknown TeacherDuty '" + values[i] + "'.");
             }
 
             return mask;
         }
 
-        private static CampusStaffDuty ParseStaffDutyMask(string[] values)
+        private static CampusStaffDuty ParseStaffDutyMask(
+            string[] values,
+            string ownerLabel,
+            out bool hasInvalidValue)
         {
+            hasInvalidValue = false;
             CampusStaffDuty mask = CampusStaffDuty.None;
             if (values == null)
             {
@@ -102,14 +138,22 @@ namespace NtingCampus.Gameplay.Characters
                 if (Enum.TryParse(values[i], true, out CampusStaffDuty duty))
                 {
                     mask |= duty;
+                    continue;
                 }
+
+                hasInvalidValue = true;
+                Debug.LogWarning("[CampusNpcEcologyPresetCatalog] " + ownerLabel + " has unknown StaffDuty '" + values[i] + "'.");
             }
 
             return mask;
         }
 
-        private static CampusCharacterTrait[] ParseTraits(string[] values)
+        private static CampusCharacterTrait[] ParseTraits(
+            string[] values,
+            string ownerLabel,
+            out bool hasInvalidValue)
         {
+            hasInvalidValue = false;
             List<CampusCharacterTrait> result = new List<CampusCharacterTrait>();
             if (values == null)
             {
@@ -121,17 +165,22 @@ namespace NtingCampus.Gameplay.Characters
                 if (Enum.TryParse(values[i], true, out CampusCharacterTrait trait))
                 {
                     result.Add(trait);
+                    continue;
                 }
+
+                hasInvalidValue = true;
+                Debug.LogWarning("[CampusNpcEcologyPresetCatalog] " + ownerLabel + " has unknown Trait '" + values[i] + "'.");
             }
 
             return result.ToArray();
         }
 
-        private static CampusRoomType ParseRoomType(string value)
+        private static bool TryParseOptionalRoomType(string value, out CampusRoomType roomType)
         {
-            return Enum.TryParse(value, true, out CampusRoomType roomType)
-                ? roomType
-                : CampusRoomType.Unknown;
+            roomType = CampusRoomType.Unknown;
+            string normalized = NormalizeId(value);
+            return string.IsNullOrEmpty(normalized) ||
+                   Enum.TryParse(normalized, true, out roomType);
         }
 
         private static bool TryParseRole(string value, out CampusCharacterRole role)
@@ -154,11 +203,14 @@ namespace NtingCampus.Gameplay.Characters
             return Enum.TryParse(value, true, out actionMode);
         }
 
-        private static CampusNpcEcologyActionRepeatPolicy ParseRepeatPolicy(string value)
+        private static bool TryParseRepeatPolicy(
+            string value,
+            out CampusNpcEcologyActionRepeatPolicy repeatPolicy)
         {
-            return Enum.TryParse(value, true, out CampusNpcEcologyActionRepeatPolicy repeatPolicy)
-                ? repeatPolicy
-                : CampusNpcEcologyActionRepeatPolicy.Always;
+            repeatPolicy = CampusNpcEcologyActionRepeatPolicy.Always;
+            string normalized = NormalizeId(value);
+            return string.IsNullOrEmpty(normalized) ||
+                   Enum.TryParse(normalized, true, out repeatPolicy);
         }
 
         private static bool TryParseFacilityType(string value, out CampusFacilityType facilityType)

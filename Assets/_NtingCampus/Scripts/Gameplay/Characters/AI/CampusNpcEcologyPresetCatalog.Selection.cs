@@ -235,7 +235,7 @@ namespace NtingCampus.Gameplay.Characters
             ActionRecord action,
             out CampusNpcActionOpportunity opportunity)
         {
-            if (TryBuildOpportunity(npc, entry, action, out opportunity))
+            if (TryBuildOpportunity(npc, entry, actionChain, action, out opportunity))
             {
                 bool advancesChain = opportunity.Action != null &&
                                      (opportunity.Action.Kind != CampusCharacterActionKind.NoOp ||

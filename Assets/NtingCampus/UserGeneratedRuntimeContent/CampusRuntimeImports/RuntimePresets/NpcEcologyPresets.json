@@ -49,44 +49,16 @@
   ],
   "ActionTargetRules": [
     {
-      "Id": "student_desks",
-      "TargetKind": "StudentDesk",
-      "FacilityTypes": [ "StudentDesk" ]
-    },
-    {
-      "Id": "podiums",
-      "TargetKind": "TeacherPodium",
-      "FacilityTypes": [ "Podium", "Blackboard" ]
-    },
-    {
-      "Id": "office_desks",
-      "TargetKind": "OfficeDesk",
-      "FacilityTypes": [ "OfficeDesk", "Desk" ]
-    },
-    {
-      "Id": "workstations",
-      "TargetKind": "PrimaryWorkstation",
-      "FacilityTypes": [ "OfficeDesk", "Desk", "Storage" ]
-    },
-    {
-      "Id": "service_windows",
-      "TargetKind": "ServiceStation",
-      "FacilityTypes": [ "ServiceWindow" ]
-    },
-    {
-      "Id": "worker_stands",
-      "TargetKind": "PrimaryWorkstation",
-      "FacilityTypes": [ "WorkerStandPoint" ]
-    },
-    {
       "Id": "attend_student_desk_target",
       "ActionId": "campus.npc.attend_student_desk",
       "TargetKind": "StudentDesk",
+      "FacilityTypes": [ "StudentDesk" ],
       "StopDistance": 0.16
     },
     {
       "Id": "order_meal_service_window_target",
       "ActionId": "campus.facility.service_window.use",
+      "ActionChainIds": [ "eat_canteen_meal" ],
       "TargetKind": "ServiceStation",
       "RoomType": "ServiceArea",
       "StopDistance": 0.18,
@@ -95,6 +67,7 @@
     {
       "Id": "pickup_own_served_canteen_item_target",
       "ActionId": "campus.storage.pickup",
+      "ActionChainIds": [ "eat_canteen_meal", "pickup_served_canteen_meal" ],
       "TargetKind": "DroppedStorageItem",
       "Owner": "Self",
       "SourceLocation": "canteen_window",
@@ -125,23 +98,27 @@
       "Id": "teach_at_podium_target",
       "ActionId": "campus.npc.teach_at_podium",
       "TargetKind": "TeacherPodium",
+      "FacilityTypes": [ "Podium", "Blackboard" ],
       "StopDistance": 0.18
     },
     {
       "Id": "return_to_office_desk_target",
       "ActionId": "campus.npc.return_to_office_desk",
       "TargetKind": "OfficeDesk",
+      "FacilityTypes": [ "OfficeDesk", "Desk" ],
       "StopDistance": 0.18
     },
     {
       "Id": "attend_primary_workstation_target",
       "ActionId": "campus.npc.attend_primary_workstation",
       "TargetKind": "PrimaryWorkstation",
+      "FacilityTypes": [ "WorkerStandPoint" ],
       "StopDistance": 0.16
     },
     {
       "Id": "retail_shelf_goods_target",
       "ActionId": "campus.retail.shelf.pick_one",
+      "ActionChainIds": [ "buy_retail_goods" ],
       "TargetKind": "RoomFacility",
       "RoomType": "RetailArea",
       "FacilityTypes": [ "GoodsShelf" ],
@@ -150,6 +127,7 @@
     {
       "Id": "retail_checkout_target",
       "ActionId": "campus.retail.checkout",
+      "ActionChainIds": [ "buy_retail_goods" ],
       "TargetKind": "RoomFacility",
       "RoomType": "RetailArea",
       "FacilityTypes": [ "CheckoutPoint" ],
