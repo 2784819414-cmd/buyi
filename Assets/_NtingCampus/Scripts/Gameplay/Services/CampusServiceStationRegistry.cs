@@ -262,7 +262,8 @@ namespace NtingCampus.Gameplay.Services
                 CampusCharacterRuntime runtime = runtimes[i];
                 CampusCharacterAssignmentData assignments =
                     runtime != null && runtime.Data != null ? runtime.Data.Assignments : null;
-                if (assignments == null ||
+                if (!IsRuntimePresent(runtime) ||
+                    assignments == null ||
                     !TryResolveById(assignments.ServiceStationId, out CampusServiceStation station) ||
                     !IsAssignedOperator(assignments, station) ||
                     !IsRuntimeAtOperatorTarget(runtime, station))
@@ -274,6 +275,14 @@ namespace NtingCampus.Gameplay.Services
                     GetOrCreateOperatorList(station.StationId);
                 operators.Add(runtime);
             }
+        }
+
+        private static bool IsRuntimePresent(CampusCharacterRuntime runtime)
+        {
+            return runtime != null &&
+                   runtime.isActiveAndEnabled &&
+                   runtime.gameObject.activeInHierarchy &&
+                   runtime.Data != null;
         }
 
         private void ClearOperatorPresence()

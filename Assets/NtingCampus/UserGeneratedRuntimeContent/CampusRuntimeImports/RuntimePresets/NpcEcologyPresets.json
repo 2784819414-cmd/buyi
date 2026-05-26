@@ -255,6 +255,22 @@
       ]
     },
     {
+      "Id": "retail_cashier_staff",
+      "Role": "Staff",
+      "CharacterIds": [ "staff_retail_cashier_1" ],
+      "StaffDuties": [ "SupportStaff" ],
+      "Entries": [
+        {
+          "Id": "retail_cashier_station_duty",
+          "ScheduleWindows": [ "Always" ],
+          "IntentKind": "AttendPrimaryWorkstation",
+          "IntentLabel": "CheckoutDuty",
+          "ActionChainId": "attend_primary_workstation",
+          "Score": 70
+        }
+      ]
+    },
+    {
       "Id": "canteen_support_staff",
       "Role": "Staff",
       "StaffDuties": [ "SupportStaff" ],

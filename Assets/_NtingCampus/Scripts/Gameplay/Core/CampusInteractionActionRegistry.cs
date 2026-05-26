@@ -110,7 +110,43 @@ namespace NtingCampus.Gameplay.Core
                 actionId,
                 payload,
                 actor);
+            return TryResolvePrompt(context, out prompt);
+        }
 
+        public static bool TryResolvePrompt(
+            CampusInteractionAnchor anchor,
+            string actionId,
+            string payload,
+            GameObject actor,
+            out string prompt)
+        {
+            prompt = string.Empty;
+            if (anchor == null || string.IsNullOrWhiteSpace(actionId))
+            {
+                return false;
+            }
+
+            Component directTarget = anchor.InteractionTarget as Component;
+            CampusInteractionActionContext context = new CampusInteractionActionContext(
+                null,
+                anchor,
+                actionId,
+                payload,
+                actor,
+                directTarget,
+                ResolveSourceObject(anchor));
+            return TryResolvePrompt(context, out prompt);
+        }
+
+        private static bool TryResolvePrompt(CampusInteractionActionContext context, out string prompt)
+        {
+            prompt = string.Empty;
+            if (string.IsNullOrWhiteSpace(context.ActionId))
+            {
+                return false;
+            }
+
+            EnsureBuiltInsRegistered();
             for (int i = 0; i < Providers.Count; i++)
             {
                 if (Providers[i] is ICampusInteractionPromptOverrideProvider promptProvider &&

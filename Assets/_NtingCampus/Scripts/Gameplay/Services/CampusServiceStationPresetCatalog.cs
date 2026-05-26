@@ -77,18 +77,21 @@ namespace NtingCampus.Gameplay.Services
                 CampusServiceStationAvailabilityMode.Always,
                 Array.Empty<string>(),
                 CampusServiceStationSlotRoleIds.Operator,
-                0.85f);
+                0.85f,
+                default);
 
         public readonly CampusServiceStationAvailabilityMode Mode;
         public readonly string[] ScheduleWindows;
         public readonly string OperatorSlotRoleId;
         public readonly float OperatorActivationRadius;
+        public readonly CampusLocalizedText UnavailableText;
 
         public CampusServiceStationAvailabilityDefinition(
             CampusServiceStationAvailabilityMode mode,
             string[] scheduleWindows,
             string operatorSlotRoleId,
-            float operatorActivationRadius)
+            float operatorActivationRadius,
+            CampusLocalizedText unavailableText)
         {
             Mode = mode;
             ScheduleWindows = NormalizeIds(scheduleWindows);
@@ -96,6 +99,7 @@ namespace NtingCampus.Gameplay.Services
                 ? CampusServiceStationSlotRoleIds.Operator
                 : operatorSlotRoleId.Trim();
             OperatorActivationRadius = Mathf.Max(0.05f, operatorActivationRadius);
+            UnavailableText = unavailableText;
         }
 
         private static string[] NormalizeIds(string[] values)
@@ -324,7 +328,8 @@ namespace NtingCampus.Gameplay.Services
                 mode,
                 record.ScheduleWindows,
                 record.OperatorSlotRoleId,
-                record.OperatorActivationRadius);
+                record.OperatorActivationRadius,
+                record.UnavailableText);
         }
 
         private static CampusServiceStationSlotDefinition BuildSlot(ServiceStationSlotPresetRecord record)
@@ -416,6 +421,7 @@ namespace NtingCampus.Gameplay.Services
             public string[] ScheduleWindows = Array.Empty<string>();
             public string OperatorSlotRoleId = string.Empty;
             public float OperatorActivationRadius = 0.85f;
+            public CampusLocalizedText UnavailableText = default;
         }
 
         [Serializable]

@@ -1,6 +1,8 @@
 using NtingCampus.Gameplay.Characters;
 using NtingCampus.Gameplay.Core;
 using NtingCampus.Gameplay.Rooms;
+using NtingCampusMapEditor;
+using UnityEngine;
 
 namespace NtingCampus.Gameplay.Services
 {
@@ -45,6 +47,62 @@ namespace NtingCampus.Gameplay.Services
                 default:
                     return false;
             }
+        }
+
+        public static bool TryRequireActionSourceAvailable(
+            string actionId,
+            Object source,
+            out string unavailableMessage)
+        {
+            unavailableMessage = string.Empty;
+            if (!TryResolveActionStation(actionId, source, out CampusServiceStation station))
+            {
+                unavailableMessage = CampusServiceStationRuntimeTextCatalog.Get(
+                    CampusServiceStationRuntimeTextId.StationMissing);
+                return false;
+            }
+
+            if (CanServeNow(station))
+            {
+                return true;
+            }
+
+            unavailableMessage = ResolveUnavailableMessage(station);
+            return false;
+        }
+
+        public static bool TryResolveActionStation(
+            string actionId,
+            Object source,
+            out CampusServiceStation station)
+        {
+            station = default;
+            if (string.IsNullOrWhiteSpace(actionId) ||
+                !TryResolvePlacedObject(source, out CampusPlacedObject placedObject))
+            {
+                return false;
+            }
+
+            CampusGameBootstrap bootstrap = CampusGameBootstrap.Instance;
+            CampusWorldService worldService = bootstrap != null ? bootstrap.WorldService : null;
+            return worldService != null &&
+                   worldService.ServiceStations.TryResolveByPlacedObject(
+                       worldService,
+                       placedObject,
+                       out station) &&
+                   CampusInteractionActionIds.Equals(station.InteractionActionId, actionId);
+        }
+
+        public static string ResolveUnavailableMessage(CampusServiceStation station)
+        {
+            var text = station.Availability != null
+                ? station.Availability.UnavailableText
+                : default;
+            return text.HasAnyText
+                ? text.Current(CampusServiceStationRuntimeTextCatalog.Get(
+                    CampusServiceStationRuntimeTextId.StationUnavailable))
+                : CampusServiceStationRuntimeTextCatalog.Get(
+                    CampusServiceStationRuntimeTextId.StationUnavailable);
         }
 
         private static bool MatchesScheduleWindows(
@@ -115,6 +173,34 @@ namespace NtingCampus.Gameplay.Services
             if (string.Equals(scheduleWindowId, "StaffOffDuty", System.StringComparison.OrdinalIgnoreCase))
             {
                 return CampusNpcScheduleFacts.IsStaffOffDuty(segment);
+            }
+
+            return false;
+        }
+
+        private static bool TryResolvePlacedObject(
+            Object source,
+            out CampusPlacedObject placedObject)
+        {
+            placedObject = null;
+            if (source is CampusPlacedObject direct)
+            {
+                placedObject = direct;
+                return true;
+            }
+
+            if (source is Component component)
+            {
+                placedObject = component.GetComponent<CampusPlacedObject>() ??
+                               component.GetComponentInParent<CampusPlacedObject>();
+                return placedObject != null;
+            }
+
+            if (source is GameObject gameObject)
+            {
+                placedObject = gameObject.GetComponent<CampusPlacedObject>() ??
+                               gameObject.GetComponentInParent<CampusPlacedObject>();
+                return placedObject != null;
             }
 
             return false;

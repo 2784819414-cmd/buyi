@@ -55,4 +55,33 @@ namespace NtingCampus.Gameplay.Services
             return string.Format(Get(id), args);
         }
     }
+
+    internal enum CampusServiceStationRuntimeTextId
+    {
+        StationUnavailable = 0,
+        StationMissing = 1
+    }
+
+    internal static class CampusServiceStationRuntimeTextCatalog
+    {
+        private static readonly Dictionary<CampusServiceStationRuntimeTextId, Entry> Entries = new()
+        {
+            {
+                CampusServiceStationRuntimeTextId.StationUnavailable,
+                new Entry("\u670d\u52a1\u70b9\u6682\u65f6\u4e0d\u53ef\u7528\u3002", "This service station is not available right now.")
+            },
+            {
+                CampusServiceStationRuntimeTextId.StationMissing,
+                new Entry("\u670d\u52a1\u70b9\u6682\u65f6\u4e0d\u53ef\u7528\u3002", "This service station is not available right now.")
+            }
+        };
+
+        public static string Get(CampusServiceStationRuntimeTextId id)
+        {
+            Entry entry = Entries.TryGetValue(id, out Entry resolved)
+                ? resolved
+                : new Entry(id.ToString(), id.ToString());
+            return entry.Get(CampusLanguageState.CurrentLanguage);
+        }
+    }
 }

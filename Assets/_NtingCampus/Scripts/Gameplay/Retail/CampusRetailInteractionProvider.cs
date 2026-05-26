@@ -1,5 +1,6 @@
 using NtingCampus.Gameplay.Characters;
 using NtingCampus.Gameplay.Core;
+using NtingCampus.Gameplay.Services;
 using UnityEngine;
 
 namespace NtingCampus.Gameplay.Retail
@@ -27,6 +28,15 @@ namespace NtingCampus.Gameplay.Retail
                 return false;
             }
 
+            if (!CampusServiceStationRuntimeAvailability.TryRequireActionSourceAvailable(
+                    context.ActionId,
+                    context.SourceObject,
+                    out message))
+            {
+                WriteInteractionLog(message);
+                return false;
+            }
+
             bool succeeded = CampusRetailService.TryCheckoutActor(actor, context.SourceObject, out message);
             if (!succeeded)
             {
@@ -42,6 +52,14 @@ namespace NtingCampus.Gameplay.Retail
             if (!CampusCharacterActionUtility.IdEquals(context.ActionId, CampusRetailActionIds.Checkout))
             {
                 return false;
+            }
+
+            if (!CampusServiceStationRuntimeAvailability.TryRequireActionSourceAvailable(
+                    context.ActionId,
+                    context.SourceObject,
+                    out prompt))
+            {
+                return true;
             }
 
             prompt = CampusRetailTextCatalog.Get(CampusRetailTextId.CheckoutPrompt);

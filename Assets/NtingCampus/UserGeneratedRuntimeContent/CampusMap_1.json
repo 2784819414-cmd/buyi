@@ -1,7 +1,7 @@
 ﻿{
     "Schema": "NtingCampusRuntimeMapEditor.v1",
     "MapName": "校园地图根节点",
-    "ExportedAtLocal": "2026-05-26 17:12:47",
+    "ExportedAtLocal": "2026-05-26 17:44:19",
     "SortingOrderStepPerFloor": 1000,
     "SelectedFloorIndex": 1,
     "HasRoomDefinitions": true,
@@ -46867,7 +46867,7 @@
                     "Rotation90": 0,
                     "BlocksMovement": false,
                     "BlocksSight": false,
-                    "IsInteractable": false,
+                    "IsInteractable": true,
                     "IsStorageContainer": false,
                     "StorageSize": {
                         "x": 4,
@@ -46976,7 +46976,7 @@
                     "Rotation90": 0,
                     "BlocksMovement": false,
                     "BlocksSight": false,
-                    "IsInteractable": false,
+                    "IsInteractable": true,
                     "IsStorageContainer": false,
                     "StorageSize": {
                         "x": 4,
@@ -47412,7 +47412,7 @@
                     "Rotation90": 1,
                     "BlocksMovement": false,
                     "BlocksSight": false,
-                    "IsInteractable": false,
+                    "IsInteractable": true,
                     "IsStorageContainer": false,
                     "StorageSize": {
                         "x": 4,

@@ -40,37 +40,22 @@ namespace NtingCampusMapEditor
 
         public bool TryGetInteractionPrompt(GameObject actor, out CampusInteractionPromptData prompt)
         {
+            if (TryCreateActionPrompt(actor, out prompt))
+            {
+                return true;
+            }
+
             if (InteractionTarget is ICampusInteractionPromptProvider targetPromptProvider &&
                 !ReferenceEquals(targetPromptProvider, this) &&
                 targetPromptProvider.TryGetInteractionPrompt(actor, out prompt))
             {
-                if (prompt.Anchor == null)
-                {
-                    prompt.Anchor = PromptAnchor != null ? PromptAnchor : transform;
-                }
-
-                if (string.IsNullOrWhiteSpace(prompt.KeyText))
-                {
-                    prompt.KeyText = KeyOverride;
-                }
-
-                if (prompt.Icon == null)
-                {
-                    prompt.Icon = Icon;
-                }
+                ApplyPromptSurface(ref prompt, false);
 
                 return true;
             }
 
-            prompt = CampusInteractionPromptData.Create(ResolvePromptText());
-            prompt.KeyText = KeyOverride;
-            prompt.Icon = Icon;
-            prompt.Anchor = PromptAnchor != null ? PromptAnchor : transform;
-            prompt.WorldOffset = Vector3.zero;
-            prompt.AccentColor = AccentColor;
-            prompt.Priority = Priority;
-            prompt.IsAvailable = IsAvailable;
-            prompt.UnavailableText = ResolveUnavailableText();
+            prompt = CampusInteractionPromptData.Create(ResolvePromptText(actor));
+            ApplyPromptSurface(ref prompt, true);
             return IsAvailable || !HideWhenUnavailable;
         }
 
@@ -118,7 +103,7 @@ namespace NtingCampusMapEditor
                 ? LocalizedInteractionLogMessage.Current(InteractionLogMessage)
                 : !string.IsNullOrWhiteSpace(InteractionLogMessage)
                 ? InteractionLogMessage
-                : ResolvePromptText();
+                : ResolvePromptText(actor);
             Debug.Log(message, this);
         }
 
@@ -132,7 +117,53 @@ namespace NtingCampusMapEditor
             return CampusGameplayActionService.TryExecuteInteraction(this, actor);
         }
 
-        private string ResolvePromptText()
+        private bool TryCreateActionPrompt(GameObject actor, out CampusInteractionPromptData prompt)
+        {
+            prompt = default;
+            if (string.IsNullOrWhiteSpace(ActionId) ||
+                !CampusInteractionActionRegistry.TryResolvePrompt(
+                    this,
+                    ActionId,
+                    Payload,
+                    actor,
+                    out string providerPrompt))
+            {
+                return false;
+            }
+
+            prompt = CampusInteractionPromptData.Create(providerPrompt);
+            ApplyPromptSurface(ref prompt, true);
+            return IsAvailable || !HideWhenUnavailable;
+        }
+
+        private void ApplyPromptSurface(ref CampusInteractionPromptData prompt, bool applyAnchorAvailability)
+        {
+            if (prompt.Anchor == null)
+            {
+                prompt.Anchor = PromptAnchor != null ? PromptAnchor : transform;
+            }
+
+            if (string.IsNullOrWhiteSpace(prompt.KeyText))
+            {
+                prompt.KeyText = KeyOverride;
+            }
+
+            if (prompt.Icon == null)
+            {
+                prompt.Icon = Icon;
+            }
+
+            prompt.WorldOffset = Vector3.zero;
+            prompt.AccentColor = AccentColor;
+            prompt.Priority = Priority;
+            if (applyAnchorAvailability)
+            {
+                prompt.IsAvailable = IsAvailable;
+                prompt.UnavailableText = ResolveUnavailableText();
+            }
+        }
+
+        private string ResolvePromptText(GameObject actor)
         {
             if (UseTargetDoorStatePrompt &&
                 InteractionTarget is Component targetComponent &&
@@ -141,6 +172,16 @@ namespace NtingCampusMapEditor
                 return CampusInteractionTextCatalog.Get(isOpen
                     ? CampusInteractionTextId.CloseDoor
                     : CampusInteractionTextId.OpenDoor);
+            }
+
+            if (CampusInteractionActionRegistry.TryResolvePrompt(
+                    this,
+                    ActionId,
+                    Payload,
+                    actor,
+                    out string providerPrompt))
+            {
+                return providerPrompt;
             }
 
             if (LocalizedPromptText.HasAnyText)
