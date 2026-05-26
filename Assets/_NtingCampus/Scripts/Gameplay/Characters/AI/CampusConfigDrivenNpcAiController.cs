@@ -57,7 +57,7 @@ namespace NtingCampus.Gameplay.Characters
                 return scheduledIntent;
             }
 
-            return CampusNpcIntentActions.Common(npc, "Fallback");
+            return CampusNpcIntent.Idle("NoScheduledConfigIntent");
         }
 
         public string BuildInteractiveLine()

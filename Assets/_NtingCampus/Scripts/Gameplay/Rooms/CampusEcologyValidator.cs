@@ -34,7 +34,10 @@ namespace NtingCampus.Gameplay.Rooms
             List<ValidationIssue> issues = new List<ValidationIssue>();
             if (facts == null)
             {
-                issues.Add(new ValidationIssue(Severity.Error, string.Empty, "World facts are missing."));
+                issues.Add(new ValidationIssue(
+                    Severity.Error,
+                    string.Empty,
+                    CampusEcologyValidationTextCatalog.Get(CampusEcologyValidationTextId.WorldFactsMissing)));
                 return issues;
             }
 
@@ -49,7 +52,7 @@ namespace NtingCampus.Gameplay.Rooms
         {
             if (issues == null || issues.Count == 0)
             {
-                Debug.Log("[Ecology] Validation passed.");
+                Debug.Log(CampusEcologyValidationTextCatalog.Get(CampusEcologyValidationTextId.ValidationPassedLog));
                 return;
             }
 
@@ -82,17 +85,32 @@ namespace NtingCampus.Gameplay.Rooms
 
             if (hasStudents || hasTeachers)
             {
-                RequireRoom(facts, issues, CampusRoomType.Classroom, true, "Characters with class duties need at least one classroom.");
+                RequireRoom(
+                    facts,
+                    issues,
+                    CampusRoomType.Classroom,
+                    true,
+                    CampusEcologyValidationTextCatalog.Get(CampusEcologyValidationTextId.ClassroomRequired));
             }
 
             if (hasTeachers || hasStaff)
             {
-                RequireRoom(facts, issues, CampusRoomType.Office, false, "Teachers and staff work better with at least one office room.");
+                RequireRoom(
+                    facts,
+                    issues,
+                    CampusRoomType.Office,
+                    false,
+                    CampusEcologyValidationTextCatalog.Get(CampusEcologyValidationTextId.OfficeRecommended));
             }
 
             if (hasStudents)
             {
-                RequireRoom(facts, issues, CampusRoomType.Dormitory, false, "Students have no dormitory fallback room.");
+                RequireRoom(
+                    facts,
+                    issues,
+                    CampusRoomType.Dormitory,
+                    false,
+                    CampusEcologyValidationTextCatalog.Get(CampusEcologyValidationTextId.DormitoryMissing));
             }
 
             if (facts.CountRooms(CampusRoomType.CommonActivityZone) == 0 &&
@@ -101,7 +119,7 @@ namespace NtingCampus.Gameplay.Rooms
                 issues.Add(new ValidationIssue(
                     Severity.Warning,
                     string.Empty,
-                    "NPC free movement needs a CommonActivityZone or Corridor fallback."));
+                    CampusEcologyValidationTextCatalog.Get(CampusEcologyValidationTextId.FreeMovementFallbackMissing)));
             }
         }
 
@@ -121,7 +139,7 @@ namespace NtingCampus.Gameplay.Rooms
                     issues.Add(new ValidationIssue(
                         Severity.Warning,
                         facility.FacilityId,
-                        "Facility type is Unknown and cannot be targeted reliably."));
+                        CampusEcologyValidationTextCatalog.Get(CampusEcologyValidationTextId.FacilityTypeUnknown)));
                 }
 
                 ValidateFacilityTypeSource(facility, issues);
@@ -131,7 +149,7 @@ namespace NtingCampus.Gameplay.Rooms
                     issues.Add(new ValidationIssue(
                         Severity.Warning,
                         facility.RoomId,
-                        "Facility is missing a stable facility id."));
+                        CampusEcologyValidationTextCatalog.Get(CampusEcologyValidationTextId.FacilityMissingId)));
                     continue;
                 }
 
@@ -140,7 +158,7 @@ namespace NtingCampus.Gameplay.Rooms
                     issues.Add(new ValidationIssue(
                         Severity.Error,
                         facility.FacilityId,
-                        "Duplicate facility id. Actor bindings may resolve to the wrong target."));
+                        CampusEcologyValidationTextCatalog.Get(CampusEcologyValidationTextId.FacilityDuplicateId)));
                 }
             }
 
@@ -224,7 +242,7 @@ namespace NtingCampus.Gameplay.Rooms
                     issues.Add(new ValidationIssue(
                         Severity.Error,
                         string.Empty,
-                        "Actor is missing a stable actor id."));
+                        CampusEcologyValidationTextCatalog.Get(CampusEcologyValidationTextId.ActorMissingId)));
                     continue;
                 }
 
@@ -233,7 +251,7 @@ namespace NtingCampus.Gameplay.Rooms
                     issues.Add(new ValidationIssue(
                         Severity.Error,
                         actor.ActorId,
-                        "Duplicate actor id."));
+                        CampusEcologyValidationTextCatalog.Get(CampusEcologyValidationTextId.ActorDuplicateId)));
                 }
             }
         }
@@ -308,8 +326,14 @@ namespace NtingCampus.Gameplay.Rooms
                 }
             }
 
-            ReportDuplicateOwners(issues, officeDeskOwners, "OfficeDeskId is assigned to multiple teachers.");
-            ReportDuplicateOwners(issues, serviceWindowOwners, "ServiceStationId is assigned to multiple support staff.");
+            ReportDuplicateOwners(
+                issues,
+                officeDeskOwners,
+                CampusEcologyValidationTextCatalog.Get(CampusEcologyValidationTextId.OfficeDeskDuplicateOwners));
+            ReportDuplicateOwners(
+                issues,
+                serviceWindowOwners,
+                CampusEcologyValidationTextCatalog.Get(CampusEcologyValidationTextId.ServiceStationDuplicateOwners));
         }
 
         private static void ValidateSupportStaffStations(CampusWorldFacts facts, List<ValidationIssue> issues)
@@ -346,7 +370,7 @@ namespace NtingCampus.Gameplay.Rooms
                 issues.Add(new ValidationIssue(
                     Severity.Warning,
                     CampusRoomType.ServiceArea.ToString(),
-                    "SupportStaff count exceeds operational service station count. Extra support staff will not receive a meal-duty station."));
+                    CampusEcologyValidationTextCatalog.Get(CampusEcologyValidationTextId.SupportStaffExceedsStations)));
             }
         }
 
@@ -556,7 +580,10 @@ namespace NtingCampus.Gameplay.Rooms
                 issues.Add(new ValidationIssue(
                     Severity.Error,
                     actorId,
-                    fieldName + " references a missing room: " + roomId + "."));
+                    CampusEcologyValidationTextCatalog.Format(
+                        CampusEcologyValidationTextId.RoomReferenceMissing,
+                        fieldName,
+                        roomId)));
             }
         }
 
@@ -578,7 +605,10 @@ namespace NtingCampus.Gameplay.Rooms
                 issues.Add(new ValidationIssue(
                     Severity.Error,
                     actorId,
-                    fieldName + " references a missing facility: " + facilityId + "."));
+                    CampusEcologyValidationTextCatalog.Format(
+                        CampusEcologyValidationTextId.FacilityReferenceMissing,
+                        fieldName,
+                        facilityId)));
                 return;
             }
 
@@ -598,7 +628,11 @@ namespace NtingCampus.Gameplay.Rooms
             issues.Add(new ValidationIssue(
                 Severity.Error,
                 actorId,
-                fieldName + " points to " + facility.FacilityType + ", expected " + string.Join("/", allowedTypes) + "."));
+                CampusEcologyValidationTextCatalog.Format(
+                    CampusEcologyValidationTextId.FacilityReferenceWrongType,
+                    fieldName,
+                    facility.FacilityType,
+                    string.Join("/", allowedTypes))));
         }
 
         private static void ValidateServiceStationReference(
@@ -675,7 +709,10 @@ namespace NtingCampus.Gameplay.Rooms
                 issues.Add(new ValidationIssue(
                     Severity.Error,
                     pair.Key,
-                    message + " Owners=" + string.Join(", ", pair.Value) + "."));
+                    CampusEcologyValidationTextCatalog.Format(
+                        CampusEcologyValidationTextId.DuplicateOwners,
+                        message,
+                        string.Join(", ", pair.Value))));
             }
         }
     }

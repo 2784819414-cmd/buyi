@@ -179,7 +179,9 @@ namespace NtingCampusMapEditor
             }
             catch (Exception exception)
             {
-                Debug.LogWarning("[CampusRuntimeGameplayActorPresetCatalog] Failed to load GameplayActorPresets.json: " + exception.Message);
+                CampusRuntimePresetLogTextCatalog.Warning(
+                    CampusRuntimePresetLogTextId.FailedToLoadGameplayActorPresets,
+                    exception.Message);
                 return BuiltInPresets;
             }
         }

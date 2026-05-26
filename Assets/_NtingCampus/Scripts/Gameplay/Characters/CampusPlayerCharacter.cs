@@ -1,4 +1,5 @@
 using UnityEngine;
+using NtingCampus.Gameplay.Core;
 
 namespace NtingCampus.Gameplay.Characters
 {
@@ -30,16 +31,13 @@ namespace NtingCampus.Gameplay.Characters
 
         public static CampusPlayerCharacter FindCurrent()
         {
-            CampusPlayerCharacter[] players = UnityEngine.Object.FindObjectsByType<CampusPlayerCharacter>(
-                FindObjectsInactive.Include,
-                FindObjectsSortMode.None);
-            for (int i = 0; i < players.Length; i++)
+            CampusRosterService rosterService =
+                CampusGameBootstrap.Instance != null ? CampusGameBootstrap.Instance.RosterService : null;
+            CampusCharacterRuntime runtime = rosterService != null ? rosterService.PlayerRuntime : null;
+            CampusPlayerCharacter player = runtime != null ? runtime.GetComponent<CampusPlayerCharacter>() : null;
+            if (player != null && player.IsCurrentPlayer)
             {
-                CampusPlayerCharacter player = players[i];
-                if (player != null && player.IsCurrentPlayer)
-                {
-                    return player;
-                }
+                return player;
             }
 
             return null;

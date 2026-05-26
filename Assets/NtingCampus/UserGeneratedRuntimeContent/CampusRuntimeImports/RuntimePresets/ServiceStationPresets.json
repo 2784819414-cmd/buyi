@@ -7,7 +7,13 @@
         "english": "Canteen Meal Window"
       },
       "InteractionActionId": "campus.facility.service_window.use",
-      "AvailabilityRuleId": "canteen_operator_present_meal_peak",
+      "AvailabilityRuleId": "requires_operator_meal_peak",
+      "Availability": {
+        "Mode": "RequiresAssignedOperator",
+        "ScheduleWindows": [ "MealPeak" ],
+        "OperatorSlotRoleId": "operator",
+        "OperatorActivationRadius": 0.85
+      },
       "AllowedRoomTypes": [ "ServiceArea" ],
       "OwnerFacilityTypes": [ "ServiceWindow" ],
       "Slots": [
@@ -53,6 +59,9 @@
       },
       "InteractionActionId": "campus.retail.checkout",
       "AvailabilityRuleId": "always_available",
+      "Availability": {
+        "Mode": "Always"
+      },
       "AllowedRoomTypes": [ "RetailArea" ],
       "OwnerFacilityTypes": [ "CheckoutPoint" ],
       "Slots": []

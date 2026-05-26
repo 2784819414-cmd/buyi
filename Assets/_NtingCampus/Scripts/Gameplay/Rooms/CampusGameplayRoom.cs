@@ -150,7 +150,7 @@ namespace NtingCampus.Gameplay.Rooms
         public IReadOnlyList<CampusGameplayRoomMarker> GameplayMarkers => gameplayMarkers;
         public IReadOnlyList<FacilityRecord> Facilities => facilities;
         public IReadOnlyList<CampusGameplayServiceStationRecord> ServiceStations => serviceStations;
-        public bool HasDisplayName => localizedDisplayName.HasAnyText || !string.IsNullOrWhiteSpace(sourceRoomName);
+        public bool HasDisplayName => localizedDisplayName.HasAnyText;
 
         public string GetDisplayName(CampusDisplayLanguage language)
         {
@@ -353,11 +353,6 @@ namespace NtingCampus.Gameplay.Rooms
                 return CampusRoomTextCatalog.Get(language, roomType);
             }
 
-            if (!string.IsNullOrWhiteSpace(sourceRoomName))
-            {
-                return sourceRoomName.Trim();
-            }
-
             return CampusRoomTextCatalog.Get(language, CampusRoomType.Unknown);
         }
 
@@ -379,7 +374,7 @@ namespace NtingCampus.Gameplay.Rooms
                 return ResolveCatalogPrimaryDisplayName();
             }
 
-            return string.IsNullOrWhiteSpace(sourceRoomName) ? string.Empty : sourceRoomName.Trim();
+            return string.Empty;
         }
     }
 }

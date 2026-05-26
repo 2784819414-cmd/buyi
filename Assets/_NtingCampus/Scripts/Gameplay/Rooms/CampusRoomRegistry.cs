@@ -38,7 +38,7 @@ namespace NtingCampus.Gameplay.Rooms
                 validationIssues.Add(new CampusRoomValidator.ValidationIssue(
                     CampusRoomValidator.Severity.Error,
                     string.Empty,
-                    "CampusMapRoot was not found."));
+                    CampusRoomValidationTextCatalog.Get(CampusRoomValidationTextId.MapRootMissing)));
                 MaybeLogValidationIssues();
                 return;
             }
@@ -51,8 +51,7 @@ namespace NtingCampus.Gameplay.Rooms
             CampusGameplayFacilityCollector.AssignFacilities(mapRoot, overlayLoader, FindRoomByCell);
             CampusGameplayServiceStationCollector.AssignServiceStations(
                 overlayLoader,
-                roomId => TryGetRoom(roomId, out CampusGameplayRoom room) ? room : null,
-                rooms);
+                roomId => TryGetRoom(roomId, out CampusGameplayRoom room) ? room : null);
             validationIssues.AddRange(CampusRoomValidator.Validate(rooms));
             ApplyValidationState();
             MaybeLogValidationIssues();
@@ -178,7 +177,9 @@ namespace NtingCampus.Gameplay.Rooms
 
         private void LogRegistrationSummary()
         {
-            Debug.Log("[Rooms] Registered " + rooms.Count + " rooms.");
+            Debug.Log(CampusRoomValidationTextCatalog.Format(
+                CampusRoomValidationTextId.RegistrationSummary,
+                rooms.Count));
             for (int i = 0; i < rooms.Count; i++)
             {
                 CampusGameplayRoom room = rooms[i];
@@ -187,14 +188,15 @@ namespace NtingCampus.Gameplay.Rooms
                     continue;
                 }
 
-                Debug.Log(
-                    "[Rooms][" + room.RoomId + "] " +
-                    room.RoomType +
-                    " markers=" + room.MarkerCount +
-                    " facilities=" + room.Facilities.Count +
-                    " valid=" + room.IsValid +
-                    " usable=" + room.IsUsableForGameplay +
-                    " summary=" + room.ValidationSummary);
+                Debug.Log(CampusRoomValidationTextCatalog.Format(
+                    CampusRoomValidationTextId.RoomRegistrationSummary,
+                    room.RoomId,
+                    room.RoomType,
+                    room.MarkerCount,
+                    room.Facilities.Count,
+                    room.IsValid,
+                    room.IsUsableForGameplay,
+                    room.ValidationSummary));
             }
         }
 

@@ -76,12 +76,16 @@ namespace NtingCampus.Gameplay.Characters
 
         private bool ObserveVisibleHeldEvidence(CampusNpcAiRuntime npc)
         {
-            if (npc == null || npc.RosterService == null || npc.RosterService.Runtimes == null)
+            if (npc == null || npc.RosterService == null || npc.Data == null)
             {
                 return false;
             }
 
-            IReadOnlyList<CampusCharacterRuntime> runtimes = npc.RosterService.Runtimes;
+            CampusNpcVisionProfile vision = npc.VisionProfile ?? new CampusNpcVisionProfile();
+            IReadOnlyList<CampusCharacterRuntime> runtimes =
+                npc.RosterService.Index.GetVisibleActorCandidates(
+                    npc.Data.CurrentRoomId,
+                    vision.RequireSameRoom);
             for (int i = 0; i < runtimes.Count; i++)
             {
                 CampusCharacterRuntime actorRuntime = runtimes[i];

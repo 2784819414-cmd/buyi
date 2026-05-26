@@ -146,7 +146,9 @@ namespace Nting.Storage
                 StorageItemModel item = CreateItem(memory.ItemRegistry, itemData);
                 if (item != null && !container.PlaceItem(item, itemData.X, itemData.Y))
                 {
-                    Debug.LogWarning("Storage memory load skipped item '" + item.DisplayName + "' because its saved position is invalid.");
+                    Debug.LogWarning(StorageTextCatalog.Format(
+                        StorageTextId.MemoryLoadSkippedInvalidPosition,
+                        item.DisplayName));
                 }
             }
         }

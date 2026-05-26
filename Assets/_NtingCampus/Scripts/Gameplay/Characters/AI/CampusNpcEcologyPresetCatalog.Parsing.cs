@@ -29,7 +29,11 @@ namespace NtingCampus.Gameplay.Characters
                 }
 
                 hasInvalidValue = true;
-                Debug.LogWarning("[CampusNpcEcologyPresetCatalog] " + ownerLabel + " has unknown FacilityType '" + values[i] + "'.");
+                CampusNpcEcologyPresetLogTextCatalog.Warning(
+                    CampusNpcEcologyPresetLogTextId.OwnerUnknownValue,
+                    ownerLabel,
+                    "FacilityType",
+                    values[i]);
             }
 
             return result.ToArray();
@@ -56,7 +60,11 @@ namespace NtingCampus.Gameplay.Characters
                 }
 
                 hasInvalidValue = true;
-                Debug.LogWarning("[CampusNpcEcologyPresetCatalog] " + ownerLabel + " has unknown Segment '" + values[i] + "'.");
+                CampusNpcEcologyPresetLogTextCatalog.Warning(
+                    CampusNpcEcologyPresetLogTextId.OwnerUnknownValue,
+                    ownerLabel,
+                    "Segment",
+                    values[i]);
             }
 
             return result.ToArray();
@@ -83,7 +91,11 @@ namespace NtingCampus.Gameplay.Characters
                 }
 
                 hasInvalidValue = true;
-                Debug.LogWarning("[CampusNpcEcologyPresetCatalog] " + ownerLabel + " has unknown ScheduleWindow '" + values[i] + "'.");
+                CampusNpcEcologyPresetLogTextCatalog.Warning(
+                    CampusNpcEcologyPresetLogTextId.OwnerUnknownValue,
+                    ownerLabel,
+                    "ScheduleWindow",
+                    values[i]);
             }
 
             return result.ToArray();
@@ -115,7 +127,11 @@ namespace NtingCampus.Gameplay.Characters
                 }
 
                 hasInvalidValue = true;
-                Debug.LogWarning("[CampusNpcEcologyPresetCatalog] " + ownerLabel + " has unknown TeacherDuty '" + values[i] + "'.");
+                CampusNpcEcologyPresetLogTextCatalog.Warning(
+                    CampusNpcEcologyPresetLogTextId.OwnerUnknownValue,
+                    ownerLabel,
+                    "TeacherDuty",
+                    values[i]);
             }
 
             return mask;
@@ -142,7 +158,11 @@ namespace NtingCampus.Gameplay.Characters
                 }
 
                 hasInvalidValue = true;
-                Debug.LogWarning("[CampusNpcEcologyPresetCatalog] " + ownerLabel + " has unknown StaffDuty '" + values[i] + "'.");
+                CampusNpcEcologyPresetLogTextCatalog.Warning(
+                    CampusNpcEcologyPresetLogTextId.OwnerUnknownValue,
+                    ownerLabel,
+                    "StaffDuty",
+                    values[i]);
             }
 
             return mask;
@@ -169,7 +189,11 @@ namespace NtingCampus.Gameplay.Characters
                 }
 
                 hasInvalidValue = true;
-                Debug.LogWarning("[CampusNpcEcologyPresetCatalog] " + ownerLabel + " has unknown Trait '" + values[i] + "'.");
+                CampusNpcEcologyPresetLogTextCatalog.Warning(
+                    CampusNpcEcologyPresetLogTextId.OwnerUnknownValue,
+                    ownerLabel,
+                    "Trait",
+                    values[i]);
             }
 
             return result.ToArray();

@@ -32,11 +32,6 @@ namespace NtingCampus.Gameplay.Rooms
                 return localizedDisplayName.Get(language, ResolveFallbackDisplayName(language));
             }
 
-            if (!string.IsNullOrWhiteSpace(roomDisplayName))
-            {
-                return roomDisplayName.Trim();
-            }
-
             return CampusRoomTextCatalog.Get(language, roomType);
         }
 
@@ -44,12 +39,7 @@ namespace NtingCampus.Gameplay.Rooms
         {
             if (localizedDisplayName.HasAnyText)
             {
-                return localizedDisplayName.ResolvePrimary(roomDisplayName, ResolveCatalogPrimaryDisplayName());
-            }
-
-            if (!string.IsNullOrWhiteSpace(roomDisplayName))
-            {
-                return roomDisplayName.Trim();
+                return localizedDisplayName.ResolvePrimary(ResolveCatalogPrimaryDisplayName());
             }
 
             return ResolveCatalogPrimaryDisplayName();
@@ -83,7 +73,7 @@ namespace NtingCampus.Gameplay.Rooms
 
         public void Configure(
             string idOverride,
-            string legacyDisplayName,
+            string migrationDisplayName,
             CampusLocalizedText displayName,
             CampusRoomType type,
             int targetFloorIndex,
@@ -92,8 +82,10 @@ namespace NtingCampus.Gameplay.Rooms
             bool gameplayUsable)
         {
             roomIdOverride = string.IsNullOrWhiteSpace(idOverride) ? string.Empty : idOverride.Trim();
-            roomDisplayName = string.IsNullOrWhiteSpace(legacyDisplayName) ? string.Empty : legacyDisplayName.Trim();
-            localizedDisplayName = displayName;
+            roomDisplayName = string.IsNullOrWhiteSpace(migrationDisplayName) ? string.Empty : migrationDisplayName.Trim();
+            localizedDisplayName = displayName.HasAnyText || string.IsNullOrEmpty(roomDisplayName)
+                ? displayName
+                : new CampusLocalizedText(roomDisplayName, string.Empty);
             roomType = type;
             floorIndex = Mathf.Max(1, targetFloorIndex);
             anchorCell = cell;
@@ -103,11 +95,6 @@ namespace NtingCampus.Gameplay.Rooms
 
         private string ResolveFallbackDisplayName(CampusDisplayLanguage language)
         {
-            if (!string.IsNullOrWhiteSpace(roomDisplayName))
-            {
-                return roomDisplayName.Trim();
-            }
-
             return CampusRoomTextCatalog.Get(language, roomType);
         }
 

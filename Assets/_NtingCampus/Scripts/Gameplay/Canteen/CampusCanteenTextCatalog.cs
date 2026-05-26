@@ -18,7 +18,9 @@ namespace NtingCampus.Gameplay.Canteen
         CloseButton = 11,
         InsufficientFundsLog = 12,
         OrderFailedLog = 13,
-        PendingMealLog = 14
+        PendingMealLog = 14,
+        MissingMenuPresetFile = 15,
+        FailedToParseMenuPreset = 16
     }
 
     internal static class CampusCanteenTextCatalog
@@ -47,6 +49,8 @@ namespace NtingCampus.Gameplay.Canteen
                 CampusCanteenTextId.InsufficientFundsLog => Resolve(language, "\u4f59\u989d\u4e0d\u8db3\uff0c\u9700\u8981 {0}\u3002", "Not enough money. Need {0}."),
                 CampusCanteenTextId.OrderFailedLog => Resolve(language, "\u70b9\u9910\u5931\u8d25\u3002", "Order failed."),
                 CampusCanteenTextId.PendingMealLog => Resolve(language, "\u5df2\u6709\u672a\u53d6\u8d70\u7684\u9910\u54c1\u3002", "There is already an unclaimed meal."),
+                CampusCanteenTextId.MissingMenuPresetFile => Resolve(language, "[CampusCanteenMenuCatalog] 缺少菜单预设文件：{0}", "[CampusCanteenMenuCatalog] Missing menu preset file: {0}"),
+                CampusCanteenTextId.FailedToParseMenuPreset => Resolve(language, "[CampusCanteenMenuCatalog] 解析 {0} 失败：{1}", "[CampusCanteenMenuCatalog] Failed to parse {0}: {1}"),
                 _ => string.Empty
             };
         }

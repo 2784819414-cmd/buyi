@@ -46,7 +46,10 @@ namespace NtingCampus.Gameplay.Rooms
             List<ValidationIssue> issues = new List<ValidationIssue>();
             if (rooms == null)
             {
-                issues.Add(new ValidationIssue(Severity.Error, string.Empty, "Room registry is null."));
+                issues.Add(new ValidationIssue(
+                    Severity.Error,
+                    string.Empty,
+                    CampusRoomValidationTextCatalog.Get(CampusRoomValidationTextId.RegistryNull)));
                 return issues;
             }
 
@@ -56,37 +59,58 @@ namespace NtingCampus.Gameplay.Rooms
                 CampusGameplayRoom room = rooms[i];
                 if (room == null)
                 {
-                    issues.Add(new ValidationIssue(Severity.Error, string.Empty, "Null room entry found."));
+                    issues.Add(new ValidationIssue(
+                        Severity.Error,
+                        string.Empty,
+                        CampusRoomValidationTextCatalog.Get(CampusRoomValidationTextId.NullRoomEntry)));
                     continue;
                 }
 
                 if (string.IsNullOrWhiteSpace(room.RoomId))
                 {
-                    issues.Add(new ValidationIssue(Severity.Error, string.Empty, "Room is missing a room id."));
+                    issues.Add(new ValidationIssue(
+                        Severity.Error,
+                        string.Empty,
+                        CampusRoomValidationTextCatalog.Get(CampusRoomValidationTextId.MissingRoomId)));
                 }
                 else if (!roomIds.Add(room.RoomId))
                 {
-                    issues.Add(new ValidationIssue(Severity.Error, room.RoomId, "Duplicate room id."));
+                    issues.Add(new ValidationIssue(
+                        Severity.Error,
+                        room.RoomId,
+                        CampusRoomValidationTextCatalog.Get(CampusRoomValidationTextId.DuplicateRoomId)));
                 }
 
                 if (!room.HasDisplayName)
                 {
-                    issues.Add(new ValidationIssue(Severity.Warning, room.RoomId, "Room marker name is empty."));
+                    issues.Add(new ValidationIssue(
+                        Severity.Warning,
+                        room.RoomId,
+                        CampusRoomValidationTextCatalog.Get(CampusRoomValidationTextId.MissingDisplayName)));
                 }
 
                 if (room.MarkerCount <= 0)
                 {
-                    issues.Add(new ValidationIssue(Severity.Error, room.RoomId, "Room has no marker cells."));
+                    issues.Add(new ValidationIssue(
+                        Severity.Error,
+                        room.RoomId,
+                        CampusRoomValidationTextCatalog.Get(CampusRoomValidationTextId.MissingMarkerCells)));
                 }
 
                 if (room.MarkerBounds.size.x <= 0 || room.MarkerBounds.size.y <= 0)
                 {
-                    issues.Add(new ValidationIssue(Severity.Error, room.RoomId, "Room bounds are invalid."));
+                    issues.Add(new ValidationIssue(
+                        Severity.Error,
+                        room.RoomId,
+                        CampusRoomValidationTextCatalog.Get(CampusRoomValidationTextId.InvalidBounds)));
                 }
 
                 if (room.RoomType == CampusRoomType.Unknown)
                 {
-                    issues.Add(new ValidationIssue(Severity.Warning, room.RoomId, "Room type is still Unknown."));
+                    issues.Add(new ValidationIssue(
+                        Severity.Warning,
+                        room.RoomId,
+                        CampusRoomValidationTextCatalog.Get(CampusRoomValidationTextId.UnknownRoomType)));
                 }
                 else if (!room.HasExplicitRoomType)
                 {
@@ -114,7 +138,9 @@ namespace NtingCampus.Gameplay.Rooms
                         issues.Add(new ValidationIssue(
                             Severity.Warning,
                             room.RoomId,
-                            "Missing core facility: " + requiredFacility + "."));
+                            CampusRoomValidationTextCatalog.Format(
+                                CampusRoomValidationTextId.MissingCoreFacility,
+                                requiredFacility)));
                     }
                 }
             }
@@ -126,12 +152,18 @@ namespace NtingCampus.Gameplay.Rooms
         {
             if (room == null)
             {
-                return new ValidationSummary(false, false, "Room is null.");
+                return new ValidationSummary(
+                    false,
+                    false,
+                    CampusRoomValidationTextCatalog.Get(CampusRoomValidationTextId.RoomNull));
             }
 
             if (room.RoomType == CampusRoomType.Unknown)
             {
-                return new ValidationSummary(false, false, "Missing formal room type.");
+                return new ValidationSummary(
+                    false,
+                    false,
+                    CampusRoomValidationTextCatalog.Get(CampusRoomValidationTextId.MissingFormalRoomType));
             }
 
             CampusFacilityType[] requiredFacilities = GetRequiredFacilities(room.RoomType);
@@ -143,11 +175,16 @@ namespace NtingCampus.Gameplay.Rooms
                     return new ValidationSummary(
                         false,
                         false,
-                        "Missing core facility: " + requiredFacility + ".");
+                        CampusRoomValidationTextCatalog.Format(
+                            CampusRoomValidationTextId.MissingCoreFacility,
+                            requiredFacility));
                 }
             }
 
-            return new ValidationSummary(true, true, "Ready for gameplay.");
+            return new ValidationSummary(
+                true,
+                true,
+                CampusRoomValidationTextCatalog.Get(CampusRoomValidationTextId.ReadyForGameplay));
         }
 
         public static void LogIssues(IReadOnlyList<ValidationIssue> issues)

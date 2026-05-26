@@ -27,7 +27,9 @@ namespace Nting.Storage
         {
             if (!TryGetDefinition(definitionId, out StorageItemDefinition definition))
             {
-                Debug.LogWarning("Storage item registry failed: missing item definition '" + definitionId + "'.");
+                Debug.LogWarning(StorageTextCatalog.Format(
+                    StorageTextId.ItemRegistryMissingDefinition,
+                    definitionId));
                 return null;
             }
 

@@ -135,9 +135,6 @@ namespace NtingCampus.Gameplay.Rooms
             switch (facilityResolution.Source)
             {
                 case CampusFacilityTypeSource.ExplicitTypeId:
-                case CampusFacilityTypeSource.StorageFallback:
-                case CampusFacilityTypeSource.LegacyInference:
-                case CampusFacilityTypeSource.UnknownTypeId:
                     return true;
 
                 default:
@@ -198,11 +195,8 @@ namespace NtingCampus.Gameplay.Rooms
                         string.Empty);
                 }
 
-                CampusFacilityType fallback = placedObject.IsStorageContainer
-                    ? CampusFacilityType.Storage
-                    : CampusFacilityType.Unknown;
                 return new CampusFacilityTypeResolution(
-                    fallback,
+                    CampusFacilityType.Unknown,
                     CampusFacilityTypeSource.UnknownTypeId,
                     rawTypeId.Trim());
             }
@@ -214,7 +208,7 @@ namespace NtingCampus.Gameplay.Rooms
             if (placedObject.IsStorageContainer)
             {
                 return new CampusFacilityTypeResolution(
-                    CampusFacilityType.Storage,
+                    CampusFacilityType.Unknown,
                     CampusFacilityTypeSource.StorageFallback,
                     string.Empty);
             }
@@ -232,7 +226,7 @@ namespace NtingCampus.Gameplay.Rooms
                         out string source))
                 {
                     return new CampusFacilityTypeResolution(
-                        type,
+                        CampusFacilityType.Unknown,
                         CampusFacilityTypeSource.LegacyInference,
                         source);
                 }
@@ -321,7 +315,9 @@ namespace NtingCampus.Gameplay.Rooms
             }
             catch (Exception exception)
             {
-                Debug.LogWarning("[Rooms] Failed to load facility rules: " + exception.Message);
+                Debug.LogWarning(CampusFacilityValidationTextCatalog.Format(
+                    CampusFacilityValidationTextId.FailedToLoadRules,
+                    exception.Message));
             }
         }
 

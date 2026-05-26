@@ -8,7 +8,6 @@ namespace NtingCampus.Gameplay.Characters
     public sealed class CampusNpcInteractionPresenter : MonoBehaviour
     {
         private const string InteractionAnchorName = "NpcTalkAnchor";
-        private const string LegacyInteractionTargetName = "NpcInteractionTarget";
         private const float AmbientSpeechMinDelaySeconds = 8f;
         private const float AmbientSpeechMaxDelaySeconds = 18f;
 
@@ -20,7 +19,6 @@ namespace NtingCampus.Gameplay.Characters
 
         public void Ensure(ICampusNpcTalkSource talkSource)
         {
-            RemoveLegacyInteractionTarget();
             EnsureSpeechAnchor();
             EnsureSpeechBubble();
             EnsureInteractable(talkSource);
@@ -157,24 +155,6 @@ namespace NtingCampus.Gameplay.Characters
             anchor.IsAvailable = true;
             anchor.HideWhenUnavailable = false;
             anchor.LogInteraction = false;
-        }
-
-        private void RemoveLegacyInteractionTarget()
-        {
-            Transform legacyTarget = transform.Find(LegacyInteractionTargetName);
-            if (legacyTarget == null)
-            {
-                return;
-            }
-
-            if (Application.isPlaying)
-            {
-                Destroy(legacyTarget.gameObject);
-            }
-            else
-            {
-                DestroyImmediate(legacyTarget.gameObject);
-            }
         }
 
         private void ScheduleNextAmbientSpeech(int personalSeed, bool initial)

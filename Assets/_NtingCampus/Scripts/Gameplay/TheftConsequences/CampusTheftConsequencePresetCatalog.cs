@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using NtingCampus.Gameplay.Characters;
 using NtingCampus.Gameplay.Rooms;
 using NtingCampus.Gameplay.Sanctions;
+using NtingCampus.UI.Runtime.Gameplay;
 using NtingCampusMapEditor;
 using UnityEngine;
 
@@ -162,7 +163,9 @@ namespace NtingCampus.Gameplay.TheftConsequences
             CampusTheftConsequencePresetData data = BuildBuiltInData();
             if (!CampusRuntimeModPresetStore.TryReadJson(PresetFileName, out string json))
             {
-                Debug.LogWarning("[CampusTheftConsequencePresetCatalog] Missing preset file: " + PresetFileName + ". Built-in theft consequence defaults are active.");
+                Debug.LogWarning(CampusTheftConsequenceTextCatalog.FormatMissingPresetFile(
+                    CampusLanguageState.CurrentLanguage,
+                    PresetFileName));
                 return data;
             }
 
@@ -175,7 +178,10 @@ namespace NtingCampus.Gameplay.TheftConsequences
             }
             catch (Exception exception)
             {
-                Debug.LogWarning("[CampusTheftConsequencePresetCatalog] Failed to parse " + PresetFileName + ": " + exception.Message);
+                Debug.LogWarning(CampusTheftConsequenceTextCatalog.FormatFailedToParsePreset(
+                    CampusLanguageState.CurrentLanguage,
+                    PresetFileName,
+                    exception.Message));
                 return data;
             }
         }

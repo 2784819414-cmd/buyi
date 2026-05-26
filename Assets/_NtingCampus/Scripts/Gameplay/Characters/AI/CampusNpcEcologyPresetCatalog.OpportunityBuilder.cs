@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using NtingCampus.Gameplay.Core;
 using NtingCampus.Gameplay.Rooms;
 using NtingCampus.Gameplay.Services;
 using NtingCampusMapEditor;
@@ -109,7 +110,12 @@ namespace NtingCampus.Gameplay.Characters
                 return false;
             }
 
-            bool canServeNow = CampusServiceStationRuntimeAvailability.CanServeNow(station);
+            CampusGameBootstrap bootstrap = CampusGameBootstrap.Instance;
+            bool canServeNow = CampusServiceStationRuntimeAvailability.CanServeNow(
+                station,
+                npc.WorldService,
+                bootstrap != null ? bootstrap.RosterService : null,
+                bootstrap != null ? bootstrap.TimeController : null);
             ResolvedTarget target = BuildServiceStationTarget(npc, entry, station);
             if (!target.IsValid)
             {
@@ -791,35 +797,23 @@ namespace NtingCampus.Gameplay.Characters
                 return false;
             }
 
-            List<CampusGameplayRoom> rooms = targetRule.RoomType != CampusRoomType.Unknown
-                ? CampusNpcRoomSelector.GetRooms(npc.WorldService, targetRule.RoomType)
-                : new List<CampusGameplayRoom>(npc.WorldService.RoomRegistry != null
-                    ? npc.WorldService.RoomRegistry.Rooms
-                    : Array.Empty<CampusGameplayRoom>());
-            if (rooms.Count == 0)
+            List<CampusServiceStation> candidateStations = npc.WorldService.ServiceStations.Find(
+                action.ActionId,
+                targetRule.StationTypeIds,
+                targetRule.RoomType);
+            if (candidateStations.Count == 0)
             {
                 return false;
             }
 
             List<CampusGameplayRoom> candidateRooms = new List<CampusGameplayRoom>();
-            for (int i = 0; i < rooms.Count; i++)
+            for (int i = 0; i < candidateStations.Count; i++)
             {
-                CampusGameplayRoom candidateRoom = rooms[i];
-                if (candidateRoom == null ||
-                    CampusServiceStationCatalog.Collect(
-                        candidateRoom,
-                        action.ActionId,
-                        targetRule.StationTypeIds).Count == 0)
+                CampusGameplayRoom candidateRoom = candidateStations[i].Room;
+                if (candidateRoom != null && !ContainsRoom(candidateRooms, candidateRoom))
                 {
-                    continue;
+                    candidateRooms.Add(candidateRoom);
                 }
-
-                candidateRooms.Add(candidateRoom);
-            }
-
-            if (candidateRooms.Count == 0)
-            {
-                return false;
             }
 
             CampusGameplayRoom currentRoom = npc.WorldService.FindRoomForRuntime(npc.Runtime);
@@ -923,7 +917,7 @@ namespace NtingCampus.Gameplay.Characters
                 return false;
             }
 
-            List<CampusServiceStation> stations = CampusServiceStationCatalog.Collect(
+            List<CampusServiceStation> stations = npc.WorldService.ServiceStations.FindInRoom(
                 room,
                 action.ActionId,
                 targetRule.StationTypeIds);
@@ -941,7 +935,12 @@ namespace NtingCampus.Gameplay.Characters
             ScheduleEntryRecord entry,
             CampusServiceStation station)
         {
-            CampusGameplayRoom.FacilityRecord navigationRecord = CampusServiceStationRuntimeAvailability.CanServeNow(station)
+            CampusGameBootstrap bootstrap = CampusGameBootstrap.Instance;
+            CampusGameplayRoom.FacilityRecord navigationRecord = CampusServiceStationRuntimeAvailability.CanServeNow(
+                    station,
+                    npc != null ? npc.WorldService : null,
+                    bootstrap != null ? bootstrap.RosterService : null,
+                    bootstrap != null ? bootstrap.TimeController : null)
                 ? (station.HasCustomerSlot ? station.CustomerSlot : station.InteractionFacility)
                 : ChooseServiceStationWaitSlot(npc, entry, station);
             if (station.Room == null || navigationRecord == null)
@@ -994,6 +993,28 @@ namespace NtingCampus.Gameplay.Characters
             List<CampusGameplayRoom.FacilityRecord> facilities =
                 CampusNpcFacilitySelector.Collect(room, facilityTypes);
             return facilities.Count > 0;
+        }
+
+        private static bool ContainsRoom(
+            IReadOnlyList<CampusGameplayRoom> rooms,
+            CampusGameplayRoom target)
+        {
+            if (rooms == null || target == null)
+            {
+                return false;
+            }
+
+            for (int i = 0; i < rooms.Count; i++)
+            {
+                CampusGameplayRoom room = rooms[i];
+                if (room != null &&
+                    string.Equals(room.RoomId, target.RoomId, StringComparison.OrdinalIgnoreCase))
+                {
+                    return true;
+                }
+            }
+
+            return false;
         }
 
         private static int ChooseFacilityTargetIndex(

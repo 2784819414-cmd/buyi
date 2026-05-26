@@ -50,7 +50,7 @@ namespace Nting.Storage.EditorTools
 
             AssetDatabase.SaveAssets();
             AssetDatabase.Refresh();
-            Debug.Log("Storage UI sprites generated at " + OutputDirectory + ".");
+            Debug.Log(StorageTextCatalog.Format(StorageTextId.GeneratedUiSprites, OutputDirectory));
         }
 
         [InitializeOnLoadMethod]

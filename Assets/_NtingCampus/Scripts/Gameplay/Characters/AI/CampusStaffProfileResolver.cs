@@ -1,7 +1,5 @@
-using System.Collections.Generic;
 using NtingCampus.Gameplay.Rooms;
 using NtingCampus.Gameplay.Services;
-using UnityEngine;
 
 namespace NtingCampus.Gameplay.Characters
 {
@@ -39,20 +37,7 @@ namespace NtingCampus.Gameplay.Characters
                 return;
             }
 
-            int supportStaffIndex = CampusNpcRosterIndexer.PeerIndex(
-                runtime,
-                rosterService,
-                CampusNpcRosterIndexer.IsStaff);
-            CampusGameplayRoom serviceRoom = ResolveSupportStaffWorkRoom(
-                assignments,
-                worldService,
-                data,
-                supportStaffIndex);
-            List<CampusServiceStation> stations = CampusServiceStationCatalog.Collect(serviceRoom);
-            if (stations.Count > 0)
-            {
-                ApplySupportStaffStation(profile, stations[supportStaffIndex % stations.Count]);
-            }
+            BuildGenericStaffProfile(profile, runtime, worldService, rosterService, data, assignments);
         }
 
         private static void BuildGenericStaffProfile(
@@ -128,25 +113,6 @@ namespace NtingCampus.Gameplay.Characters
                 staffIndex);
         }
 
-        private static CampusGameplayRoom ResolveSupportStaffWorkRoom(
-            CampusCharacterAssignmentData assignments,
-            CampusWorldService worldService,
-            CampusCharacterData data,
-            int supportStaffIndex)
-        {
-            if (TryResolveAssignedSupportStaffStation(worldService, assignments, out CampusServiceStation station))
-            {
-                return station.Room;
-            }
-
-            return ResolveWorkRoom(
-                data,
-                assignments,
-                worldService,
-                supportStaffIndex,
-                CampusRoomType.ServiceArea);
-        }
-
         private static bool TryResolveAssignedSupportStaffStation(
             CampusWorldService worldService,
             CampusCharacterAssignmentData assignments,
@@ -158,21 +124,9 @@ namespace NtingCampus.Gameplay.Characters
                 return false;
             }
 
-            if (CampusServiceStationCatalog.TryResolveById(
-                    worldService,
+            if (worldService.ServiceStations.TryResolveById(
                     assignments.ServiceStationId,
                     out station))
-            {
-                return true;
-            }
-
-            if (CampusNpcFacilitySelector.FindAssigned(
-                    worldService,
-                    assignments.WorkFacilityId,
-                    CampusNpcFacilityTypeSets.Get(CampusNpcFacilityTypeSets.WorkerStands),
-                    out CampusGameplayRoom workerStandRoom,
-                    out CampusGameplayRoom.FacilityRecord workerStand) &&
-                CampusServiceStationCatalog.TryResolveByFacility(workerStandRoom, workerStand, out station))
             {
                 return true;
             }

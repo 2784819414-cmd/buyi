@@ -102,8 +102,10 @@ namespace NtingCampus.Gameplay.Schedule
                 return;
             }
 
-            foreach (CampusCharacterRuntime runtime in rosterService.Runtimes)
+            System.Collections.Generic.IReadOnlyList<CampusCharacterRuntime> runtimes = rosterService.Index.Runtimes;
+            for (int i = 0; i < runtimes.Count; i++)
             {
+                CampusCharacterRuntime runtime = runtimes[i];
                 if (runtime == null || runtime.Data == null)
                 {
                     continue;

@@ -129,7 +129,9 @@ namespace NtingCampus.UI.Runtime.Gameplay
                         exception.Message));
                 }
 
-                Debug.LogWarning("[CampusLaunchSelectionApplier] " + exception);
+                CampusRuntimeGameplayLogTextCatalog.Warning(
+                    CampusRuntimeGameplayLogTextId.LaunchSelectionApplyFailed,
+                    exception);
             }
             finally
             {

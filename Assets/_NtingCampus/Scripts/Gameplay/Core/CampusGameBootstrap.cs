@@ -150,7 +150,7 @@ namespace NtingCampus.Gameplay.Core
         {
             if (Instance != null && Instance != this)
             {
-                Debug.LogWarning("Multiple CampusGameBootstrap instances detected. Keeping the first instance.");
+                Debug.LogWarning(CampusCoreTextCatalog.Get(CampusCoreTextId.MultipleBootstrapInstances));
                 return;
             }
 

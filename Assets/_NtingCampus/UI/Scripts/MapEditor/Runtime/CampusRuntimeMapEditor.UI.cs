@@ -1340,7 +1340,9 @@ namespace NtingCampusMapEditor
             }
             catch (Exception exception)
             {
-                Debug.LogWarning("[NtingCampusRuntimeMapEditor] Failed to rebuild gameplay rooms: " + exception.Message);
+                CampusRuntimeMapEditorLogTextCatalog.Warning(
+                    CampusRuntimeMapEditorLogTextId.FailedToRebuildGameplayRooms,
+                    exception.Message);
             }
         }
 
@@ -2623,7 +2625,9 @@ namespace NtingCampusMapEditor
             }
             catch (Exception exception)
             {
-                Debug.LogWarning("[NtingCampusRuntimeMapEditor] Failed to set wall-mounted sprite: " + exception.Message);
+                CampusRuntimeMapEditorLogTextCatalog.Warning(
+                    CampusRuntimeMapEditorLogTextId.FailedToSetWallMountedSprite,
+                    exception.Message);
                 SetStatus(Tr("\u58c1\u6302\u8d34\u56fe\u8bbe\u7f6e\u5931\u8d25\u3002", "Failed to set wall-mounted sprite."));
                 return false;
             }
@@ -2691,7 +2695,9 @@ namespace NtingCampusMapEditor
             }
             catch (Exception exception)
             {
-                Debug.LogWarning("[NtingCampusRuntimeMapEditor] Failed to set object direction sprite: " + exception.Message);
+                CampusRuntimeMapEditorLogTextCatalog.Warning(
+                    CampusRuntimeMapEditorLogTextId.FailedToSetObjectDirectionSprite,
+                    exception.Message);
                 SetStatus(Tr("\u65cb\u8f6c\u8d34\u56fe\u8bbe\u7f6e\u5931\u8d25\u3002", "Failed to set direction sprite."));
                 return false;
             }
@@ -2934,7 +2940,9 @@ namespace NtingCampusMapEditor
                 CampusRuntimeObjectSettings settings = CampusRuntimeObjectSettingsStore.Load(
                     GetImportRootFolder(),
                     lookupIds[i],
-                    message => Debug.LogWarning("[NtingCampusRuntimeMapEditor] " + message));
+                    message => CampusRuntimeMapEditorLogTextCatalog.Warning(
+                        CampusRuntimeMapEditorLogTextId.WarningMessage,
+                        message));
                 if (settings == null)
                 {
                     continue;
@@ -3101,7 +3109,10 @@ namespace NtingCampusMapEditor
             }
             catch (Exception exception)
             {
-                Debug.LogWarning("[NtingCampusRuntimeMapEditor] Failed to open folder '" + path + "': " + exception.Message);
+                CampusRuntimeMapEditorLogTextCatalog.Warning(
+                    CampusRuntimeMapEditorLogTextId.FailedToOpenFolder,
+                    path,
+                    exception.Message);
             }
 
             SetStatus(TrFormat("\u5df2\u6253\u5f00\u5bfc\u5165\u76ee\u5f55\uff1a{0}", "Opened import folder: {0}", path));
@@ -4858,7 +4869,9 @@ namespace NtingCampusMapEditor
             }
             catch (Exception exception)
             {
-                Debug.LogWarning("[NtingCampusRuntimeMapEditor] Native file dialog failed: " + exception.Message);
+                CampusRuntimeMapEditorLogTextCatalog.Warning(
+                    CampusRuntimeMapEditorLogTextId.NativeFileDialogFailed,
+                    exception.Message);
                 return string.Empty;
             }
         }

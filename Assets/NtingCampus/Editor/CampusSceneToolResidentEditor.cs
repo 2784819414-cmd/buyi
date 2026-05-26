@@ -18,12 +18,12 @@ namespace NtingCampusMapEditor
 
             using (new EditorGUI.DisabledScope(EditorApplication.isPlayingOrWillChangePlaymode))
             {
-                if (GUILayout.Button("Install / Refresh Stored Scene Tools"))
+                if (GUILayout.Button(CampusMapEditorLogTextCatalog.Get(CampusMapEditorLogTextId.InstallRefreshStoredSceneTools)))
                 {
                     CampusSceneToolResidentEditorUtility.RunStoredToolSet((CampusSceneToolResident)target, true);
                 }
 
-                if (GUILayout.Button("Create Test Player In Scene"))
+                if (GUILayout.Button(CampusMapEditorLogTextCatalog.Get(CampusMapEditorLogTextId.CreateTestPlayerInScene)))
                 {
                     CampusSceneToolResidentEditorUtility.EnsureTestPlayerInScene(true);
                 }
@@ -55,7 +55,7 @@ namespace NtingCampusMapEditor
         {
             if (EditorApplication.isPlayingOrWillChangePlaymode)
             {
-                Debug.LogWarning("[NtingCampusRuntimeMapEditor] Exit Play Mode before baking the authoring map into the scene.");
+                CampusMapEditorLogTextCatalog.Warning(CampusMapEditorLogTextId.ExitPlayModeBeforeBake);
                 return;
             }
 
@@ -177,7 +177,9 @@ namespace NtingCampusMapEditor
             GameObject prefab = AssetDatabase.LoadAssetAtPath<GameObject>(prefabPath);
             if (prefab == null)
             {
-                Debug.LogWarning("[NtingCampusMapEditor] Cannot create test player because the prefab is missing: " + prefabPath);
+                CampusMapEditorLogTextCatalog.Warning(
+                    CampusMapEditorLogTextId.CannotCreateTestPlayerPrefabMissing,
+                    prefabPath);
                 return null;
             }
 

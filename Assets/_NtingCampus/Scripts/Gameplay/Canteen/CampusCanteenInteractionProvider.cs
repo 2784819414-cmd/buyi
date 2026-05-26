@@ -73,11 +73,6 @@ namespace NtingCampus.Gameplay.Canteen
 
         private static bool IsWindowActive(CampusPlacedObject window)
         {
-            if (window == null || CampusFacilityTypeResolver.Resolve(window) != CampusFacilityType.ServiceWindow)
-            {
-                return false;
-            }
-
             return CampusCanteenServiceWindowAvailability.IsAvailable(window);
         }
 

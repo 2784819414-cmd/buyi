@@ -18,7 +18,8 @@ namespace NtingCampus.Gameplay.Services
         SlotMissingFacility = 9,
         SlotInvalidFacilityType = 10,
         SlotRoomMismatch = 11,
-        ReferenceMissing = 12
+        ReferenceMissing = 12,
+        FailedToParsePreset = 13
     }
 
     internal static class CampusServiceStationValidationTextCatalog
@@ -37,7 +38,8 @@ namespace NtingCampus.Gameplay.Services
             { CampusServiceStationValidationTextId.SlotMissingFacility, new Entry("服务站槽位 {0} 引用了不存在的设施：{1}。", "Service station slot {0} references missing facility: {1}.") },
             { CampusServiceStationValidationTextId.SlotInvalidFacilityType, new Entry("服务站槽位 {0} 不能使用设施类型 {1}。", "Service station slot {0} cannot use facility type {1}.") },
             { CampusServiceStationValidationTextId.SlotRoomMismatch, new Entry("服务站槽位 {0} 的设施必须和服务站在同一房间。", "Service station slot {0} facility must be in the same room as the station.") },
-            { CampusServiceStationValidationTextId.ReferenceMissing, new Entry("{0} 引用了不存在的服务站：{1}。", "{0} references a missing service station: {1}.") }
+            { CampusServiceStationValidationTextId.ReferenceMissing, new Entry("{0} 引用了不存在的服务站：{1}。", "{0} references a missing service station: {1}.") },
+            { CampusServiceStationValidationTextId.FailedToParsePreset, new Entry("[CampusServiceStationPresetCatalog] 解析 {0} 失败：{1}", "[CampusServiceStationPresetCatalog] Failed to parse {0}: {1}") }
         };
 
         public static string Get(CampusServiceStationValidationTextId id)

@@ -179,12 +179,6 @@ namespace NtingCampus.Gameplay.Rooms
                     continue;
                 }
 
-                if (!CampusPlacedObjectConceptResolver.TryResolveFacility(candidate, out CampusFacilityTypeResolution resolution) ||
-                    resolution.FacilityType != facilityMarker.FacilityType)
-                {
-                    continue;
-                }
-
                 placedObject = candidate;
                 return true;
             }

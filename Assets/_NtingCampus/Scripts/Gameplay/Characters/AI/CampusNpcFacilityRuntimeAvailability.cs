@@ -1,5 +1,6 @@
-using NtingCampus.Gameplay.Canteen;
+using NtingCampus.Gameplay.Core;
 using NtingCampus.Gameplay.Rooms;
+using NtingCampus.Gameplay.Services;
 
 namespace NtingCampus.Gameplay.Characters
 {
@@ -29,14 +30,28 @@ namespace NtingCampus.Gameplay.Characters
                 return false;
             }
 
-            switch (record.FacilityType)
+            if (record.FacilityType != CampusFacilityType.ServiceWindow)
             {
-                case CampusFacilityType.ServiceWindow:
-                    isAvailable = CampusCanteenServiceWindowAvailability.IsAvailable(record.PlacedObject);
-                    return true;
-                default:
-                    return false;
+                return false;
             }
+
+            CampusGameBootstrap bootstrap = CampusGameBootstrap.Instance;
+            CampusWorldService worldService = bootstrap != null ? bootstrap.WorldService : null;
+            if (worldService == null ||
+                !worldService.ServiceStations.TryResolveByPlacedObject(
+                    worldService,
+                    record.PlacedObject,
+                    out CampusServiceStation station))
+            {
+                return false;
+            }
+
+            isAvailable = CampusServiceStationRuntimeAvailability.CanServeNow(
+                station,
+                worldService,
+                bootstrap != null ? bootstrap.RosterService : null,
+                bootstrap != null ? bootstrap.TimeController : null);
+            return true;
         }
     }
 }

@@ -1,6 +1,5 @@
 using System.Collections.Generic;
 using NtingCampus.Gameplay.Core;
-using UnityEngine;
 
 namespace NtingCampus.Gameplay.Characters
 {
@@ -301,13 +300,14 @@ namespace NtingCampus.Gameplay.Characters
                 return;
             }
 
-            Debug.Log(
-                "[NpcSchedule] npc=" + (npc.Data != null ? npc.Data.Id : string.Empty) +
-                " profile=" + selected.Profile.Id +
-                " entry=" + selected.Entry.Id +
-                " chain=" + selected.ActionChain.Id +
-                " action=" + selected.Action.ActionId +
-                " score=" + selected.Score.ToString("0.###"));
+            CampusNpcEcologyPresetLogTextCatalog.Selection(
+                CampusNpcEcologyPresetLogTextId.SelectionDebug,
+                npc.Data != null ? npc.Data.Id : string.Empty,
+                selected.Profile.Id,
+                selected.Entry.Id,
+                selected.ActionChain.Id,
+                selected.Action.ActionId,
+                selected.Score.ToString("0.###"));
         }
     }
 }

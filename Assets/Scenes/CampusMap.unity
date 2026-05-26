@@ -3191,8 +3191,6 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::NtingCampus.Gameplay.Rooms.CampusGameplayFacilityMarker
   facilityId: 
-  ownerFacilityId: 
-  legacyServiceStationId: 
   displayName: Classroom Blackboard
   facilityType: 11
   floorIndex: 1
@@ -3244,8 +3242,6 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::NtingCampus.Gameplay.Rooms.CampusGameplayFacilityMarker
   facilityId: 
-  ownerFacilityId: 
-  legacyServiceStationId: 
   displayName: Classroom Student Desk
   facilityType: 12
   floorIndex: 1
@@ -3297,8 +3293,6 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::NtingCampus.Gameplay.Rooms.CampusGameplayFacilityMarker
   facilityId: 
-  ownerFacilityId: 
-  legacyServiceStationId: 
   displayName: Classroom Podium
   facilityType: 13
   floorIndex: 1
@@ -3350,8 +3344,6 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::NtingCampus.Gameplay.Rooms.CampusGameplayFacilityMarker
   facilityId: 
-  ownerFacilityId: 
-  legacyServiceStationId: 
   displayName: Dorm Bed
   facilityType: 14
   floorIndex: 1
@@ -3403,8 +3395,6 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::NtingCampus.Gameplay.Rooms.CampusGameplayFacilityMarker
   facilityId: 
-  ownerFacilityId: 
-  legacyServiceStationId: 
   displayName: Office Desk
   facilityType: 15
   floorIndex: 1
@@ -3456,8 +3446,6 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::NtingCampus.Gameplay.Rooms.CampusGameplayFacilityMarker
   facilityId: 
-  ownerFacilityId: 
-  legacyServiceStationId: 
   displayName: Bulletin Board
   facilityType: 16
   floorIndex: 1

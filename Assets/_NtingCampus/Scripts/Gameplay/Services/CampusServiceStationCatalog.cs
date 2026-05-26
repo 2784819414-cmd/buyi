@@ -14,6 +14,7 @@ namespace NtingCampus.Gameplay.Services
             string stationTypeId,
             string interactionActionId,
             string availabilityRuleId,
+            CampusServiceStationAvailabilityDefinition availability,
             CampusGameplayRoom.FacilityRecord interactionFacility,
             CampusGameplayRoom.FacilityRecord operatorSlot,
             CampusGameplayRoom.FacilityRecord customerSlot,
@@ -26,6 +27,7 @@ namespace NtingCampus.Gameplay.Services
             StationTypeId = stationTypeId ?? string.Empty;
             InteractionActionId = interactionActionId ?? string.Empty;
             AvailabilityRuleId = availabilityRuleId ?? string.Empty;
+            Availability = availability ?? CampusServiceStationAvailabilityDefinition.Always;
             InteractionFacility = interactionFacility;
             OperatorSlot = operatorSlot;
             CustomerSlot = customerSlot;
@@ -39,6 +41,7 @@ namespace NtingCampus.Gameplay.Services
         public string StationTypeId { get; }
         public string InteractionActionId { get; }
         public string AvailabilityRuleId { get; }
+        public CampusServiceStationAvailabilityDefinition Availability { get; }
         public CampusGameplayRoom.FacilityRecord InteractionFacility { get; }
         public CampusGameplayRoom.FacilityRecord OperatorSlot { get; }
         public CampusGameplayRoom.FacilityRecord CustomerSlot { get; }
@@ -108,104 +111,6 @@ namespace NtingCampus.Gameplay.Services
             return stations;
         }
 
-        public static bool TryResolveById(
-            CampusWorldService worldService,
-            string stationId,
-            out CampusServiceStation station)
-        {
-            station = default;
-            if (worldService == null || worldService.RoomRegistry == null || string.IsNullOrWhiteSpace(stationId))
-            {
-                return false;
-            }
-
-            IReadOnlyList<CampusGameplayRoom> rooms = worldService.RoomRegistry.Rooms;
-            for (int i = 0; i < rooms.Count; i++)
-            {
-                CampusGameplayRoom room = rooms[i];
-                if (room == null)
-                {
-                    continue;
-                }
-
-                List<CampusServiceStation> stations = Collect(room);
-                for (int stationIndex = 0; stationIndex < stations.Count; stationIndex++)
-                {
-                    CampusServiceStation candidate = stations[stationIndex];
-                    if (string.Equals(candidate.StationId, stationId.Trim(), StringComparison.OrdinalIgnoreCase))
-                    {
-                        station = candidate;
-                        return true;
-                    }
-                }
-            }
-
-            return false;
-        }
-
-        public static bool TryResolveByFacility(
-            CampusGameplayRoom room,
-            CampusGameplayRoom.FacilityRecord facility,
-            out CampusServiceStation station)
-        {
-            station = default;
-            if (room == null || facility == null)
-            {
-                return false;
-            }
-
-            List<CampusServiceStation> stations = Collect(room);
-            for (int i = 0; i < stations.Count; i++)
-            {
-                CampusServiceStation candidate = stations[i];
-                if (SameFacility(candidate.InteractionFacility, facility) ||
-                    SameFacility(candidate.OperatorSlot, facility) ||
-                    SameFacility(candidate.CustomerSlot, facility) ||
-                    SameFacility(candidate.OutputSlot, facility) ||
-                    ContainsFacility(candidate.QueueSlots, facility))
-                {
-                    station = candidate;
-                    return true;
-                }
-            }
-
-            return false;
-        }
-
-        public static bool TryResolveByPlacedObject(
-            CampusWorldService worldService,
-            CampusPlacedObject placedObject,
-            out CampusServiceStation station)
-        {
-            station = default;
-            if (worldService == null || placedObject == null)
-            {
-                return false;
-            }
-
-            CampusGameplayRoom room = worldService.FindRoomForPosition(
-                placedObject.FloorIndex,
-                placedObject.transform.position);
-            if (room == null)
-            {
-                return false;
-            }
-
-            IReadOnlyList<CampusGameplayRoom.FacilityRecord> facilities = room.Facilities;
-            for (int i = 0; i < facilities.Count; i++)
-            {
-                CampusGameplayRoom.FacilityRecord facility = facilities[i];
-                if (facility == null || facility.PlacedObject != placedObject)
-                {
-                    continue;
-                }
-
-                return TryResolveByFacility(room, facility, out station);
-            }
-
-            return false;
-        }
-
         private static bool TryBuild(
             CampusGameplayRoom room,
             CampusGameplayServiceStationRecord record,
@@ -242,6 +147,7 @@ namespace NtingCampus.Gameplay.Services
                 record.StationTypeId,
                 definition.InteractionActionId,
                 definition.AvailabilityRuleId,
+                definition.Availability,
                 owner,
                 operatorSlot,
                 customerSlot,

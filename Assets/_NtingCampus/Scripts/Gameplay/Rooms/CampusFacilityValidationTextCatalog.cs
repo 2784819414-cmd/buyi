@@ -10,7 +10,8 @@ namespace NtingCampus.Gameplay.Rooms
         StorageFallback = 1,
         MissingTypeId = 2,
         UnknownTypeId = 3,
-        UnknownTypeSource = 4
+        UnknownTypeSource = 4,
+        FailedToLoadRules = 5
     }
 
     public static class CampusFacilityValidationTextCatalog
@@ -21,7 +22,8 @@ namespace NtingCampus.Gameplay.Rooms
             { CampusFacilityValidationTextId.StorageFallback, new Entry("设施类型 Storage 来自储物容器 fallback。正常玩法数据应设置显式 TypeId=Storage。{0}", "Facility type Storage came from the storage-container fallback. Normal gameplay data should set explicit TypeId=Storage. {0}") },
             { CampusFacilityValidationTextId.MissingTypeId, new Entry("设施缺少显式 TypeId，当前不能作为明确玩法设施。{0}", "Facility is missing an explicit TypeId and cannot act as a clear gameplay facility. {0}") },
             { CampusFacilityValidationTextId.UnknownTypeId, new Entry("设施 TypeId 无法解析。请使用 CampusFacilityType 枚举值或 FacilityRules TypeIds。{0}", "Facility TypeId could not be resolved. Use a CampusFacilityType enum value or a FacilityRules TypeIds entry. {0}") },
-            { CampusFacilityValidationTextId.UnknownTypeSource, new Entry("设施类型来源未知。请设置显式 TypeId 或 CampusGameplayFacilityMarker。", "Facility type source is unknown. Set an explicit TypeId or CampusGameplayFacilityMarker.") }
+            { CampusFacilityValidationTextId.UnknownTypeSource, new Entry("设施类型来源未知。请设置显式 TypeId 或 CampusGameplayFacilityMarker。", "Facility type source is unknown. Set an explicit TypeId or CampusGameplayFacilityMarker.") },
+            { CampusFacilityValidationTextId.FailedToLoadRules, new Entry("[Rooms] 设施规则加载失败：{0}", "[Rooms] Failed to load facility rules: {0}") }
         };
 
         public static string Format(CampusFacilityValidationTextId id, params object[] args)

@@ -92,7 +92,7 @@ namespace Nting.Storage
         {
             if (string.IsNullOrWhiteSpace(id))
             {
-                Debug.LogWarning("Storage memory failed: container id is empty.");
+                Debug.LogWarning(StorageTextCatalog.Get(StorageTextId.MemoryContainerIdEmpty));
                 return null;
             }
 
@@ -120,13 +120,13 @@ namespace Nting.Storage
         {
             if (!TryGetContainer(containerId, out StorageContainerModel container))
             {
-                Debug.LogWarning("Storage memory failed: missing container '" + containerId + "'.");
+                Debug.LogWarning(StorageTextCatalog.Format(StorageTextId.MemoryMissingContainer, containerId));
                 return false;
             }
 
             if (ItemRegistry == null)
             {
-                Debug.LogWarning("Storage memory failed: item registry is not assigned.");
+                Debug.LogWarning(StorageTextCatalog.Get(StorageTextId.MemoryMissingItemRegistry));
                 return false;
             }
 
@@ -197,7 +197,7 @@ namespace Nting.Storage
             }
             else
             {
-                Debug.LogWarning("Storage memory kept previous size for container '" + container.Id + "' because existing items would be out of bounds.");
+                Debug.LogWarning(StorageTextCatalog.Format(StorageTextId.MemoryKeptPreviousSize, container.Id));
             }
 
             container.MaxWeight = maxWeight;

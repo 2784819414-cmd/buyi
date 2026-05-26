@@ -606,7 +606,9 @@ namespace NtingCampus.UI.Runtime.Gameplay
                 bootstrap.EventLog.AddLog(message);
             }
 
-            Debug.Log("[CampusRuntimeGameplayOverlayLoader] " + message);
+            CampusRuntimeGameplayLogTextCatalog.Log(
+                CampusRuntimeGameplayLogTextId.OverlayLoaderMessage,
+                message);
         }
     }
 

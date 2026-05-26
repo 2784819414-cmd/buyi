@@ -200,7 +200,9 @@ namespace NtingCampusMapEditor
             }
             catch (Exception exception)
             {
-                Debug.LogWarning("[CampusRuntimeGameplayMarkerPresetCatalog] Failed to load GameplayMarkerPresets.json: " + exception.Message);
+                CampusRuntimePresetLogTextCatalog.Warning(
+                    CampusRuntimePresetLogTextId.FailedToLoadGameplayMarkerPresets,
+                    exception.Message);
                 return BuiltInPresets;
             }
         }

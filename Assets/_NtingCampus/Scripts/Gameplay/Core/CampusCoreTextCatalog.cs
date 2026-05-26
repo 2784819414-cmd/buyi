@@ -13,7 +13,8 @@ namespace NtingCampus.Gameplay.Core
         EventRecorded = 4,
         TestTimeAdjusted = 5,
         TestTimePaused = 6,
-        TestTimeResumed = 7
+        TestTimeResumed = 7,
+        MultipleBootstrapInstances = 8
     }
 
     public static class CampusCoreTextCatalog
@@ -27,7 +28,8 @@ namespace NtingCampus.Gameplay.Core
             { CampusCoreTextId.EventRecorded, new Entry("[事件] {0}", "[Event] {0}") },
             { CampusCoreTextId.TestTimeAdjusted, new Entry("[测试] 时间已调整为 {0} {1}（{2}）。", "[Test] Time adjusted to {0} {1} ({2}).") },
             { CampusCoreTextId.TestTimePaused, new Entry("[测试] 时间已暂停。", "[Test] Time paused.") },
-            { CampusCoreTextId.TestTimeResumed, new Entry("[测试] 时间已恢复为 {0}。", "[Test] Time resumed as {0}.") }
+            { CampusCoreTextId.TestTimeResumed, new Entry("[测试] 时间已恢复为 {0}。", "[Test] Time resumed as {0}.") },
+            { CampusCoreTextId.MultipleBootstrapInstances, new Entry("检测到多个 CampusGameBootstrap 实例。保留第一个实例。", "Multiple CampusGameBootstrap instances detected. Keeping the first instance.") }
         };
 
         public static string Get(CampusCoreTextId id)

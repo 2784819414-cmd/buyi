@@ -1,6 +1,7 @@
 ﻿using System.Collections.Generic;
 using NtingCampus.Gameplay.Characters;
 using NtingCampus.Gameplay.Core;
+using NtingCampus.Gameplay.Services;
 using NtingCampus.UI.Runtime.Gameplay;
 using UnityEngine;
 
@@ -15,9 +16,23 @@ namespace NtingCampus.Gameplay.Rooms
 
         private readonly List<CampusEcologyValidator.ValidationIssue> ecologyValidationIssues =
             new List<CampusEcologyValidator.ValidationIssue>();
+        private readonly CampusServiceStationRegistry serviceStations =
+            new CampusServiceStationRegistry();
+        private bool serviceStationsBuilt;
+        private CampusWorldFacts cachedFacts;
+        private CampusRosterService cachedFactsRoster;
+        private int cachedFactsFrame = -1;
 
         public CampusRoomRegistry RoomRegistry => roomRegistry;
         public IReadOnlyList<CampusEcologyValidator.ValidationIssue> EcologyValidationIssues => ecologyValidationIssues;
+        internal CampusServiceStationRegistry ServiceStations
+        {
+            get
+            {
+                EnsureServiceStationRegistry();
+                return serviceStations;
+            }
+        }
 
         public void Initialize(CampusGameBootstrap targetBootstrap)
         {
@@ -26,6 +41,9 @@ namespace NtingCampus.Gameplay.Rooms
             if (rebuildRegistryOnInitialize && roomRegistry != null)
             {
                 roomRegistry.RebuildRegistry();
+                serviceStations.Rebuild(roomRegistry.Rooms);
+                serviceStationsBuilt = true;
+                InvalidateFacts();
             }
         }
 
@@ -120,7 +138,17 @@ namespace NtingCampus.Gameplay.Rooms
         public CampusWorldFacts BuildFacts(CampusRosterService rosterService)
         {
             ResolveRoomRegistry();
-            return CampusWorldFacts.Build(this, rosterService);
+            EnsureServiceStationRegistry();
+            int frame = Time.frameCount;
+            if (cachedFacts != null && cachedFactsRoster == rosterService && cachedFactsFrame == frame)
+            {
+                return cachedFacts;
+            }
+
+            cachedFacts = CampusWorldFacts.Build(this, rosterService);
+            cachedFactsRoster = rosterService;
+            cachedFactsFrame = frame;
+            return cachedFacts;
         }
 
         public IReadOnlyList<CampusEcologyValidator.ValidationIssue> ValidateEcology(
@@ -185,6 +213,25 @@ namespace NtingCampus.Gameplay.Rooms
             {
                 roomRegistry = gameObject.AddComponent<CampusRoomRegistry>();
             }
+        }
+
+        private void EnsureServiceStationRegistry()
+        {
+            ResolveRoomRegistry();
+            if (serviceStationsBuilt)
+            {
+                return;
+            }
+
+            serviceStations.Rebuild(roomRegistry != null ? roomRegistry.Rooms : null);
+            serviceStationsBuilt = true;
+        }
+
+        private void InvalidateFacts()
+        {
+            cachedFacts = null;
+            cachedFactsRoster = null;
+            cachedFactsFrame = -1;
         }
     }
 }

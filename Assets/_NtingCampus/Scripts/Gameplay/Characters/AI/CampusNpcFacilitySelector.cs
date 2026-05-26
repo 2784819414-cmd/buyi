@@ -217,18 +217,7 @@ namespace NtingCampus.Gameplay.Characters
                 room != null ? room.FloorIndex : 1,
                 record.FacilityType,
                 record.Cell);
-            return string.Equals(stableId, expectedId, StringComparison.OrdinalIgnoreCase) ||
-                   string.Equals(BuildLegacyFacilityKey(room, record), expectedId, StringComparison.OrdinalIgnoreCase);
-        }
-
-        private static string BuildLegacyFacilityKey(CampusGameplayRoom room, CampusGameplayRoom.FacilityRecord record)
-        {
-            if (room == null || record == null)
-            {
-                return string.Empty;
-            }
-
-            return room.RoomId + ":" + record.FacilityType + ":" + record.Cell.x + ":" + record.Cell.y;
+            return string.Equals(stableId, expectedId, StringComparison.OrdinalIgnoreCase);
         }
 
         private static int CompareFacilities(CampusGameplayRoom.FacilityRecord left, CampusGameplayRoom.FacilityRecord right)

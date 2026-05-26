@@ -1,7 +1,7 @@
-{
+﻿{
     "Schema": "NtingCampusRuntimeMapEditor.v1",
     "MapName": "校园地图根节点",
-    "ExportedAtLocal": "2026-05-24 15:08:20",
+    "ExportedAtLocal": "2026-05-26 17:12:47",
     "SortingOrderStepPerFloor": 1000,
     "SelectedFloorIndex": 1,
     "HasRoomDefinitions": true,
@@ -44123,7 +44123,10 @@
                             "PromptText": "打开桌肚",
                             "LocalizedPromptText": {
                                 "chinese": "",
-                                "english": ""
+                                "english": "",
+                                "traditionalChinese": "",
+                                "russian": "",
+                                "japanese": ""
                             },
                             "ActionId": "campus.storage.open",
                             "Payload": "",
@@ -44134,7 +44137,10 @@
                             "InteractionLogMessage": "",
                             "LocalizedInteractionLogMessage": {
                                 "chinese": "",
-                                "english": ""
+                                "english": "",
+                                "traditionalChinese": "",
+                                "russian": "",
+                                "japanese": ""
                             }
                         }
                     ],
@@ -44226,7 +44232,10 @@
                             "PromptText": "打开桌肚",
                             "LocalizedPromptText": {
                                 "chinese": "",
-                                "english": ""
+                                "english": "",
+                                "traditionalChinese": "",
+                                "russian": "",
+                                "japanese": ""
                             },
                             "ActionId": "campus.storage.open",
                             "Payload": "",
@@ -44237,7 +44246,10 @@
                             "InteractionLogMessage": "",
                             "LocalizedInteractionLogMessage": {
                                 "chinese": "",
-                                "english": ""
+                                "english": "",
+                                "traditionalChinese": "",
+                                "russian": "",
+                                "japanese": ""
                             }
                         }
                     ],
@@ -44329,7 +44341,10 @@
                             "PromptText": "打开桌肚",
                             "LocalizedPromptText": {
                                 "chinese": "",
-                                "english": ""
+                                "english": "",
+                                "traditionalChinese": "",
+                                "russian": "",
+                                "japanese": ""
                             },
                             "ActionId": "campus.storage.open",
                             "Payload": "",
@@ -44340,7 +44355,10 @@
                             "InteractionLogMessage": "",
                             "LocalizedInteractionLogMessage": {
                                 "chinese": "",
-                                "english": ""
+                                "english": "",
+                                "traditionalChinese": "",
+                                "russian": "",
+                                "japanese": ""
                             }
                         }
                     ],
@@ -44432,7 +44450,10 @@
                             "PromptText": "打开桌肚",
                             "LocalizedPromptText": {
                                 "chinese": "",
-                                "english": ""
+                                "english": "",
+                                "traditionalChinese": "",
+                                "russian": "",
+                                "japanese": ""
                             },
                             "ActionId": "campus.storage.open",
                             "Payload": "",
@@ -44443,7 +44464,10 @@
                             "InteractionLogMessage": "",
                             "LocalizedInteractionLogMessage": {
                                 "chinese": "",
-                                "english": ""
+                                "english": "",
+                                "traditionalChinese": "",
+                                "russian": "",
+                                "japanese": ""
                             }
                         }
                     ],
@@ -44535,7 +44559,10 @@
                             "PromptText": "打开桌肚",
                             "LocalizedPromptText": {
                                 "chinese": "",
-                                "english": ""
+                                "english": "",
+                                "traditionalChinese": "",
+                                "russian": "",
+                                "japanese": ""
                             },
                             "ActionId": "campus.storage.open",
                             "Payload": "",
@@ -44546,7 +44573,10 @@
                             "InteractionLogMessage": "",
                             "LocalizedInteractionLogMessage": {
                                 "chinese": "",
-                                "english": ""
+                                "english": "",
+                                "traditionalChinese": "",
+                                "russian": "",
+                                "japanese": ""
                             }
                         }
                     ],
@@ -44638,7 +44668,10 @@
                             "PromptText": "打开桌肚",
                             "LocalizedPromptText": {
                                 "chinese": "",
-                                "english": ""
+                                "english": "",
+                                "traditionalChinese": "",
+                                "russian": "",
+                                "japanese": ""
                             },
                             "ActionId": "campus.storage.open",
                             "Payload": "",
@@ -44649,7 +44682,10 @@
                             "InteractionLogMessage": "",
                             "LocalizedInteractionLogMessage": {
                                 "chinese": "",
-                                "english": ""
+                                "english": "",
+                                "traditionalChinese": "",
+                                "russian": "",
+                                "japanese": ""
                             }
                         }
                     ],
@@ -44741,7 +44777,10 @@
                             "PromptText": "打开桌肚",
                             "LocalizedPromptText": {
                                 "chinese": "",
-                                "english": ""
+                                "english": "",
+                                "traditionalChinese": "",
+                                "russian": "",
+                                "japanese": ""
                             },
                             "ActionId": "campus.storage.open",
                             "Payload": "",
@@ -44752,7 +44791,10 @@
                             "InteractionLogMessage": "",
                             "LocalizedInteractionLogMessage": {
                                 "chinese": "",
-                                "english": ""
+                                "english": "",
+                                "traditionalChinese": "",
+                                "russian": "",
+                                "japanese": ""
                             }
                         }
                     ],
@@ -44844,7 +44886,10 @@
                             "PromptText": "打开桌肚",
                             "LocalizedPromptText": {
                                 "chinese": "",
-                                "english": ""
+                                "english": "",
+                                "traditionalChinese": "",
+                                "russian": "",
+                                "japanese": ""
                             },
                             "ActionId": "campus.storage.open",
                             "Payload": "",
@@ -44855,7 +44900,10 @@
                             "InteractionLogMessage": "",
                             "LocalizedInteractionLogMessage": {
                                 "chinese": "",
-                                "english": ""
+                                "english": "",
+                                "traditionalChinese": "",
+                                "russian": "",
+                                "japanese": ""
                             }
                         }
                     ],
@@ -44947,7 +44995,10 @@
                             "PromptText": "打开桌肚",
                             "LocalizedPromptText": {
                                 "chinese": "",
-                                "english": ""
+                                "english": "",
+                                "traditionalChinese": "",
+                                "russian": "",
+                                "japanese": ""
                             },
                             "ActionId": "campus.storage.open",
                             "Payload": "",
@@ -44958,7 +45009,10 @@
                             "InteractionLogMessage": "",
                             "LocalizedInteractionLogMessage": {
                                 "chinese": "",
-                                "english": ""
+                                "english": "",
+                                "traditionalChinese": "",
+                                "russian": "",
+                                "japanese": ""
                             }
                         }
                     ],
@@ -45050,7 +45104,10 @@
                             "PromptText": "打开桌肚",
                             "LocalizedPromptText": {
                                 "chinese": "",
-                                "english": ""
+                                "english": "",
+                                "traditionalChinese": "",
+                                "russian": "",
+                                "japanese": ""
                             },
                             "ActionId": "campus.storage.open",
                             "Payload": "",
@@ -45061,7 +45118,10 @@
                             "InteractionLogMessage": "",
                             "LocalizedInteractionLogMessage": {
                                 "chinese": "",
-                                "english": ""
+                                "english": "",
+                                "traditionalChinese": "",
+                                "russian": "",
+                                "japanese": ""
                             }
                         }
                     ],
@@ -45153,7 +45213,10 @@
                             "PromptText": "打开桌肚",
                             "LocalizedPromptText": {
                                 "chinese": "",
-                                "english": ""
+                                "english": "",
+                                "traditionalChinese": "",
+                                "russian": "",
+                                "japanese": ""
                             },
                             "ActionId": "campus.storage.open",
                             "Payload": "",
@@ -45164,7 +45227,10 @@
                             "InteractionLogMessage": "",
                             "LocalizedInteractionLogMessage": {
                                 "chinese": "",
-                                "english": ""
+                                "english": "",
+                                "traditionalChinese": "",
+                                "russian": "",
+                                "japanese": ""
                             }
                         }
                     ],
@@ -45256,7 +45322,10 @@
                             "PromptText": "打开桌肚",
                             "LocalizedPromptText": {
                                 "chinese": "",
-                                "english": ""
+                                "english": "",
+                                "traditionalChinese": "",
+                                "russian": "",
+                                "japanese": ""
                             },
                             "ActionId": "campus.storage.open",
                             "Payload": "",
@@ -45267,7 +45336,10 @@
                             "InteractionLogMessage": "",
                             "LocalizedInteractionLogMessage": {
                                 "chinese": "",
-                                "english": ""
+                                "english": "",
+                                "traditionalChinese": "",
+                                "russian": "",
+                                "japanese": ""
                             }
                         }
                     ],
@@ -45359,7 +45431,10 @@
                             "PromptText": "打开桌肚",
                             "LocalizedPromptText": {
                                 "chinese": "",
-                                "english": ""
+                                "english": "",
+                                "traditionalChinese": "",
+                                "russian": "",
+                                "japanese": ""
                             },
                             "ActionId": "campus.storage.open",
                             "Payload": "",
@@ -45370,7 +45445,10 @@
                             "InteractionLogMessage": "",
                             "LocalizedInteractionLogMessage": {
                                 "chinese": "",
-                                "english": ""
+                                "english": "",
+                                "traditionalChinese": "",
+                                "russian": "",
+                                "japanese": ""
                             }
                         }
                     ],
@@ -45462,7 +45540,10 @@
                             "PromptText": "打开桌肚",
                             "LocalizedPromptText": {
                                 "chinese": "",
-                                "english": ""
+                                "english": "",
+                                "traditionalChinese": "",
+                                "russian": "",
+                                "japanese": ""
                             },
                             "ActionId": "campus.storage.open",
                             "Payload": "",
@@ -45473,7 +45554,10 @@
                             "InteractionLogMessage": "",
                             "LocalizedInteractionLogMessage": {
                                 "chinese": "",
-                                "english": ""
+                                "english": "",
+                                "traditionalChinese": "",
+                                "russian": "",
+                                "japanese": ""
                             }
                         }
                     ],
@@ -45565,7 +45649,10 @@
                             "PromptText": "打开桌肚",
                             "LocalizedPromptText": {
                                 "chinese": "",
-                                "english": ""
+                                "english": "",
+                                "traditionalChinese": "",
+                                "russian": "",
+                                "japanese": ""
                             },
                             "ActionId": "campus.storage.open",
                             "Payload": "",
@@ -45576,7 +45663,10 @@
                             "InteractionLogMessage": "",
                             "LocalizedInteractionLogMessage": {
                                 "chinese": "",
-                                "english": ""
+                                "english": "",
+                                "traditionalChinese": "",
+                                "russian": "",
+                                "japanese": ""
                             }
                         }
                     ],
@@ -45668,7 +45758,10 @@
                             "PromptText": "打开桌肚",
                             "LocalizedPromptText": {
                                 "chinese": "",
-                                "english": ""
+                                "english": "",
+                                "traditionalChinese": "",
+                                "russian": "",
+                                "japanese": ""
                             },
                             "ActionId": "campus.storage.open",
                             "Payload": "",
@@ -45679,7 +45772,10 @@
                             "InteractionLogMessage": "",
                             "LocalizedInteractionLogMessage": {
                                 "chinese": "",
-                                "english": ""
+                                "english": "",
+                                "traditionalChinese": "",
+                                "russian": "",
+                                "japanese": ""
                             }
                         }
                     ],
@@ -45771,7 +45867,10 @@
                             "PromptText": "柜台",
                             "LocalizedPromptText": {
                                 "chinese": "",
-                                "english": ""
+                                "english": "",
+                                "traditionalChinese": "",
+                                "russian": "",
+                                "japanese": ""
                             },
                             "ActionId": "",
                             "Payload": "",
@@ -45782,7 +45881,10 @@
                             "InteractionLogMessage": "",
                             "LocalizedInteractionLogMessage": {
                                 "chinese": "",
-                                "english": ""
+                                "english": "",
+                                "traditionalChinese": "",
+                                "russian": "",
+                                "japanese": ""
                             }
                         }
                     ],
@@ -45846,7 +45948,7 @@
                     "BlocksMovement": true,
                     "BlocksSight": false,
                     "IsInteractable": false,
-                    "IsStorageContainer": false,
+                    "IsStorageContainer": true,
                     "StorageSize": {
                         "x": 4,
                         "y": 4
@@ -45926,7 +46028,7 @@
                     "BlocksMovement": true,
                     "BlocksSight": false,
                     "IsInteractable": false,
-                    "IsStorageContainer": false,
+                    "IsStorageContainer": true,
                     "StorageSize": {
                         "x": 4,
                         "y": 4
@@ -46006,7 +46108,7 @@
                     "BlocksMovement": true,
                     "BlocksSight": false,
                     "IsInteractable": false,
-                    "IsStorageContainer": false,
+                    "IsStorageContainer": true,
                     "StorageSize": {
                         "x": 4,
                         "y": 4
@@ -46236,7 +46338,7 @@
                     "BlocksMovement": true,
                     "BlocksSight": false,
                     "IsInteractable": false,
-                    "IsStorageContainer": false,
+                    "IsStorageContainer": true,
                     "StorageSize": {
                         "x": 4,
                         "y": 4
@@ -46794,7 +46896,10 @@
                             "PromptText": "开门",
                             "LocalizedPromptText": {
                                 "chinese": "",
-                                "english": ""
+                                "english": "",
+                                "traditionalChinese": "",
+                                "russian": "",
+                                "japanese": ""
                             },
                             "ActionId": "campus.door.toggle",
                             "Payload": "",
@@ -46805,7 +46910,10 @@
                             "InteractionLogMessage": "",
                             "LocalizedInteractionLogMessage": {
                                 "chinese": "",
-                                "english": ""
+                                "english": "",
+                                "traditionalChinese": "",
+                                "russian": "",
+                                "japanese": ""
                             }
                         }
                     ],
@@ -46897,7 +47005,10 @@
                             "PromptText": "开门",
                             "LocalizedPromptText": {
                                 "chinese": "",
-                                "english": ""
+                                "english": "",
+                                "traditionalChinese": "",
+                                "russian": "",
+                                "japanese": ""
                             },
                             "ActionId": "campus.door.toggle",
                             "Payload": "",
@@ -46908,7 +47019,10 @@
                             "InteractionLogMessage": "",
                             "LocalizedInteractionLogMessage": {
                                 "chinese": "",
-                                "english": ""
+                                "english": "",
+                                "traditionalChinese": "",
+                                "russian": "",
+                                "japanese": ""
                             }
                         }
                     ],
@@ -46971,7 +47085,7 @@
                     "Rotation90": 0,
                     "BlocksMovement": false,
                     "BlocksSight": false,
-                    "IsInteractable": false,
+                    "IsInteractable": true,
                     "IsStorageContainer": false,
                     "StorageSize": {
                         "x": 4,
@@ -47000,7 +47114,10 @@
                             "PromptText": "开门",
                             "LocalizedPromptText": {
                                 "chinese": "",
-                                "english": ""
+                                "english": "",
+                                "traditionalChinese": "",
+                                "russian": "",
+                                "japanese": ""
                             },
                             "ActionId": "campus.door.toggle",
                             "Payload": "",
@@ -47011,7 +47128,10 @@
                             "InteractionLogMessage": "",
                             "LocalizedInteractionLogMessage": {
                                 "chinese": "",
-                                "english": ""
+                                "english": "",
+                                "traditionalChinese": "",
+                                "russian": "",
+                                "japanese": ""
                             }
                         }
                     ],
@@ -47074,7 +47194,7 @@
                     "Rotation90": 0,
                     "BlocksMovement": false,
                     "BlocksSight": false,
-                    "IsInteractable": false,
+                    "IsInteractable": true,
                     "IsStorageContainer": false,
                     "StorageSize": {
                         "x": 4,
@@ -47103,7 +47223,10 @@
                             "PromptText": "开门",
                             "LocalizedPromptText": {
                                 "chinese": "",
-                                "english": ""
+                                "english": "",
+                                "traditionalChinese": "",
+                                "russian": "",
+                                "japanese": ""
                             },
                             "ActionId": "campus.door.toggle",
                             "Payload": "",
@@ -47114,7 +47237,10 @@
                             "InteractionLogMessage": "",
                             "LocalizedInteractionLogMessage": {
                                 "chinese": "",
-                                "english": ""
+                                "english": "",
+                                "traditionalChinese": "",
+                                "russian": "",
+                                "japanese": ""
                             }
                         }
                     ],
@@ -47206,7 +47332,10 @@
                             "PromptText": "开门",
                             "LocalizedPromptText": {
                                 "chinese": "",
-                                "english": ""
+                                "english": "",
+                                "traditionalChinese": "",
+                                "russian": "",
+                                "japanese": ""
                             },
                             "ActionId": "campus.door.toggle",
                             "Payload": "",
@@ -47217,7 +47346,10 @@
                             "InteractionLogMessage": "",
                             "LocalizedInteractionLogMessage": {
                                 "chinese": "",
-                                "english": ""
+                                "english": "",
+                                "traditionalChinese": "",
+                                "russian": "",
+                                "japanese": ""
                             }
                         }
                     ],
@@ -47309,7 +47441,10 @@
                             "PromptText": "开门",
                             "LocalizedPromptText": {
                                 "chinese": "",
-                                "english": ""
+                                "english": "",
+                                "traditionalChinese": "",
+                                "russian": "",
+                                "japanese": ""
                             },
                             "ActionId": "campus.door.toggle",
                             "Payload": "",
@@ -47320,7 +47455,10 @@
                             "InteractionLogMessage": "",
                             "LocalizedInteractionLogMessage": {
                                 "chinese": "",
-                                "english": ""
+                                "english": "",
+                                "traditionalChinese": "",
+                                "russian": "",
+                                "japanese": ""
                             }
                         }
                     ],
@@ -47412,7 +47550,10 @@
                             "PromptText": "开门",
                             "LocalizedPromptText": {
                                 "chinese": "",
-                                "english": ""
+                                "english": "",
+                                "traditionalChinese": "",
+                                "russian": "",
+                                "japanese": ""
                             },
                             "ActionId": "campus.door.toggle",
                             "Payload": "",
@@ -47423,7 +47564,10 @@
                             "InteractionLogMessage": "",
                             "LocalizedInteractionLogMessage": {
                                 "chinese": "",
-                                "english": ""
+                                "english": "",
+                                "traditionalChinese": "",
+                                "russian": "",
+                                "japanese": ""
                             }
                         }
                     ],
@@ -47747,34 +47891,34 @@
                     }
                 },
                 {
-                    "ObjectId": "ground_item_retail_potato_chips",
-                    "TypeId": "",
-                    "DisplayNameOverride": "薯片",
-                    "PaletteIndex": -1,
+                    "ObjectId": "canteen_checkout_2x1",
+                    "TypeId": "CheckoutPoint",
+                    "DisplayNameOverride": "收银台",
+                    "PaletteIndex": 26,
                     "Position": {
-                        "x": 21.174999237060548,
-                        "y": 2.130525588989258,
+                        "x": 23.5,
+                        "y": -10.0,
                         "z": 0.5
                     },
                     "Cell": {
-                        "x": 21,
-                        "y": 2,
+                        "x": 23,
+                        "y": -11,
                         "z": 0
                     },
                     "FootprintSize": {
-                        "x": 1,
+                        "x": 2,
                         "y": 1
                     },
                     "FloorIndex": 1,
                     "OverrideFootprintSize": true,
                     "VisualScale": {
-                        "x": 0.21875,
-                        "y": 0.21875
+                        "x": 1.0,
+                        "y": 1.0
                     },
                     "LockVisualScaleAspect": true,
                     "IsWallMounted": false,
                     "OverrideAllowRotation": true,
-                    "AllowRotation": false,
+                    "AllowRotation": true,
                     "OverrideRotation0Sprite": false,
                     "Rotation0SpritePath": "",
                     "OverrideRotation90Sprite": false,
@@ -47783,10 +47927,85 @@
                     "Rotation180SpritePath": "",
                     "OverrideRotation270Sprite": false,
                     "Rotation270SpritePath": "",
-                    "Rotation90": 0,
-                    "BlocksMovement": false,
+                    "Rotation90": 1,
+                    "BlocksMovement": true,
                     "BlocksSight": false,
-                    "IsInteractable": true,
+                    "IsInteractable": false,
+                    "IsStorageContainer": false,
+                    "StorageSize": {
+                        "x": 4,
+                        "y": 4
+                    },
+                    "StorageMaxWeight": 12.0,
+                    "UseCustomInteractionAnchor": false,
+                    "CustomInteractionAnchorLocalPosition": {
+                        "x": 0.0,
+                        "y": 0.0,
+                        "z": 0.0
+                    },
+                    "CustomInteractionAnchorRadius": 0.6499999761581421,
+                    "CustomInteractionPromptText": "交互",
+                    "CustomInteractionAnchors": [],
+                    "RetailShelf": {
+                        "Enabled": false,
+                        "ShelfMode": 0,
+                        "ItemDefinitionId": "",
+                        "StockCount": 8,
+                        "DisplaySlotCount": 4,
+                        "AutoRestock": true
+                    },
+                    "ProtectedStockContainer": {
+                        "Enabled": false,
+                        "ContainerId": "",
+                        "OwnerId": "",
+                        "OwnerRole": "Campus",
+                        "AllowTakingContents": true,
+                        "SuspicionRisk": 4,
+                        "AutoRestock": true,
+                        "StockItems": []
+                    }
+                },
+                {
+                    "ObjectId": "canteen_checkout_2x1",
+                    "TypeId": "CheckoutPoint",
+                    "DisplayNameOverride": "收银台",
+                    "PaletteIndex": 26,
+                    "Position": {
+                        "x": 20.5,
+                        "y": -10.0,
+                        "z": 0.5
+                    },
+                    "Cell": {
+                        "x": 20,
+                        "y": -11,
+                        "z": 0
+                    },
+                    "FootprintSize": {
+                        "x": 2,
+                        "y": 1
+                    },
+                    "FloorIndex": 1,
+                    "OverrideFootprintSize": true,
+                    "VisualScale": {
+                        "x": 1.0,
+                        "y": 1.0
+                    },
+                    "LockVisualScaleAspect": true,
+                    "IsWallMounted": false,
+                    "OverrideAllowRotation": true,
+                    "AllowRotation": true,
+                    "OverrideRotation0Sprite": false,
+                    "Rotation0SpritePath": "",
+                    "OverrideRotation90Sprite": false,
+                    "Rotation90SpritePath": "",
+                    "OverrideRotation180Sprite": false,
+                    "Rotation180SpritePath": "",
+                    "OverrideRotation270Sprite": false,
+                    "Rotation270SpritePath": "",
+                    "Rotation90": 1,
+                    "BlocksMovement": true,
+                    "BlocksSight": false,
+                    "IsInteractable": false,
                     "IsStorageContainer": false,
                     "StorageSize": {
                         "x": 4,
@@ -47833,81 +48052,6 @@
                     },
                     "Cell": {
                         "x": 20,
-                        "y": 1,
-                        "z": 0
-                    },
-                    "FootprintSize": {
-                        "x": 1,
-                        "y": 1
-                    },
-                    "FloorIndex": 1,
-                    "OverrideFootprintSize": true,
-                    "VisualScale": {
-                        "x": 0.21875,
-                        "y": 0.21875
-                    },
-                    "LockVisualScaleAspect": true,
-                    "IsWallMounted": false,
-                    "OverrideAllowRotation": true,
-                    "AllowRotation": false,
-                    "OverrideRotation0Sprite": false,
-                    "Rotation0SpritePath": "",
-                    "OverrideRotation90Sprite": false,
-                    "Rotation90SpritePath": "",
-                    "OverrideRotation180Sprite": false,
-                    "Rotation180SpritePath": "",
-                    "OverrideRotation270Sprite": false,
-                    "Rotation270SpritePath": "",
-                    "Rotation90": 0,
-                    "BlocksMovement": false,
-                    "BlocksSight": false,
-                    "IsInteractable": true,
-                    "IsStorageContainer": false,
-                    "StorageSize": {
-                        "x": 4,
-                        "y": 4
-                    },
-                    "StorageMaxWeight": 12.0,
-                    "UseCustomInteractionAnchor": false,
-                    "CustomInteractionAnchorLocalPosition": {
-                        "x": 0.0,
-                        "y": 0.0,
-                        "z": 0.0
-                    },
-                    "CustomInteractionAnchorRadius": 0.6499999761581421,
-                    "CustomInteractionPromptText": "交互",
-                    "CustomInteractionAnchors": [],
-                    "RetailShelf": {
-                        "Enabled": false,
-                        "ShelfMode": 0,
-                        "ItemDefinitionId": "",
-                        "StockCount": 8,
-                        "DisplaySlotCount": 4,
-                        "AutoRestock": true
-                    },
-                    "ProtectedStockContainer": {
-                        "Enabled": false,
-                        "ContainerId": "",
-                        "OwnerId": "",
-                        "OwnerRole": "Campus",
-                        "AllowTakingContents": true,
-                        "SuspicionRisk": 4,
-                        "AutoRestock": true,
-                        "StockItems": []
-                    }
-                },
-                {
-                    "ObjectId": "ground_item_retail_potato_chips",
-                    "TypeId": "",
-                    "DisplayNameOverride": "薯片",
-                    "PaletteIndex": -1,
-                    "Position": {
-                        "x": 21.524999618530275,
-                        "y": 1.9399999380111695,
-                        "z": 0.5
-                    },
-                    "Cell": {
-                        "x": 21,
                         "y": 1,
                         "z": 0
                     },
@@ -48052,12 +48196,12 @@
                     "DisplayNameOverride": "薯片",
                     "PaletteIndex": -1,
                     "Position": {
-                        "x": 23.825000762939454,
+                        "x": 21.174999237060548,
                         "y": 2.130525588989258,
                         "z": 0.5
                     },
                     "Cell": {
-                        "x": 23,
+                        "x": 21,
                         "y": 2,
                         "z": 0
                     },
@@ -48127,13 +48271,163 @@
                     "DisplayNameOverride": "薯片",
                     "PaletteIndex": -1,
                     "Position": {
-                        "x": 24.524999618530275,
+                        "x": 21.524999618530275,
                         "y": 1.9399999380111695,
                         "z": 0.5
                     },
                     "Cell": {
-                        "x": 24,
+                        "x": 21,
                         "y": 1,
+                        "z": 0
+                    },
+                    "FootprintSize": {
+                        "x": 1,
+                        "y": 1
+                    },
+                    "FloorIndex": 1,
+                    "OverrideFootprintSize": true,
+                    "VisualScale": {
+                        "x": 0.21875,
+                        "y": 0.21875
+                    },
+                    "LockVisualScaleAspect": true,
+                    "IsWallMounted": false,
+                    "OverrideAllowRotation": true,
+                    "AllowRotation": false,
+                    "OverrideRotation0Sprite": false,
+                    "Rotation0SpritePath": "",
+                    "OverrideRotation90Sprite": false,
+                    "Rotation90SpritePath": "",
+                    "OverrideRotation180Sprite": false,
+                    "Rotation180SpritePath": "",
+                    "OverrideRotation270Sprite": false,
+                    "Rotation270SpritePath": "",
+                    "Rotation90": 0,
+                    "BlocksMovement": false,
+                    "BlocksSight": false,
+                    "IsInteractable": true,
+                    "IsStorageContainer": false,
+                    "StorageSize": {
+                        "x": 4,
+                        "y": 4
+                    },
+                    "StorageMaxWeight": 12.0,
+                    "UseCustomInteractionAnchor": false,
+                    "CustomInteractionAnchorLocalPosition": {
+                        "x": 0.0,
+                        "y": 0.0,
+                        "z": 0.0
+                    },
+                    "CustomInteractionAnchorRadius": 0.6499999761581421,
+                    "CustomInteractionPromptText": "交互",
+                    "CustomInteractionAnchors": [],
+                    "RetailShelf": {
+                        "Enabled": false,
+                        "ShelfMode": 0,
+                        "ItemDefinitionId": "",
+                        "StockCount": 8,
+                        "DisplaySlotCount": 4,
+                        "AutoRestock": true
+                    },
+                    "ProtectedStockContainer": {
+                        "Enabled": false,
+                        "ContainerId": "",
+                        "OwnerId": "",
+                        "OwnerRole": "Campus",
+                        "AllowTakingContents": true,
+                        "SuspicionRisk": 4,
+                        "AutoRestock": true,
+                        "StockItems": []
+                    }
+                },
+                {
+                    "ObjectId": "ground_item_retail_potato_chips",
+                    "TypeId": "",
+                    "DisplayNameOverride": "薯片",
+                    "PaletteIndex": -1,
+                    "Position": {
+                        "x": 23.475000381469728,
+                        "y": 1.940000057220459,
+                        "z": 0.5
+                    },
+                    "Cell": {
+                        "x": 23,
+                        "y": 1,
+                        "z": 0
+                    },
+                    "FootprintSize": {
+                        "x": 1,
+                        "y": 1
+                    },
+                    "FloorIndex": 1,
+                    "OverrideFootprintSize": true,
+                    "VisualScale": {
+                        "x": 0.21875,
+                        "y": 0.21875
+                    },
+                    "LockVisualScaleAspect": true,
+                    "IsWallMounted": false,
+                    "OverrideAllowRotation": true,
+                    "AllowRotation": false,
+                    "OverrideRotation0Sprite": false,
+                    "Rotation0SpritePath": "",
+                    "OverrideRotation90Sprite": false,
+                    "Rotation90SpritePath": "",
+                    "OverrideRotation180Sprite": false,
+                    "Rotation180SpritePath": "",
+                    "OverrideRotation270Sprite": false,
+                    "Rotation270SpritePath": "",
+                    "Rotation90": 0,
+                    "BlocksMovement": false,
+                    "BlocksSight": false,
+                    "IsInteractable": true,
+                    "IsStorageContainer": false,
+                    "StorageSize": {
+                        "x": 4,
+                        "y": 4
+                    },
+                    "StorageMaxWeight": 12.0,
+                    "UseCustomInteractionAnchor": false,
+                    "CustomInteractionAnchorLocalPosition": {
+                        "x": 0.0,
+                        "y": 0.0,
+                        "z": 0.0
+                    },
+                    "CustomInteractionAnchorRadius": 0.6499999761581421,
+                    "CustomInteractionPromptText": "交互",
+                    "CustomInteractionAnchors": [],
+                    "RetailShelf": {
+                        "Enabled": false,
+                        "ShelfMode": 0,
+                        "ItemDefinitionId": "",
+                        "StockCount": 8,
+                        "DisplaySlotCount": 4,
+                        "AutoRestock": true
+                    },
+                    "ProtectedStockContainer": {
+                        "Enabled": false,
+                        "ContainerId": "",
+                        "OwnerId": "",
+                        "OwnerRole": "Campus",
+                        "AllowTakingContents": true,
+                        "SuspicionRisk": 4,
+                        "AutoRestock": true,
+                        "StockItems": []
+                    }
+                },
+                {
+                    "ObjectId": "ground_item_retail_potato_chips",
+                    "TypeId": "",
+                    "DisplayNameOverride": "薯片",
+                    "PaletteIndex": -1,
+                    "Position": {
+                        "x": 23.825000762939454,
+                        "y": 2.130525588989258,
+                        "z": 0.5
+                    },
+                    "Cell": {
+                        "x": 23,
+                        "y": 2,
                         "z": 0
                     },
                     "FootprintSize": {
@@ -48277,12 +48571,12 @@
                     "DisplayNameOverride": "薯片",
                     "PaletteIndex": -1,
                     "Position": {
-                        "x": 23.475000381469728,
-                        "y": 1.940000057220459,
+                        "x": 24.524999618530275,
+                        "y": 1.9399999380111695,
                         "z": 0.5
                     },
                     "Cell": {
-                        "x": 23,
+                        "x": 24,
                         "y": 1,
                         "z": 0
                     },
@@ -48312,156 +48606,6 @@
                     "BlocksMovement": false,
                     "BlocksSight": false,
                     "IsInteractable": true,
-                    "IsStorageContainer": false,
-                    "StorageSize": {
-                        "x": 4,
-                        "y": 4
-                    },
-                    "StorageMaxWeight": 12.0,
-                    "UseCustomInteractionAnchor": false,
-                    "CustomInteractionAnchorLocalPosition": {
-                        "x": 0.0,
-                        "y": 0.0,
-                        "z": 0.0
-                    },
-                    "CustomInteractionAnchorRadius": 0.6499999761581421,
-                    "CustomInteractionPromptText": "交互",
-                    "CustomInteractionAnchors": [],
-                    "RetailShelf": {
-                        "Enabled": false,
-                        "ShelfMode": 0,
-                        "ItemDefinitionId": "",
-                        "StockCount": 8,
-                        "DisplaySlotCount": 4,
-                        "AutoRestock": true
-                    },
-                    "ProtectedStockContainer": {
-                        "Enabled": false,
-                        "ContainerId": "",
-                        "OwnerId": "",
-                        "OwnerRole": "Campus",
-                        "AllowTakingContents": true,
-                        "SuspicionRisk": 4,
-                        "AutoRestock": true,
-                        "StockItems": []
-                    }
-                },
-                {
-                    "ObjectId": "canteen_checkout_2x1",
-                    "TypeId": "CheckoutPoint",
-                    "DisplayNameOverride": "收银台",
-                    "PaletteIndex": 26,
-                    "Position": {
-                        "x": 23.5,
-                        "y": -10.0,
-                        "z": 0.5
-                    },
-                    "Cell": {
-                        "x": 23,
-                        "y": -11,
-                        "z": 0
-                    },
-                    "FootprintSize": {
-                        "x": 2,
-                        "y": 1
-                    },
-                    "FloorIndex": 1,
-                    "OverrideFootprintSize": true,
-                    "VisualScale": {
-                        "x": 1.0,
-                        "y": 1.0
-                    },
-                    "LockVisualScaleAspect": true,
-                    "IsWallMounted": false,
-                    "OverrideAllowRotation": true,
-                    "AllowRotation": true,
-                    "OverrideRotation0Sprite": false,
-                    "Rotation0SpritePath": "",
-                    "OverrideRotation90Sprite": false,
-                    "Rotation90SpritePath": "",
-                    "OverrideRotation180Sprite": false,
-                    "Rotation180SpritePath": "",
-                    "OverrideRotation270Sprite": false,
-                    "Rotation270SpritePath": "",
-                    "Rotation90": 1,
-                    "BlocksMovement": true,
-                    "BlocksSight": false,
-                    "IsInteractable": false,
-                    "IsStorageContainer": false,
-                    "StorageSize": {
-                        "x": 4,
-                        "y": 4
-                    },
-                    "StorageMaxWeight": 12.0,
-                    "UseCustomInteractionAnchor": false,
-                    "CustomInteractionAnchorLocalPosition": {
-                        "x": 0.0,
-                        "y": 0.0,
-                        "z": 0.0
-                    },
-                    "CustomInteractionAnchorRadius": 0.6499999761581421,
-                    "CustomInteractionPromptText": "交互",
-                    "CustomInteractionAnchors": [],
-                    "RetailShelf": {
-                        "Enabled": false,
-                        "ShelfMode": 0,
-                        "ItemDefinitionId": "",
-                        "StockCount": 8,
-                        "DisplaySlotCount": 4,
-                        "AutoRestock": true
-                    },
-                    "ProtectedStockContainer": {
-                        "Enabled": false,
-                        "ContainerId": "",
-                        "OwnerId": "",
-                        "OwnerRole": "Campus",
-                        "AllowTakingContents": true,
-                        "SuspicionRisk": 4,
-                        "AutoRestock": true,
-                        "StockItems": []
-                    }
-                },
-                {
-                    "ObjectId": "canteen_checkout_2x1",
-                    "TypeId": "CheckoutPoint",
-                    "DisplayNameOverride": "收银台",
-                    "PaletteIndex": 26,
-                    "Position": {
-                        "x": 20.5,
-                        "y": -10.0,
-                        "z": 0.5
-                    },
-                    "Cell": {
-                        "x": 20,
-                        "y": -11,
-                        "z": 0
-                    },
-                    "FootprintSize": {
-                        "x": 2,
-                        "y": 1
-                    },
-                    "FloorIndex": 1,
-                    "OverrideFootprintSize": true,
-                    "VisualScale": {
-                        "x": 1.0,
-                        "y": 1.0
-                    },
-                    "LockVisualScaleAspect": true,
-                    "IsWallMounted": false,
-                    "OverrideAllowRotation": true,
-                    "AllowRotation": true,
-                    "OverrideRotation0Sprite": false,
-                    "Rotation0SpritePath": "",
-                    "OverrideRotation90Sprite": false,
-                    "Rotation90SpritePath": "",
-                    "OverrideRotation180Sprite": false,
-                    "Rotation180SpritePath": "",
-                    "OverrideRotation270Sprite": false,
-                    "Rotation270SpritePath": "",
-                    "Rotation90": 1,
-                    "BlocksMovement": true,
-                    "BlocksSight": false,
-                    "IsInteractable": false,
                     "IsStorageContainer": false,
                     "StorageSize": {
                         "x": 4,

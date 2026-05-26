@@ -130,7 +130,9 @@ namespace NtingCampus.Gameplay.Canteen
             MenuData loadedData = new MenuData();
             if (!CampusRuntimeModPresetStore.TryReadJson(PresetFileName, out string json))
             {
-                Debug.LogWarning("[CampusCanteenMenuCatalog] Missing menu preset file: " + PresetFileName);
+                Debug.LogWarning(CampusCanteenTextCatalog.Format(
+                    CampusCanteenTextId.MissingMenuPresetFile,
+                    PresetFileName));
                 loadedData.Add(CreateMigrationDefault());
                 loadedData.DefaultItemId = MigrationDefaultMenuItemId;
                 return loadedData;
@@ -143,7 +145,10 @@ namespace NtingCampus.Gameplay.Canteen
             }
             catch (Exception exception)
             {
-                Debug.LogWarning("[CampusCanteenMenuCatalog] Failed to parse " + PresetFileName + ": " + exception.Message);
+                Debug.LogWarning(CampusCanteenTextCatalog.Format(
+                    CampusCanteenTextId.FailedToParseMenuPreset,
+                    PresetFileName,
+                    exception.Message));
             }
 
             if (loadedData.Items.Count == 0)

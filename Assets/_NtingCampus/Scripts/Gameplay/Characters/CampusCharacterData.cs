@@ -80,7 +80,9 @@ namespace NtingCampus.Gameplay.Characters
         {
             id = string.IsNullOrWhiteSpace(characterId) ? Guid.NewGuid().ToString("N") : characterId.Trim();
             legacyDisplayName = string.IsNullOrWhiteSpace(legacyCharacterName) ? string.Empty : legacyCharacterName.Trim();
-            localizedDisplayName = characterName;
+            localizedDisplayName = characterName.HasAnyText || string.IsNullOrEmpty(legacyDisplayName)
+                ? characterName
+                : new CampusLocalizedText(legacyDisplayName, string.Empty);
             role = characterRole;
             teacherDuty = duties;
             staffDuty = staffDuties;
@@ -337,12 +339,12 @@ namespace NtingCampus.Gameplay.Characters
 
         public string GetDisplayName(CampusDisplayLanguage language)
         {
-            return localizedDisplayName.Get(language, legacyDisplayName, id);
+            return localizedDisplayName.Get(language, id);
         }
 
         public string GetPreferredObjectName()
         {
-            return localizedDisplayName.ResolvePrimary(legacyDisplayName, id);
+            return localizedDisplayName.ResolvePrimary(id);
         }
 
         public void AddMemory(CampusCharacterMemoryId memory)

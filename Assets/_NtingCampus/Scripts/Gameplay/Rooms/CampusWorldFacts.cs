@@ -109,11 +109,12 @@ namespace NtingCampus.Gameplay.Rooms
                 }
             }
 
-            if (rosterService != null && rosterService.Runtimes != null)
+            if (rosterService != null)
             {
-                for (int i = 0; i < rosterService.Runtimes.Count; i++)
+                IReadOnlyList<CampusCharacterRuntime> runtimes = rosterService.Index.Runtimes;
+                for (int i = 0; i < runtimes.Count; i++)
                 {
-                    facts.AddActor(rosterService.Runtimes[i]);
+                    facts.AddActor(runtimes[i]);
                 }
             }
 
@@ -409,7 +410,7 @@ namespace NtingCampus.Gameplay.Rooms
             CampusWorldService worldService = bootstrap != null ? bootstrap.WorldService : null;
             CampusRosterService rosterService = bootstrap != null ? bootstrap.RosterService : null;
             IReadOnlyList<CampusCharacterRuntime> runtimes = rosterService != null
-                ? rosterService.Runtimes
+                ? rosterService.Index.Runtimes
                 : Array.Empty<CampusCharacterRuntime>();
             float radius = Mathf.Max(0.05f, activationRadius);
             float radiusSqr = radius * radius;

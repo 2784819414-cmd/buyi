@@ -30,7 +30,10 @@ namespace NtingCampusMapEditor
             }
             catch (Exception exception)
             {
-                Debug.LogWarning("[NtingCampusRuntimeModPresetStore] Failed to read preset file '" + path + "': " + exception.Message);
+                CampusRuntimePresetLogTextCatalog.Warning(
+                    CampusRuntimePresetLogTextId.FailedToReadPresetFile,
+                    path,
+                    exception.Message);
                 return false;
             }
         }

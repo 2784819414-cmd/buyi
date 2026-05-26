@@ -146,7 +146,9 @@ namespace NtingCampusMapEditor
             }
             catch (Exception exception)
             {
-                Debug.LogWarning("[CampusRuntimeAreaPresetCatalog] Failed to load AreaPresets.json: " + exception.Message);
+                CampusRuntimePresetLogTextCatalog.Warning(
+                    CampusRuntimePresetLogTextId.FailedToLoadAreaPresets,
+                    exception.Message);
                 return BuiltInPresets;
             }
         }

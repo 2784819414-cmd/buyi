@@ -64,6 +64,60 @@ namespace NtingCampus.Gameplay.Services
         }
     }
 
+    internal enum CampusServiceStationAvailabilityMode
+    {
+        Always = 0,
+        RequiresAssignedOperator = 1
+    }
+
+    internal sealed class CampusServiceStationAvailabilityDefinition
+    {
+        public static readonly CampusServiceStationAvailabilityDefinition Always =
+            new CampusServiceStationAvailabilityDefinition(
+                CampusServiceStationAvailabilityMode.Always,
+                Array.Empty<string>(),
+                CampusServiceStationSlotRoleIds.Operator,
+                0.85f);
+
+        public readonly CampusServiceStationAvailabilityMode Mode;
+        public readonly string[] ScheduleWindows;
+        public readonly string OperatorSlotRoleId;
+        public readonly float OperatorActivationRadius;
+
+        public CampusServiceStationAvailabilityDefinition(
+            CampusServiceStationAvailabilityMode mode,
+            string[] scheduleWindows,
+            string operatorSlotRoleId,
+            float operatorActivationRadius)
+        {
+            Mode = mode;
+            ScheduleWindows = NormalizeIds(scheduleWindows);
+            OperatorSlotRoleId = string.IsNullOrWhiteSpace(operatorSlotRoleId)
+                ? CampusServiceStationSlotRoleIds.Operator
+                : operatorSlotRoleId.Trim();
+            OperatorActivationRadius = Mathf.Max(0.05f, operatorActivationRadius);
+        }
+
+        private static string[] NormalizeIds(string[] values)
+        {
+            if (values == null || values.Length == 0)
+            {
+                return Array.Empty<string>();
+            }
+
+            List<string> normalized = new List<string>();
+            for (int i = 0; i < values.Length; i++)
+            {
+                if (!string.IsNullOrWhiteSpace(values[i]))
+                {
+                    normalized.Add(values[i].Trim());
+                }
+            }
+
+            return normalized.ToArray();
+        }
+    }
+
     internal sealed class CampusServiceStationTypeDefinition
     {
         private readonly Dictionary<string, CampusServiceStationSlotDefinition> slotsByRoleId =
@@ -73,6 +127,7 @@ namespace NtingCampus.Gameplay.Services
         public readonly CampusLocalizedText DisplayName;
         public readonly string InteractionActionId;
         public readonly string AvailabilityRuleId;
+        public readonly CampusServiceStationAvailabilityDefinition Availability;
         public readonly CampusRoomType[] AllowedRoomTypes;
         public readonly CampusFacilityType[] OwnerFacilityTypes;
         public readonly IReadOnlyList<CampusServiceStationSlotDefinition> Slots;
@@ -82,6 +137,7 @@ namespace NtingCampus.Gameplay.Services
             CampusLocalizedText displayName,
             string interactionActionId,
             string availabilityRuleId,
+            CampusServiceStationAvailabilityDefinition availability,
             CampusRoomType[] allowedRoomTypes,
             CampusFacilityType[] ownerFacilityTypes,
             List<CampusServiceStationSlotDefinition> slots)
@@ -90,6 +146,7 @@ namespace NtingCampus.Gameplay.Services
             DisplayName = displayName;
             InteractionActionId = CampusInteractionActionIds.Normalize(interactionActionId);
             AvailabilityRuleId = NormalizeId(availabilityRuleId);
+            Availability = availability ?? CampusServiceStationAvailabilityDefinition.Always;
             AllowedRoomTypes = allowedRoomTypes ?? Array.Empty<CampusRoomType>();
             OwnerFacilityTypes = ownerFacilityTypes ?? Array.Empty<CampusFacilityType>();
             Slots = slots ?? new List<CampusServiceStationSlotDefinition>();
@@ -154,8 +211,6 @@ namespace NtingCampus.Gameplay.Services
     internal static class CampusServiceStationPresetCatalog
     {
         private const string PresetFileName = "ServiceStationPresets.json";
-        public const string AvailabilityAlways = "always_available";
-        public const string AvailabilityCanteenOperatorMealPeak = "canteen_operator_present_meal_peak";
 
         private static Dictionary<string, CampusServiceStationTypeDefinition> definitionsById;
 
@@ -192,7 +247,6 @@ namespace NtingCampus.Gameplay.Services
                 new Dictionary<string, CampusServiceStationTypeDefinition>(StringComparer.OrdinalIgnoreCase);
             if (!CampusRuntimeModPresetStore.TryReadJson(PresetFileName, out string json))
             {
-                AddBuiltIns(definitions);
                 return definitions;
             }
 
@@ -214,68 +268,13 @@ namespace NtingCampus.Gameplay.Services
             }
             catch (Exception exception)
             {
-                Debug.LogWarning("[CampusServiceStationPresetCatalog] Failed to parse " + PresetFileName + ": " + exception.Message);
-            }
-
-            if (definitions.Count == 0)
-            {
-                AddBuiltIns(definitions);
+                Debug.LogWarning(CampusServiceStationValidationTextCatalog.Format(
+                    CampusServiceStationValidationTextId.FailedToParsePreset,
+                    PresetFileName,
+                    exception.Message));
             }
 
             return definitions;
-        }
-
-        private static void AddBuiltIns(Dictionary<string, CampusServiceStationTypeDefinition> definitions)
-        {
-            CampusServiceStationTypeDefinition canteen = new CampusServiceStationTypeDefinition(
-                "canteen_meal_window",
-                new CampusLocalizedText("食堂打饭窗口", "Canteen Meal Window"),
-                CampusInteractionActionIds.ServiceWindowUse,
-                AvailabilityCanteenOperatorMealPeak,
-                new[] { CampusRoomType.ServiceArea },
-                new[] { CampusFacilityType.ServiceWindow },
-                new List<CampusServiceStationSlotDefinition>
-                {
-                    new CampusServiceStationSlotDefinition(
-                        CampusServiceStationSlotRoleIds.Operator,
-                        new[] { CampusFacilityType.WorkerStandPoint },
-                        1,
-                        1,
-                        false,
-                        false),
-                    new CampusServiceStationSlotDefinition(
-                        CampusServiceStationSlotRoleIds.Customer,
-                        new[] { CampusFacilityType.PickupPoint },
-                        1,
-                        1,
-                        true,
-                        true),
-                    new CampusServiceStationSlotDefinition(
-                        CampusServiceStationSlotRoleIds.Queue,
-                        new[] { CampusFacilityType.WaitingPoint },
-                        0,
-                        99,
-                        false,
-                        true),
-                    new CampusServiceStationSlotDefinition(
-                        CampusServiceStationSlotRoleIds.Output,
-                        new[] { CampusFacilityType.DropPoint },
-                        0,
-                        1,
-                        false,
-                        false)
-                });
-            definitions[canteen.StationTypeId] = canteen;
-
-            CampusServiceStationTypeDefinition retail = new CampusServiceStationTypeDefinition(
-                "retail_checkout",
-                new CampusLocalizedText("零售收银台", "Retail Checkout"),
-                NtingCampus.Gameplay.Retail.CampusRetailActionIds.Checkout,
-                AvailabilityAlways,
-                new[] { CampusRoomType.RetailArea },
-                new[] { CampusFacilityType.CheckoutPoint },
-                new List<CampusServiceStationSlotDefinition>());
-            definitions[retail.StationTypeId] = retail;
         }
 
         private static CampusServiceStationTypeDefinition BuildDefinition(ServiceStationPresetRecord record)
@@ -302,12 +301,30 @@ namespace NtingCampus.Gameplay.Services
                 record.StationTypeId,
                 record.DisplayName,
                 record.InteractionActionId,
-                string.IsNullOrWhiteSpace(record.AvailabilityRuleId)
-                    ? AvailabilityAlways
-                    : record.AvailabilityRuleId,
+                record.AvailabilityRuleId,
+                BuildAvailability(record.Availability),
                 ParseRoomTypes(record.AllowedRoomTypes),
                 ParseFacilityTypes(record.OwnerFacilityTypes),
                 slots);
+        }
+
+        private static CampusServiceStationAvailabilityDefinition BuildAvailability(
+            ServiceStationAvailabilityPresetRecord record)
+        {
+            if (record == null)
+            {
+                return CampusServiceStationAvailabilityDefinition.Always;
+            }
+
+            CampusServiceStationAvailabilityMode mode =
+                Enum.TryParse(record.Mode, true, out CampusServiceStationAvailabilityMode parsedMode)
+                    ? parsedMode
+                    : CampusServiceStationAvailabilityMode.Always;
+            return new CampusServiceStationAvailabilityDefinition(
+                mode,
+                record.ScheduleWindows,
+                record.OperatorSlotRoleId,
+                record.OperatorActivationRadius);
         }
 
         private static CampusServiceStationSlotDefinition BuildSlot(ServiceStationSlotPresetRecord record)
@@ -385,10 +402,20 @@ namespace NtingCampus.Gameplay.Services
             public CampusLocalizedText DisplayName = default;
             public string InteractionActionId = string.Empty;
             public string AvailabilityRuleId = string.Empty;
+            public ServiceStationAvailabilityPresetRecord Availability = null;
             public string[] AllowedRoomTypes = Array.Empty<string>();
             public string[] OwnerFacilityTypes = Array.Empty<string>();
             public List<ServiceStationSlotPresetRecord> Slots =
                 new List<ServiceStationSlotPresetRecord>();
+        }
+
+        [Serializable]
+        private sealed class ServiceStationAvailabilityPresetRecord
+        {
+            public string Mode = string.Empty;
+            public string[] ScheduleWindows = Array.Empty<string>();
+            public string OperatorSlotRoleId = string.Empty;
+            public float OperatorActivationRadius = 0.85f;
         }
 
         [Serializable]

@@ -4,6 +4,22 @@ namespace NtingCampus.Gameplay.TheftConsequences
 {
     internal static class CampusTheftConsequenceTextCatalog
     {
+        public static string FormatMissingPresetFile(CampusDisplayLanguage language, string presetFileName)
+        {
+            return Resolve(
+                language,
+                "[TheftConsequencePresetCatalog] 缺少预设文件：" + presetFileName + "。正式内置盗窃后果默认数据已启用。",
+                "[CampusTheftConsequencePresetCatalog] Missing preset file: " + presetFileName + ". Built-in theft consequence defaults are active.");
+        }
+
+        public static string FormatFailedToParsePreset(CampusDisplayLanguage language, string presetFileName, string message)
+        {
+            return Resolve(
+                language,
+                "[TheftConsequencePresetCatalog] 解析 " + presetFileName + " 失败：" + message,
+                "[CampusTheftConsequencePresetCatalog] Failed to parse " + presetFileName + ": " + message);
+        }
+
         public static string FormatIncidentRecorded(
             CampusDisplayLanguage language,
             CampusTheftIncidentRecord incident,

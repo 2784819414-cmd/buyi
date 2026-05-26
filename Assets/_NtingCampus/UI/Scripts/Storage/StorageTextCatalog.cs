@@ -64,7 +64,15 @@ namespace Nting.Storage
         BackpackEquipmentSlot = 55,
         BackpackAlreadyEquipped = 56,
         BackpackEquipped = 57,
-        BackpackDropped = 58
+        BackpackDropped = 58,
+        GeneratedUiSprites = 59,
+        MemoryLoadSkippedInvalidPosition = 60,
+        MemoryContainerIdEmpty = 61,
+        MemoryMissingContainer = 62,
+        MemoryMissingItemRegistry = 63,
+        MemoryKeptPreviousSize = 64,
+        ItemRegistryMissingDefinition = 65,
+        StatusLog = 66
     }
 
     public static class StorageTextCatalog
@@ -129,7 +137,15 @@ namespace Nting.Storage
             { StorageTextId.BackpackEquipmentSlot, new Entry("背包栏", "Backpack Slot") },
             { StorageTextId.BackpackAlreadyEquipped, new Entry("已经装备了背包。", "Backpack is already equipped.") },
             { StorageTextId.BackpackEquipped, new Entry("已装备背包。", "Equipped backpack.") },
-            { StorageTextId.BackpackDropped, new Entry("已放下背包。", "Dropped backpack.") }
+            { StorageTextId.BackpackDropped, new Entry("已放下背包。", "Dropped backpack.") },
+            { StorageTextId.GeneratedUiSprites, new Entry("Storage UI sprites 已生成到 {0}。", "Storage UI sprites generated at {0}.") },
+            { StorageTextId.MemoryLoadSkippedInvalidPosition, new Entry("Storage memory load 跳过物品 {0}，因为保存位置无效。", "Storage memory load skipped item '{0}' because its saved position is invalid.") },
+            { StorageTextId.MemoryContainerIdEmpty, new Entry("Storage memory 失败：container id 为空。", "Storage memory failed: container id is empty.") },
+            { StorageTextId.MemoryMissingContainer, new Entry("Storage memory 失败：缺少容器 {0}。", "Storage memory failed: missing container '{0}'.") },
+            { StorageTextId.MemoryMissingItemRegistry, new Entry("Storage memory 失败：item registry 未分配。", "Storage memory failed: item registry is not assigned.") },
+            { StorageTextId.MemoryKeptPreviousSize, new Entry("Storage memory 保留容器 {0} 的旧尺寸，因为现有物品会越界。", "Storage memory kept previous size for container '{0}' because existing items would be out of bounds.") },
+            { StorageTextId.ItemRegistryMissingDefinition, new Entry("Storage item registry 失败：缺少物品定义 {0}。", "Storage item registry failed: missing item definition '{0}'.") },
+            { StorageTextId.StatusLog, new Entry("[Storage] {0}", "[Storage] {0}") }
         };
 
         public static string Get(StorageTextId id)

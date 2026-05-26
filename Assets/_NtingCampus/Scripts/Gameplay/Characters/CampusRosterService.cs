@@ -20,11 +20,13 @@ namespace NtingCampus.Gameplay.Characters
 
         private readonly Dictionary<string, CampusCharacterRuntime> runtimesById =
             new Dictionary<string, CampusCharacterRuntime>(StringComparer.OrdinalIgnoreCase);
+        private readonly CampusRosterIndex index = new CampusRosterIndex();
 
         private bool runtimeLookupReady;
 
         public IReadOnlyList<CampusCharacterData> Characters => characters;
         public IReadOnlyList<CampusCharacterRuntime> Runtimes => runtimes;
+        public CampusRosterIndex Index => index;
         public CampusCharacterRuntime PlayerRuntime => playerRuntime;
         public int StudentCount => CountByRole(CampusCharacterRole.Student);
         public int TeacherCount => CountByRole(CampusCharacterRole.Teacher);
@@ -39,6 +41,7 @@ namespace NtingCampus.Gameplay.Characters
         public void RebuildRosterFromScene()
         {
             CollectSceneRuntimes();
+            index.Rebuild(runtimes);
             runtimeLookupReady = true;
             SyncCurrentRoomsFromWorld();
             WriteInitializationLog();
@@ -118,6 +121,7 @@ namespace NtingCampus.Gameplay.Characters
             runtimeLookupReady = false;
             playerRuntime = null;
             playerCharacter = null;
+            index.Rebuild(runtimes);
 
             CampusRuntimeGameplayOverlayLoader overlayLoader = CampusRuntimeGameplayOverlayLoader.Instance;
             bool restrictToOverlayActors = overlayLoader != null && overlayLoader.UseRuntimeOverlayOnly;
@@ -162,8 +166,10 @@ namespace NtingCampus.Gameplay.Characters
 
             if (playerRuntime == null)
             {
-                Debug.LogWarning("CampusRosterService did not find any player-controlled scene character.");
+                CampusRosterLogTextCatalog.Warning(CampusRosterLogTextId.MissingPlayerControlledRuntime);
             }
+
+            index.Rebuild(runtimes);
         }
 
         private void RegisterRuntime(CampusCharacterRuntime runtime, HashSet<CampusCharacterRuntime> processedRuntimes)
@@ -190,12 +196,10 @@ namespace NtingCampus.Gameplay.Characters
         {
             if (playerRuntime != null && playerRuntime != runtime)
             {
-                Debug.LogWarning(
-                    "CampusRosterService found multiple player-controlled runtimes. Keeping " +
-                    playerRuntime.name +
-                    " and ignoring " +
-                    runtime.name +
-                    ".");
+                CampusRosterLogTextCatalog.Warning(
+                    CampusRosterLogTextId.MultiplePlayerControlledRuntimes,
+                    playerRuntime.name,
+                    runtime.name);
                 DemotePlayerRuntime(runtime);
                 return;
             }

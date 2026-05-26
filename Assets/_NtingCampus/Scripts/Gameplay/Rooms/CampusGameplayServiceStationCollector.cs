@@ -9,8 +9,7 @@ namespace NtingCampus.Gameplay.Rooms
     {
         public static void AssignServiceStations(
             CampusRuntimeGameplayOverlayLoader overlayLoader,
-            Func<string, CampusGameplayRoom> findRoomById,
-            IReadOnlyList<CampusGameplayRoom> rooms)
+            Func<string, CampusGameplayRoom> findRoomById)
         {
             if (findRoomById == null)
             {
@@ -37,8 +36,7 @@ namespace NtingCampus.Gameplay.Rooms
                     continue;
                 }
 
-                CampusGameplayRoom room = findRoomById(marker.RoomId) ??
-                                          FindRoomByOwnerFacility(rooms, marker.OwnerFacilityId);
+                CampusGameplayRoom room = findRoomById(marker.RoomId);
                 if (room == null)
                 {
                     continue;
@@ -53,38 +51,6 @@ namespace NtingCampus.Gameplay.Rooms
                     marker.Slots);
                 room.AddServiceStation(record);
             }
-        }
-
-        private static CampusGameplayRoom FindRoomByOwnerFacility(
-            IReadOnlyList<CampusGameplayRoom> rooms,
-            string ownerFacilityId)
-        {
-            string normalizedOwnerId = CampusGameplayServiceStationMarker.NormalizeId(ownerFacilityId);
-            if (rooms == null || string.IsNullOrEmpty(normalizedOwnerId))
-            {
-                return null;
-            }
-
-            for (int roomIndex = 0; roomIndex < rooms.Count; roomIndex++)
-            {
-                CampusGameplayRoom room = rooms[roomIndex];
-                if (room == null || room.Facilities == null)
-                {
-                    continue;
-                }
-
-                for (int facilityIndex = 0; facilityIndex < room.Facilities.Count; facilityIndex++)
-                {
-                    CampusGameplayRoom.FacilityRecord facility = room.Facilities[facilityIndex];
-                    if (facility != null &&
-                        string.Equals(facility.FacilityId, normalizedOwnerId, StringComparison.OrdinalIgnoreCase))
-                    {
-                        return room;
-                    }
-                }
-            }
-
-            return null;
         }
     }
 }

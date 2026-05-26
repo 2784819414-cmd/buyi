@@ -17,8 +17,10 @@ namespace NtingCampus.Gameplay.Characters
             }
 
             List<string> ids = new List<string>();
-            foreach (CampusCharacterRuntime peer in rosterService.Runtimes)
+            IReadOnlyList<CampusCharacterRuntime> peers = rosterService.Index.Runtimes;
+            for (int i = 0; i < peers.Count; i++)
             {
+                CampusCharacterRuntime peer = peers[i];
                 if (peer == null || peer.Data == null || (predicate != null && !predicate(runtime, peer)))
                 {
                     continue;
@@ -40,9 +42,10 @@ namespace NtingCampus.Gameplay.Characters
                 return 0;
             }
 
-            int index = 0;
-            foreach (CampusCharacterRuntime runtime in rosterService.Runtimes)
+            IReadOnlyList<CampusCharacterRuntime> peers = rosterService.Index.GetByRole(data.Role);
+            for (int index = 0; index < peers.Count; index++)
             {
+                CampusCharacterRuntime runtime = peers[index];
                 if (runtime == null || runtime.Data == null || runtime.Data.Role != data.Role)
                 {
                     continue;
@@ -52,11 +55,9 @@ namespace NtingCampus.Gameplay.Characters
                 {
                     return index;
                 }
-
-                index++;
             }
 
-            return CampusNpcStableIds.PositiveModulo(CampusNpcStableIds.Hash(data.Id), Math.Max(1, index));
+            return CampusNpcStableIds.PositiveModulo(CampusNpcStableIds.Hash(data.Id), Math.Max(1, peers.Count));
         }
 
         public static int StudentIndexInClassroom(
@@ -72,8 +73,10 @@ namespace NtingCampus.Gameplay.Characters
             }
 
             List<string> studentIds = new List<string>();
-            foreach (CampusCharacterRuntime peer in rosterService.Runtimes)
+            IReadOnlyList<CampusCharacterRuntime> peers = rosterService.Index.GetByRole(CampusCharacterRole.Student);
+            for (int i = 0; i < peers.Count; i++)
             {
+                CampusCharacterRuntime peer = peers[i];
                 if (peer == null || peer.Data == null || peer.Data.Role != CampusCharacterRole.Student)
                 {
                     continue;
@@ -128,8 +131,10 @@ namespace NtingCampus.Gameplay.Characters
             }
 
             List<string> teacherIds = new List<string>();
-            foreach (CampusCharacterRuntime peer in rosterService.Runtimes)
+            IReadOnlyList<CampusCharacterRuntime> peers = rosterService.Index.GetByRole(CampusCharacterRole.Teacher);
+            for (int i = 0; i < peers.Count; i++)
             {
+                CampusCharacterRuntime peer = peers[i];
                 if (peer == null || peer.Data == null || peer.Data.Role != CampusCharacterRole.Teacher)
                 {
                     continue;
@@ -268,8 +273,10 @@ namespace NtingCampus.Gameplay.Characters
             List<string> ownerIds = new List<string>();
             Dictionary<string, string> savedFacilityByOwner =
                 new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
-            foreach (CampusCharacterRuntime peer in rosterService.Runtimes)
+            IReadOnlyList<CampusCharacterRuntime> peers = rosterService.Index.Runtimes;
+            for (int i = 0; i < peers.Count; i++)
             {
+                CampusCharacterRuntime peer = peers[i];
                 if (peer == null || peer.Data == null || ownsRoom == null || !ownsRoom(peer))
                 {
                     continue;

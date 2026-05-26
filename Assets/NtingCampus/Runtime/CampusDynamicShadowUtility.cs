@@ -517,13 +517,18 @@ namespace NtingCampusMapEditor
                 if (shadowedSortingLayerIds != null && !ApplyShadowedSortingLayers(caster, shadowedSortingLayerIds))
                 {
                     caster.enabled = false;
-                    Debug.LogWarning("[NtingCampus] Disabled wall ground ShadowCaster2D on '" + caster.gameObject.name + "' because the URP sorting-layer field could not be configured.");
+                    CampusShadowLogTextCatalog.Warning(
+                        CampusShadowLogTextId.WallGroundCasterSortingLayerUnavailable,
+                        caster.gameObject.name);
                 }
             }
             catch (System.Exception exception)
             {
                 caster.enabled = false;
-                Debug.LogWarning("[NtingCampus] Failed to configure ShadowCaster2D on '" + caster.gameObject.name + "': " + exception.Message);
+                CampusShadowLogTextCatalog.Warning(
+                    CampusShadowLogTextId.ConfigureShadowCasterFailed,
+                    caster.gameObject.name,
+                    exception.Message);
             }
         }
 
@@ -543,7 +548,10 @@ namespace NtingCampusMapEditor
             }
             catch (System.Exception exception)
             {
-                Debug.LogWarning("[NtingCampus] Failed to assign ShadowCaster2D sorting layers on '" + caster.gameObject.name + "': " + exception.Message);
+                CampusShadowLogTextCatalog.Warning(
+                    CampusShadowLogTextId.AssignSortingLayersFailed,
+                    caster.gameObject.name,
+                    exception.Message);
                 return false;
             }
         }
@@ -584,7 +592,10 @@ namespace NtingCampusMapEditor
             catch (System.Exception exception)
             {
                 caster.enabled = false;
-                Debug.LogWarning("[NtingCampus] Failed to assign ShadowCaster2D shape on '" + caster.gameObject.name + "': " + exception.Message);
+                CampusShadowLogTextCatalog.Warning(
+                    CampusShadowLogTextId.AssignShapeFailed,
+                    caster.gameObject.name,
+                    exception.Message);
                 return false;
             }
         }

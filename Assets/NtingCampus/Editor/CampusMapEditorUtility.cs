@@ -1226,7 +1226,7 @@ namespace NtingCampusMapEditor
         {
             if (logicTile == null)
             {
-                Debug.LogWarning("[NtingCampusMapEditor] Select a wall logic tile before applying wall textures.");
+                CampusMapEditorLogTextCatalog.Warning(CampusMapEditorLogTextId.SelectWallLogicTile);
                 return null;
             }
 
@@ -2569,7 +2569,9 @@ namespace NtingCampusMapEditor
             List<TileBase> result = new List<TileBase>();
             if (!Directory.Exists(sourceFolder))
             {
-                Debug.LogWarning("[NtingCampusMapEditor] Texture source folder is missing: " + sourceFolder);
+                CampusMapEditorLogTextCatalog.Warning(
+                    CampusMapEditorLogTextId.TextureSourceFolderMissing,
+                    sourceFolder);
                 return result;
             }
 
@@ -3021,17 +3023,17 @@ namespace NtingCampusMapEditor
 
         public static void RunValidation(CampusMapRoot root, CampusTilePalette tilePalette, CampusWallPalette wallPalette, CampusPrefabPalette prefabPalette)
         {
-            Debug.Log("[NtingCampusMapEditor] Validation started.");
+            CampusMapEditorLogTextCatalog.Log(CampusMapEditorLogTextId.ValidationStarted);
             if (root == null)
             {
-                Debug.LogError("[NtingCampusMapEditor] Validation failed: CampusMapRoot is missing.");
+                CampusMapEditorLogTextCatalog.Error(CampusMapEditorLogTextId.ValidationFailedCampusMapRootMissing);
                 return;
             }
 
             root.RebuildFloorReferences();
             if (root.GetFloor(1) == null)
             {
-                Debug.LogError("[NtingCampusMapEditor] Validation failed: Floor_1 is missing.");
+                CampusMapEditorLogTextCatalog.Error(CampusMapEditorLogTextId.ValidationFailedFloorOneMissing);
             }
 
             for (int i = 0; i < root.Floors.Count; i++)
@@ -3043,7 +3045,7 @@ namespace NtingCampusMapEditor
             ValidateWallPalette(wallPalette);
             ValidatePalette(prefabPalette, "Prefab Palette");
             ValidateStairLinks(root);
-            Debug.Log("[NtingCampusMapEditor] Validation finished.");
+            CampusMapEditorLogTextCatalog.Log(CampusMapEditorLogTextId.ValidationFinished);
         }
 
         public static void FixValidationIssues(CampusMapRoot root, CampusTilePalette tilePalette, CampusWallPalette wallPalette, CampusPrefabPalette prefabPalette)
@@ -3080,7 +3082,7 @@ namespace NtingCampusMapEditor
             root.CaptureFloorOriginalStates(true);
             EditorUtility.SetDirty(root);
             MarkSceneDirty();
-            Debug.Log("[NtingCampusMapEditor] Fix Validation Issues completed. Orphan stairs are reported by validation but not deleted automatically.");
+            CampusMapEditorLogTextCatalog.Log(CampusMapEditorLogTextId.FixValidationIssuesCompleted);
         }
 
         public static void CleanPalettes(CampusTilePalette tilePalette, CampusWallPalette wallPalette, CampusPrefabPalette prefabPalette)
@@ -3131,48 +3133,48 @@ namespace NtingCampusMapEditor
         {
             if (floor == null)
             {
-                Debug.LogError("[NtingCampusMapEditor] Validation: A floor reference is null.");
+                CampusMapEditorLogTextCatalog.Error(CampusMapEditorLogTextId.ValidationNullFloorReference);
                 return;
             }
 
             if (floor.Grid == null)
             {
-                Debug.LogError("[NtingCampusMapEditor] Validation: " + floor.name + " is missing Grid.");
+                CampusMapEditorLogTextCatalog.Error(CampusMapEditorLogTextId.ValidationFloorMissingGrid, floor.name);
             }
 
             if (floor.FloorTilemap == null)
             {
-                Debug.LogError("[NtingCampusMapEditor] Validation: " + floor.name + " is missing Tilemap_Floor.");
+                CampusMapEditorLogTextCatalog.Error(CampusMapEditorLogTextId.ValidationFloorMissingTilemapFloor, floor.name);
             }
 
             if (CampusWallTileUtility.GetWallLogicTilemap(floor) == null)
             {
-                Debug.LogError("[NtingCampusMapEditor] Validation: " + floor.name + " is missing Tilemap_WallLogic.");
+                CampusMapEditorLogTextCatalog.Error(CampusMapEditorLogTextId.ValidationFloorMissingTilemapWallLogic, floor.name);
             }
 
             if (floor.WallCapTilemap == null)
             {
-                Debug.LogError("[NtingCampusMapEditor] Validation: " + floor.name + " is missing Tilemap_WallCap.");
+                CampusMapEditorLogTextCatalog.Error(CampusMapEditorLogTextId.ValidationFloorMissingTilemapWallCap, floor.name);
             }
 
             if (floor.WallFaceTilemap == null)
             {
-                Debug.LogError("[NtingCampusMapEditor] Validation: " + floor.name + " is missing Tilemap_WallFace.");
+                CampusMapEditorLogTextCatalog.Error(CampusMapEditorLogTextId.ValidationFloorMissingTilemapWallFace, floor.name);
             }
 
             if (floor.OverlayTilemap == null)
             {
-                Debug.LogError("[NtingCampusMapEditor] Validation: " + floor.name + " is missing Tilemap_Overlay.");
+                CampusMapEditorLogTextCatalog.Error(CampusMapEditorLogTextId.ValidationFloorMissingTilemapOverlay, floor.name);
             }
 
             if (floor.PropsRoot == null)
             {
-                Debug.LogError("[NtingCampusMapEditor] Validation: " + floor.name + " is missing PropsRoot.");
+                CampusMapEditorLogTextCatalog.Error(CampusMapEditorLogTextId.ValidationFloorMissingPropsRoot, floor.name);
             }
 
             if (floor.StairsRoot == null)
             {
-                Debug.LogError("[NtingCampusMapEditor] Validation: " + floor.name + " is missing StairsRoot.");
+                CampusMapEditorLogTextCatalog.Error(CampusMapEditorLogTextId.ValidationFloorMissingStairsRoot, floor.name);
             }
 
             ValidateWallCollider(floor);
@@ -3194,21 +3196,21 @@ namespace NtingCampusMapEditor
             CompositeCollider2D composite = wallObject.GetComponent<CompositeCollider2D>();
             if (tilemapCollider == null)
             {
-                Debug.LogError("[NtingCampusMapEditor] Validation: " + floor.name + " Tilemap_WallLogic is missing TilemapCollider2D.");
+                CampusMapEditorLogTextCatalog.Error(CampusMapEditorLogTextId.ValidationWallLogicMissingTilemapCollider, floor.name);
             }
             else if (tilemapCollider.compositeOperation != Collider2D.CompositeOperation.Merge)
             {
-                Debug.LogError("[NtingCampusMapEditor] Validation: " + floor.name + " Tilemap_WallLogic compositeOperation is not Merge.");
+                CampusMapEditorLogTextCatalog.Error(CampusMapEditorLogTextId.ValidationWallLogicCompositeNotMerge, floor.name);
             }
 
             if (body == null || body.bodyType != RigidbodyType2D.Static || !body.simulated)
             {
-                Debug.LogError("[NtingCampusMapEditor] Validation: " + floor.name + " Tilemap_WallLogic Rigidbody2D must be Static and simulated.");
+                CampusMapEditorLogTextCatalog.Error(CampusMapEditorLogTextId.ValidationWallLogicRigidbodyInvalid, floor.name);
             }
 
             if (composite == null)
             {
-                Debug.LogError("[NtingCampusMapEditor] Validation: " + floor.name + " Tilemap_WallLogic is missing CompositeCollider2D.");
+                CampusMapEditorLogTextCatalog.Error(CampusMapEditorLogTextId.ValidationWallLogicMissingCompositeCollider, floor.name);
             }
         }
 
@@ -3216,7 +3218,7 @@ namespace NtingCampusMapEditor
         {
             if (palette == null)
             {
-                Debug.LogWarning("[NtingCampusMapEditor] Validation: " + name + " is not assigned.");
+                CampusMapEditorLogTextCatalog.Warning(CampusMapEditorLogTextId.ValidationAssetNotAssigned, name);
                 return;
             }
 
@@ -3224,7 +3226,10 @@ namespace NtingCampusMapEditor
             {
                 if (!CampusTilePalette.IsUsableTile(palette.FloorTiles[i]))
                 {
-                    Debug.LogWarning("[NtingCampusMapEditor] Validation: " + name + " has a null or sprite-less tile at index " + i + ".");
+                    CampusMapEditorLogTextCatalog.Warning(
+                        CampusMapEditorLogTextId.ValidationNullOrSpriteLessTile,
+                        name,
+                        i);
                 }
             }
         }
@@ -3233,7 +3238,7 @@ namespace NtingCampusMapEditor
         {
             if (palette == null)
             {
-                Debug.LogWarning("[NtingCampusMapEditor] Validation: " + name + " is not assigned.");
+                CampusMapEditorLogTextCatalog.Warning(CampusMapEditorLogTextId.ValidationAssetNotAssigned, name);
                 return;
             }
 
@@ -3241,7 +3246,10 @@ namespace NtingCampusMapEditor
             {
                 if (palette.Prefabs[i] == null)
                 {
-                    Debug.LogWarning("[NtingCampusMapEditor] Validation: " + name + " has a null prefab at index " + i + ".");
+                    CampusMapEditorLogTextCatalog.Warning(
+                        CampusMapEditorLogTextId.ValidationNullPrefab,
+                        name,
+                        i);
                 }
             }
         }
@@ -3250,35 +3258,35 @@ namespace NtingCampusMapEditor
         {
             if (palette == null)
             {
-                Debug.LogWarning("[NtingCampusMapEditor] Validation: Wall Palette is not assigned.");
+                CampusMapEditorLogTextCatalog.Warning(CampusMapEditorLogTextId.ValidationWallPaletteMissing);
                 return;
             }
 
             if (!CampusTilePalette.IsUsableTile(palette.HorizontalWall))
             {
-                Debug.LogWarning("[NtingCampusMapEditor] Validation: Wall Palette HorizontalWall is missing or invalid.");
+                CampusMapEditorLogTextCatalog.Warning(CampusMapEditorLogTextId.ValidationWallPaletteHorizontalInvalid);
             }
 
             if (!CampusTilePalette.IsUsableTile(palette.VerticalWall))
             {
-                Debug.LogWarning("[NtingCampusMapEditor] Validation: Wall Palette VerticalWall is missing or invalid.");
+                CampusMapEditorLogTextCatalog.Warning(CampusMapEditorLogTextId.ValidationWallPaletteVerticalInvalid);
             }
 
             if (!CampusTilePalette.IsUsableTile(palette.CornerWall))
             {
-                Debug.LogWarning("[NtingCampusMapEditor] Validation: Wall Palette CornerWall is missing or invalid.");
+                CampusMapEditorLogTextCatalog.Warning(CampusMapEditorLogTextId.ValidationWallPaletteCornerInvalid);
             }
 
             if (!CampusTilePalette.IsUsableTile(palette.HighWall))
             {
-                Debug.LogWarning("[NtingCampusMapEditor] Validation: Wall Palette HighWall is missing or invalid.");
+                CampusMapEditorLogTextCatalog.Warning(CampusMapEditorLogTextId.ValidationWallPaletteHighInvalid);
             }
 
             for (int i = 0; i < palette.WallTiles.Count; i++)
             {
                 if (!CampusTilePalette.IsUsableTile(palette.WallTiles[i]))
                 {
-                    Debug.LogWarning("[NtingCampusMapEditor] Validation: Wall Palette has a null or sprite-less tile at index " + i + ".");
+                    CampusMapEditorLogTextCatalog.Warning(CampusMapEditorLogTextId.ValidationWallPaletteNullSprite, i);
                 }
             }
         }
@@ -3312,7 +3320,7 @@ namespace NtingCampusMapEditor
             {
                 if (pair.Value == 1)
                 {
-                    Debug.LogWarning("[NtingCampusMapEditor] Validation: Orphan stair LinkId " + pair.Key + " has only one stair.");
+                    CampusMapEditorLogTextCatalog.Warning(CampusMapEditorLogTextId.ValidationOrphanStair, pair.Key);
                 }
             }
         }
@@ -3331,7 +3339,7 @@ namespace NtingCampusMapEditor
                               (floor.StairsRoot != null && floor.StairsRoot.childCount > 0);
             if (hasContent)
             {
-                Debug.LogWarning("[NtingCampusMapEditor] Validation: Locked floor " + floor.name + " contains authored content.");
+                CampusMapEditorLogTextCatalog.Warning(CampusMapEditorLogTextId.ValidationLockedFloorHasContent, floor.name);
             }
         }
 
@@ -3353,13 +3361,16 @@ namespace NtingCampusMapEditor
 
                 if (placed.FloorIndex != floor.FloorIndex)
                 {
-                    Debug.LogWarning("[NtingCampusMapEditor] Validation: " + placed.name + " FloorIndex does not match parent " + floor.name + ".");
+                    CampusMapEditorLogTextCatalog.Warning(
+                        CampusMapEditorLogTextId.ValidationPlacedFloorMismatch,
+                        placed.name,
+                        floor.name);
                 }
 
                 Vector3 expected = CampusPlacedObject.GetFootprintWorldCenter(floor.Grid, placed.Cell, placed.RotatedFootprintSize);
                 if (Vector3.Distance(expected, placed.transform.position) > 0.05f)
                 {
-                    Debug.LogWarning("[NtingCampusMapEditor] Validation: " + placed.name + " Cell does not match transform position.");
+                    CampusMapEditorLogTextCatalog.Warning(CampusMapEditorLogTextId.ValidationPlacedCellMismatch, placed.name);
                 }
             }
         }
@@ -4113,7 +4124,7 @@ namespace NtingCampusMapEditor
             System.Type interactableType = typeof(CampusInteractionPromptSource).Assembly.GetType("NtingCampusMapEditor.CampusSimpleInteractable");
             if (interactableType == null)
             {
-                Debug.LogWarning("Could not configure simple interactable because CampusSimpleInteractable is not available yet.");
+                CampusMapEditorLogTextCatalog.Warning(CampusMapEditorLogTextId.CouldNotConfigureSimpleInteractable);
                 return;
             }
 

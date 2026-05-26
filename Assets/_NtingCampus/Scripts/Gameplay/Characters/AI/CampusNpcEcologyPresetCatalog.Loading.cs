@@ -14,7 +14,9 @@ namespace NtingCampus.Gameplay.Characters
             EcologyPresetData emptyData = new EcologyPresetData();
             if (!CampusRuntimeModPresetStore.TryReadJson(PresetFileName, out string json))
             {
-                Debug.LogWarning("[CampusNpcEcologyPresetCatalog] Missing required preset file: " + PresetFileName);
+                CampusNpcEcologyPresetLogTextCatalog.Warning(
+                    CampusNpcEcologyPresetLogTextId.MissingPresetFile,
+                    PresetFileName);
                 return emptyData;
             }
 
@@ -25,7 +27,10 @@ namespace NtingCampus.Gameplay.Characters
             }
             catch (Exception exception)
             {
-                Debug.LogWarning("[CampusNpcEcologyPresetCatalog] Failed to parse " + PresetFileName + ": " + exception.Message);
+                CampusNpcEcologyPresetLogTextCatalog.Warning(
+                    CampusNpcEcologyPresetLogTextId.FailedToParsePreset,
+                    PresetFileName,
+                    exception.Message);
                 return emptyData;
             }
         }
@@ -35,7 +40,9 @@ namespace NtingCampus.Gameplay.Characters
             EcologyPresetData data = new EcologyPresetData();
             if (file == null)
             {
-                Debug.LogWarning("[CampusNpcEcologyPresetCatalog] Preset file is empty: " + PresetFileName);
+                CampusNpcEcologyPresetLogTextCatalog.Warning(
+                    CampusNpcEcologyPresetLogTextId.PresetFileEmpty,
+                    PresetFileName);
                 return data;
             }
 
@@ -108,7 +115,10 @@ namespace NtingCampus.Gameplay.Characters
 
                 if (!profileIds.Add(profile.Id))
                 {
-                    Debug.LogWarning("[CampusNpcEcologyPresetCatalog] Duplicate NpcDecisionProfiles id '" + profile.Id + "' at row " + i + " was ignored.");
+                    CampusNpcEcologyPresetLogTextCatalog.Warning(
+                        CampusNpcEcologyPresetLogTextId.DuplicateProfileId,
+                        profile.Id,
+                        i);
                     continue;
                 }
 
@@ -120,26 +130,39 @@ namespace NtingCampus.Gameplay.Characters
         {
             if (file == null)
             {
-                Debug.LogWarning("[CampusNpcEcologyPresetCatalog] ActionCatalog row " + rowIndex + " is empty.");
+                CampusNpcEcologyPresetLogTextCatalog.Warning(
+                    CampusNpcEcologyPresetLogTextId.RowEmpty,
+                    "ActionCatalog",
+                    rowIndex);
                 return null;
             }
 
             string actionId = NormalizeId(file.ActionId);
             if (string.IsNullOrEmpty(actionId))
             {
-                Debug.LogWarning("[CampusNpcEcologyPresetCatalog] ActionCatalog row " + rowIndex + " is missing ActionId.");
+                CampusNpcEcologyPresetLogTextCatalog.Warning(
+                    CampusNpcEcologyPresetLogTextId.RowMissingField,
+                    "ActionCatalog",
+                    rowIndex,
+                    "ActionId");
                 return null;
             }
 
             if (!TryParseActionMode(file.ActionMode, out CampusNpcEcologyActionMode actionMode))
             {
-                Debug.LogWarning("[CampusNpcEcologyPresetCatalog] ActionCatalog action '" + actionId + "' has unknown ActionMode '" + file.ActionMode + "'.");
+                CampusNpcEcologyPresetLogTextCatalog.Warning(
+                    CampusNpcEcologyPresetLogTextId.ActionUnknownActionMode,
+                    actionId,
+                    file.ActionMode);
                 return null;
             }
 
             if (!TryParseRepeatPolicy(file.RepeatPolicy, out CampusNpcEcologyActionRepeatPolicy repeatPolicy))
             {
-                Debug.LogWarning("[CampusNpcEcologyPresetCatalog] ActionCatalog action '" + actionId + "' has unknown RepeatPolicy '" + file.RepeatPolicy + "'.");
+                CampusNpcEcologyPresetLogTextCatalog.Warning(
+                    CampusNpcEcologyPresetLogTextId.ActionUnknownRepeatPolicy,
+                    actionId,
+                    file.RepeatPolicy);
                 return null;
             }
 
@@ -156,32 +179,47 @@ namespace NtingCampus.Gameplay.Characters
         {
             if (file == null)
             {
-                Debug.LogWarning("[CampusNpcEcologyPresetCatalog] ActionTargetRules row " + rowIndex + " is empty.");
+                CampusNpcEcologyPresetLogTextCatalog.Warning(
+                    CampusNpcEcologyPresetLogTextId.RowEmpty,
+                    "ActionTargetRules",
+                    rowIndex);
                 return null;
             }
 
             string ruleId = NormalizeId(file.Id);
             if (string.IsNullOrEmpty(ruleId))
             {
-                Debug.LogWarning("[CampusNpcEcologyPresetCatalog] ActionTargetRules row " + rowIndex + " is missing Id.");
+                CampusNpcEcologyPresetLogTextCatalog.Warning(
+                    CampusNpcEcologyPresetLogTextId.RowMissingField,
+                    "ActionTargetRules",
+                    rowIndex,
+                    "Id");
                 return null;
             }
 
             if (string.IsNullOrEmpty(NormalizeId(file.ActionId)))
             {
-                Debug.LogWarning("[CampusNpcEcologyPresetCatalog] ActionTargetRule '" + ruleId + "' is missing ActionId.");
+                CampusNpcEcologyPresetLogTextCatalog.Warning(
+                    CampusNpcEcologyPresetLogTextId.TargetRuleMissingActionId,
+                    ruleId);
                 return null;
             }
 
             if (!TryParseTargetKind(file.TargetKind, out CampusNpcEcologyTargetKind targetKind))
             {
-                Debug.LogWarning("[CampusNpcEcologyPresetCatalog] ActionTargetRule '" + ruleId + "' has unknown TargetKind '" + file.TargetKind + "'.");
+                CampusNpcEcologyPresetLogTextCatalog.Warning(
+                    CampusNpcEcologyPresetLogTextId.TargetRuleUnknownTargetKind,
+                    ruleId,
+                    file.TargetKind);
                 return null;
             }
 
             if (!TryParseOptionalRoomType(file.RoomType, out CampusRoomType roomType))
             {
-                Debug.LogWarning("[CampusNpcEcologyPresetCatalog] ActionTargetRule '" + ruleId + "' has unknown RoomType '" + file.RoomType + "'.");
+                CampusNpcEcologyPresetLogTextCatalog.Warning(
+                    CampusNpcEcologyPresetLogTextId.TargetRuleUnknownRoomType,
+                    ruleId,
+                    file.RoomType);
                 return null;
             }
 
@@ -214,14 +252,21 @@ namespace NtingCampus.Gameplay.Characters
         {
             if (file == null)
             {
-                Debug.LogWarning("[CampusNpcEcologyPresetCatalog] ActionChains row " + rowIndex + " is empty.");
+                CampusNpcEcologyPresetLogTextCatalog.Warning(
+                    CampusNpcEcologyPresetLogTextId.RowEmpty,
+                    "ActionChains",
+                    rowIndex);
                 return null;
             }
 
             string chainId = NormalizeId(file.Id);
             if (string.IsNullOrEmpty(chainId))
             {
-                Debug.LogWarning("[CampusNpcEcologyPresetCatalog] ActionChains row " + rowIndex + " is missing Id.");
+                CampusNpcEcologyPresetLogTextCatalog.Warning(
+                    CampusNpcEcologyPresetLogTextId.RowMissingField,
+                    "ActionChains",
+                    rowIndex,
+                    "Id");
                 return null;
             }
 
@@ -236,20 +281,30 @@ namespace NtingCampus.Gameplay.Characters
         {
             if (file == null)
             {
-                Debug.LogWarning("[CampusNpcEcologyPresetCatalog] NpcDecisionProfiles row " + rowIndex + " is empty.");
+                CampusNpcEcologyPresetLogTextCatalog.Warning(
+                    CampusNpcEcologyPresetLogTextId.RowEmpty,
+                    "NpcDecisionProfiles",
+                    rowIndex);
                 return null;
             }
 
             string profileId = NormalizeId(file.Id);
             if (string.IsNullOrEmpty(profileId))
             {
-                Debug.LogWarning("[CampusNpcEcologyPresetCatalog] NpcDecisionProfiles row " + rowIndex + " is missing Id.");
+                CampusNpcEcologyPresetLogTextCatalog.Warning(
+                    CampusNpcEcologyPresetLogTextId.RowMissingField,
+                    "NpcDecisionProfiles",
+                    rowIndex,
+                    "Id");
                 return null;
             }
 
             if (!TryParseRole(file.Role, out CampusCharacterRole role))
             {
-                Debug.LogWarning("[CampusNpcEcologyPresetCatalog] NpcDecisionProfile '" + profileId + "' has unknown Role '" + file.Role + "'.");
+                CampusNpcEcologyPresetLogTextCatalog.Warning(
+                    CampusNpcEcologyPresetLogTextId.ProfileUnknownRole,
+                    profileId,
+                    file.Role);
                 return null;
             }
 
@@ -290,27 +345,40 @@ namespace NtingCampus.Gameplay.Characters
         {
             if (file == null)
             {
-                Debug.LogWarning("[CampusNpcEcologyPresetCatalog] NpcDecisionProfile '" + profileId + "' entry row " + rowIndex + " is empty.");
+                CampusNpcEcologyPresetLogTextCatalog.Warning(
+                    CampusNpcEcologyPresetLogTextId.EntryRowEmpty,
+                    profileId,
+                    rowIndex);
                 return null;
             }
 
             string entryId = NormalizeId(file.Id);
             if (string.IsNullOrEmpty(entryId))
             {
-                Debug.LogWarning("[CampusNpcEcologyPresetCatalog] NpcDecisionProfile '" + profileId + "' entry row " + rowIndex + " is missing Id.");
+                CampusNpcEcologyPresetLogTextCatalog.Warning(
+                    CampusNpcEcologyPresetLogTextId.EntryMissingId,
+                    profileId,
+                    rowIndex);
                 return null;
             }
 
             if (!TryParseIntentKind(file.IntentKind, out CampusNpcIntentKind intentKind))
             {
-                Debug.LogWarning("[CampusNpcEcologyPresetCatalog] NpcDecisionProfile '" + profileId + "' entry '" + entryId + "' has unknown IntentKind '" + file.IntentKind + "'.");
+                CampusNpcEcologyPresetLogTextCatalog.Warning(
+                    CampusNpcEcologyPresetLogTextId.EntryUnknownIntentKind,
+                    profileId,
+                    entryId,
+                    file.IntentKind);
                 return null;
             }
 
             string actionChainId = NormalizeId(file.ActionChainId);
             if (string.IsNullOrEmpty(actionChainId))
             {
-                Debug.LogWarning("[CampusNpcEcologyPresetCatalog] NpcDecisionProfile '" + profileId + "' entry '" + entryId + "' is missing ActionChainId.");
+                CampusNpcEcologyPresetLogTextCatalog.Warning(
+                    CampusNpcEcologyPresetLogTextId.EntryMissingActionChainId,
+                    profileId,
+                    entryId);
                 return null;
             }
 
@@ -402,13 +470,18 @@ namespace NtingCampus.Gameplay.Characters
 
             if (string.IsNullOrEmpty(targetRule.ActionId))
             {
-                Debug.LogWarning("[CampusNpcEcologyPresetCatalog] ActionTargetRule '" + targetRule.Id + "' is missing ActionId.");
+                CampusNpcEcologyPresetLogTextCatalog.Warning(
+                    CampusNpcEcologyPresetLogTextId.TargetRuleMissingActionId,
+                    targetRule.Id);
                 return false;
             }
 
             if (!data.ActionCatalog.ContainsKey(targetRule.ActionId))
             {
-                Debug.LogWarning("[CampusNpcEcologyPresetCatalog] ActionTargetRule '" + targetRule.Id + "' references unknown ActionId '" + targetRule.ActionId + "'.");
+                CampusNpcEcologyPresetLogTextCatalog.Warning(
+                    CampusNpcEcologyPresetLogTextId.TargetRuleUnknownActionId,
+                    targetRule.Id,
+                    targetRule.ActionId);
                 return false;
             }
 
@@ -420,14 +493,20 @@ namespace NtingCampus.Gameplay.Characters
                     continue;
                 }
 
-                Debug.LogWarning("[CampusNpcEcologyPresetCatalog] ActionTargetRule '" + targetRule.Id + "' references unknown ActionChainId '" + actionChainId + "'.");
+                CampusNpcEcologyPresetLogTextCatalog.Warning(
+                    CampusNpcEcologyPresetLogTextId.TargetRuleUnknownActionChainId,
+                    targetRule.Id,
+                    actionChainId);
                 return false;
             }
 
             if (RequiresFacilityTypes(targetRule.TargetKind) &&
                 targetRule.FacilityTypes.Length == 0)
             {
-                Debug.LogWarning("[CampusNpcEcologyPresetCatalog] ActionTargetRule '" + targetRule.Id + "' is missing required FacilityTypes for TargetKind '" + targetRule.TargetKind + "'.");
+                CampusNpcEcologyPresetLogTextCatalog.Warning(
+                    CampusNpcEcologyPresetLogTextId.TargetRuleMissingFacilityTypes,
+                    targetRule.Id,
+                    targetRule.TargetKind);
                 return false;
             }
 
@@ -435,7 +514,10 @@ namespace NtingCampus.Gameplay.Characters
                  targetRule.TargetKind == CampusNpcEcologyTargetKind.RoomFacility) &&
                 targetRule.RoomType == CampusRoomType.Unknown)
             {
-                Debug.LogWarning("[CampusNpcEcologyPresetCatalog] ActionTargetRule '" + targetRule.Id + "' is missing required RoomType for TargetKind '" + targetRule.TargetKind + "'.");
+                CampusNpcEcologyPresetLogTextCatalog.Warning(
+                    CampusNpcEcologyPresetLogTextId.TargetRuleMissingRoomType,
+                    targetRule.Id,
+                    targetRule.TargetKind);
                 return false;
             }
 
@@ -447,7 +529,10 @@ namespace NtingCampus.Gameplay.Characters
                     continue;
                 }
 
-                Debug.LogWarning("[CampusNpcEcologyPresetCatalog] ActionTargetRule '" + targetRule.Id + "' references unknown Requirement '" + requirementId + "'.");
+                CampusNpcEcologyPresetLogTextCatalog.Warning(
+                    CampusNpcEcologyPresetLogTextId.TargetRuleUnknownRequirement,
+                    targetRule.Id,
+                    requirementId);
                 return false;
             }
 
@@ -489,7 +574,9 @@ namespace NtingCampus.Gameplay.Characters
                     continue;
                 }
 
-                Debug.LogWarning("[CampusNpcEcologyPresetCatalog] ActionCatalog action '" + pair.Key + "' has no ActionTargetRules row.");
+                CampusNpcEcologyPresetLogTextCatalog.Warning(
+                    CampusNpcEcologyPresetLogTextId.ActionMissingTargetRule,
+                    pair.Key);
                 invalidActionIds.Add(pair.Key);
             }
 
@@ -531,7 +618,10 @@ namespace NtingCampus.Gameplay.Characters
                     continue;
                 }
 
-                Debug.LogWarning("[CampusNpcEcologyPresetCatalog] ActionChain '" + chain.Id + "' references unknown ActionId '" + actionId + "'.");
+                CampusNpcEcologyPresetLogTextCatalog.Warning(
+                    CampusNpcEcologyPresetLogTextId.ActionChainUnknownActionId,
+                    chain.Id,
+                    actionId);
                 return false;
             }
 
@@ -542,7 +632,9 @@ namespace NtingCampus.Gameplay.Characters
         {
             if (data.NpcDecisionProfiles.Count == 0)
             {
-                Debug.LogWarning("[CampusNpcEcologyPresetCatalog] No NPC decision profiles were loaded from " + PresetFileName + ".");
+                CampusNpcEcologyPresetLogTextCatalog.Warning(
+                    CampusNpcEcologyPresetLogTextId.NoDecisionProfiles,
+                    PresetFileName);
                 return;
             }
 
@@ -555,7 +647,9 @@ namespace NtingCampus.Gameplay.Characters
                     continue;
                 }
 
-                Debug.LogWarning("[CampusNpcEcologyPresetCatalog] NPC decision profile '" + profile.Id + "' has no valid entries and was ignored.");
+                CampusNpcEcologyPresetLogTextCatalog.Warning(
+                    CampusNpcEcologyPresetLogTextId.ProfileNoValidEntries,
+                    profile.Id);
                 data.NpcDecisionProfiles.RemoveAt(profileIndex);
             }
         }
@@ -579,7 +673,11 @@ namespace NtingCampus.Gameplay.Characters
 
                 string entryId = entry != null ? entry.Id : string.Empty;
                 string actionChainId = entry != null ? entry.ActionChainId : string.Empty;
-                Debug.LogWarning("[CampusNpcEcologyPresetCatalog] NPC decision profile '" + profile.Id + "' entry '" + entryId + "' references unknown ActionChainId '" + actionChainId + "'.");
+                CampusNpcEcologyPresetLogTextCatalog.Warning(
+                    CampusNpcEcologyPresetLogTextId.ProfileEntryUnknownActionChainId,
+                    profile.Id,
+                    entryId,
+                    actionChainId);
                 profile.Entries.RemoveAt(entryIndex);
             }
         }
@@ -638,7 +736,11 @@ namespace NtingCampus.Gameplay.Characters
 
             if (records.ContainsKey(normalizedId))
             {
-                Debug.LogWarning("[CampusNpcEcologyPresetCatalog] Duplicate " + tableName + " id '" + normalizedId + "' at row " + rowIndex + " was ignored.");
+                CampusNpcEcologyPresetLogTextCatalog.Warning(
+                    CampusNpcEcologyPresetLogTextId.DuplicateTableId,
+                    tableName,
+                    normalizedId,
+                    rowIndex);
                 return false;
             }
 

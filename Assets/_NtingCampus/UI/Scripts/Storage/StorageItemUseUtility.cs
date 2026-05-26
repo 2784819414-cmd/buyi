@@ -31,7 +31,7 @@ namespace Nting.Storage
             bool used = action.TryUse(item, sourceGrid, out statusMessage);
             if (used && !string.IsNullOrWhiteSpace(statusMessage))
             {
-                Debug.Log("[Storage] " + statusMessage);
+                Debug.Log(StorageTextCatalog.Format(StorageTextId.StatusLog, statusMessage));
             }
 
             return used;

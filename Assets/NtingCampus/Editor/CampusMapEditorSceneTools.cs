@@ -347,7 +347,7 @@ namespace NtingCampusMapEditor
             TileBase tile = window.GetCurrentFloorTileOrFallback();
             if (floor.FloorTilemap == null || tile == null)
             {
-                Debug.LogWarning("[NtingCampusMapEditor] No floor tile selected and no debug fallback is available.");
+                CampusMapEditorLogTextCatalog.Warning(CampusMapEditorLogTextId.NoFloorTileSelected);
                 return;
             }
 
@@ -373,7 +373,7 @@ namespace NtingCampusMapEditor
             TileBase tile = window.EnsureWallTileForPainting();
             if (wallLogic == null || tile == null)
             {
-                Debug.LogWarning("[NtingCampusMapEditor] No wall tile selected and no debug fallback is available.");
+                CampusMapEditorLogTextCatalog.Warning(CampusMapEditorLogTextId.NoWallTileSelected);
                 return;
             }
 
@@ -625,7 +625,7 @@ namespace NtingCampusMapEditor
                 case CampusBrushMode.PaintFloorTile:
                     if (!eraseOverride && window.GetCurrentFloorTileOrFallback() == null)
                     {
-                        Debug.LogWarning("[NtingCampusMapEditor] No floor tile selected and no debug fallback is available.");
+                        CampusMapEditorLogTextCatalog.Warning(CampusMapEditorLogTextId.NoFloorTileSelected);
                         return;
                     }
 
@@ -636,14 +636,14 @@ namespace NtingCampusMapEditor
                     Tilemap wallLogic = GetWallLogicTilemapForPainting(window, floor);
                     if (wallLogic == null)
                     {
-                        Debug.LogWarning("[NtingCampusMapEditor] Current floor is missing Tilemap_WallLogic.");
+                        CampusMapEditorLogTextCatalog.Warning(CampusMapEditorLogTextId.CurrentFloorMissingWallLogic);
                         return;
                     }
 
                     TileBase wallTile = eraseOverride ? null : window.EnsureWallTileForPainting();
                     if (!eraseOverride && wallTile == null)
                     {
-                        Debug.LogWarning("[NtingCampusMapEditor] No wall tile selected and no debug fallback is available.");
+                        CampusMapEditorLogTextCatalog.Warning(CampusMapEditorLogTextId.NoWallTileSelected);
                         return;
                     }
 
@@ -755,19 +755,19 @@ namespace NtingCampusMapEditor
             GameObject prefab = window.GetCurrentPrefabOrFallback();
             if (prefab == null)
             {
-                Debug.LogWarning("[NtingCampusMapEditor] Cannot place object: no prefab is selected and no fallback prefab is available.");
+                CampusMapEditorLogTextCatalog.Warning(CampusMapEditorLogTextId.CannotPlaceObjectNoPrefab);
                 return;
             }
 
             if (floor.PropsRoot == null)
             {
-                Debug.LogWarning("[NtingCampusMapEditor] Cannot place object: current floor is missing PropsRoot. Run Fix Validation Issues.");
+                CampusMapEditorLogTextCatalog.Warning(CampusMapEditorLogTextId.CannotPlaceObjectMissingPropsRoot);
                 return;
             }
 
             if (floor.Grid == null)
             {
-                Debug.LogWarning("[NtingCampusMapEditor] Cannot place object: current floor is missing Grid. Run Fix Validation Issues.");
+                CampusMapEditorLogTextCatalog.Warning(CampusMapEditorLogTextId.CannotPlaceObjectMissingGrid);
                 return;
             }
 
@@ -779,7 +779,9 @@ namespace NtingCampusMapEditor
             GameObject instance = CampusMapEditorUtility.InstantiatePrefabInScene(prefab, floor.PropsRoot);
             if (instance == null)
             {
-                Debug.LogWarning("[NtingCampusMapEditor] Cannot place object: failed to instantiate prefab '" + CampusObjectNames.GetDisplayName(prefab.name) + "'.");
+                CampusMapEditorLogTextCatalog.Warning(
+                    CampusMapEditorLogTextId.CannotPlaceObjectInstantiateFailed,
+                    CampusObjectNames.GetDisplayName(prefab.name));
                 return;
             }
 
@@ -811,7 +813,11 @@ namespace NtingCampusMapEditor
             CampusRenderSortingUtility.ApplyFloorSorting(floor, floor.FloorIndex * window.MapRoot.SortingOrderStepPerFloor);
             EditorUtility.SetDirty(instance);
             Selection.activeGameObject = instance;
-            Debug.Log("[NtingCampusMapEditor] Placed object '" + localizedPrefabName + "' at floor " + floor.FloorIndex + ", cell " + cell + ".");
+            CampusMapEditorLogTextCatalog.Log(
+                CampusMapEditorLogTextId.PlacedObject,
+                localizedPrefabName,
+                floor.FloorIndex,
+                cell);
         }
 
         private static Vector2Int GetPrefabFootprintSize(GameObject prefab)
@@ -886,12 +892,16 @@ namespace NtingCampusMapEditor
             Light2D light = CampusMapEditorUtility.CreatePlacedSceneLight2D(lightName, window.LightBrushType, position, window.Rotation90, floor.Grid.cellSize);
             if (light == null)
             {
-                Debug.LogWarning("[NtingCampusMapEditor] Cannot place light: failed to create Light2D.");
+                CampusMapEditorLogTextCatalog.Warning(CampusMapEditorLogTextId.CannotPlaceLightCreateLight2D);
                 return;
             }
 
             window.SetSelectedLight(light);
-            Debug.Log("[NtingCampusMapEditor] Placed light '" + light.gameObject.name + "' at floor " + floor.FloorIndex + ", cell " + cell + ".");
+            CampusMapEditorLogTextCatalog.Log(
+                CampusMapEditorLogTextId.PlacedLight,
+                light.gameObject.name,
+                floor.FloorIndex,
+                cell);
         }
 
         private static void CreateStairInstance(GameObject prefab, CampusFloorRoot floor, int fromFloor, int toFloor, Vector3Int fromCell, Vector3Int secondaryCell, Vector3Int toCell, int rotation90, string linkId, bool isAutoReturnStair, CampusMapEditorWindow window)

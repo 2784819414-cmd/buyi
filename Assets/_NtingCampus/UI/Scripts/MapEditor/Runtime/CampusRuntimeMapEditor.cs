@@ -368,7 +368,9 @@ namespace NtingCampusMapEditor
             isReady = true;
             EnsureFileDropBridge();
             SetStatus(Tr(CampusRuntimeEditorTextId.EditorReadyStatus));
-            Debug.Log("[NtingCampusRuntimeMapEditor] Active map source: " + DescribeMapLoadSource());
+            CampusRuntimeMapEditorLogTextCatalog.Log(
+                CampusRuntimeMapEditorLogTextId.ActiveMapSource,
+                DescribeMapLoadSource());
         }
 
         private void OnDestroy()
@@ -564,7 +566,9 @@ namespace NtingCampusMapEditor
         {
             objectDefinitionCatalog = CampusRuntimeObjectDefinitionCatalog.Load(
                 GetImportRootFolder(),
-                message => Debug.LogWarning("[NtingCampusRuntimeMapEditor] " + message));
+                message => CampusRuntimeMapEditorLogTextCatalog.Warning(
+                    CampusRuntimeMapEditorLogTextId.WarningMessage,
+                    message));
             LoadImportedTiles(GetFloorImportFolder(), floorTiles);
             LoadImportedTiles(GetWallImportFolder(), wallTiles);
             LoadImportedObjects(GetObjectImportFolder());
@@ -1050,7 +1054,10 @@ namespace NtingCampusMapEditor
             }
             catch (Exception exception)
             {
-                Debug.LogWarning("[NtingCampusRuntimeMapEditor] Failed to create object image '" + path + "': " + exception.Message);
+                CampusRuntimeMapEditorLogTextCatalog.Warning(
+                    CampusRuntimeMapEditorLogTextId.FailedToCreateObjectImage,
+                    path,
+                    exception.Message);
                 SetStatus(TrFormat("\u521b\u5efa\u7269\u4f53\u5931\u8d25\uff1a{0}", "Create object failed: {0}", exception.Message));
                 return;
             }
@@ -1192,7 +1199,9 @@ namespace NtingCampusMapEditor
             roomPrefabs.Clear();
             roomPrefabs.AddRange(CampusRuntimeRoomPrefabLibrary.LoadAll(
                 GetRoomPrefabFolder(),
-                message => Debug.LogWarning("[NtingCampusRuntimeMapEditor] " + message)));
+                message => CampusRuntimeMapEditorLogTextCatalog.Warning(
+                    CampusRuntimeMapEditorLogTextId.WarningMessage,
+                    message)));
             selectedRoomPrefabIndex = roomPrefabs.Count > 0 ? Mathf.Clamp(selectedRoomPrefabIndex, 0, roomPrefabs.Count - 1) : 0;
         }
 
@@ -1235,7 +1244,10 @@ namespace NtingCampusMapEditor
             }
             catch (Exception exception)
             {
-                Debug.LogWarning("[NtingCampusRuntimeMapEditor] Failed to import image '" + path + "': " + exception.Message);
+                CampusRuntimeMapEditorLogTextCatalog.Warning(
+                    CampusRuntimeMapEditorLogTextId.FailedToImportImage,
+                    path,
+                    exception.Message);
                 return null;
             }
         }
@@ -1498,7 +1510,9 @@ namespace NtingCampusMapEditor
             catch (Exception exception)
             {
                 SetStatus(TrFormat("\u5730\u56fe\u8868\u73b0\u5237\u65b0\u5931\u8d25\uff1a{0}", "Map presentation refresh failed: {0}", exception.Message));
-                Debug.LogWarning("[NtingCampusRuntimeMapEditor] Map presentation setup failed, keeping runtime editor UI alive: " + exception.Message);
+                CampusRuntimeMapEditorLogTextCatalog.Warning(
+                    CampusRuntimeMapEditorLogTextId.MapPresentationSetupFailed,
+                    exception.Message);
             }
         }
 
@@ -2620,7 +2634,9 @@ namespace NtingCampusMapEditor
                 out readError);
             if (!loaded && !string.IsNullOrWhiteSpace(readError))
             {
-                Debug.LogWarning("[NtingCampusRuntimeMapEditor] Read gameplay overlay failed: " + readError);
+                CampusRuntimeMapEditorLogTextCatalog.Warning(
+                    CampusRuntimeMapEditorLogTextId.ReadGameplayOverlayFailed,
+                    readError);
             }
 
             if (loaded && existing.Actors != null && existing.Actors.Count > 0)
@@ -3777,13 +3793,17 @@ namespace NtingCampusMapEditor
                     (path, showStatus) => { SaveGameplayOverlayForMapPath(path, showStatus); });
             if (!result.Succeeded)
             {
-                Debug.LogWarning("[NtingCampusRuntimeMapEditor] Export map JSON failed: " + result.ErrorMessage);
+                CampusRuntimeMapEditorLogTextCatalog.Warning(
+                    CampusRuntimeMapEditorLogTextId.ExportMapJsonFailed,
+                    result.ErrorMessage);
                 SetStatus(TrFormat("\u5bfc\u51fa\u5730\u56fe JSON \u5931\u8d25\uff1a{0}", "Export map JSON failed: {0}", result.ErrorMessage));
                 return;
             }
 
             SetStatus(TrFormat("\u5df2\u5bfc\u51fa\u5730\u56fe JSON\uff1a{0}", "Exported map JSON: {0}", result.Path));
-            Debug.Log("[NtingCampusRuntimeMapEditor] Exported map to " + result.Path);
+            CampusRuntimeMapEditorLogTextCatalog.Log(
+                CampusRuntimeMapEditorLogTextId.ExportedMap,
+                result.Path);
         }
 
         private void SavePlayerMap()
@@ -3868,11 +3888,15 @@ namespace NtingCampusMapEditor
                         SetStatus(TrFormat("\u5df2\u4fdd\u5b58\u73a9\u5bb6\u5730\u56fe\uff1a{0}", "Saved player map: {0}", result.RootPath));
                     }
 
-                    Debug.Log("[NtingCampusRuntimeMapEditor] Saved player map to " + result.RootPath);
+                    CampusRuntimeMapEditorLogTextCatalog.Log(
+                        CampusRuntimeMapEditorLogTextId.SavedPlayerMap,
+                        result.RootPath);
                 }
                 else if (showStatus)
                 {
-                    Debug.LogWarning("[NtingCampusRuntimeMapEditor] Save player map failed: " + result.ErrorMessage);
+                    CampusRuntimeMapEditorLogTextCatalog.Warning(
+                        CampusRuntimeMapEditorLogTextId.SavePlayerMapFailed,
+                        result.ErrorMessage);
                     SetStatus(TrFormat("\u4fdd\u5b58\u73a9\u5bb6\u5730\u56fe\u5931\u8d25\uff1a{0}", "Save player map failed: {0}", result.ErrorMessage));
                 }
 
@@ -3928,7 +3952,9 @@ namespace NtingCampusMapEditor
                 }
                 else
                 {
-                    Debug.LogWarning("[NtingCampusRuntimeMapEditor] Save map failed: " + result.ErrorMessage);
+                    CampusRuntimeMapEditorLogTextCatalog.Warning(
+                        CampusRuntimeMapEditorLogTextId.SaveMapFailed,
+                        result.ErrorMessage);
                     SetStatus(TrFormat("\u4fdd\u5b58\u5730\u56fe\u5931\u8d25\uff1a{0}", "Save map failed: {0}", result.ErrorMessage));
                 }
             }
@@ -3967,7 +3993,9 @@ namespace NtingCampusMapEditor
                             SetStatus(TrFormat("\u5df2\u8bfb\u53d6\u73a9\u5bb6\u5730\u56fe\uff1a{0}", "Loaded player map: {0}", result.Path));
                         }
 
-                        Debug.Log("[NtingCampusRuntimeMapEditor] Loaded player map from " + result.Path);
+                        CampusRuntimeMapEditorLogTextCatalog.Log(
+                            CampusRuntimeMapEditorLogTextId.LoadedPlayerMap,
+                            result.Path);
                         break;
                     case CampusRuntimeMapEditorPersistenceOutcome.MissingPlayerSave:
                         if (showStatus)
@@ -3977,7 +4005,9 @@ namespace NtingCampusMapEditor
 
                         break;
                     default:
-                        Debug.LogWarning("[NtingCampusRuntimeMapEditor] Load player map failed: " + result.ErrorMessage);
+                        CampusRuntimeMapEditorLogTextCatalog.Warning(
+                            CampusRuntimeMapEditorLogTextId.LoadPlayerMapFailed,
+                            result.ErrorMessage);
                         if (showStatus)
                         {
                             SetStatus(TrFormat("\u8bfb\u53d6\u73a9\u5bb6\u5730\u56fe\u5931\u8d25\uff1a{0}", "Load player map failed: {0}", result.ErrorMessage));
@@ -4022,11 +4052,15 @@ namespace NtingCampusMapEditor
                         SetStatus(TrFormat("\u5df2\u5bfc\u51fa\u5f00\u53d1\u671f\u5730\u56fe\u5305\uff1a{0}", "Exported authoring map package: {0}", result.RootPath));
                     }
 
-                    Debug.Log("[NtingCampusRuntimeMapEditor] Exported authoring map package to " + result.RootPath);
+                    CampusRuntimeMapEditorLogTextCatalog.Log(
+                        CampusRuntimeMapEditorLogTextId.ExportedAuthoringPackage,
+                        result.RootPath);
                 }
                 else
                 {
-                    Debug.LogWarning("[NtingCampusRuntimeMapEditor] Export authoring package failed: " + result.ErrorMessage);
+                    CampusRuntimeMapEditorLogTextCatalog.Warning(
+                        CampusRuntimeMapEditorLogTextId.ExportAuthoringPackageFailed,
+                        result.ErrorMessage);
                     if (showStatus)
                     {
                         SetStatus(TrFormat("\u5bfc\u51fa\u5f00\u53d1\u671f\u5730\u56fe\u5305\u5931\u8d25\uff1a{0}", "Export authoring map package failed: {0}", result.ErrorMessage));
@@ -4074,7 +4108,9 @@ namespace NtingCampusMapEditor
                             SetStatus(Tr("\u5df2\u4ece\u5f00\u53d1\u671f\u5730\u56fe\u5305\u6062\u590d\u5730\u56fe\u3002", "Restored map from authoring package."));
                         }
 
-                        Debug.Log("[NtingCampusRuntimeMapEditor] Restored authoring map package from " + packageRoot);
+                        CampusRuntimeMapEditorLogTextCatalog.Log(
+                            CampusRuntimeMapEditorLogTextId.RestoredAuthoringPackage,
+                            packageRoot);
                         break;
                     case CampusRuntimeMapEditorPersistenceOutcome.MissingAuthoringPackage:
                         if (showStatus)
@@ -4084,7 +4120,9 @@ namespace NtingCampusMapEditor
 
                         break;
                     default:
-                        Debug.LogWarning("[NtingCampusRuntimeMapEditor] Restore authoring package failed: " + result.ErrorMessage);
+                        CampusRuntimeMapEditorLogTextCatalog.Warning(
+                            CampusRuntimeMapEditorLogTextId.RestoreAuthoringPackageFailed,
+                            result.ErrorMessage);
                         if (showStatus)
                         {
                             SetStatus(TrFormat("\u6062\u590d\u5f00\u53d1\u671f\u5730\u56fe\u5305\u5931\u8d25\uff1a{0}", "Restore authoring map package failed: {0}", result.ErrorMessage));
@@ -4177,7 +4215,9 @@ namespace NtingCampusMapEditor
                     SetStatus(Tr("\u6ca1\u6709\u53ef\u5bfc\u5165\u7684\u5730\u56fe JSON\u3002", "No map JSON is available to import."));
                     break;
                 default:
-                    Debug.LogWarning("[NtingCampusRuntimeMapEditor] Import latest JSON failed: " + result.ErrorMessage);
+                    CampusRuntimeMapEditorLogTextCatalog.Warning(
+                        CampusRuntimeMapEditorLogTextId.ImportLatestJsonFailed,
+                        result.ErrorMessage);
                     SetStatus(TrFormat("\u5bfc\u5165\u5730\u56fe JSON \u5931\u8d25\uff1a{0}", "Import map JSON failed: {0}", result.ErrorMessage));
                     break;
             }
@@ -4244,7 +4284,9 @@ namespace NtingCampusMapEditor
             }
             catch (Exception exception)
             {
-                Debug.LogWarning("[NtingCampusRuntimeMapEditor] Save gameplay overlay failed: " + exception.Message);
+                CampusRuntimeMapEditorLogTextCatalog.Warning(
+                    CampusRuntimeMapEditorLogTextId.SaveGameplayOverlayFailed,
+                    exception.Message);
                 if (showStatus)
                 {
                     SetStatus(TrFormat("\u4fdd\u5b58\u73a9\u6cd5\u5c42\u5931\u8d25\uff1a{0}", "Save gameplay overlay failed: {0}", exception.Message));
@@ -4315,7 +4357,9 @@ namespace NtingCampusMapEditor
             {
                 if (!string.IsNullOrWhiteSpace(readError))
                 {
-                    Debug.LogWarning("[NtingCampusRuntimeMapEditor] Load gameplay overlay failed: " + readError);
+                    CampusRuntimeMapEditorLogTextCatalog.Warning(
+                        CampusRuntimeMapEditorLogTextId.LoadGameplayOverlayFailed,
+                        readError);
                     if (showStatus)
                     {
                         SetStatus(TrFormat("\u8bfb\u53d6\u73a9\u6cd5\u5c42\u5931\u8d25\uff1a{0}", "Load gameplay overlay failed: {0}", readError));
@@ -4345,7 +4389,9 @@ namespace NtingCampusMapEditor
             }
             catch (Exception exception)
             {
-                Debug.LogWarning("[NtingCampusRuntimeMapEditor] Load gameplay overlay failed: " + exception.Message);
+                CampusRuntimeMapEditorLogTextCatalog.Warning(
+                    CampusRuntimeMapEditorLogTextId.LoadGameplayOverlayFailed,
+                    exception.Message);
                 if (showStatus)
                 {
                     SetStatus(TrFormat("\u8bfb\u53d6\u73a9\u6cd5\u5c42\u5931\u8d25\uff1a{0}", "Load gameplay overlay failed: {0}", exception.Message));
@@ -4374,7 +4420,9 @@ namespace NtingCampusMapEditor
                     RefreshSceneReferencesIfNeeded(sceneReferencesDirty || mapRoot == null);
                     CampusRuntimeGameplayActorAuthoring.CaptureSceneActors(actors, mapRoot);
                 },
-                error => Debug.LogWarning("[NtingCampusRuntimeMapEditor] Read gameplay overlay failed: " + error));
+                error => CampusRuntimeMapEditorLogTextCatalog.Warning(
+                    CampusRuntimeMapEditorLogTextId.ReadGameplayOverlayFailed,
+                    error));
         }
 
         private void CacheGameplayActors(List<CampusRuntimeGameplayActorSnapshot> actors)
@@ -4439,7 +4487,9 @@ namespace NtingCampusMapEditor
 
             CampusRuntimeImportLibrary.MirrorDirectory(persistentImportRoot, projectImportRoot, false);
             RefreshAssetDatabaseIfAvailable();
-            Debug.Log("[NtingCampusRuntimeMapEditor] Migrated runtime import library into project folder: " + projectImportRoot);
+            CampusRuntimeMapEditorLogTextCatalog.Log(
+                CampusRuntimeMapEditorLogTextId.MigratedRuntimeImportLibrary,
+                projectImportRoot);
 #endif
         }
 
@@ -5304,7 +5354,11 @@ namespace NtingCampusMapEditor
             }
             catch (Exception exception)
             {
-                Debug.LogWarning("[NtingCampusRuntimeMapEditor] Failed to delete " + resourceLabel + " resource '" + path + "': " + exception.Message);
+                CampusRuntimeMapEditorLogTextCatalog.Warning(
+                    CampusRuntimeMapEditorLogTextId.FailedToDeleteResource,
+                    resourceLabel,
+                    path,
+                    exception.Message);
                 SetStatus(TrFormat("\u5220\u9664\u5931\u8d25\uff1a{0}", "Delete failed: {0}", exception.Message));
             }
 
@@ -5344,7 +5398,10 @@ namespace NtingCampusMapEditor
             }
             catch (Exception exception)
             {
-                Debug.LogWarning("[NtingCampusRuntimeMapEditor] Failed to delete object resource '" + path + "': " + exception.Message);
+                CampusRuntimeMapEditorLogTextCatalog.Warning(
+                    CampusRuntimeMapEditorLogTextId.FailedToDeleteObjectResource,
+                    path,
+                    exception.Message);
                 SetStatus(TrFormat("\u5220\u9664\u5931\u8d25\uff1a{0}", "Delete failed: {0}", exception.Message));
             }
 
@@ -5515,7 +5572,9 @@ namespace NtingCampusMapEditor
             UnityEditor.SceneManagement.EditorSceneManager.MarkSceneDirty(scene);
             UnityEditor.SceneManagement.EditorSceneManager.SaveScene(scene);
             UnityEditor.AssetDatabase.SaveAssets();
-            Debug.Log("[NtingCampusRuntimeMapEditor] Baked runtime generated content into " + scenePath);
+            CampusRuntimeMapEditorLogTextCatalog.Log(
+                CampusRuntimeMapEditorLogTextId.BakedRuntimeGeneratedContent,
+                scenePath);
         }
 #endif
 
@@ -5567,7 +5626,9 @@ namespace NtingCampusMapEditor
             }
             catch (Exception exception)
             {
-                Debug.LogWarning("[NtingCampusRuntimeMapEditor] Native file drop failed: " + exception.Message);
+                CampusRuntimeMapEditorLogTextCatalog.Warning(
+                    CampusRuntimeMapEditorLogTextId.NativeFileDropFailed,
+                    exception.Message);
                 return null;
             }
         }
