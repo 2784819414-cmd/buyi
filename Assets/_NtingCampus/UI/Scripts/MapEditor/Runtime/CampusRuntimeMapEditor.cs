@@ -2643,20 +2643,12 @@ namespace NtingCampusMapEditor
                 return;
             }
 
-            string ownerFacilityId = string.Empty;
-            if (!TryResolveGameplayMarkerOwnerFacilityId(preset, floor.FloorIndex, out ownerFacilityId))
-            {
-                SetStatus(Tr("\u8bf7\u5148\u4e3a\u5f53\u524d\u670d\u52a1\u7ad9\u652f\u6491\u70b9\u9009\u62e9\u6240\u5c5e\u670d\u52a1\u7a97\u53e3\u3002", "Select an owner service window for this support point first."));
-                return;
-            }
-
             EraseGameplayMarkersAtCell(floor, cell, false, true, false, false);
             if (!CampusRuntimeGameplayOverlayAuthoring.CreateFacilityMarker(
                     floor,
                     cell,
                     GetGameplayPresetDisplayName(preset),
-                    preset.FacilityType,
-                    ownerFacilityId))
+                    preset.FacilityType))
             {
                 return;
             }
@@ -3100,8 +3092,6 @@ namespace NtingCampusMapEditor
             {
                 List<CampusRuntimeGameplayFacilitySnapshot> shiftedFacilities =
                     new List<CampusRuntimeGameplayFacilitySnapshot>(roomPrefab.GameplayFacilities.Count);
-                Dictionary<string, string> shiftedFacilityIdsBySourceId =
-                    new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
                 for (int i = 0; i < roomPrefab.GameplayFacilities.Count; i++)
                 {
                     CampusRuntimeGameplayFacilitySnapshot source = roomPrefab.GameplayFacilities[i];
@@ -3116,36 +3106,15 @@ namespace NtingCampusMapEditor
                         floor.FloorIndex,
                         source.FacilityType,
                         absoluteCell);
-                    if (!string.IsNullOrWhiteSpace(source.Id))
-                    {
-                        shiftedFacilityIdsBySourceId[source.Id] = shiftedFacilityId;
-                    }
-
                     shiftedFacilities.Add(new CampusRuntimeGameplayFacilitySnapshot
                     {
                         Id = shiftedFacilityId,
-                        OwnerFacilityId = source.OwnerFacilityId,
-                        ServiceStationId = source.ServiceStationId,
                         DisplayName = source.DisplayName,
                         FacilityType = source.FacilityType,
                         FloorIndex = floor.FloorIndex,
                         Cell = absoluteCell,
                         CountsAsCoreFacility = source.CountsAsCoreFacility
                     });
-                }
-
-                for (int i = 0; i < shiftedFacilities.Count; i++)
-                {
-                    CampusRuntimeGameplayFacilitySnapshot shifted = shiftedFacilities[i];
-                    if (shifted == null || string.IsNullOrWhiteSpace(shifted.OwnerFacilityId))
-                    {
-                        continue;
-                    }
-
-                    if (shiftedFacilityIdsBySourceId.TryGetValue(shifted.OwnerFacilityId, out string shiftedOwnerId))
-                    {
-                        shifted.OwnerFacilityId = shiftedOwnerId;
-                    }
                 }
 
                 CampusRuntimeGameplayOverlayAuthoring.SpawnFacilities(shiftedFacilities, EnsureFloor);

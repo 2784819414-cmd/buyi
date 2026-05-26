@@ -72,8 +72,6 @@ namespace NtingCampus.Gameplay.Rooms
                         facilityMarker.LinkedPlacedObject,
                         CampusFacilityTypeResolution.ExplicitMarker(facilityMarker.FacilityType),
                         facilityId,
-                        ResolveOwnerFacilityId(facilityMarker, facilityMarker.LinkedPlacedObject),
-                        facilityMarker.LegacyServiceStationId,
                         facilityMarker.DisplayName,
                         facilityMarker.Cell);
                     continue;
@@ -86,8 +84,6 @@ namespace NtingCampus.Gameplay.Rooms
                         placedObject,
                         CampusFacilityTypeResolution.ExplicitMarker(facilityMarker.FacilityType),
                         facilityId,
-                        ResolveOwnerFacilityId(facilityMarker, placedObject),
-                        facilityMarker.LegacyServiceStationId,
                         facilityMarker.DisplayName,
                         facilityMarker.Cell);
                     continue;
@@ -95,8 +91,6 @@ namespace NtingCampus.Gameplay.Rooms
 
                 room.AddExplicitFacility(
                     facilityId,
-                    facilityMarker.OwnerFacilityId,
-                    facilityMarker.LegacyServiceStationId,
                     facilityMarker.DisplayName,
                     facilityMarker.FacilityType,
                     facilityMarker.Cell);
@@ -196,39 +190,6 @@ namespace NtingCampus.Gameplay.Rooms
             }
 
             return false;
-        }
-
-        private static string ResolveOwnerFacilityId(
-            CampusGameplayFacilityMarker facilityMarker,
-            CampusPlacedObject placedObject)
-        {
-            string explicitOwnerId =
-                CampusGameplayFacilityMarker.NormalizeOwnerFacilityId(
-                    facilityMarker != null ? facilityMarker.OwnerFacilityId : string.Empty);
-            if (!string.IsNullOrEmpty(explicitOwnerId))
-            {
-                return explicitOwnerId;
-            }
-
-            if (facilityMarker == null ||
-                placedObject == null ||
-                facilityMarker.FacilityType == CampusFacilityType.ServiceWindow)
-            {
-                return string.Empty;
-            }
-
-            if (!CampusPlacedObjectConceptResolver.TryResolveFacility(
-                    placedObject,
-                    out CampusFacilityTypeResolution ownerResolution) ||
-                ownerResolution.FacilityType != CampusFacilityType.ServiceWindow)
-            {
-                return string.Empty;
-            }
-
-            return CampusGameplayFacilityMarker.BuildStableFacilityId(
-                placedObject.FloorIndex,
-                ownerResolution.FacilityType,
-                placedObject.Cell);
         }
     }
 }

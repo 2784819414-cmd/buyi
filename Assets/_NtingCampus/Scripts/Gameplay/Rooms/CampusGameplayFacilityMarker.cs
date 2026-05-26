@@ -1,6 +1,5 @@
 using NtingCampusMapEditor;
 using UnityEngine;
-using UnityEngine.Serialization;
 
 namespace NtingCampus.Gameplay.Rooms
 {
@@ -8,9 +7,6 @@ namespace NtingCampus.Gameplay.Rooms
     public sealed class CampusGameplayFacilityMarker : MonoBehaviour
     {
         [SerializeField] private string facilityId = string.Empty;
-        [SerializeField] private string ownerFacilityId = string.Empty;
-        [FormerlySerializedAs("serviceStationId")]
-        [SerializeField] private string legacyServiceStationId = string.Empty;
         [SerializeField] private string displayName = string.Empty;
         [SerializeField] private CampusFacilityType facilityType = CampusFacilityType.Unknown;
         [SerializeField, Min(1)] private int floorIndex = 1;
@@ -19,8 +15,6 @@ namespace NtingCampus.Gameplay.Rooms
         [SerializeField] private CampusPlacedObject linkedPlacedObject;
 
         public string FacilityId => facilityId;
-        public string OwnerFacilityId => ownerFacilityId;
-        public string LegacyServiceStationId => legacyServiceStationId;
         public string DisplayName => displayName;
         public CampusFacilityType FacilityType => facilityType;
         public int FloorIndex => floorIndex;
@@ -38,8 +32,6 @@ namespace NtingCampus.Gameplay.Rooms
         {
             Configure(
                 string.Empty,
-                string.Empty,
-                string.Empty,
                 targetDisplayName,
                 type,
                 targetFloorIndex,
@@ -50,8 +42,6 @@ namespace NtingCampus.Gameplay.Rooms
 
         public void Configure(
             string targetFacilityId,
-            string targetOwnerFacilityId,
-            string targetLegacyServiceStationId,
             string targetDisplayName,
             CampusFacilityType type,
             int targetFloorIndex,
@@ -66,8 +56,6 @@ namespace NtingCampus.Gameplay.Rooms
             countsAsCoreFacility = coreFacility;
             linkedPlacedObject = placedObject;
             facilityId = NormalizeFacilityId(targetFacilityId);
-            ownerFacilityId = NormalizeOwnerFacilityId(targetOwnerFacilityId);
-            legacyServiceStationId = NormalizeLegacyServiceStationId(targetLegacyServiceStationId);
             if (string.IsNullOrEmpty(facilityId))
             {
                 facilityId = BuildStableFacilityId(floorIndex, facilityType, cell);
@@ -87,16 +75,6 @@ namespace NtingCampus.Gameplay.Rooms
         }
 
         public static string NormalizeFacilityId(string value)
-        {
-            return string.IsNullOrWhiteSpace(value) ? string.Empty : value.Trim();
-        }
-
-        public static string NormalizeOwnerFacilityId(string value)
-        {
-            return string.IsNullOrWhiteSpace(value) ? string.Empty : value.Trim();
-        }
-
-        public static string NormalizeLegacyServiceStationId(string value)
         {
             return string.IsNullOrWhiteSpace(value) ? string.Empty : value.Trim();
         }

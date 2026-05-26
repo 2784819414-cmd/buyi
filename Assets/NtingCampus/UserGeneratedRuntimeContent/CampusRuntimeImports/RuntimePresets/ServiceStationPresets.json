@@ -1,0 +1,61 @@
+{
+  "ServiceStations": [
+    {
+      "StationTypeId": "canteen_meal_window",
+      "DisplayName": {
+        "chinese": "食堂打饭窗口",
+        "english": "Canteen Meal Window"
+      },
+      "InteractionActionId": "campus.facility.service_window.use",
+      "AvailabilityRuleId": "canteen_operator_present_meal_peak",
+      "AllowedRoomTypes": [ "ServiceArea" ],
+      "OwnerFacilityTypes": [ "ServiceWindow" ],
+      "Slots": [
+        {
+          "RoleId": "operator",
+          "FacilityTypes": [ "WorkerStandPoint" ],
+          "MinCount": 1,
+          "MaxCount": 1,
+          "NavigationTargetWhenAvailable": false,
+          "NavigationTargetWhenWaiting": false
+        },
+        {
+          "RoleId": "customer",
+          "FacilityTypes": [ "PickupPoint" ],
+          "MinCount": 1,
+          "MaxCount": 1,
+          "NavigationTargetWhenAvailable": true,
+          "NavigationTargetWhenWaiting": true
+        },
+        {
+          "RoleId": "queue",
+          "FacilityTypes": [ "WaitingPoint" ],
+          "MinCount": 0,
+          "MaxCount": 99,
+          "NavigationTargetWhenAvailable": false,
+          "NavigationTargetWhenWaiting": true
+        },
+        {
+          "RoleId": "output",
+          "FacilityTypes": [ "DropPoint" ],
+          "MinCount": 0,
+          "MaxCount": 1,
+          "NavigationTargetWhenAvailable": false,
+          "NavigationTargetWhenWaiting": false
+        }
+      ]
+    },
+    {
+      "StationTypeId": "retail_checkout",
+      "DisplayName": {
+        "chinese": "零售收银台",
+        "english": "Retail Checkout"
+      },
+      "InteractionActionId": "campus.retail.checkout",
+      "AvailabilityRuleId": "always_available",
+      "AllowedRoomTypes": [ "RetailArea" ],
+      "OwnerFacilityTypes": [ "CheckoutPoint" ],
+      "Slots": []
+    }
+  ]
+}

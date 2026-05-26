@@ -104,7 +104,7 @@ namespace NtingCampus.Gameplay.Characters
         {
             opportunity = null;
             if (!TryResolveServiceStationRoom(npc, action, targetRule, out CampusGameplayRoom room) ||
-                !TryResolveServiceStation(room, npc, entry, action, out CampusServiceStation station))
+                !TryResolveServiceStation(room, npc, entry, action, targetRule, out CampusServiceStation station))
             {
                 return false;
             }
@@ -806,7 +806,10 @@ namespace NtingCampus.Gameplay.Characters
             {
                 CampusGameplayRoom candidateRoom = rooms[i];
                 if (candidateRoom == null ||
-                    CampusServiceStationCatalog.Collect(candidateRoom, action.ActionId).Count == 0)
+                    CampusServiceStationCatalog.Collect(
+                        candidateRoom,
+                        action.ActionId,
+                        targetRule.StationTypeIds).Count == 0)
                 {
                     continue;
                 }
@@ -911,6 +914,7 @@ namespace NtingCampus.Gameplay.Characters
             CampusNpcAiRuntime npc,
             ScheduleEntryRecord entry,
             ActionRecord action,
+            ActionTargetRuleRecord targetRule,
             out CampusServiceStation station)
         {
             station = default;
@@ -921,7 +925,8 @@ namespace NtingCampus.Gameplay.Characters
 
             List<CampusServiceStation> stations = CampusServiceStationCatalog.Collect(
                 room,
-                action.ActionId);
+                action.ActionId,
+                targetRule.StationTypeIds);
             if (stations.Count == 0)
             {
                 return false;

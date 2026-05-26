@@ -43,7 +43,8 @@ namespace NtingCampus.UI.Runtime.Gameplay
                 MapName = string.IsNullOrWhiteSpace(mapName) ? "CampusMap" : mapName,
                 Actors = actors ?? new List<CampusRuntimeGameplayActorSnapshot>(),
                 Rooms = new List<CampusRuntimeGameplayRoomSnapshot>(),
-                Facilities = new List<CampusRuntimeGameplayFacilitySnapshot>()
+                Facilities = new List<CampusRuntimeGameplayFacilitySnapshot>(),
+                ServiceStations = new List<CampusRuntimeGameplayServiceStationSnapshot>()
             };
             captureMarkers?.Invoke(snapshot);
             return snapshot;

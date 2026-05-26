@@ -75,6 +75,7 @@ namespace NtingCampus.Gameplay.Characters
             public string ActionId = string.Empty;
             public string[] ActionChainIds = Array.Empty<string>();
             public string TargetKind = string.Empty;
+            public string[] StationTypeIds = Array.Empty<string>();
             public string RoomType = string.Empty;
             public string[] FacilityTypes = Array.Empty<string>();
             public string Owner = string.Empty;
@@ -147,6 +148,7 @@ namespace NtingCampus.Gameplay.Characters
             public string ActionId = string.Empty;
             public string[] ActionChainIds = Array.Empty<string>();
             public CampusNpcEcologyTargetKind TargetKind = CampusNpcEcologyTargetKind.None;
+            public string[] StationTypeIds = Array.Empty<string>();
             public CampusRoomType RoomType = CampusRoomType.Unknown;
             public CampusFacilityType[] FacilityTypes = Array.Empty<CampusFacilityType>();
             public string Owner = string.Empty;

@@ -1845,8 +1845,8 @@ namespace NtingCampusMapEditor
             GUI.Label(
                 new Rect(0f, y, width, 40f),
                 string.IsNullOrWhiteSpace(selectedFacilityOwnerId)
-                    ? Tr("\u5f53\u524d\u652f\u6491\u70b9\u4f1a\u628a OwnerFacilityId \u5199\u5230 .gameplay.json\uff0c\u6240\u4ee5\u5fc5\u987b\u5148\u9009\u4e00\u4e2a\u6240\u5c5e\u670d\u52a1\u7a97\u53e3\u3002", "Support points write OwnerFacilityId into .gameplay.json, so you must choose an owner service window first.")
-                    : Tr("\u5f53\u524d\u6240\u5c5e\u670d\u52a1\u7a97\u53e3\u5df2\u9009\u4e2d\u3002", "The owner service window is selected."),
+                    ? Tr("\u5f53\u524d\u70b9\u4f4d\u9700\u8981\u5148\u5728\u670d\u52a1\u7ad9\u5b9e\u4f8b\u4e2d\u58f0\u660e\u6240\u5c5e\u8bbe\u65bd\u3002", "Declare this point through a service station instance before it is used.")
+                    : Tr("\u5f53\u524d\u670d\u52a1\u7ad9\u6240\u5c5e\u8bbe\u65bd\u5df2\u9009\u4e2d\u3002", "The service station owner facility is selected."),
                 mutedStyle);
             y += 48f;
         }

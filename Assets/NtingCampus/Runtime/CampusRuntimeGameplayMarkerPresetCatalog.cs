@@ -118,30 +118,22 @@ namespace NtingCampusMapEditor
                 new CampusLocalizedTextEntry("\u64cd\u4f5c\u5458\u4f4d", "Operator Slot", "\u64cd\u4f5c\u54e1\u4f4d", "\u041c\u0435\u0441\u0442\u043e \u043e\u043f\u0435\u0440\u0430\u0442\u043e\u0440\u0430", "\u62c5\u5f53\u8005\u4f4d\u7f6e"),
                 new CampusLocalizedTextEntry("\u64cd\u4f5c\u5458\u4f4d", "Operator Slot", "\u64cd\u4f5c\u54e1\u4f4d", "\u041c\u0435\u0441\u0442\u043e \u043e\u043f\u0435\u0440\u0430\u0442\u043e\u0440\u0430", "\u62c5\u5f53\u8005\u4f4d\u7f6e"),
                 CampusFacilityType.WorkerStandPoint,
-                new Color(0.16f, 0.58f, 0.67f, 1f),
-                true,
-                new[] { CampusFacilityType.ServiceWindow }),
+                new Color(0.16f, 0.58f, 0.67f, 1f)),
             CampusRuntimeGameplayMarkerPreset.FacilityPoint(
                 new CampusLocalizedTextEntry("\u987e\u5ba2\u4f4d", "Customer Slot", "\u9867\u5ba2\u4f4d", "\u041c\u0435\u0441\u0442\u043e \u043a\u043b\u0438\u0435\u043d\u0442\u0430", "\u5229\u7528\u8005\u4f4d\u7f6e"),
                 new CampusLocalizedTextEntry("\u987e\u5ba2\u4f4d", "Customer Slot", "\u9867\u5ba2\u4f4d", "\u041c\u0435\u0441\u0442\u043e \u043a\u043b\u0438\u0435\u043d\u0442\u0430", "\u5229\u7528\u8005\u4f4d\u7f6e"),
                 CampusFacilityType.PickupPoint,
-                new Color(0.48f, 0.82f, 0.62f, 1f),
-                true,
-                new[] { CampusFacilityType.ServiceWindow }),
+                new Color(0.48f, 0.82f, 0.62f, 1f)),
             CampusRuntimeGameplayMarkerPreset.FacilityPoint(
                 new CampusLocalizedTextEntry("\u6392\u961f\u4f4d", "Queue Slot", "\u6392\u968a\u4f4d", "\u041c\u0435\u0441\u0442\u043e \u043e\u0447\u0435\u0440\u0435\u0434\u0438", "\u5f85\u6a5f\u5217\u4f4d\u7f6e"),
                 new CampusLocalizedTextEntry("\u6392\u961f\u4f4d", "Queue Slot", "\u6392\u968a\u4f4d", "\u041c\u0435\u0441\u0442\u043e \u043e\u0447\u0435\u0440\u0435\u0434\u0438", "\u5f85\u6a5f\u5217\u4f4d\u7f6e"),
                 CampusFacilityType.WaitingPoint,
-                new Color(0.95f, 0.76f, 0.28f, 1f),
-                true,
-                new[] { CampusFacilityType.ServiceWindow }),
+                new Color(0.95f, 0.76f, 0.28f, 1f)),
             CampusRuntimeGameplayMarkerPreset.FacilityPoint(
                 new CampusLocalizedTextEntry("\u653e\u7f6e\u4f4d", "Drop Slot", "\u653e\u7f6e\u4f4d", "\u041c\u0435\u0441\u0442\u043e \u0432\u044b\u043a\u043b\u0430\u0434\u043a\u0438", "\u914d\u7f6e\u4f4d\u7f6e"),
                 new CampusLocalizedTextEntry("\u653e\u7f6e\u4f4d", "Drop Slot", "\u653e\u7f6e\u4f4d", "\u041c\u0435\u0441\u0442\u043e \u0432\u044b\u043a\u043b\u0430\u0434\u043a\u0438", "\u914d\u7f6e\u4f4d\u7f6e"),
                 CampusFacilityType.DropPoint,
-                new Color(0.32f, 0.54f, 0.98f, 1f),
-                true,
-                new[] { CampusFacilityType.ServiceWindow })
+                new Color(0.32f, 0.54f, 0.98f, 1f))
         };
 
         private static CampusRuntimeGameplayMarkerPreset[] LoadPresets()

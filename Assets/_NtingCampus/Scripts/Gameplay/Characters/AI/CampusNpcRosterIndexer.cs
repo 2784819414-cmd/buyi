@@ -192,7 +192,7 @@ namespace NtingCampus.Gameplay.Characters
                             ResolveStaffWorkRoom(peer, rosterService, worldService),
                             workRoom),
                 peer => peer != null && peer.Data != null && peer.Data.Assignments != null
-                    ? peer.Data.Assignments.PrimaryWorkstationId
+                    ? peer.Data.Assignments.WorkFacilityId
                     : string.Empty,
                 out record);
         }
@@ -217,7 +217,7 @@ namespace NtingCampus.Gameplay.Characters
                             ResolveStaffWorkRoom(peer, rosterService, worldService),
                             workRoom),
                 peer => peer != null && peer.Data != null && peer.Data.Assignments != null
-                    ? peer.Data.Assignments.ServiceWindowId
+                    ? peer.Data.Assignments.ServiceStationId
                     : string.Empty,
                 out record);
         }
@@ -396,8 +396,8 @@ namespace NtingCampus.Gameplay.Characters
             if (isSupportStaff &&
                 CampusNpcFacilitySelector.FindAssigned(
                     worldService,
-                    assignments != null ? assignments.ServiceWindowId : string.Empty,
-                    CampusNpcFacilityTypeSets.Get(CampusNpcFacilityTypeSets.ServiceWindows),
+                    assignments != null ? assignments.WorkFacilityId : string.Empty,
+                    CampusNpcFacilityTypeSets.Get(CampusNpcFacilityTypeSets.WorkerStands),
                     out CampusGameplayRoom serviceWindowRoom,
                     out _))
             {
@@ -406,9 +406,9 @@ namespace NtingCampus.Gameplay.Characters
 
             CampusFacilityType[] facilityTypes = ResolveStaffWorkstationFacilityTypes(data);
             if (CampusNpcFacilitySelector.FindAssigned(
-                    worldService,
-                    assignments != null ? assignments.PrimaryWorkstationId : string.Empty,
-                    facilityTypes,
+                worldService,
+                assignments != null ? assignments.WorkFacilityId : string.Empty,
+                facilityTypes,
                     out CampusGameplayRoom workstationRoom,
                     out _))
             {

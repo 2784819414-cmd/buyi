@@ -553,10 +553,9 @@ namespace NtingCampus.Gameplay.Characters
         public string OfficeRoomId = string.Empty;
         public string OfficeDeskId = string.Empty;
         public string WorkRoomId = string.Empty;
-        public string ServiceWindowId = string.Empty;
-        public string PrimaryWorkstationId = string.Empty;
-        public string ClaimRoomId = string.Empty;
-        public string DropPointId = string.Empty;
+        public string WorkFacilityId = string.Empty;
+        public string ServiceStationId = string.Empty;
+        public string ServiceStationSlotRoleId = string.Empty;
 
         public bool HasAny()
         {
@@ -568,10 +567,9 @@ namespace NtingCampus.Gameplay.Characters
                    !string.IsNullOrEmpty(OfficeRoomId) ||
                    !string.IsNullOrEmpty(OfficeDeskId) ||
                    !string.IsNullOrEmpty(WorkRoomId) ||
-                   !string.IsNullOrEmpty(ServiceWindowId) ||
-                   !string.IsNullOrEmpty(PrimaryWorkstationId) ||
-                   !string.IsNullOrEmpty(ClaimRoomId) ||
-                   !string.IsNullOrEmpty(DropPointId);
+                   !string.IsNullOrEmpty(WorkFacilityId) ||
+                   !string.IsNullOrEmpty(ServiceStationId) ||
+                   !string.IsNullOrEmpty(ServiceStationSlotRoleId);
         }
 
         public CampusCharacterAssignmentData Clone()
@@ -585,10 +583,9 @@ namespace NtingCampus.Gameplay.Characters
                 OfficeRoomId = OfficeRoomId,
                 OfficeDeskId = OfficeDeskId,
                 WorkRoomId = WorkRoomId,
-                ServiceWindowId = ServiceWindowId,
-                PrimaryWorkstationId = PrimaryWorkstationId,
-                ClaimRoomId = ClaimRoomId,
-                DropPointId = DropPointId
+                WorkFacilityId = WorkFacilityId,
+                ServiceStationId = ServiceStationId,
+                ServiceStationSlotRoleId = ServiceStationSlotRoleId
             };
             clone.Normalize();
             return clone;
@@ -603,10 +600,9 @@ namespace NtingCampus.Gameplay.Characters
             OfficeRoomId = NormalizeId(OfficeRoomId);
             OfficeDeskId = NormalizeId(OfficeDeskId);
             WorkRoomId = NormalizeId(WorkRoomId);
-            ServiceWindowId = NormalizeId(ServiceWindowId);
-            PrimaryWorkstationId = NormalizeId(PrimaryWorkstationId);
-            ClaimRoomId = NormalizeId(ClaimRoomId);
-            DropPointId = NormalizeId(DropPointId);
+            WorkFacilityId = NormalizeId(WorkFacilityId);
+            ServiceStationId = NormalizeId(ServiceStationId);
+            ServiceStationSlotRoleId = NormalizeId(ServiceStationSlotRoleId);
         }
 
         private static string NormalizeId(string value)

@@ -12,9 +12,10 @@ namespace NtingCampus.Gameplay.Services
                 return false;
             }
 
-            if (CampusInteractionActionIds.Equals(
-                    station.InteractionActionId,
-                    CampusInteractionActionIds.ServiceWindowUse))
+            if (string.Equals(
+                    station.AvailabilityRuleId,
+                    CampusServiceStationPresetCatalog.AvailabilityCanteenOperatorMealPeak,
+                    System.StringComparison.OrdinalIgnoreCase))
             {
                 return CampusCanteenServiceWindowAvailability.IsAvailable(station);
             }

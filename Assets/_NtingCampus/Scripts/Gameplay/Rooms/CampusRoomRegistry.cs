@@ -49,6 +49,10 @@ namespace NtingCampus.Gameplay.Rooms
             IndexRoomsById();
             BuildRoomCellIndex();
             CampusGameplayFacilityCollector.AssignFacilities(mapRoot, overlayLoader, FindRoomByCell);
+            CampusGameplayServiceStationCollector.AssignServiceStations(
+                overlayLoader,
+                roomId => TryGetRoom(roomId, out CampusGameplayRoom room) ? room : null,
+                rooms);
             validationIssues.AddRange(CampusRoomValidator.Validate(rooms));
             ApplyValidationState();
             MaybeLogValidationIssues();

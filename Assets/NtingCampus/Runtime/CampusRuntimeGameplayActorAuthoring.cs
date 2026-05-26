@@ -597,7 +597,7 @@ namespace NtingCampusMapEditor
 
             if (facility != null)
             {
-                actor.Assignments.PrimaryWorkstationId = ResolveFacilityId(facility);
+                actor.Assignments.WorkFacilityId = ResolveFacilityId(facility);
             }
         }
 

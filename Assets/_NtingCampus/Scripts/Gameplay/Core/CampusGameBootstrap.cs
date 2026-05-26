@@ -6,6 +6,7 @@ using NtingCampus.Gameplay.Modes;
 using NtingCampus.Gameplay.Rooms;
 using NtingCampus.Gameplay.Sanctions;
 using NtingCampus.Gameplay.Schedule;
+using NtingCampus.Gameplay.TheftConsequences;
 using NtingCampus.UI.Runtime.Gameplay;
 using UnityEngine;
 
@@ -25,8 +26,8 @@ namespace NtingCampus.Gameplay.Core
         [SerializeField] private CampusScheduleService scheduleService;
         [SerializeField] private CampusGameplayEventHub gameplayEventHub;
         [SerializeField] private CampusInventoryTransferService inventoryTransferService;
-        [SerializeField] private CampusObservedIncidentImpactService observedIncidentImpactService;
         [SerializeField] private CampusSanctionService sanctionService;
+        [SerializeField] private CampusTheftConsequenceService theftConsequenceService;
         [SerializeField] private CampusEconomyService economyService;
         [SerializeField] private CampusGameplayHudController gameplayHudController;
         [SerializeField] private CampusPlayerInventoryController playerInventoryController;
@@ -47,8 +48,8 @@ namespace NtingCampus.Gameplay.Core
         public CampusScheduleService ScheduleService => scheduleService;
         public CampusGameplayEventHub GameplayEventHub => gameplayEventHub;
         public CampusInventoryTransferService InventoryTransferService => inventoryTransferService;
-        public CampusObservedIncidentImpactService ObservedIncidentImpactService => observedIncidentImpactService;
         public CampusSanctionService SanctionService => sanctionService;
+        public CampusTheftConsequenceService TheftConsequenceService => theftConsequenceService;
         public CampusEconomyService EconomyService => economyService;
         public CampusGameplayHudController GameplayHudController => gameplayHudController;
         public CampusPlayerInventoryController PlayerInventoryController => playerInventoryController;
@@ -71,8 +72,8 @@ namespace NtingCampus.Gameplay.Core
             bootstrap.EnsureScheduleService();
             bootstrap.EnsureGameplayEventHub();
             bootstrap.EnsureInventoryTransferService();
-            bootstrap.EnsureObservedIncidentImpactService();
             bootstrap.EnsureSanctionService();
+            bootstrap.EnsureTheftConsequenceService();
             bootstrap.EnsureEconomyService();
             bootstrap.EnsureGameplayHudController();
             bootstrap.EnsurePlayerInventoryController();
@@ -121,14 +122,14 @@ namespace NtingCampus.Gameplay.Core
             inventoryTransferService = EnsureInventoryTransferService();
             inventoryTransferService.Initialize(this);
 
-            observedIncidentImpactService = EnsureObservedIncidentImpactService();
-            observedIncidentImpactService.Initialize(this);
-
             sanctionService = EnsureSanctionService();
             sanctionService.Initialize(this);
 
             economyService = EnsureEconomyService();
             economyService.Initialize(this);
+
+            theftConsequenceService = EnsureTheftConsequenceService();
+            theftConsequenceService.Initialize(this);
 
             playerInventoryController = EnsurePlayerInventoryController();
             playerInventoryController.Initialize(this);
@@ -159,7 +160,7 @@ namespace NtingCampus.Gameplay.Core
             EnsureLaunchSelectionApplier();
             EnsurePlayerInventoryController();
             EnsureInventoryTransferService();
-            EnsureObservedIncidentImpactService();
+            EnsureTheftConsequenceService();
             EnsureGameplayHudController();
         }
 
@@ -180,6 +181,10 @@ namespace NtingCampus.Gameplay.Core
             initialGameState.InitialTeacherAlertness = Mathf.Clamp(initialGameState.InitialTeacherAlertness, CampusGameState.StatMin, CampusGameState.StatMax);
             initialGameState.InitialDivineInterest = Mathf.Clamp(initialGameState.InitialDivineInterest, CampusGameState.StatMin, CampusGameState.StatMax);
             initialGameState.InitialPlayerSuspicion = Mathf.Clamp(initialGameState.InitialPlayerSuspicion, CampusGameState.StatMin, CampusGameState.StatMax);
+            initialGameState.InitialPlayerTheftEvidence = Mathf.Clamp(initialGameState.InitialPlayerTheftEvidence, CampusGameState.StatMin, CampusGameState.StatMax);
+            initialGameState.InitialPlayerTheftRecord = Mathf.Clamp(initialGameState.InitialPlayerTheftRecord, CampusGameState.StatMin, CampusGameState.StatMax);
+            initialGameState.InitialCampusRumor = Mathf.Clamp(initialGameState.InitialCampusRumor, CampusGameState.StatMin, CampusGameState.StatMax);
+            initialGameState.InitialCampusCrackdown = Mathf.Clamp(initialGameState.InitialCampusCrackdown, CampusGameState.StatMin, CampusGameState.StatMax);
             initialGameState.InitialDailyWarningCount = Mathf.Max(0, initialGameState.InitialDailyWarningCount);
         }
 
@@ -383,20 +388,20 @@ namespace NtingCampus.Gameplay.Core
             return sanctionService;
         }
 
-        private CampusObservedIncidentImpactService EnsureObservedIncidentImpactService()
+        private CampusTheftConsequenceService EnsureTheftConsequenceService()
         {
-            if (observedIncidentImpactService != null)
+            if (theftConsequenceService != null)
             {
-                return observedIncidentImpactService;
+                return theftConsequenceService;
             }
 
-            observedIncidentImpactService = GetComponent<CampusObservedIncidentImpactService>();
-            if (observedIncidentImpactService == null)
+            theftConsequenceService = GetComponent<CampusTheftConsequenceService>();
+            if (theftConsequenceService == null)
             {
-                observedIncidentImpactService = gameObject.AddComponent<CampusObservedIncidentImpactService>();
+                theftConsequenceService = gameObject.AddComponent<CampusTheftConsequenceService>();
             }
 
-            return observedIncidentImpactService;
+            return theftConsequenceService;
         }
 
         private CampusEconomyService EnsureEconomyService()

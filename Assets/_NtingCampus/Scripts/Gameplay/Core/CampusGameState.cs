@@ -16,6 +16,10 @@ namespace NtingCampus.Gameplay.Core
         [SerializeField, Range(StatMin, StatMax)] private int teacherAlertness = 15;
         [SerializeField, Range(StatMin, StatMax)] private int divineInterest = 25;
         [SerializeField, Range(StatMin, StatMax)] private int playerSuspicion;
+        [SerializeField, Range(StatMin, StatMax)] private int playerTheftEvidence;
+        [SerializeField, Range(StatMin, StatMax)] private int playerTheftRecord;
+        [SerializeField, Range(StatMin, StatMax)] private int campusRumor;
+        [SerializeField, Range(StatMin, StatMax)] private int campusCrackdown;
         [SerializeField, Min(0)] private int dailyWarningCount;
         [SerializeField] private bool shrineRoomUnlocked;
         [SerializeField] private bool landExpansionUnlocked;
@@ -27,6 +31,10 @@ namespace NtingCampus.Gameplay.Core
         public int TeacherAlertness => teacherAlertness;
         public int DivineInterest => divineInterest;
         public int PlayerSuspicion => playerSuspicion;
+        public int PlayerTheftEvidence => playerTheftEvidence;
+        public int PlayerTheftRecord => playerTheftRecord;
+        public int CampusRumor => campusRumor;
+        public int CampusCrackdown => campusCrackdown;
         public int DailyWarningCount => dailyWarningCount;
         public bool ShrineRoomUnlocked => shrineRoomUnlocked;
         public bool LandExpansionUnlocked => landExpansionUnlocked;
@@ -40,6 +48,10 @@ namespace NtingCampus.Gameplay.Core
             teacherAlertness = ClampStat(initialization.InitialTeacherAlertness);
             divineInterest = ClampStat(initialization.InitialDivineInterest);
             playerSuspicion = ClampStat(initialization.InitialPlayerSuspicion);
+            playerTheftEvidence = ClampStat(initialization.InitialPlayerTheftEvidence);
+            playerTheftRecord = ClampStat(initialization.InitialPlayerTheftRecord);
+            campusRumor = ClampStat(initialization.InitialCampusRumor);
+            campusCrackdown = ClampStat(initialization.InitialCampusCrackdown);
             dailyWarningCount = Mathf.Max(0, initialization.InitialDailyWarningCount);
             shrineRoomUnlocked = initialization.InitialShrineRoomUnlocked;
             landExpansionUnlocked = initialization.InitialLandExpansionUnlocked;
@@ -111,6 +123,46 @@ namespace NtingCampus.Gameplay.Core
             SetPlayerSuspicion(playerSuspicion + delta);
         }
 
+        public void SetPlayerTheftEvidence(int value)
+        {
+            playerTheftEvidence = ClampStat(value);
+        }
+
+        public void AddPlayerTheftEvidence(int delta)
+        {
+            SetPlayerTheftEvidence(playerTheftEvidence + delta);
+        }
+
+        public void SetPlayerTheftRecord(int value)
+        {
+            playerTheftRecord = ClampStat(value);
+        }
+
+        public void AddPlayerTheftRecord(int delta)
+        {
+            SetPlayerTheftRecord(playerTheftRecord + delta);
+        }
+
+        public void SetCampusRumor(int value)
+        {
+            campusRumor = ClampStat(value);
+        }
+
+        public void AddCampusRumor(int delta)
+        {
+            SetCampusRumor(campusRumor + delta);
+        }
+
+        public void SetCampusCrackdown(int value)
+        {
+            campusCrackdown = ClampStat(value);
+        }
+
+        public void AddCampusCrackdown(int delta)
+        {
+            SetCampusCrackdown(campusCrackdown + delta);
+        }
+
         public void SetDailyWarningCount(int value)
         {
             dailyWarningCount = Mathf.Max(0, value);
@@ -156,6 +208,10 @@ namespace NtingCampus.Gameplay.Core
         [Range(CampusGameState.StatMin, CampusGameState.StatMax)] public int InitialTeacherAlertness;
         [Range(CampusGameState.StatMin, CampusGameState.StatMax)] public int InitialDivineInterest;
         [Range(CampusGameState.StatMin, CampusGameState.StatMax)] public int InitialPlayerSuspicion;
+        [Range(CampusGameState.StatMin, CampusGameState.StatMax)] public int InitialPlayerTheftEvidence;
+        [Range(CampusGameState.StatMin, CampusGameState.StatMax)] public int InitialPlayerTheftRecord;
+        [Range(CampusGameState.StatMin, CampusGameState.StatMax)] public int InitialCampusRumor;
+        [Range(CampusGameState.StatMin, CampusGameState.StatMax)] public int InitialCampusCrackdown;
         [Min(0)] public int InitialDailyWarningCount;
         public bool InitialShrineRoomUnlocked;
         public bool InitialLandExpansionUnlocked;
@@ -170,6 +226,10 @@ namespace NtingCampus.Gameplay.Core
                 InitialTeacherAlertness = 15,
                 InitialDivineInterest = 25,
                 InitialPlayerSuspicion = 0,
+                InitialPlayerTheftEvidence = 0,
+                InitialPlayerTheftRecord = 0,
+                InitialCampusRumor = 0,
+                InitialCampusCrackdown = 0,
                 InitialDailyWarningCount = 0,
                 InitialShrineRoomUnlocked = false,
                 InitialLandExpansionUnlocked = false

@@ -1,0 +1,82 @@
+{
+  "DefaultItemValue": 8,
+  "HeldEvidenceBonus": 16,
+  "OfficialWitnessEvidenceBonus": 12,
+  "PriorRecordWeight": 1,
+  "CrackdownWeight": 1,
+  "WitnessWeights": [
+    { "Id": "unknown", "Value": 0 },
+    { "Id": "student", "Value": 4 },
+    { "Id": "good_student", "Value": 7 },
+    { "Id": "tattletale", "Value": 9 },
+    { "Id": "staff", "Value": 14 },
+    { "Id": "teacher", "Value": 18 },
+    { "Id": "owner", "Value": 12 }
+  ],
+  "RoomSensitivity": [
+    { "Id": "default", "Value": 2 },
+    { "Id": "RetailArea", "Value": 10 },
+    { "Id": "ServiceArea", "Value": 9 },
+    { "Id": "Library", "Value": 12 },
+    { "Id": "Outdoor", "Value": 7 },
+    { "Id": "Office", "Value": 14 }
+  ],
+  "ItemValues": [
+    { "Id": "retail_water", "Value": 4 },
+    { "Id": "retail_potato_chips", "Value": 6 },
+    { "Id": "snack", "Value": 5 },
+    { "Id": "textbook", "Value": 14 },
+    { "Id": "workbook", "Value": 10 },
+    { "Id": "lunch_box", "Value": 12 },
+    { "Id": "phone", "Value": 28 }
+  ],
+  "SeverityBands": [
+    { "Severity": "Minor", "MinScore": 0 },
+    { "Severity": "Moderate", "MinScore": 35 },
+    { "Severity": "Severe", "MinScore": 70 }
+  ],
+  "ConsequenceRules": [
+    {
+      "Severity": "Minor",
+      "SuspicionDelta": 5,
+      "EvidenceDelta": 2,
+      "RecordDelta": 0,
+      "RumorDelta": 1,
+      "CrackdownDelta": 0,
+      "TeacherAlertnessDelta": 1,
+      "CampusOrderDelta": -1,
+      "CampusChaosDelta": 1,
+      "CompensationAmount": 2,
+      "ConfiscateEvidence": true,
+      "SanctionLevel": "None"
+    },
+    {
+      "Severity": "Moderate",
+      "SuspicionDelta": 12,
+      "EvidenceDelta": 6,
+      "RecordDelta": 1,
+      "RumorDelta": 4,
+      "CrackdownDelta": 2,
+      "TeacherAlertnessDelta": 3,
+      "CampusOrderDelta": -3,
+      "CampusChaosDelta": 3,
+      "CompensationAmount": 6,
+      "ConfiscateEvidence": true,
+      "SanctionLevel": "Warning"
+    },
+    {
+      "Severity": "Severe",
+      "SuspicionDelta": 22,
+      "EvidenceDelta": 12,
+      "RecordDelta": 2,
+      "RumorDelta": 8,
+      "CrackdownDelta": 5,
+      "TeacherAlertnessDelta": 6,
+      "CampusOrderDelta": -6,
+      "CampusChaosDelta": 6,
+      "CompensationAmount": 12,
+      "ConfiscateEvidence": true,
+      "SanctionLevel": "Reprimand"
+    }
+  ]
+}

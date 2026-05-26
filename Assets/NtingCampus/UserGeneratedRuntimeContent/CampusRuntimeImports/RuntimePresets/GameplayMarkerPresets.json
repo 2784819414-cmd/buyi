@@ -13,32 +13,32 @@
             "EnglishLabel": "Operator Slot",
             "FacilityType": "WorkerStandPoint",
             "Color": "#1F94AD",
-            "RequiresOwnerFacility": true,
-            "OwnerFacilityTypes": [ "ServiceWindow" ]
+            "RequiresOwnerFacility": false,
+            "OwnerFacilityTypes": []
         },
         {
             "ChineseLabel": "顾客位",
             "EnglishLabel": "Customer Slot",
             "FacilityType": "PickupPoint",
             "Color": "#7AD19E",
-            "RequiresOwnerFacility": true,
-            "OwnerFacilityTypes": [ "ServiceWindow" ]
+            "RequiresOwnerFacility": false,
+            "OwnerFacilityTypes": []
         },
         {
             "ChineseLabel": "排队位",
             "EnglishLabel": "Queue Slot",
             "FacilityType": "WaitingPoint",
             "Color": "#F2C247",
-            "RequiresOwnerFacility": true,
-            "OwnerFacilityTypes": [ "ServiceWindow" ]
+            "RequiresOwnerFacility": false,
+            "OwnerFacilityTypes": []
         },
         {
             "ChineseLabel": "放置位",
             "EnglishLabel": "Drop Slot",
             "FacilityType": "DropPoint",
             "Color": "#528AFB",
-            "RequiresOwnerFacility": true,
-            "OwnerFacilityTypes": [ "ServiceWindow" ]
+            "RequiresOwnerFacility": false,
+            "OwnerFacilityTypes": []
         }
     ]
 }

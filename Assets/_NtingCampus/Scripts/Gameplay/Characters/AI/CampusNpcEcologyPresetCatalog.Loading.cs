@@ -197,6 +197,7 @@ namespace NtingCampus.Gameplay.Characters
                 ActionId = NormalizeId(file.ActionId),
                 ActionChainIds = NormalizeIds(file.ActionChainIds),
                 TargetKind = targetKind,
+                StationTypeIds = NormalizeIds(file.StationTypeIds),
                 RoomType = roomType,
                 FacilityTypes = facilityTypes,
                 Owner = NormalizeId(file.Owner),

@@ -39,8 +39,6 @@ namespace NtingCampus.Gameplay.Rooms
         public sealed class FacilityFact
         {
             public string FacilityId = string.Empty;
-            public string OwnerFacilityId = string.Empty;
-            public string ServiceStationId = string.Empty;
             public string DisplayName = string.Empty;
             public CampusFacilityType FacilityType = CampusFacilityType.Unknown;
             public CampusFacilityTypeSource FacilityTypeSource = CampusFacilityTypeSource.Unknown;
@@ -51,6 +49,21 @@ namespace NtingCampus.Gameplay.Rooms
             public Vector3Int Cell;
             public bool HasPlacedObject;
             public bool HasExplicitFacilityType;
+        }
+
+        public sealed class ServiceStationSlotFact
+        {
+            public string RoleId = string.Empty;
+            public List<string> FacilityIds = new List<string>();
+        }
+
+        public sealed class ServiceStationFact
+        {
+            public string StationId = string.Empty;
+            public string StationTypeId = string.Empty;
+            public string RoomId = string.Empty;
+            public string OwnerFacilityId = string.Empty;
+            public List<ServiceStationSlotFact> Slots = new List<ServiceStationSlotFact>();
         }
 
         public sealed class ActorFact
@@ -68,16 +81,20 @@ namespace NtingCampus.Gameplay.Rooms
 
         private readonly List<RoomFact> rooms = new List<RoomFact>();
         private readonly List<FacilityFact> facilities = new List<FacilityFact>();
+        private readonly List<ServiceStationFact> serviceStations = new List<ServiceStationFact>();
         private readonly List<ActorFact> actors = new List<ActorFact>();
         private readonly Dictionary<string, RoomFact> roomsById =
             new Dictionary<string, RoomFact>(StringComparer.OrdinalIgnoreCase);
         private readonly Dictionary<string, FacilityFact> facilitiesById =
             new Dictionary<string, FacilityFact>(StringComparer.OrdinalIgnoreCase);
+        private readonly Dictionary<string, ServiceStationFact> serviceStationsById =
+            new Dictionary<string, ServiceStationFact>(StringComparer.OrdinalIgnoreCase);
         private readonly Dictionary<string, ActorFact> actorsById =
             new Dictionary<string, ActorFact>(StringComparer.OrdinalIgnoreCase);
 
         public IReadOnlyList<RoomFact> Rooms => rooms;
         public IReadOnlyList<FacilityFact> Facilities => facilities;
+        public IReadOnlyList<ServiceStationFact> ServiceStations => serviceStations;
         public IReadOnlyList<ActorFact> Actors => actors;
 
         public static CampusWorldFacts Build(CampusWorldService worldService, CampusRosterService rosterService)
@@ -116,6 +133,11 @@ namespace NtingCampus.Gameplay.Rooms
         public bool TryGetActor(string actorId, out ActorFact actor)
         {
             return actorsById.TryGetValue(NormalizeId(actorId), out actor);
+        }
+
+        public bool TryGetServiceStation(string stationId, out ServiceStationFact station)
+        {
+            return serviceStationsById.TryGetValue(NormalizeId(stationId), out station);
         }
 
         public int CountRooms(CampusRoomType roomType)
@@ -233,6 +255,17 @@ namespace NtingCampus.Gameplay.Rooms
             {
                 AddFacility(room, sourceFacilities[i]);
             }
+
+            IReadOnlyList<CampusGameplayServiceStationRecord> sourceStations = room.ServiceStations;
+            if (sourceStations == null)
+            {
+                return;
+            }
+
+            for (int i = 0; i < sourceStations.Count; i++)
+            {
+                AddServiceStation(room, sourceStations[i]);
+            }
         }
 
         private void AddFacility(CampusGameplayRoom room, CampusGameplayRoom.FacilityRecord facility)
@@ -245,8 +278,6 @@ namespace NtingCampus.Gameplay.Rooms
             FacilityFact fact = new FacilityFact
             {
                 FacilityId = NormalizeId(facility.FacilityId),
-                OwnerFacilityId = NormalizeId(facility.OwnerFacilityId),
-                ServiceStationId = NormalizeId(facility.LegacyServiceStationId),
                 DisplayName = string.IsNullOrWhiteSpace(facility.DisplayName)
                     ? facility.FacilityType.ToString()
                     : facility.DisplayName.Trim(),
@@ -266,6 +297,71 @@ namespace NtingCampus.Gameplay.Rooms
             {
                 facilitiesById.Add(fact.FacilityId, fact);
             }
+        }
+
+        private void AddServiceStation(
+            CampusGameplayRoom room,
+            CampusGameplayServiceStationRecord station)
+        {
+            if (room == null || station == null)
+            {
+                return;
+            }
+
+            ServiceStationFact fact = new ServiceStationFact
+            {
+                StationId = NormalizeId(station.StationId),
+                StationTypeId = NormalizeId(station.StationTypeId),
+                RoomId = NormalizeId(room.RoomId),
+                OwnerFacilityId = NormalizeId(station.OwnerFacilityId),
+                Slots = BuildSlotFacts(station.Slots)
+            };
+
+            serviceStations.Add(fact);
+            if (!string.IsNullOrEmpty(fact.StationId) && !serviceStationsById.ContainsKey(fact.StationId))
+            {
+                serviceStationsById.Add(fact.StationId, fact);
+            }
+        }
+
+        private static List<ServiceStationSlotFact> BuildSlotFacts(
+            IReadOnlyList<CampusGameplayServiceStationSlotBinding> slots)
+        {
+            List<ServiceStationSlotFact> facts = new List<ServiceStationSlotFact>();
+            if (slots == null)
+            {
+                return facts;
+            }
+
+            for (int i = 0; i < slots.Count; i++)
+            {
+                CampusGameplayServiceStationSlotBinding slot = slots[i];
+                if (slot == null || string.IsNullOrWhiteSpace(slot.RoleId))
+                {
+                    continue;
+                }
+
+                ServiceStationSlotFact fact = new ServiceStationSlotFact
+                {
+                    RoleId = NormalizeId(slot.RoleId),
+                    FacilityIds = new List<string>()
+                };
+                if (slot.FacilityIds != null)
+                {
+                    for (int facilityIndex = 0; facilityIndex < slot.FacilityIds.Count; facilityIndex++)
+                    {
+                        string facilityId = NormalizeId(slot.FacilityIds[facilityIndex]);
+                        if (!string.IsNullOrEmpty(facilityId))
+                        {
+                            fact.FacilityIds.Add(facilityId);
+                        }
+                    }
+                }
+
+                facts.Add(fact);
+            }
+
+            return facts;
         }
 
         private void AddActor(CampusCharacterRuntime runtime)

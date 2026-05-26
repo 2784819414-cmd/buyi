@@ -106,6 +106,7 @@ namespace NtingCampus.UI.Runtime.Gameplay
             snapshot.Actors = snapshot.Actors ?? new List<CampusRuntimeGameplayActorSnapshot>();
             snapshot.Rooms = snapshot.Rooms ?? new List<CampusRuntimeGameplayRoomSnapshot>();
             snapshot.Facilities = snapshot.Facilities ?? new List<CampusRuntimeGameplayFacilitySnapshot>();
+            snapshot.ServiceStations = snapshot.ServiceStations ?? new List<CampusRuntimeGameplayServiceStationSnapshot>();
             for (int i = 0; i < snapshot.Actors.Count; i++)
             {
                 if (snapshot.Actors[i] != null)
@@ -127,6 +128,14 @@ namespace NtingCampus.UI.Runtime.Gameplay
                 if (snapshot.Facilities[i] != null)
                 {
                     snapshot.Facilities[i].Normalize();
+                }
+            }
+
+            for (int i = 0; i < snapshot.ServiceStations.Count; i++)
+            {
+                if (snapshot.ServiceStations[i] != null)
+                {
+                    snapshot.ServiceStations[i].Normalize();
                 }
             }
         }

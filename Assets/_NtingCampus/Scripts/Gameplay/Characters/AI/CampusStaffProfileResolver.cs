@@ -1,4 +1,4 @@
-using NtingCampus.Gameplay.Canteen;
+using System.Collections.Generic;
 using NtingCampus.Gameplay.Rooms;
 using NtingCampus.Gameplay.Services;
 using UnityEngine;
@@ -48,19 +48,10 @@ namespace NtingCampus.Gameplay.Characters
                 worldService,
                 data,
                 supportStaffIndex);
-            if (CampusNpcRosterIndexer.TryResolveUniqueStaffServiceWindow(
-                    runtime,
-                    rosterService,
-                    worldService,
-                    serviceRoom,
-                    CampusStaffDuty.SupportStaff,
-                    out CampusGameplayRoom.FacilityRecord serviceWindow) &&
-                CampusServiceStationCatalog.TryResolveByFacility(
-                    serviceRoom,
-                    serviceWindow,
-                    out CampusServiceStation rosterStation))
+            List<CampusServiceStation> stations = CampusServiceStationCatalog.Collect(serviceRoom);
+            if (stations.Count > 0)
             {
-                ApplySupportStaffStation(profile, rosterStation);
+                ApplySupportStaffStation(profile, stations[supportStaffIndex % stations.Count]);
             }
         }
 
@@ -80,7 +71,7 @@ namespace NtingCampus.Gameplay.Characters
 
             if (CampusNpcFacilitySelector.FindAssigned(
                     worldService,
-                    assignments != null ? assignments.PrimaryWorkstationId : string.Empty,
+                    assignments != null ? assignments.WorkFacilityId : string.Empty,
                     workstationTypes,
                     out CampusGameplayRoom assignedRoom,
                     out CampusGameplayRoom.FacilityRecord assignedWorkstation))
@@ -167,20 +158,17 @@ namespace NtingCampus.Gameplay.Characters
                 return false;
             }
 
-            if (CampusNpcFacilitySelector.FindAssigned(
+            if (CampusServiceStationCatalog.TryResolveById(
                     worldService,
-                    assignments.ServiceWindowId,
-                    CampusNpcFacilityTypeSets.Get(CampusNpcFacilityTypeSets.ServiceWindows),
-                    out CampusGameplayRoom serviceWindowRoom,
-                    out CampusGameplayRoom.FacilityRecord serviceWindow) &&
-                CampusServiceStationCatalog.TryResolveByFacility(serviceWindowRoom, serviceWindow, out station))
+                    assignments.ServiceStationId,
+                    out station))
             {
                 return true;
             }
 
             if (CampusNpcFacilitySelector.FindAssigned(
                     worldService,
-                    assignments.PrimaryWorkstationId,
+                    assignments.WorkFacilityId,
                     CampusNpcFacilityTypeSets.Get(CampusNpcFacilityTypeSets.WorkerStands),
                     out CampusGameplayRoom workerStandRoom,
                     out CampusGameplayRoom.FacilityRecord workerStand) &&

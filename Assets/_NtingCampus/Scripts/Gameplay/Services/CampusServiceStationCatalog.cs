@@ -10,37 +10,47 @@ namespace NtingCampus.Gameplay.Services
     {
         public CampusServiceStation(
             CampusGameplayRoom room,
-            string ownerFacilityId,
             string stationId,
+            string stationTypeId,
             string interactionActionId,
+            string availabilityRuleId,
             CampusGameplayRoom.FacilityRecord interactionFacility,
             CampusGameplayRoom.FacilityRecord operatorSlot,
             CampusGameplayRoom.FacilityRecord customerSlot,
-            List<CampusGameplayRoom.FacilityRecord> queueSlots)
+            CampusGameplayRoom.FacilityRecord outputSlot,
+            List<CampusGameplayRoom.FacilityRecord> queueSlots,
+            bool hasRequiredSlots)
         {
             Room = room;
-            OwnerFacilityId = ownerFacilityId ?? string.Empty;
             StationId = stationId ?? string.Empty;
+            StationTypeId = stationTypeId ?? string.Empty;
             InteractionActionId = interactionActionId ?? string.Empty;
+            AvailabilityRuleId = availabilityRuleId ?? string.Empty;
             InteractionFacility = interactionFacility;
             OperatorSlot = operatorSlot;
             CustomerSlot = customerSlot;
+            OutputSlot = outputSlot;
             QueueSlots = queueSlots ?? new List<CampusGameplayRoom.FacilityRecord>();
+            HasRequiredSlots = hasRequiredSlots;
         }
 
         public CampusGameplayRoom Room { get; }
-        public string OwnerFacilityId { get; }
         public string StationId { get; }
+        public string StationTypeId { get; }
         public string InteractionActionId { get; }
+        public string AvailabilityRuleId { get; }
         public CampusGameplayRoom.FacilityRecord InteractionFacility { get; }
         public CampusGameplayRoom.FacilityRecord OperatorSlot { get; }
         public CampusGameplayRoom.FacilityRecord CustomerSlot { get; }
+        public CampusGameplayRoom.FacilityRecord OutputSlot { get; }
         public IReadOnlyList<CampusGameplayRoom.FacilityRecord> QueueSlots { get; }
+        public bool HasRequiredSlots { get; }
 
         public bool HasInteractionFacility => InteractionFacility != null;
         public bool HasOperatorSlot => OperatorSlot != null;
         public bool HasCustomerSlot => CustomerSlot != null;
-        public bool IsOperational => HasInteractionFacility && HasOperatorSlot;
+        public bool HasOutputSlot => OutputSlot != null;
+        public bool IsOperational => HasInteractionFacility && HasRequiredSlots;
 
         public Vector3 CustomerTargetPosition =>
             CustomerSlot != null
@@ -62,67 +72,75 @@ namespace NtingCampus.Gameplay.Services
     {
         public static List<CampusServiceStation> Collect(
             CampusGameplayRoom room,
-            string interactionActionId = "")
+            string interactionActionId = "",
+            IReadOnlyList<string> stationTypeIds = null)
         {
             List<CampusServiceStation> stations = new List<CampusServiceStation>();
-            if (room == null)
+            if (room == null || room.ServiceStations == null)
             {
                 return stations;
             }
 
             string normalizedActionId = CampusInteractionActionIds.Normalize(interactionActionId);
-            Dictionary<string, StationBuilder> buildersByOwnerId =
-                new Dictionary<string, StationBuilder>(StringComparer.OrdinalIgnoreCase);
-            IReadOnlyList<CampusGameplayRoom.FacilityRecord> facilities = room.Facilities;
-
-            for (int i = 0; i < facilities.Count; i++)
+            for (int i = 0; i < room.ServiceStations.Count; i++)
             {
-                CampusGameplayRoom.FacilityRecord facility = facilities[i];
-                if (!TryResolveInteractionActionId(facility, out string actionId) ||
-                    (!string.IsNullOrEmpty(normalizedActionId) &&
-                     !CampusInteractionActionIds.Equals(actionId, normalizedActionId)))
+                CampusGameplayServiceStationRecord record = room.ServiceStations[i];
+                if (!TryBuild(room, record, out CampusServiceStation station))
                 {
                     continue;
                 }
 
-                string ownerFacilityId = ResolveFacilityKey(room, facility);
-                if (string.IsNullOrEmpty(ownerFacilityId))
+                if (!string.IsNullOrEmpty(normalizedActionId) &&
+                    !CampusInteractionActionIds.Equals(station.InteractionActionId, normalizedActionId))
                 {
                     continue;
                 }
 
-                StationBuilder builder = GetOrCreateBuilder(buildersByOwnerId, room, ownerFacilityId);
-                builder.SetInteractionFacility(facility, actionId);
-                buildersByOwnerId[ownerFacilityId] = builder;
-            }
-
-            for (int i = 0; i < facilities.Count; i++)
-            {
-                CampusGameplayRoom.FacilityRecord facility = facilities[i];
-                string ownerFacilityId = NormalizeOwnerFacilityId(
-                    facility != null ? facility.OwnerFacilityId : string.Empty);
-                if (string.IsNullOrEmpty(ownerFacilityId) ||
-                    !buildersByOwnerId.TryGetValue(ownerFacilityId, out StationBuilder builder))
+                if (!MatchesStationType(station.StationTypeId, stationTypeIds))
                 {
                     continue;
                 }
 
-                builder.AddSupportFacility(facility);
-                buildersByOwnerId[ownerFacilityId] = builder;
-            }
-
-            foreach (StationBuilder builder in buildersByOwnerId.Values)
-            {
-                if (!builder.HasInteractionFacility)
-                {
-                    continue;
-                }
-
-                stations.Add(builder.Build());
+                stations.Add(station);
             }
 
             stations.Sort(CompareStations);
             return stations;
+        }
+
+        public static bool TryResolveById(
+            CampusWorldService worldService,
+            string stationId,
+            out CampusServiceStation station)
+        {
+            station = default;
+            if (worldService == null || worldService.RoomRegistry == null || string.IsNullOrWhiteSpace(stationId))
+            {
+                return false;
+            }
+
+            IReadOnlyList<CampusGameplayRoom> rooms = worldService.RoomRegistry.Rooms;
+            for (int i = 0; i < rooms.Count; i++)
+            {
+                CampusGameplayRoom room = rooms[i];
+                if (room == null)
+                {
+                    continue;
+                }
+
+                List<CampusServiceStation> stations = Collect(room);
+                for (int stationIndex = 0; stationIndex < stations.Count; stationIndex++)
+                {
+                    CampusServiceStation candidate = stations[stationIndex];
+                    if (string.Equals(candidate.StationId, stationId.Trim(), StringComparison.OrdinalIgnoreCase))
+                    {
+                        station = candidate;
+                        return true;
+                    }
+                }
+            }
+
+            return false;
         }
 
         public static bool TryResolveByFacility(
@@ -136,20 +154,15 @@ namespace NtingCampus.Gameplay.Services
                 return false;
             }
 
-            string ownerFacilityId = ResolveOwnerFacilityId(room, facility);
-            if (string.IsNullOrEmpty(ownerFacilityId))
-            {
-                return false;
-            }
-
             List<CampusServiceStation> stations = Collect(room);
             for (int i = 0; i < stations.Count; i++)
             {
                 CampusServiceStation candidate = stations[i];
-                if (string.Equals(
-                        candidate.OwnerFacilityId,
-                        ownerFacilityId,
-                        StringComparison.OrdinalIgnoreCase))
+                if (SameFacility(candidate.InteractionFacility, facility) ||
+                    SameFacility(candidate.OperatorSlot, facility) ||
+                    SameFacility(candidate.CustomerSlot, facility) ||
+                    SameFacility(candidate.OutputSlot, facility) ||
+                    ContainsFacility(candidate.QueueSlots, facility))
                 {
                     station = candidate;
                     return true;
@@ -193,111 +206,240 @@ namespace NtingCampus.Gameplay.Services
             return false;
         }
 
-        public static bool TryResolveInteractionActionId(
-            CampusGameplayRoom.FacilityRecord facility,
-            out string actionId)
+        private static bool TryBuild(
+            CampusGameplayRoom room,
+            CampusGameplayServiceStationRecord record,
+            out CampusServiceStation station)
         {
-            actionId = string.Empty;
-            if (facility == null)
+            station = default;
+            if (room == null || record == null ||
+                !CampusServiceStationPresetCatalog.TryResolve(
+                    record.StationTypeId,
+                    out CampusServiceStationTypeDefinition definition))
             {
                 return false;
             }
 
-            CampusPlacedObject placedObject = facility.PlacedObject;
-            if (placedObject != null &&
-                placedObject.TryGetComponent(out CampusSimpleInteractable handler) &&
-                !string.IsNullOrWhiteSpace(handler.DefaultActionId))
+            CampusGameplayRoom.FacilityRecord owner = FindFacility(room, record.OwnerFacilityId);
+            if (owner == null)
             {
-                actionId = CampusInteractionActionIds.Normalize(handler.DefaultActionId);
-                return !string.IsNullOrEmpty(actionId);
+                return false;
             }
 
-            if (placedObject != null)
+            List<CampusGameplayRoom.FacilityRecord> queueSlots =
+                new List<CampusGameplayRoom.FacilityRecord>();
+            Dictionary<string, List<CampusGameplayRoom.FacilityRecord>> slotsByRole =
+                ResolveSlots(room, record);
+            bool hasRequiredSlots = HasRequiredSlots(definition, slotsByRole);
+            CampusGameplayRoom.FacilityRecord operatorSlot = FirstSlot(slotsByRole, CampusServiceStationSlotRoleIds.Operator);
+            CampusGameplayRoom.FacilityRecord customerSlot = FirstSlot(slotsByRole, CampusServiceStationSlotRoleIds.Customer);
+            CampusGameplayRoom.FacilityRecord outputSlot = FirstSlot(slotsByRole, CampusServiceStationSlotRoleIds.Output);
+            AddSlots(slotsByRole, CampusServiceStationSlotRoleIds.Queue, queueSlots);
+
+            station = new CampusServiceStation(
+                room,
+                record.StationId,
+                record.StationTypeId,
+                definition.InteractionActionId,
+                definition.AvailabilityRuleId,
+                owner,
+                operatorSlot,
+                customerSlot,
+                outputSlot,
+                queueSlots,
+                hasRequiredSlots);
+            return true;
+        }
+
+        private static Dictionary<string, List<CampusGameplayRoom.FacilityRecord>> ResolveSlots(
+            CampusGameplayRoom room,
+            CampusGameplayServiceStationRecord record)
+        {
+            Dictionary<string, List<CampusGameplayRoom.FacilityRecord>> slotsByRole =
+                new Dictionary<string, List<CampusGameplayRoom.FacilityRecord>>(StringComparer.OrdinalIgnoreCase);
+            if (record == null || record.Slots == null)
             {
-                CampusInteractionAnchor anchor = placedObject.GetComponent<CampusInteractionAnchor>();
-                if (anchor == null)
+                return slotsByRole;
+            }
+
+            for (int i = 0; i < record.Slots.Count; i++)
+            {
+                CampusGameplayServiceStationSlotBinding binding = record.Slots[i];
+                if (binding == null || string.IsNullOrWhiteSpace(binding.RoleId) || binding.FacilityIds == null)
                 {
-                    anchor = placedObject.GetComponentInChildren<CampusInteractionAnchor>(true);
+                    continue;
                 }
 
-                if (anchor != null && !string.IsNullOrWhiteSpace(anchor.ActionId))
+                List<CampusGameplayRoom.FacilityRecord> slots = GetOrCreateSlots(slotsByRole, binding.RoleId);
+                for (int facilityIndex = 0; facilityIndex < binding.FacilityIds.Count; facilityIndex++)
                 {
-                    actionId = CampusInteractionActionIds.Normalize(anchor.ActionId);
-                    return !string.IsNullOrEmpty(actionId);
+                    CampusGameplayRoom.FacilityRecord facility = FindFacility(
+                        room,
+                        binding.FacilityIds[facilityIndex]);
+                    if (facility != null && !ContainsFacility(slots, facility))
+                    {
+                        slots.Add(facility);
+                    }
+                }
+
+                slots.Sort(CompareFacilities);
+            }
+
+            return slotsByRole;
+        }
+
+        private static bool HasRequiredSlots(
+            CampusServiceStationTypeDefinition definition,
+            Dictionary<string, List<CampusGameplayRoom.FacilityRecord>> slotsByRole)
+        {
+            if (definition == null || definition.Slots == null)
+            {
+                return true;
+            }
+
+            for (int i = 0; i < definition.Slots.Count; i++)
+            {
+                CampusServiceStationSlotDefinition slot = definition.Slots[i];
+                if (slot == null || slot.MinCount <= 0)
+                {
+                    continue;
+                }
+
+                int count = slotsByRole != null &&
+                            slotsByRole.TryGetValue(slot.RoleId, out List<CampusGameplayRoom.FacilityRecord> records) &&
+                            records != null
+                    ? records.Count
+                    : 0;
+                if (count < slot.MinCount)
+                {
+                    return false;
                 }
             }
 
-            actionId = ResolveFallbackInteractionActionId(facility.FacilityType);
-            return !string.IsNullOrEmpty(actionId);
+            return true;
         }
 
-        private static string ResolveOwnerFacilityId(
+        private static CampusGameplayRoom.FacilityRecord FindFacility(
             CampusGameplayRoom room,
-            CampusGameplayRoom.FacilityRecord facility)
+            string facilityId)
         {
-            if (facility == null)
+            string normalized = NormalizeId(facilityId);
+            if (room == null || string.IsNullOrEmpty(normalized) || room.Facilities == null)
             {
-                return string.Empty;
+                return null;
             }
 
-            string ownerFacilityId = NormalizeOwnerFacilityId(facility.OwnerFacilityId);
-            if (!string.IsNullOrEmpty(ownerFacilityId))
+            for (int i = 0; i < room.Facilities.Count; i++)
             {
-                return ownerFacilityId;
+                CampusGameplayRoom.FacilityRecord facility = room.Facilities[i];
+                if (facility != null &&
+                    string.Equals(facility.FacilityId, normalized, StringComparison.OrdinalIgnoreCase))
+                {
+                    return facility;
+                }
             }
 
-            return TryResolveInteractionActionId(facility, out _)
-                ? ResolveFacilityKey(room, facility)
-                : string.Empty;
+            return null;
         }
 
-        private static string ResolveFacilityKey(
-            CampusGameplayRoom room,
-            CampusGameplayRoom.FacilityRecord facility)
+        private static List<CampusGameplayRoom.FacilityRecord> GetOrCreateSlots(
+            Dictionary<string, List<CampusGameplayRoom.FacilityRecord>> slotsByRole,
+            string roleId)
         {
-            if (room == null || facility == null)
+            string normalized = NormalizeId(roleId);
+            if (!slotsByRole.TryGetValue(normalized, out List<CampusGameplayRoom.FacilityRecord> slots))
             {
-                return string.Empty;
+                slots = new List<CampusGameplayRoom.FacilityRecord>();
+                slotsByRole[normalized] = slots;
             }
 
-            if (!string.IsNullOrWhiteSpace(facility.FacilityId))
-            {
-                return facility.FacilityId.Trim();
-            }
-
-            return CampusGameplayFacilityMarker.BuildStableFacilityId(
-                room.FloorIndex,
-                facility.FacilityType,
-                facility.Cell);
+            return slots;
         }
 
-        private static string ResolveFallbackInteractionActionId(CampusFacilityType facilityType)
+        private static CampusGameplayRoom.FacilityRecord FirstSlot(
+            Dictionary<string, List<CampusGameplayRoom.FacilityRecord>> slotsByRole,
+            string roleId)
         {
-            switch (facilityType)
+            return slotsByRole != null &&
+                   slotsByRole.TryGetValue(roleId, out List<CampusGameplayRoom.FacilityRecord> slots) &&
+                   slots != null &&
+                   slots.Count > 0
+                ? slots[0]
+                : null;
+        }
+
+        private static void AddSlots(
+            Dictionary<string, List<CampusGameplayRoom.FacilityRecord>> slotsByRole,
+            string roleId,
+            List<CampusGameplayRoom.FacilityRecord> output)
+        {
+            if (slotsByRole == null ||
+                output == null ||
+                !slotsByRole.TryGetValue(roleId, out List<CampusGameplayRoom.FacilityRecord> slots) ||
+                slots == null)
             {
-                case CampusFacilityType.ServiceWindow:
-                    return CampusInteractionActionIds.ServiceWindowUse;
-                default:
-                    return string.Empty;
+                return;
+            }
+
+            for (int i = 0; i < slots.Count; i++)
+            {
+                output.Add(slots[i]);
             }
         }
 
-        private static string NormalizeOwnerFacilityId(string value)
+        private static bool MatchesStationType(
+            string stationTypeId,
+            IReadOnlyList<string> allowedStationTypeIds)
         {
-            return CampusGameplayFacilityMarker.NormalizeOwnerFacilityId(value);
-        }
-
-        private static StationBuilder GetOrCreateBuilder(
-            Dictionary<string, StationBuilder> buildersByOwnerId,
-            CampusGameplayRoom room,
-            string ownerFacilityId)
-        {
-            if (!buildersByOwnerId.TryGetValue(ownerFacilityId, out StationBuilder builder))
+            if (allowedStationTypeIds == null || allowedStationTypeIds.Count == 0)
             {
-                builder = new StationBuilder(room, ownerFacilityId);
+                return true;
             }
 
-            return builder;
+            for (int i = 0; i < allowedStationTypeIds.Count; i++)
+            {
+                if (string.Equals(
+                        stationTypeId,
+                        allowedStationTypeIds[i],
+                        StringComparison.OrdinalIgnoreCase))
+                {
+                    return true;
+                }
+            }
+
+            return false;
+        }
+
+        private static bool ContainsFacility(
+            IReadOnlyList<CampusGameplayRoom.FacilityRecord> records,
+            CampusGameplayRoom.FacilityRecord target)
+        {
+            if (records == null || target == null)
+            {
+                return false;
+            }
+
+            for (int i = 0; i < records.Count; i++)
+            {
+                if (SameFacility(records[i], target))
+                {
+                    return true;
+                }
+            }
+
+            return false;
+        }
+
+        private static bool SameFacility(
+            CampusGameplayRoom.FacilityRecord left,
+            CampusGameplayRoom.FacilityRecord right)
+        {
+            if (left == null || right == null)
+            {
+                return false;
+            }
+
+            return string.Equals(left.FacilityId, right.FacilityId, StringComparison.OrdinalIgnoreCase);
         }
 
         private static int CompareStations(CampusServiceStation left, CampusServiceStation right)
@@ -305,10 +447,7 @@ namespace NtingCampus.Gameplay.Services
             int compare = CompareFacilities(left.InteractionFacility, right.InteractionFacility);
             return compare != 0
                 ? compare
-                : string.Compare(
-                    left.OwnerFacilityId,
-                    right.OwnerFacilityId,
-                    StringComparison.OrdinalIgnoreCase);
+                : string.Compare(left.StationId, right.StationId, StringComparison.OrdinalIgnoreCase);
         }
 
         private static int CompareFacilities(
@@ -342,74 +481,9 @@ namespace NtingCampus.Gameplay.Services
                 : left.FacilityType.CompareTo(right.FacilityType);
         }
 
-        private struct StationBuilder
+        private static string NormalizeId(string value)
         {
-            private readonly CampusGameplayRoom room;
-            private readonly string ownerFacilityId;
-            private string interactionActionId;
-            private CampusGameplayRoom.FacilityRecord interactionFacility;
-            private CampusGameplayRoom.FacilityRecord operatorSlot;
-            private CampusGameplayRoom.FacilityRecord customerSlot;
-            private List<CampusGameplayRoom.FacilityRecord> queueSlots;
-
-            public StationBuilder(CampusGameplayRoom room, string ownerFacilityId)
-            {
-                this.room = room;
-                this.ownerFacilityId = ownerFacilityId ?? string.Empty;
-                interactionActionId = string.Empty;
-                interactionFacility = null;
-                operatorSlot = null;
-                customerSlot = null;
-                queueSlots = new List<CampusGameplayRoom.FacilityRecord>();
-            }
-
-            public bool HasInteractionFacility => interactionFacility != null;
-
-            public void SetInteractionFacility(
-                CampusGameplayRoom.FacilityRecord facility,
-                string actionId)
-            {
-                interactionFacility = facility;
-                interactionActionId = actionId ?? string.Empty;
-            }
-
-            public void AddSupportFacility(CampusGameplayRoom.FacilityRecord facility)
-            {
-                if (facility == null)
-                {
-                    return;
-                }
-
-                switch (facility.FacilityType)
-                {
-                    case CampusFacilityType.WorkerStandPoint:
-                        operatorSlot = facility;
-                        break;
-                    case CampusFacilityType.PickupPoint:
-                        customerSlot = facility;
-                        break;
-                    case CampusFacilityType.WaitingPoint:
-                        queueSlots.Add(facility);
-                        queueSlots.Sort(CompareFacilities);
-                        break;
-                }
-            }
-
-            public CampusServiceStation Build()
-            {
-                string stationId = !string.IsNullOrWhiteSpace(interactionFacility != null ? interactionFacility.LegacyServiceStationId : string.Empty)
-                    ? interactionFacility.LegacyServiceStationId.Trim()
-                    : ownerFacilityId;
-                return new CampusServiceStation(
-                    room,
-                    ownerFacilityId,
-                    stationId,
-                    interactionActionId,
-                    interactionFacility,
-                    operatorSlot,
-                    customerSlot,
-                    queueSlots);
-            }
+            return string.IsNullOrWhiteSpace(value) ? string.Empty : value.Trim();
         }
     }
 }

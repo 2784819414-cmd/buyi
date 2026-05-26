@@ -14,6 +14,8 @@ namespace NtingCampus.UI.Runtime.Gameplay
         public List<CampusRuntimeGameplayActorSnapshot> Actors = new List<CampusRuntimeGameplayActorSnapshot>();
         public List<CampusRuntimeGameplayRoomSnapshot> Rooms = new List<CampusRuntimeGameplayRoomSnapshot>();
         public List<CampusRuntimeGameplayFacilitySnapshot> Facilities = new List<CampusRuntimeGameplayFacilitySnapshot>();
+        public List<CampusRuntimeGameplayServiceStationSnapshot> ServiceStations =
+            new List<CampusRuntimeGameplayServiceStationSnapshot>();
     }
 
     [Serializable]
@@ -106,8 +108,6 @@ namespace NtingCampus.UI.Runtime.Gameplay
     public sealed class CampusRuntimeGameplayFacilitySnapshot
     {
         public string Id = string.Empty;
-        public string OwnerFacilityId = string.Empty;
-        public string ServiceStationId = string.Empty;
         public string DisplayName = string.Empty;
         public string FacilityTypeId = string.Empty;
         public CampusFacilityType FacilityType = CampusFacilityType.Unknown;
@@ -118,8 +118,6 @@ namespace NtingCampus.UI.Runtime.Gameplay
         public void Normalize()
         {
             FloorIndex = Mathf.Max(1, FloorIndex);
-            OwnerFacilityId = CampusGameplayFacilityMarker.NormalizeOwnerFacilityId(OwnerFacilityId);
-            ServiceStationId = CampusGameplayFacilityMarker.NormalizeLegacyServiceStationId(ServiceStationId);
             DisplayName = string.IsNullOrWhiteSpace(DisplayName) ? string.Empty : DisplayName.Trim();
             FacilityType = CampusGameplayOverlayEnumIds.Resolve(FacilityTypeId, FacilityType);
             FacilityTypeId = CampusGameplayOverlayEnumIds.ToId(FacilityType);
@@ -127,6 +125,62 @@ namespace NtingCampus.UI.Runtime.Gameplay
             if (string.IsNullOrEmpty(Id))
             {
                 Id = CampusGameplayFacilityMarker.BuildStableFacilityId(FloorIndex, FacilityType, Cell);
+            }
+        }
+    }
+
+    [Serializable]
+    public sealed class CampusRuntimeGameplayServiceStationSnapshot
+    {
+        public string Id = string.Empty;
+        public string StationTypeId = string.Empty;
+        public string RoomId = string.Empty;
+        public string OwnerFacilityId = string.Empty;
+        public List<CampusRuntimeGameplayServiceStationSlotSnapshot> Slots =
+            new List<CampusRuntimeGameplayServiceStationSlotSnapshot>();
+
+        public void Normalize()
+        {
+            Id = NormalizeId(Id);
+            StationTypeId = NormalizeId(StationTypeId);
+            RoomId = NormalizeId(RoomId);
+            OwnerFacilityId = NormalizeId(OwnerFacilityId);
+            Slots = Slots ?? new List<CampusRuntimeGameplayServiceStationSlotSnapshot>();
+            for (int i = 0; i < Slots.Count; i++)
+            {
+                if (Slots[i] != null)
+                {
+                    Slots[i].Normalize();
+                }
+            }
+        }
+
+        private static string NormalizeId(string value)
+        {
+            return string.IsNullOrWhiteSpace(value) ? string.Empty : value.Trim();
+        }
+    }
+
+    [Serializable]
+    public sealed class CampusRuntimeGameplayServiceStationSlotSnapshot
+    {
+        public string RoleId = string.Empty;
+        public List<string> FacilityIds = new List<string>();
+
+        public void Normalize()
+        {
+            RoleId = string.IsNullOrWhiteSpace(RoleId) ? string.Empty : RoleId.Trim();
+            FacilityIds = FacilityIds ?? new List<string>();
+            for (int i = FacilityIds.Count - 1; i >= 0; i--)
+            {
+                string normalized = string.IsNullOrWhiteSpace(FacilityIds[i]) ? string.Empty : FacilityIds[i].Trim();
+                if (string.IsNullOrEmpty(normalized))
+                {
+                    FacilityIds.RemoveAt(i);
+                    continue;
+                }
+
+                FacilityIds[i] = normalized;
             }
         }
     }

@@ -82,6 +82,7 @@ namespace NtingCampus.UI.Runtime.Gameplay
             Transform host = EnsureGeneratedOverlayRoot();
             SpawnRooms(snapshot, host);
             SpawnFacilities(snapshot, host);
+            SpawnServiceStations(snapshot, host);
             SpawnActors(snapshot, host);
             int actorCount = snapshot.Actors != null ? snapshot.Actors.Count : 0;
             int facilityCount = snapshot.Facilities != null ? snapshot.Facilities.Count : 0;
@@ -190,14 +191,48 @@ namespace NtingCampus.UI.Runtime.Gameplay
                 CampusGameplayFacilityMarker marker = facilityObject.AddComponent<CampusGameplayFacilityMarker>();
                 marker.Configure(
                     facility.Id,
-                    facility.OwnerFacilityId,
-                    facility.ServiceStationId,
                     facility.DisplayName,
                     facility.FacilityType,
                     facility.FloorIndex,
                     facility.Cell,
                     facility.CountsAsCoreFacility,
                     null);
+            }
+        }
+
+        private void SpawnServiceStations(CampusRuntimeGameplayOverlaySnapshot snapshot, Transform host)
+        {
+            if (snapshot == null || snapshot.ServiceStations == null)
+            {
+                return;
+            }
+
+            for (int i = 0; i < snapshot.ServiceStations.Count; i++)
+            {
+                CampusRuntimeGameplayServiceStationSnapshot serviceStation = snapshot.ServiceStations[i];
+                if (serviceStation == null)
+                {
+                    continue;
+                }
+
+                serviceStation.Normalize();
+                GameObject stationObject = new GameObject(string.IsNullOrWhiteSpace(serviceStation.Id)
+                    ? "RuntimeServiceStation"
+                    : serviceStation.Id);
+                stationObject.transform.SetParent(host, false);
+
+                CampusRuntimeGameplayOverlayEntity entity =
+                    stationObject.AddComponent<CampusRuntimeGameplayOverlayEntity>();
+                entity.Configure(false, 1, Vector3Int.zero);
+
+                CampusGameplayServiceStationMarker marker =
+                    stationObject.AddComponent<CampusGameplayServiceStationMarker>();
+                marker.Configure(
+                    serviceStation.Id,
+                    serviceStation.StationTypeId,
+                    serviceStation.RoomId,
+                    serviceStation.OwnerFacilityId,
+                    BuildSlotBindings(serviceStation.Slots));
             }
         }
 
@@ -273,6 +308,33 @@ namespace NtingCampus.UI.Runtime.Gameplay
             }
 
             return -1;
+        }
+
+        private static List<CampusGameplayServiceStationSlotBinding> BuildSlotBindings(
+            IReadOnlyList<CampusRuntimeGameplayServiceStationSlotSnapshot> sourceSlots)
+        {
+            List<CampusGameplayServiceStationSlotBinding> bindings =
+                new List<CampusGameplayServiceStationSlotBinding>();
+            if (sourceSlots == null)
+            {
+                return bindings;
+            }
+
+            for (int i = 0; i < sourceSlots.Count; i++)
+            {
+                CampusRuntimeGameplayServiceStationSlotSnapshot source = sourceSlots[i];
+                if (source == null)
+                {
+                    continue;
+                }
+
+                source.Normalize();
+                CampusGameplayServiceStationSlotBinding binding = new CampusGameplayServiceStationSlotBinding();
+                binding.Configure(source.RoleId, source.FacilityIds);
+                bindings.Add(binding);
+            }
+
+            return bindings;
         }
 
         private GameObject ResolvePlayerHost(CampusRuntimeGameplayActorSnapshot actor)

@@ -60,6 +60,7 @@
       "ActionId": "campus.facility.service_window.use",
       "ActionChainIds": [ "eat_canteen_meal" ],
       "TargetKind": "ServiceStation",
+      "StationTypeIds": [ "canteen_meal_window" ],
       "RoomType": "ServiceArea",
       "StopDistance": 0.18,
       "Requirements": [ "CanOrderMeal" ]
@@ -128,9 +129,9 @@
       "Id": "retail_checkout_target",
       "ActionId": "campus.retail.checkout",
       "ActionChainIds": [ "buy_retail_goods" ],
-      "TargetKind": "RoomFacility",
+      "TargetKind": "ServiceStation",
+      "StationTypeIds": [ "retail_checkout" ],
       "RoomType": "RetailArea",
-      "FacilityTypes": [ "CheckoutPoint" ],
       "StopDistance": 0.18
     }
   ],
