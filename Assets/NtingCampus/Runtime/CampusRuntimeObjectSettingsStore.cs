@@ -145,6 +145,8 @@ namespace NtingCampusMapEditor
             settings.CustomInteractionPromptText = string.IsNullOrWhiteSpace(settings.CustomInteractionPromptText)
                 ? string.Empty
                 : settings.CustomInteractionPromptText.Trim();
+            settings.InteractionPresetEid =
+                CampusRuntimeObjectAuthoring.NormalizeInteractionPresetEid(settings.InteractionPresetEid);
             settings.CustomInteractionAnchors =
                 CampusPlacedObject.CloneInteractionAnchors(settings.CustomInteractionAnchors);
             settings.Rotation0SpritePath =

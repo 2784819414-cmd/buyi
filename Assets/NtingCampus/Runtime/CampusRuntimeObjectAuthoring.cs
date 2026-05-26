@@ -57,6 +57,7 @@ namespace NtingCampusMapEditor
             settings.CustomInteractionAnchors =
                 CampusPlacedObject.CloneInteractionAnchors(placed.CustomInteractionAnchors);
             settings.IsStorageContainer = placed.IsStorageContainer;
+            settings.InteractionPresetEid = NormalizeInteractionPresetEid(placed.InteractionPresetEid);
             settings.StorageSize = placed.NormalizedStorageSize;
             settings.StorageMaxWeight = placed.NormalizedStorageMaxWeight;
             settings.RetailShelf = CaptureRetailShelfData(placed.gameObject);
@@ -159,18 +160,23 @@ namespace NtingCampusMapEditor
             placed.CustomInteractionAnchors =
                 CampusPlacedObject.CloneInteractionAnchors(settings.CustomInteractionAnchors);
             placed.IsStorageContainer = settings.IsStorageContainer;
+            placed.InteractionPresetEid = NormalizeInteractionPresetEid(settings.InteractionPresetEid);
             placed.StorageSize = CampusPlacedObject.NormalizeStorageSize(settings.StorageSize);
             placed.StorageMaxWeight = CampusPlacedObject.NormalizeStorageMaxWeight(settings.StorageMaxWeight);
 
             ApplyRetailShelfData(target, placed, settings.RetailShelf);
             ApplyProtectedStockContainerData(target, placed, settings.ProtectedStockContainer);
 
-            if (placed.IsStorageContainer && ensureStorageInteractionAnchor != null)
+            if (placed.IsStorageContainer &&
+                string.IsNullOrWhiteSpace(placed.InteractionPresetEid) &&
+                ensureStorageInteractionAnchor != null)
             {
                 ensureStorageInteractionAnchor(placed);
             }
 
-            placed.IsInteractable = placed.UseCustomInteractionAnchor || placed.IsStorageContainer;
+            placed.IsInteractable = placed.UseCustomInteractionAnchor ||
+                                    placed.IsStorageContainer ||
+                                    !string.IsNullOrWhiteSpace(placed.InteractionPresetEid);
             NormalizeStackableFacilityObject(placed, ResolveFacilityType(placed));
 
             placed.ApplyRotationVisualState();
@@ -240,6 +246,11 @@ namespace NtingCampusMapEditor
                 placed.ObjectId,
                 placed.DisplayName,
                 placed.IsStorageContainer);
+        }
+
+        internal static string NormalizeInteractionPresetEid(string eid)
+        {
+            return string.IsNullOrWhiteSpace(eid) ? string.Empty : eid.Trim();
         }
 
         internal static string ResolveTypeIdForSnapshot(

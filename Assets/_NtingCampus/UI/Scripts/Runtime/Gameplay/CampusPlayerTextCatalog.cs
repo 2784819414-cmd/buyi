@@ -265,7 +265,8 @@ namespace NtingCampus.UI.Runtime.Gameplay
         RetailStockCount = 128,
         RetailDisplayCount = 129,
         RetailContainerMode = 130,
-        RetailDisplayMode = 131
+        RetailDisplayMode = 131,
+        InteractionPresetEid = 132
     }
 
     public static class CampusGameplayDebugTextCatalog
@@ -679,7 +680,8 @@ namespace NtingCampus.UI.Runtime.Gameplay
             { CampusRuntimeEditorTextId.RetailStockCount, new TextEntry("\u5bb9\u5668\u5e93\u5b58", "Container Stock") },
             { CampusRuntimeEditorTextId.RetailDisplayCount, new TextEntry("\u76f4\u6446\u6570\u91cf", "Display Count") },
             { CampusRuntimeEditorTextId.RetailContainerMode, new TextEntry("\u5bb9\u5668\u8d27\u67b6", "Container Shelf") },
-            { CampusRuntimeEditorTextId.RetailDisplayMode, new TextEntry("\u76f4\u6446\u8d27\u67b6", "Direct Pickup Display") }
+            { CampusRuntimeEditorTextId.RetailDisplayMode, new TextEntry("\u76f4\u6446\u8d27\u67b6", "Direct Pickup Display") },
+            { CampusRuntimeEditorTextId.InteractionPresetEid, new TextEntry("\u4ea4\u4e92EID", "Interaction EID") }
         };
 
         public static string Get(CampusDisplayLanguage language, CampusRuntimeEditorTextId id)

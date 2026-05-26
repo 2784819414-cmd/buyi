@@ -59,6 +59,7 @@ namespace NtingCampusMapEditor
         public bool BlocksSight;
         public bool IsInteractable;
         public bool IsStorageContainer;
+        public string InteractionPresetEid;
         public Vector2Int StorageSize = new Vector2Int(4, 4);
         public float StorageMaxWeight = CampusPlacedObject.DefaultStorageMaxWeight;
         public bool UseCustomInteractionAnchor;

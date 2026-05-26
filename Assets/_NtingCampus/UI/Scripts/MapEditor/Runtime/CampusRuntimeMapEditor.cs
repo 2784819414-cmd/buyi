@@ -2348,6 +2348,8 @@ namespace NtingCampusMapEditor
                 placed.BlocksSight = prefabPlaced.BlocksSight;
                 placed.IsInteractable = prefabPlaced.IsInteractable;
                 placed.IsStorageContainer = prefabPlaced.IsStorageContainer;
+                placed.InteractionPresetEid =
+                    CampusRuntimeObjectAuthoring.NormalizeInteractionPresetEid(prefabPlaced.InteractionPresetEid);
                 placed.TypeId = prefabPlaced.TypeId;
                 placed.StorageSize = prefabPlaced.NormalizedStorageSize;
                 placed.StorageMaxWeight = prefabPlaced.NormalizedStorageMaxWeight;
@@ -4698,6 +4700,8 @@ namespace NtingCampusMapEditor
             objectSnapshot.BlocksSight = placed.BlocksSight;
             objectSnapshot.IsInteractable = placed.IsInteractable;
             objectSnapshot.IsStorageContainer = placed.IsStorageContainer;
+            objectSnapshot.InteractionPresetEid =
+                CampusRuntimeObjectAuthoring.NormalizeInteractionPresetEid(placed.InteractionPresetEid);
             objectSnapshot.StorageSize = placed.NormalizedStorageSize;
             objectSnapshot.StorageMaxWeight = placed.NormalizedStorageMaxWeight;
             objectSnapshot.UseCustomInteractionAnchor = placed.UseCustomInteractionAnchor;
@@ -4746,6 +4750,8 @@ namespace NtingCampusMapEditor
             clone.BlocksSight = source.BlocksSight;
             clone.IsInteractable = source.IsInteractable;
             clone.IsStorageContainer = source.IsStorageContainer;
+            clone.InteractionPresetEid =
+                CampusRuntimeObjectAuthoring.NormalizeInteractionPresetEid(source.InteractionPresetEid);
             clone.StorageSize = source.StorageSize;
             clone.StorageMaxWeight = source.StorageMaxWeight;
             clone.UseCustomInteractionAnchor = source.UseCustomInteractionAnchor;
@@ -4838,6 +4844,8 @@ namespace NtingCampusMapEditor
                 placed.BlocksSight = objectSnapshot.BlocksSight;
                 placed.IsInteractable = objectSnapshot.IsInteractable;
                 placed.IsStorageContainer = objectSnapshot.IsStorageContainer;
+                placed.InteractionPresetEid =
+                    CampusRuntimeObjectAuthoring.NormalizeInteractionPresetEid(objectSnapshot.InteractionPresetEid);
                 placed.StorageSize = CampusPlacedObject.NormalizeStorageSize(objectSnapshot.StorageSize);
                 placed.StorageMaxWeight = CampusPlacedObject.NormalizeStorageMaxWeight(objectSnapshot.StorageMaxWeight);
                 placed.UseCustomInteractionAnchor = objectSnapshot.UseCustomInteractionAnchor;

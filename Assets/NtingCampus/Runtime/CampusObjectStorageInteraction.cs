@@ -47,7 +47,7 @@ namespace NtingCampusMapEditor
 
             return CampusCharacterActionExecutor.TryExecute(
                 actorRuntime,
-                CampusCharacterAction.OpenInventoryView(container, source.gameObject, false),
+                CampusCharacterAction.OpenInventoryView(container, source.gameObject, true),
                 out _);
         }
 

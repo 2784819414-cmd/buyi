@@ -67,6 +67,15 @@ namespace NtingCampus.UI.Runtime.Gameplay
         private const float PendingCheckoutVisibleX = -24f;
         private const float StaminaTrackPadding = 2f;
         private const float StaminaFillHeight = 16f;
+        private const float HandModuleWidth = 284f;
+        private const float HandModuleHeight = 132f;
+        private const float HandModulePadding = 16f;
+        private const float HandModuleSlotSize = 76f;
+        private const float HandModuleSlotGap = 10f;
+        private const float HandModuleLabelTop = 12f;
+        private const float HandModuleSlotTop = 40f;
+        private const float HandModuleGridInset = 6f;
+        private const float HandModuleGridSize = 64f;
 
         private Sequence pendingCheckoutTween;
         private Sequence areaBannerTween;
@@ -462,7 +471,7 @@ namespace NtingCampus.UI.Runtime.Gameplay
             handRoot = handObject.GetComponent<RectTransform>();
             StorageUIUtility.SetAnchor(handRoot, new Vector2(1f, 0f), new Vector2(1f, 0f), new Vector2(1f, 0f));
             handRoot.anchoredPosition = new Vector2(-24f, 24f);
-            handRoot.sizeDelta = new Vector2(194f, 188f);
+            handRoot.sizeDelta = new Vector2(HandModuleWidth, HandModuleHeight);
 
             handCanvas = handObject.GetComponent<Canvas>();
             handCanvas.overrideSorting = true;
@@ -481,20 +490,32 @@ namespace NtingCampus.UI.Runtime.Gameplay
                 new Vector2(0f, 0f),
                 new Vector2(0f, 0f),
                 Vector2.zero,
-                new Vector2(194f, 188f),
+                new Vector2(HandModuleWidth, HandModuleHeight),
                 HudPanelColor,
                 HudPanelBorderColor,
                 1f,
                 16f);
 
-            CreateLabel(panel, "BackpackSlotLabel", CampusGameplayHudTextCatalog.Get(CampusGameplayHudTextId.Backpack), 12, new Vector2(16f, 10f), new Vector2(84f, 18f));
-            backpackSlotStatusText = CreateMetaText(panel, "BackpackSlotStatus", new Vector2(92f, 10f), new Vector2(86f, 18f));
-            backpackSlotStatusText.alignment = TextAnchor.MiddleRight;
-            backpackGrid = CreateBackpackGrid(panel, "BackpackDisplay", new Vector2(59f, 32f));
+            float leftHandX = HandModulePadding;
+            float rightHandX = leftHandX + HandModuleSlotSize + HandModuleSlotGap;
+            float backpackX = rightHandX + HandModuleSlotSize + HandModuleSlotGap;
 
-            StorageUIUtility.CreateDivider("BackpackHandDivider", panel, 16f, 112f, 162f, 1f);
-            handGrids[0] = CreateHandGrid(panel, "LeftHandDisplay", new Vector2(22f, 124f), 0);
-            handGrids[1] = CreateHandGrid(panel, "RightHandDisplay", new Vector2(106f, 124f), 1);
+            CreateEquipmentSlotLabel(panel, "LeftHandLabel", StorageTextCatalog.Get(StorageTextId.LeftHand), leftHandX);
+            CreateEquipmentSlotLabel(panel, "RightHandLabel", StorageTextCatalog.Get(StorageTextId.RightHand), rightHandX);
+            handGrids[0] = CreateHandGrid(panel, "LeftHandDisplay", new Vector2(leftHandX, HandModuleSlotTop), 0);
+            handGrids[1] = CreateHandGrid(panel, "RightHandDisplay", new Vector2(rightHandX, HandModuleSlotTop), 1);
+            CreateEquipmentSlotLabel(
+                panel,
+                "BackpackSlotLabel",
+                CampusGameplayHudTextCatalog.Get(CampusGameplayHudTextId.Backpack),
+                backpackX);
+            backpackSlotStatusText = CreateMetaText(
+                panel,
+                "BackpackSlotStatus",
+                new Vector2(backpackX, HandModuleHeight - 24f),
+                new Vector2(HandModuleSlotSize, 18f));
+            backpackSlotStatusText.alignment = TextAnchor.MiddleCenter;
+            backpackGrid = CreateBackpackGrid(panel, "BackpackDisplay", new Vector2(backpackX, HandModuleSlotTop));
             CreateTooltipLayer();
         }
 
@@ -674,7 +695,7 @@ namespace NtingCampus.UI.Runtime.Gameplay
                 backpackSlot,
                 tooltipCanvas,
                 tooltipRoot,
-                backpackGrid != null ? backpackGrid.RectTransform : null,
+                ResolveEquipmentHitRect(backpackGrid),
                 hudItemTooltip,
                 tooltipRoot);
             }
@@ -778,52 +799,23 @@ namespace NtingCampus.UI.Runtime.Gameplay
             return text;
         }
 
+        private static Text CreateEquipmentSlotLabel(Transform parent, string name, string value, float x)
+        {
+            Text text = CreateLabel(
+                parent,
+                name,
+                value,
+                12,
+                new Vector2(x, HandModuleLabelTop),
+                new Vector2(HandModuleSlotSize, 18f));
+            text.alignment = TextAnchor.MiddleCenter;
+            return text;
+        }
+
         private StorageGridUI CreateHandGrid(Transform parent, string name, Vector2 position, int index)
         {
-            RectTransform slotRoot = StorageUIUtility.CreateBox(
-                name,
-                parent,
-                new Vector2(0f, 1f),
-                new Vector2(0f, 1f),
-                new Vector2(0f, 1f),
-                new Vector2(position.x, -position.y),
-                new Vector2(76f, 76f),
-                StoragePalette.Slot,
-                StoragePalette.SlotBorder,
-                1f,
-                12f);
-
-            StorageUIUtility.CreateStretchBox(
-                "Inner",
-                slotRoot,
-                new Vector2(4f, 4f),
-                new Vector2(-4f, -4f),
-                new Color(1f, 1f, 1f, 0.02f),
-                Color.clear,
-                0f,
-                10f);
-
-            GameObject gridObject = StorageUIUtility.CreateRectObject("Grid", slotRoot);
-            RectTransform gridRect = gridObject.GetComponent<RectTransform>();
-            StorageUIUtility.SetAnchor(gridRect, new Vector2(0f, 1f), new Vector2(0f, 1f), new Vector2(0f, 1f));
-            gridRect.anchoredPosition = new Vector2(6f, -6f);
-
-            StorageGridUI grid = gridObject.AddComponent<StorageGridUI>();
-            grid.CellSize = 64f;
-            grid.CellSpacing = 0f;
-            grid.RenderItemViews = true;
-            grid.DropArea = slotRoot;
-
-            RectTransform dragCatcher = StorageUIUtility.CreateStretchBox(
-                "DragCatcher",
-                slotRoot,
-                Vector2.zero,
-                Vector2.zero,
-                Color.clear,
-                Color.clear,
-                0f,
-                0f,
-                true);
+            StorageGridUI grid = CreateEquipmentGrid(parent, name, position, true);
+            RectTransform dragCatcher = CreateEquipmentDragCatcher(grid);
             if (index >= 0 && index < handSlotDragHandlers.Length)
             {
                 handSlotDragHandlers[index] = dragCatcher.gameObject.AddComponent<CampusHudHandSlotDragHandler>();
@@ -834,6 +826,14 @@ namespace NtingCampus.UI.Runtime.Gameplay
 
         private StorageGridUI CreateBackpackGrid(Transform parent, string name, Vector2 position)
         {
+            StorageGridUI grid = CreateEquipmentGrid(parent, name, position, true);
+            RectTransform dragCatcher = CreateEquipmentDragCatcher(grid);
+            backpackSlotDragHandler = dragCatcher.gameObject.AddComponent<CampusHudBackpackSlotDragHandler>();
+            return grid;
+        }
+
+        private static StorageGridUI CreateEquipmentGrid(Transform parent, string name, Vector2 position, bool raycastTarget)
+        {
             RectTransform slotRoot = StorageUIUtility.CreateBox(
                 name,
                 parent,
@@ -841,12 +841,12 @@ namespace NtingCampus.UI.Runtime.Gameplay
                 new Vector2(0f, 1f),
                 new Vector2(0f, 1f),
                 new Vector2(position.x, -position.y),
-                new Vector2(76f, 76f),
+                new Vector2(HandModuleSlotSize, HandModuleSlotSize),
                 StoragePalette.Slot,
                 StoragePalette.SlotBorder,
                 1f,
                 12f,
-                true);
+                raycastTarget);
 
             StorageUIUtility.CreateStretchBox(
                 "Inner",
@@ -861,17 +861,32 @@ namespace NtingCampus.UI.Runtime.Gameplay
             GameObject gridObject = StorageUIUtility.CreateRectObject("Grid", slotRoot);
             RectTransform gridRect = gridObject.GetComponent<RectTransform>();
             StorageUIUtility.SetAnchor(gridRect, new Vector2(0f, 1f), new Vector2(0f, 1f), new Vector2(0f, 1f));
-            gridRect.anchoredPosition = new Vector2(6f, -6f);
+            gridRect.anchoredPosition = new Vector2(HandModuleGridInset, -HandModuleGridInset);
+            gridRect.sizeDelta = new Vector2(HandModuleGridSize, HandModuleGridSize);
 
             StorageGridUI grid = gridObject.AddComponent<StorageGridUI>();
-            grid.CellSize = 64f;
+            grid.CellSize = HandModuleGridSize;
             grid.CellSpacing = 0f;
             grid.RenderItemViews = true;
             grid.DropArea = slotRoot;
+            return grid;
+        }
 
-            RectTransform dragCatcher = StorageUIUtility.CreateStretchBox(
+        private static RectTransform CreateEquipmentDragCatcher(StorageGridUI grid)
+        {
+            Transform parent = grid != null && grid.DropArea != null
+                ? grid.DropArea
+                : grid != null
+                    ? grid.transform
+                    : null;
+            if (parent == null)
+            {
+                return null;
+            }
+
+            return StorageUIUtility.CreateStretchBox(
                 "DragCatcher",
-                slotRoot,
+                parent,
                 Vector2.zero,
                 Vector2.zero,
                 Color.clear,
@@ -879,8 +894,6 @@ namespace NtingCampus.UI.Runtime.Gameplay
                 0f,
                 0f,
                 true);
-            backpackSlotDragHandler = dragCatcher.gameObject.AddComponent<CampusHudBackpackSlotDragHandler>();
-            return grid;
         }
 
         private void BindHandGrid(int index, StorageContainerModel hand, StorageWindowUI storageWindow)
@@ -925,10 +938,20 @@ namespace NtingCampus.UI.Runtime.Gameplay
                 hand,
                 tooltipCanvas,
                 tooltipRoot,
-                grid != null ? grid.RectTransform : null,
+                ResolveEquipmentHitRect(grid),
                 hudItemTooltip,
                 tooltipRoot,
                 ownerWindow == null);
+        }
+
+        private static RectTransform ResolveEquipmentHitRect(StorageGridUI grid)
+        {
+            if (grid == null)
+            {
+                return null;
+            }
+
+            return grid.DropArea != null ? grid.DropArea : grid.RectTransform;
         }
 
         private void ClearExistingHud()

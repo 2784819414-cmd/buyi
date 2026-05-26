@@ -36,8 +36,7 @@ namespace NtingCampusMapEditor
                 out MonoBehaviour target,
                 out string actionId,
                 out CampusLocalizedText promptText);
-            if (!placedObject.IsInteractable &&
-                string.IsNullOrWhiteSpace(actionId))
+            if (string.IsNullOrWhiteSpace(actionId))
             {
                 return;
             }
@@ -95,7 +94,7 @@ namespace NtingCampusMapEditor
             }
 
             target = FindInteractionTarget(placedObject, null);
-            actionId = target != null ? CampusInteractionActionIds.InteractTarget : CampusInteractionActionIds.Log;
+            actionId = target != null ? CampusInteractionActionIds.InteractTarget : string.Empty;
         }
 
         private static void EnsureDiningTableAnchors(CampusPlacedObject placedObject)

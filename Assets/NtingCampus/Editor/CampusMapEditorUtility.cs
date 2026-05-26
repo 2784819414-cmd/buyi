@@ -2853,6 +2853,9 @@ namespace NtingCampusMapEditor
                     placed.BlocksSight = objectData.BlocksSight;
                     placed.IsInteractable = objectData.IsInteractable;
                     placed.IsStorageContainer = objectData.IsStorageContainer;
+                    placed.InteractionPresetEid = string.IsNullOrWhiteSpace(objectData.InteractionPresetEid)
+                        ? string.Empty
+                        : objectData.InteractionPresetEid.Trim();
                     placed.StorageSize = CampusPlacedObject.NormalizeStorageSize(objectData.StorageSize);
                     placed.StorageMaxWeight = CampusPlacedObject.NormalizeStorageMaxWeight(objectData.StorageMaxWeight);
                     placed.UseCustomInteractionAnchor = objectData.UseCustomInteractionAnchor;
@@ -3478,6 +3481,9 @@ namespace NtingCampusMapEditor
                     BlocksSight = placed.BlocksSight,
                     IsInteractable = placed.IsInteractable,
                     IsStorageContainer = placed.IsStorageContainer,
+                    InteractionPresetEid = string.IsNullOrWhiteSpace(placed.InteractionPresetEid)
+                        ? string.Empty
+                        : placed.InteractionPresetEid.Trim(),
                     StorageSize = placed.NormalizedStorageSize,
                     StorageMaxWeight = placed.NormalizedStorageMaxWeight,
                     UseCustomInteractionAnchor = placed.UseCustomInteractionAnchor,

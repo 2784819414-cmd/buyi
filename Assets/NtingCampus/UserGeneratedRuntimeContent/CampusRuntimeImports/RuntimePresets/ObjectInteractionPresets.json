@@ -1,0 +1,44 @@
+{
+  "Presets": [
+    {
+      "Eid": "object.retail_shelf.display",
+      "ObjectIds": [
+        "retail_shelf_display_2x1"
+      ],
+      "Anchors": []
+    },
+    {
+      "Eid": "object.retail_shelf.container",
+      "ObjectIds": [
+        "retail_shelf_container_2x1",
+        "goods_shelf_2x1"
+      ],
+      "Anchors": [
+        {
+          "AnchorId": "storage",
+          "DisplayName": "storage",
+          "Enabled": true,
+          "LocalPosition": {
+            "x": 0.0,
+            "y": 0.0,
+            "z": 0.0
+          },
+          "Radius": 0.65,
+          "PromptText": "Open",
+          "LocalizedPromptText": {
+            "chinese": "打开",
+            "english": "Open"
+          },
+          "ActionId": "campus.storage.open",
+          "Payload": "",
+          "TargetComponentType": "",
+          "Priority": 120,
+          "UseTargetDoorStatePrompt": false,
+          "LogInteraction": false,
+          "InteractionLogMessage": "",
+          "LocalizedInteractionLogMessage": {}
+        }
+      ]
+    }
+  ]
+}

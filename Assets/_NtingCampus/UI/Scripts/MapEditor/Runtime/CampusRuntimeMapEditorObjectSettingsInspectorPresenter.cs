@@ -59,6 +59,7 @@ namespace NtingCampusMapEditor
             DrawPreviewControls(host, ref y, width, prefab, placed);
             DrawFootprintControls(host, ref y, width, placed);
             DrawStorageControls(host, ref y, width, placed);
+            DrawInteractionPresetControls(host, ref y, width, placed);
             DrawRetailControls(host, ref y, width, placed);
             DrawScaleControls(host, ref y, width, placed);
             DrawRotationControls(host, ref y, width, placed);
@@ -262,6 +263,31 @@ namespace NtingCampusMapEditor
                 Mathf.Clamp(host.ParseIntField(new Rect(136f, y, 48f, 30f), placed.NormalizedStorageSize.y), 1, 64));
             GUI.Label(new Rect(114f, y, 18f, 28f), "x", host.BodyStyle);
             GUI.enabled = previousEnabled;
+            y += 40f;
+        }
+
+        private static void DrawInteractionPresetControls(
+            ICampusRuntimeMapEditorObjectSettingsInspectorHost host,
+            ref float y,
+            float width,
+            CampusPlacedObject placed)
+        {
+            if (placed == null)
+            {
+                return;
+            }
+
+            GUI.Label(new Rect(0f, y, 96f, 28f), host.GetText(CampusRuntimeEditorTextId.InteractionPresetEid), host.BodyStyle);
+            string key = host.BuildObjectSettingsInputKey(placed, "interaction_preset_eid");
+            string current = string.IsNullOrEmpty(placed.InteractionPresetEid) ? string.Empty : placed.InteractionPresetEid;
+            string next = host.DrawTextInput(new Rect(102f, y, Mathf.Max(40f, width - 168f), 30f), current, key);
+            placed.InteractionPresetEid = CampusRuntimeObjectAuthoring.NormalizeInteractionPresetEid(next);
+            if (GUI.Button(new Rect(width - 58f, y, 58f, 28f), host.GetText(CampusRuntimeEditorTextId.Clear), host.ButtonStyle))
+            {
+                placed.InteractionPresetEid = string.Empty;
+                host.SetTextInputDraft(key, string.Empty);
+            }
+
             y += 40f;
         }
 

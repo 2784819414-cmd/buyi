@@ -110,6 +110,7 @@ namespace NtingCampusMapEditor
         public bool BlocksSight;
         public bool IsInteractable;
         public bool IsStorageContainer;
+        public string InteractionPresetEid;
         public Vector2Int StorageSize = new Vector2Int(4, 4);
         public float StorageMaxWeight = DefaultStorageMaxWeight;
         public bool UseCustomInteractionAnchor;
@@ -270,19 +271,35 @@ namespace NtingCampusMapEditor
             }
 
             NormalizeCustomInteractionAnchors();
+            List<CampusPlacedObjectInteractionAnchor> anchors = ResolveAuthoredInteractionAnchors(out bool hasAuthoredPreset);
             Transform root = transform.Find(CustomInteractionAnchorRootName);
-            if (!UseCustomInteractionAnchor)
+            if (!hasAuthoredPreset && !UseCustomInteractionAnchor)
             {
                 RemoveStaleCustomInteractionAnchors(root, null);
+                return;
+            }
+
+            if (anchors.Count == 0)
+            {
+                IsInteractable = false;
+                if (hasAuthoredPreset)
+                {
+                    RemoveStaleAuthoredInteractionAnchors(root, new HashSet<string>());
+                }
+                else
+                {
+                    RemoveStaleCustomInteractionAnchors(root, null);
+                }
+
                 return;
             }
 
             IsInteractable = true;
             root = root != null ? root : EnsureCustomInteractionAnchorRoot();
             HashSet<string> expectedNames = new HashSet<string>();
-            for (int i = 0; i < CustomInteractionAnchors.Count; i++)
+            for (int i = 0; i < anchors.Count; i++)
             {
-                CampusPlacedObjectInteractionAnchor data = CustomInteractionAnchors[i];
+                CampusPlacedObjectInteractionAnchor data = anchors[i];
                 if (data == null || !data.Enabled)
                 {
                     continue;
@@ -293,7 +310,14 @@ namespace NtingCampusMapEditor
                 ConfigureCustomInteractionAnchor(root, anchorName, data, i);
             }
 
-            RemoveStaleCustomInteractionAnchors(root, expectedNames);
+            if (hasAuthoredPreset)
+            {
+                RemoveStaleAuthoredInteractionAnchors(root, expectedNames);
+            }
+            else
+            {
+                RemoveStaleCustomInteractionAnchors(root, expectedNames);
+            }
         }
 
         public void ApplyInteractionState()
@@ -305,7 +329,12 @@ namespace NtingCampusMapEditor
                 return;
             }
 
-            CampusInteractionAnchorDefaults.EnsureDefaultAnchors(this);
+            bool hasAuthoredPreset = HasInteractionPreset();
+            if (!hasAuthoredPreset)
+            {
+                CampusInteractionAnchorDefaults.EnsureDefaultAnchors(this);
+            }
+
             EnsureUnifiedInteractionHandler();
             ApplyCustomInteractionAnchorState();
         }
@@ -393,6 +422,34 @@ namespace NtingCampusMapEditor
         private bool ShouldSyncLegacyPrimaryAnchorFields()
         {
             return CustomInteractionAnchors == null || CustomInteractionAnchors.Count <= 1;
+        }
+
+        private bool HasInteractionPreset()
+        {
+            return CampusObjectInteractionPresetCatalog.Current.TryResolvePreset(this, out _);
+        }
+
+        private bool HasInteractionPresetAnchors()
+        {
+            return CampusObjectInteractionPresetCatalog.Current.TryResolvePreset(
+                       this,
+                       out CampusObjectInteractionPreset preset) &&
+                   preset != null &&
+                   preset.Anchors != null &&
+                   preset.Anchors.Count > 0;
+        }
+
+        private List<CampusPlacedObjectInteractionAnchor> ResolveAuthoredInteractionAnchors(out bool hasAuthoredPreset)
+        {
+            hasAuthoredPreset = CampusObjectInteractionPresetCatalog.Current.TryResolvePreset(
+                this,
+                out CampusObjectInteractionPreset preset);
+            if (hasAuthoredPreset)
+            {
+                return CampusObjectInteractionPresetCatalog.ClonePresetAnchors(preset);
+            }
+
+            return CloneInteractionAnchors(CustomInteractionAnchors);
         }
 
         public CampusPlacedObjectInteractionAnchor GetFirstEnabledCustomInteractionAnchor()
@@ -543,7 +600,7 @@ namespace NtingCampusMapEditor
                 return CampusInteractionActionIds.Normalize(data.ActionId);
             }
 
-            return target != null ? CampusInteractionActionIds.InteractTarget : CampusInteractionActionIds.Log;
+            return target != null ? CampusInteractionActionIds.InteractTarget : string.Empty;
         }
 
         private static Vector3 RotateLocalPositionForAnchor(Vector3 position, int rotation90)
@@ -1196,6 +1253,27 @@ namespace NtingCampusMapEditor
             }
         }
 
+        private static void RemoveStaleAuthoredInteractionAnchors(Transform root, HashSet<string> expectedNames)
+        {
+            if (root == null)
+            {
+                return;
+            }
+
+            for (int i = root.childCount - 1; i >= 0; i--)
+            {
+                Transform child = root.GetChild(i);
+                if (child == null ||
+                    child.GetComponent<CampusInteractionAnchor>() == null ||
+                    expectedNames != null && expectedNames.Contains(child.name))
+                {
+                    continue;
+                }
+
+                DestroyUnityObject(child.gameObject);
+            }
+        }
+
         private static void DestroyUnityObject(UnityEngine.Object target)
         {
             if (target == null)
@@ -1247,6 +1325,7 @@ namespace NtingCampusMapEditor
         {
             return IsInteractable ||
                    UseCustomInteractionAnchor ||
+                   HasInteractionPresetAnchors() ||
                    IsStorageContainer ||
                    UsesFacilityDefaultInteraction();
         }
