@@ -108,8 +108,8 @@ namespace NtingCampus.Gameplay.Inventory
             }
 
             StorageContainerModel[] hands = CampusHandInventoryUtility.ResolveHands(actor);
-            if (TryUseHeldItem(actor, hands, 1, out result) ||
-                TryUseHeldItem(actor, hands, 0, out result))
+            if (TryUseHeldItemFromContainer(actor, CampusHandInventoryUtility.ResolveHandContainer(hands, 1), out result) ||
+                TryUseHeldItemFromContainer(actor, CampusHandInventoryUtility.ResolveHandContainer(hands, 0), out result))
             {
                 WriteUseLog(result.Message);
                 return true;
@@ -118,56 +118,34 @@ namespace NtingCampus.Gameplay.Inventory
             return false;
         }
 
-        public static bool TryOpenInventoryView(
+        public static bool TryUseHeldItem(
             CampusCharacterRuntime actor,
-            StorageContainerModel externalContainer,
-            GameObject groundDropContext,
-            bool includeBackpack,
-            out string message)
-        {
-            message = string.Empty;
-            if (actor == null)
-            {
-                message = StorageTextCatalog.Get(StorageTextId.MissingItemOrSource);
-                return false;
-            }
-
-            CampusCharacterInventory inventory = CampusCharacterInventoryService.GetOrCreateInventory(actor, true);
-            if (inventory == null)
-            {
-                message = StorageTextCatalog.Get(StorageTextId.MissingItemOrSource);
-                return false;
-            }
-
-            StorageWindowUI window = Object.FindFirstObjectByType<StorageWindowUI>(FindObjectsInactive.Include);
-            if (window == null)
-            {
-                GameObject windowObject = new GameObject("Canvas_Storage", typeof(RectTransform), typeof(StorageWindowUI));
-                window = windowObject.GetComponent<StorageWindowUI>();
-            }
-
-            GameObject dropContext = groundDropContext != null ? groundDropContext : actor.gameObject;
-            window.SetGroundDropContext(dropContext);
-            window.SetActorContext(actor.gameObject);
-            window.SetTransferHandler(CampusStorageTransferHandler.Instance);
-            window.OpenPlayerStorage(
-                inventory.Hands,
-                inventory.Pockets,
-                inventory.Backpack,
-                includeBackpack && inventory.HasBackpack,
-                externalContainer,
-                includeBackpack);
-            return true;
-        }
-
-        private static bool TryUseHeldItem(
-            CampusCharacterRuntime actor,
-            StorageContainerModel[] hands,
-            int handIndex,
+            StorageContainerModel hand,
             out StorageTransferResult result)
         {
             result = StorageTransferResult.Fail(StorageTextCatalog.Get(StorageTextId.ItemCannotBeUsed));
-            StorageItemModel item = CampusHandInventoryUtility.ResolveHeldItem(hands, handIndex);
+            if (actor == null)
+            {
+                result = StorageTransferResult.Fail(StorageTextCatalog.Get(StorageTextId.MissingItemOrSource));
+                return false;
+            }
+
+            if (TryUseHeldItemFromContainer(actor, hand, out result))
+            {
+                WriteUseLog(result.Message);
+                return true;
+            }
+
+            return false;
+        }
+
+        private static bool TryUseHeldItemFromContainer(
+            CampusCharacterRuntime actor,
+            StorageContainerModel hand,
+            out StorageTransferResult result)
+        {
+            result = StorageTransferResult.Fail(StorageTextCatalog.Get(StorageTextId.ItemCannotBeUsed));
+            StorageItemModel item = CampusHandInventoryUtility.ResolveHeldItem(hand);
             if (!StorageItemUseUtility.CanUse(item))
             {
                 return false;

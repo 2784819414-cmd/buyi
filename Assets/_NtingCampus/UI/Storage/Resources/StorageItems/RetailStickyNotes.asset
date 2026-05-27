@@ -1,4 +1,4 @@
-﻿%YAML 1.1
+%YAML 1.1
 %TAG !u! tag:unity3d.com,2011:
 --- !u!114 &11400000
 MonoBehaviour:
@@ -17,21 +17,35 @@ MonoBehaviour:
   LocalizedDisplayName:
     chinese: "\u4FBF\u7B7E\u7EB8"
     english: Sticky Notes
+    traditionalChinese: 
+    russian: 
+    japanese: 
   Width: 1
   Height: 1
+  StackGroupId: 
+  MaxStackSize: 1
   Weight: 0.05
   Price: 10
+  SmellLevel: 0
+  EvidenceWeight: 0
+  CanPrankUse: 0
   Description: "\u4E00\u53E0\u4EAE\u8272\u4FBF\u7B7E\u7EB8\u3002"
   LocalizedDescription:
     chinese: "\u4E00\u53E0\u4EAE\u8272\u4FBF\u7B7E\u7EB8\u3002"
     english: A stack of bright sticky notes.
+    traditionalChinese: 
+    russian: 
+    japanese: 
   ThemeColor: {r: 0.96, g: 0.83, b: 0.37, a: 1}
   Icon: {fileID: 0}
   IsUsable: 0
   UseActionId: 
   ConsumeOnUse: 1
+  StaminaRestore: 0
   UseText: 
   LocalizedUseText:
     chinese: 
     english: 
-
+    traditionalChinese: 
+    russian: 
+    japanese: 

@@ -208,6 +208,27 @@ namespace NtingCampus.Gameplay.Characters
             }
         }
 
+        public void ReactToObservedTheft(Vector3 targetPosition, string roomId)
+        {
+            if (Mind == null || runtime == null)
+            {
+                return;
+            }
+
+            Navigator.BoostMoveSpeed(1.75f, 3.5f);
+            Speak(CampusCharacterTextCatalog.GetDialogue(CampusCharacterDialogueId.TheftAlertIcon), 1.15f, false);
+
+            CampusNpcIntent alertIntent = CampusNpcIntent.Move(
+                CampusNpcIntentKind.Roam,
+                "Alert",
+                roomId,
+                targetPosition,
+                0.42f,
+                false);
+            ApplyIntent(alertIntent, _ => string.Empty);
+            ScheduleNextDecision(2.5f);
+        }
+
         public void ScheduleNextDecision(float baseIntervalSeconds)
         {
             float interval = Mathf.Max(0.05f, baseIntervalSeconds);

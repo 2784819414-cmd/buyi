@@ -3,6 +3,7 @@ using NtingCampus.Gameplay.Characters;
 using NtingCampus.Gameplay.Core;
 using NtingCampus.Gameplay.Services;
 using NtingCampus.UI.Runtime.Gameplay;
+using NtingCampusMapEditor;
 using UnityEngine;
 
 namespace NtingCampus.Gameplay.Rooms
@@ -40,11 +41,25 @@ namespace NtingCampus.Gameplay.Rooms
             ResolveRoomRegistry();
             if (rebuildRegistryOnInitialize && roomRegistry != null)
             {
-                roomRegistry.RebuildRegistry();
-                serviceStations.Rebuild(roomRegistry.Rooms);
+                RebuildRegistries();
+            }
+        }
+
+        public void RebuildRegistries()
+        {
+            ResolveRoomRegistry();
+            if (roomRegistry == null)
+            {
+                serviceStations.Rebuild(null);
                 serviceStationsBuilt = true;
                 InvalidateFacts();
+                return;
             }
+
+            roomRegistry.RebuildRegistry();
+            serviceStations.Rebuild(roomRegistry.Rooms);
+            serviceStationsBuilt = true;
+            InvalidateFacts();
         }
 
         public CampusGameplayRoom FindFirstUsableRoom(CampusRoomType roomType)
@@ -123,6 +138,15 @@ namespace NtingCampus.Gameplay.Rooms
                 Mathf.FloorToInt(worldPosition.y),
                 0);
             return roomRegistry.FindRoomByCell(floorIndex, cell);
+        }
+
+        public CampusGameplayRoom FindRoomForPlacedObject(CampusPlacedObject placedObject)
+        {
+            ResolveRoomRegistry();
+            return roomRegistry != null &&
+                   roomRegistry.TryFindRoomForPlacedObject(placedObject, out CampusGameplayRoom room)
+                ? room
+                : null;
         }
 
         public CampusGameplayRoom FindRoomForRuntime(CampusCharacterRuntime runtime)

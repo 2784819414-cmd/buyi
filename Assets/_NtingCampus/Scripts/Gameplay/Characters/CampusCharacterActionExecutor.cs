@@ -75,16 +75,6 @@ namespace NtingCampus.Gameplay.Characters
                 case CampusCharacterActionKind.UseHeldItem:
                     return CampusInventoryActionExecutor.TryUseFirstHeldItem(actor, out result);
 
-                case CampusCharacterActionKind.OpenInventoryView:
-                    bool opened = CampusInventoryActionExecutor.TryOpenInventoryView(
-                        actor,
-                        action.TargetContainer,
-                        action.GroundDropContext,
-                        action.IncludeBackpack,
-                        out string message);
-                    result = new StorageTransferResult(opened, false, false, message, string.Empty);
-                    return opened;
-
                 case CampusCharacterActionKind.DomainAction:
                     return CampusCharacterActionRegistry.TryExecute(
                         new CampusCharacterActionContext(

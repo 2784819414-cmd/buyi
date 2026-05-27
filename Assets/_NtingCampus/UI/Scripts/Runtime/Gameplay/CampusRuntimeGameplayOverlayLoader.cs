@@ -198,6 +198,7 @@ namespace NtingCampus.UI.Runtime.Gameplay
                     facility.FloorIndex,
                     facility.Cell,
                     facility.CountsAsCoreFacility,
+                    facility.OwnerFacilityId,
                     null);
             }
         }

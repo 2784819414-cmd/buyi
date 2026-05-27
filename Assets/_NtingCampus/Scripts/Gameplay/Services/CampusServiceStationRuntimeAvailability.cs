@@ -87,8 +87,8 @@ namespace NtingCampus.Gameplay.Services
             CampusWorldService worldService = bootstrap != null ? bootstrap.WorldService : null;
             return worldService != null &&
                    worldService.ServiceStations.TryResolveByPlacedObject(
-                       worldService,
                        placedObject,
+                       actionId,
                        out station) &&
                    CampusInteractionActionIds.Equals(station.InteractionActionId, actionId);
         }

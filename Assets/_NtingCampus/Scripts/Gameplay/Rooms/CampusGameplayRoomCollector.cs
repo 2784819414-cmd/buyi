@@ -228,7 +228,8 @@ namespace NtingCampus.Gameplay.Rooms
                 }
 
                 BoundsInt bounds = gameplayMarker.BuildBounds();
-                if (HasExistingRoomOverlap(rooms, gameplayMarker.FloorIndex, bounds))
+                RemoveOverlappingImplicitRooms(rooms, gameplayMarker.FloorIndex, bounds);
+                if (HasExistingExplicitRoomOverlap(rooms, gameplayMarker.FloorIndex, bounds))
                 {
                     continue;
                 }
@@ -254,7 +255,27 @@ namespace NtingCampus.Gameplay.Rooms
             }
         }
 
-        private static bool HasExistingRoomOverlap(
+        private static void RemoveOverlappingImplicitRooms(
+            List<CampusGameplayRoom> rooms,
+            int floorIndex,
+            BoundsInt bounds)
+        {
+            for (int i = rooms.Count - 1; i >= 0; i--)
+            {
+                CampusGameplayRoom room = rooms[i];
+                if (room == null ||
+                    room.FloorIndex != floorIndex ||
+                    room.HasExplicitGameplayMarker ||
+                    !BoundsOverlap2D(room.MarkerBounds, bounds))
+                {
+                    continue;
+                }
+
+                rooms.RemoveAt(i);
+            }
+        }
+
+        private static bool HasExistingExplicitRoomOverlap(
             IReadOnlyList<CampusGameplayRoom> rooms,
             int floorIndex,
             BoundsInt bounds)
@@ -267,7 +288,7 @@ namespace NtingCampus.Gameplay.Rooms
                     continue;
                 }
 
-                if (BoundsOverlap2D(room.MarkerBounds, bounds))
+                if (room.HasExplicitGameplayMarker && BoundsOverlap2D(room.MarkerBounds, bounds))
                 {
                     return true;
                 }

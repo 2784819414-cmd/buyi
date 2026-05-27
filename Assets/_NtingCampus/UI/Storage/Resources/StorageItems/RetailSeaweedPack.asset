@@ -1,4 +1,4 @@
-﻿%YAML 1.1
+%YAML 1.1
 %TAG !u! tag:unity3d.com,2011:
 --- !u!114 &11400000
 MonoBehaviour:
@@ -17,21 +17,35 @@ MonoBehaviour:
   LocalizedDisplayName:
     chinese: "\u6D77\u82D4\u5305"
     english: Seaweed Pack
+    traditionalChinese: 
+    russian: 
+    japanese: 
   Width: 1
   Height: 2
+  StackGroupId: 
+  MaxStackSize: 1
   Weight: 0.06
   Price: 10
+  SmellLevel: 0
+  EvidenceWeight: 0
+  CanPrankUse: 0
   Description: "\u8584\u800C\u8F7B\u7684\u5373\u98DF\u6D77\u82D4\u5C0F\u888B\u3002"
   LocalizedDescription:
     chinese: "\u8584\u800C\u8F7B\u7684\u5373\u98DF\u6D77\u82D4\u5C0F\u888B\u3002"
     english: A light snack pack of ready-to-eat seaweed.
+    traditionalChinese: 
+    russian: 
+    japanese: 
   ThemeColor: {r: 0.27, g: 0.42, b: 0.34, a: 1}
   Icon: {fileID: 0}
   IsUsable: 1
   UseActionId: campus.item.consume_food
   ConsumeOnUse: 1
   StaminaRestore: 6
-  UseText: 吃掉
+  UseText: "\u5403\u6389"
   LocalizedUseText:
-    chinese: 吃掉
+    chinese: "\u5403\u6389"
     english: Eat the Seaweed Pack.
+    traditionalChinese: 
+    russian: 
+    japanese: 

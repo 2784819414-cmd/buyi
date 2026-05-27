@@ -1,4 +1,4 @@
-﻿%YAML 1.1
+%YAML 1.1
 %TAG !u! tag:unity3d.com,2011:
 --- !u!114 &11400000
 MonoBehaviour:
@@ -17,21 +17,35 @@ MonoBehaviour:
   LocalizedDisplayName:
     chinese: "\u80FD\u91CF\u996E\u6599"
     english: Energy Drink
+    traditionalChinese: 
+    russian: 
+    japanese: 
   Width: 1
   Height: 2
+  StackGroupId: 
+  MaxStackSize: 1
   Weight: 0.33
   Price: 10
+  SmellLevel: 0
+  EvidenceWeight: 0
+  CanPrankUse: 0
   Description: "\u989C\u8272\u5F20\u626C\u7684\u529F\u80FD\u996E\u6599\u3002"
   LocalizedDescription:
     chinese: "\u989C\u8272\u5F20\u626C\u7684\u529F\u80FD\u996E\u6599\u3002"
     english: A brightly colored energy drink.
+    traditionalChinese: 
+    russian: 
+    japanese: 
   ThemeColor: {r: 0.36, g: 0.48, b: 0.89, a: 1}
   Icon: {fileID: 0}
   IsUsable: 1
   UseActionId: campus.item.consume_food
   ConsumeOnUse: 1
   StaminaRestore: 28
-  UseText: 喝掉
+  UseText: "\u559D\u6389"
   LocalizedUseText:
-    chinese: 喝掉
+    chinese: "\u559D\u6389"
     english: Drink the Energy Drink.
+    traditionalChinese: 
+    russian: 
+    japanese: 

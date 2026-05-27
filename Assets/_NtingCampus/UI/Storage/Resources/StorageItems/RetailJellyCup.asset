@@ -1,4 +1,4 @@
-﻿%YAML 1.1
+%YAML 1.1
 %TAG !u! tag:unity3d.com,2011:
 --- !u!114 &11400000
 MonoBehaviour:
@@ -17,21 +17,35 @@ MonoBehaviour:
   LocalizedDisplayName:
     chinese: "\u679C\u51BB\u676F"
     english: Jelly Cup
+    traditionalChinese: 
+    russian: 
+    japanese: 
   Width: 1
   Height: 1
+  StackGroupId: 
+  MaxStackSize: 1
   Weight: 0.09
   Price: 10
+  SmellLevel: 0
+  EvidenceWeight: 0
+  CanPrankUse: 0
   Description: "\u900F\u660E\u5C0F\u676F\u88C5\u7684\u679C\u5473\u679C\u51BB\u3002"
   LocalizedDescription:
     chinese: "\u900F\u660E\u5C0F\u676F\u88C5\u7684\u679C\u5473\u679C\u51BB\u3002"
     english: A fruit-flavored jelly in a small clear cup.
+    traditionalChinese: 
+    russian: 
+    japanese: 
   ThemeColor: {r: 0.94, g: 0.44, b: 0.69, a: 1}
   Icon: {fileID: 0}
   IsUsable: 1
   UseActionId: campus.item.consume_food
   ConsumeOnUse: 1
   StaminaRestore: 14
-  UseText: 吃掉
+  UseText: "\u5403\u6389"
   LocalizedUseText:
-    chinese: 吃掉
+    chinese: "\u5403\u6389"
     english: Eat the Jelly Cup.
+    traditionalChinese: 
+    russian: 
+    japanese: 

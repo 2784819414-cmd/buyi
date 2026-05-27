@@ -38,6 +38,35 @@ namespace NtingCampusMapEditor
             }
         }
 
+        internal static bool TryGetPresetLastWriteUtc(string fileName, out DateTime lastWriteUtc)
+        {
+            lastWriteUtc = DateTime.MinValue;
+            if (string.IsNullOrWhiteSpace(fileName))
+            {
+                return false;
+            }
+
+            string path = GetPresetPath(fileName);
+            if (!File.Exists(path))
+            {
+                return false;
+            }
+
+            try
+            {
+                lastWriteUtc = File.GetLastWriteTimeUtc(path);
+                return true;
+            }
+            catch (Exception exception)
+            {
+                CampusRuntimePresetLogTextCatalog.Warning(
+                    CampusRuntimePresetLogTextId.FailedToReadPresetFile,
+                    path,
+                    exception.Message);
+                return false;
+            }
+        }
+
         internal static string GetPresetPath(string fileName)
         {
             string assetsPath = Application.dataPath;

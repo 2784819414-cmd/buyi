@@ -366,8 +366,8 @@ namespace NtingCampus.Gameplay.Characters
                         npc,
                         profile != null ? profile.StudentClassroomId : string.Empty,
                         profile != null ? profile.StudentDeskKey : string.Empty,
-                        profile != null ? profile.StudentDeskPosition : Vector3.zero,
                         targetRule.FacilityTypes,
+                        targetRule.NavigationFacilityTypes,
                         out target);
 
                 case CampusNpcEcologyTargetKind.TeacherPodium:
@@ -375,8 +375,8 @@ namespace NtingCampus.Gameplay.Characters
                         npc,
                         profile != null ? profile.TeacherClassroomId : string.Empty,
                         profile != null ? profile.TeacherPodiumKey : string.Empty,
-                        profile != null ? profile.TeacherPodiumPosition : Vector3.zero,
                         targetRule.FacilityTypes,
+                        targetRule.NavigationFacilityTypes,
                         out target);
 
                 case CampusNpcEcologyTargetKind.OfficeDesk:
@@ -384,8 +384,8 @@ namespace NtingCampus.Gameplay.Characters
                         npc,
                         profile != null ? profile.OfficeRoomId : string.Empty,
                         profile != null ? profile.OfficeDeskKey : string.Empty,
-                        profile != null ? profile.OfficeDeskPosition : Vector3.zero,
                         targetRule.FacilityTypes,
+                        targetRule.NavigationFacilityTypes,
                         out target);
 
                 case CampusNpcEcologyTargetKind.PrimaryWorkstation:
@@ -393,8 +393,8 @@ namespace NtingCampus.Gameplay.Characters
                         npc,
                         profile != null ? profile.WorkRoomId : string.Empty,
                         profile != null ? profile.PrimaryWorkstationKey : string.Empty,
-                        profile != null ? profile.PrimaryWorkstationPosition : Vector3.zero,
                         targetRule.FacilityTypes,
+                        targetRule.NavigationFacilityTypes,
                         out target);
 
                 case CampusNpcEcologyTargetKind.Dorm:
@@ -467,8 +467,8 @@ namespace NtingCampus.Gameplay.Characters
             CampusNpcAiRuntime npc,
             string roomId,
             string facilityKey,
-            Vector3 fallbackPosition,
             CampusFacilityType[] facilityTypes,
+            CampusFacilityType[] navigationFacilityTypes,
             out ResolvedTarget target)
         {
             target = default;
@@ -488,27 +488,55 @@ namespace NtingCampus.Gameplay.Characters
                     facilityKey,
                     out CampusGameplayRoom.FacilityRecord record))
             {
+                if (!TryResolveNavigationFacility(room, record, navigationFacilityTypes, out CampusGameplayRoom.FacilityRecord navigationRecord))
+                {
+                    return false;
+                }
+
                 target = CreateResolvedTarget(
                     record.PlacedObject,
-                    CampusNpcFacilitySelector.PositionOf(record),
+                    CampusNpcFacilityApproachResolver.ResolveApproachPosition(npc, room, navigationRecord),
                     room.RoomId,
-                    RequiresExactAssignedFacilityNavigation(record),
+                    CampusNpcFacilityApproachResolver.RequiresExactNavigation(navigationRecord),
                     CampusNpcFacilitySelector.KeyFor(room, record));
                 return true;
             }
 
-            // Assigned facility fallback still requires an explicit cached position.
-            if (fallbackPosition != Vector3.zero)
+            return false;
+        }
+
+        private static bool TryResolveNavigationFacility(
+            CampusGameplayRoom room,
+            CampusGameplayRoom.FacilityRecord assignedRecord,
+            CampusFacilityType[] navigationFacilityTypes,
+            out CampusGameplayRoom.FacilityRecord navigationRecord)
+        {
+            navigationRecord = assignedRecord;
+            if (room == null ||
+                assignedRecord == null ||
+                navigationFacilityTypes == null ||
+                navigationFacilityTypes.Length == 0)
             {
-                target = CreateResolvedTarget(
-                    null,
-                    fallbackPosition,
-                    roomId,
-                    false,
-                    NormalizeId(facilityKey));
+                return assignedRecord != null;
+            }
+
+            string assignedKey = CampusNpcFacilitySelector.KeyFor(room, assignedRecord);
+            IReadOnlyList<CampusGameplayRoom.FacilityRecord> facilities = room.Facilities;
+            for (int i = 0; i < facilities.Count; i++)
+            {
+                CampusGameplayRoom.FacilityRecord candidate = facilities[i];
+                if (candidate == null ||
+                    !MatchesFacilityType(candidate.FacilityType, navigationFacilityTypes) ||
+                    !MatchesOwnerFacilityId(candidate.OwnerFacilityId, assignedKey, assignedRecord.FacilityId))
+                {
+                    continue;
+                }
+
+                navigationRecord = candidate;
                 return true;
             }
 
+            navigationRecord = null;
             return false;
         }
 
@@ -580,69 +608,14 @@ namespace NtingCampus.Gameplay.Characters
 
             Vector3Int itemCell = floor.Grid.WorldToCell(item.transform.position);
             itemCell.z = 0;
-            Vector3Int actorCell = npc != null && npc.Runtime != null
-                ? floor.Grid.WorldToCell(npc.Runtime.transform.position)
-                : itemCell;
-            actorCell.z = 0;
-
-            if (TryFindDroppedItemApproachCell(floor, itemCell, actorCell, out Vector3Int approachCell))
-            {
-                Vector3 position = floor.Grid.GetCellCenterWorld(approachCell);
-                position.z = item.transform.position.z;
-                return position;
-            }
-
-            return item.transform.position;
-        }
-
-        private static bool TryFindDroppedItemApproachCell(
-            CampusFloorRoot floor,
-            Vector3Int itemCell,
-            Vector3Int actorCell,
-            out Vector3Int approachCell)
-        {
-            approachCell = itemCell;
-            float bestScore = float.PositiveInfinity;
-            for (int radius = 0; radius <= 2; radius++)
-            {
-                for (int y = itemCell.y - radius; y <= itemCell.y + radius; y++)
-                {
-                    for (int x = itemCell.x - radius; x <= itemCell.x + radius; x++)
-                    {
-                        if (radius > 0 &&
-                            Mathf.Abs(x - itemCell.x) != radius &&
-                            Mathf.Abs(y - itemCell.y) != radius)
-                        {
-                            continue;
-                        }
-
-                        Vector3Int cell = new Vector3Int(x, y, 0);
-                        if (!CampusGridNavigationAgent.IsNavigationCellWalkable(floor, cell))
-                        {
-                            continue;
-                        }
-
-                        float score = Mathf.Abs(cell.x - itemCell.x) * 3f +
-                                      Mathf.Abs(cell.y - itemCell.y) * 3f +
-                                      Mathf.Abs(cell.x - actorCell.x) +
-                                      Mathf.Abs(cell.y - actorCell.y);
-                        if (score >= bestScore)
-                        {
-                            continue;
-                        }
-
-                        approachCell = cell;
-                        bestScore = score;
-                    }
-                }
-
-                if (bestScore < float.PositiveInfinity)
-                {
-                    return true;
-                }
-            }
-
-            return false;
+            return CampusNpcFacilityApproachResolver.ResolveCellApproachPosition(
+                npc,
+                floor,
+                null,
+                itemCell,
+                item.transform.position.z,
+                2,
+                false);
         }
 
         private static bool MatchesDroppedStorageItemFilter(
@@ -707,25 +680,6 @@ namespace NtingCampus.Gameplay.Characters
             return string.IsNullOrEmpty(instanceId)
                 ? "dropped_item:" + NormalizeId(item.DefinitionId)
                 : "dropped_item:" + instanceId;
-        }
-
-        private static bool RequiresExactAssignedFacilityNavigation(CampusGameplayRoom.FacilityRecord record)
-        {
-            if (record == null)
-            {
-                return false;
-            }
-
-            switch (record.FacilityType)
-            {
-                case CampusFacilityType.WorkerStandPoint:
-                case CampusFacilityType.WaitingPoint:
-                case CampusFacilityType.PickupPoint:
-                case CampusFacilityType.DropPoint:
-                    return true;
-                default:
-                    return false;
-            }
         }
 
         private static bool TryResolveTargetRoom(
@@ -901,7 +855,7 @@ namespace NtingCampus.Gameplay.Characters
                 candidates[ChooseFacilityTargetIndex(npc, entry, candidates.Count)];
             target = CreateResolvedTarget(
                 selectedFacility.PlacedObject,
-                CampusNpcFacilitySelector.PositionOf(selectedFacility),
+                CampusNpcFacilityApproachResolver.ResolveApproachPosition(npc, room, selectedFacility),
                 room.RoomId,
                 false,
                 CampusNpcFacilitySelector.KeyFor(room, selectedFacility));
@@ -963,7 +917,7 @@ namespace NtingCampus.Gameplay.Characters
                 station.InteractionFacility != null ? station.InteractionFacility.PlacedObject : null,
                 CampusServiceStation.PositionOf(navigationRecord),
                 station.Room.RoomId,
-                RequiresExactAssignedFacilityNavigation(navigationRecord),
+                CampusNpcFacilityApproachResolver.RequiresExactNavigation(navigationRecord),
                 targetId);
         }
 
@@ -1039,6 +993,41 @@ namespace NtingCampus.Gameplay.Characters
             }
 
             return ContainsId(objectIds, objectId);
+        }
+
+        private static bool MatchesFacilityType(
+            CampusFacilityType type,
+            CampusFacilityType[] allowedTypes)
+        {
+            if (allowedTypes == null || allowedTypes.Length == 0)
+            {
+                return true;
+            }
+
+            for (int i = 0; i < allowedTypes.Length; i++)
+            {
+                if (type == allowedTypes[i])
+                {
+                    return true;
+                }
+            }
+
+            return false;
+        }
+
+        private static bool MatchesOwnerFacilityId(
+            string ownerFacilityId,
+            string assignedKey,
+            string assignedRecordId)
+        {
+            string normalizedOwner = NormalizeId(ownerFacilityId);
+            if (string.IsNullOrEmpty(normalizedOwner))
+            {
+                return false;
+            }
+
+            return string.Equals(normalizedOwner, NormalizeId(assignedKey), StringComparison.OrdinalIgnoreCase) ||
+                   string.Equals(normalizedOwner, NormalizeId(assignedRecordId), StringComparison.OrdinalIgnoreCase);
         }
 
         private static int ChooseFacilityTargetIndex(

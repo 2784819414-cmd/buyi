@@ -1,4 +1,4 @@
-﻿%YAML 1.1
+%YAML 1.1
 %TAG !u! tag:unity3d.com,2011:
 --- !u!114 &11400000
 MonoBehaviour:
@@ -17,21 +17,35 @@ MonoBehaviour:
   LocalizedDisplayName:
     chinese: "\u725B\u5976\u76D2"
     english: Milk Carton
+    traditionalChinese: 
+    russian: 
+    japanese: 
   Width: 1
   Height: 2
+  StackGroupId: 
+  MaxStackSize: 1
   Weight: 0.4
   Price: 10
+  SmellLevel: 0
+  EvidenceWeight: 0
+  CanPrankUse: 0
   Description: "\u5E38\u89C1\u7684\u5C0F\u76D2\u88C5\u7EAF\u725B\u5976\u3002"
   LocalizedDescription:
     chinese: "\u5E38\u89C1\u7684\u5C0F\u76D2\u88C5\u7EAF\u725B\u5976\u3002"
     english: A common small carton of plain milk.
+    traditionalChinese: 
+    russian: 
+    japanese: 
   ThemeColor: {r: 0.96, g: 0.94, b: 0.91, a: 1}
   Icon: {fileID: 0}
   IsUsable: 1
   UseActionId: campus.item.consume_food
   ConsumeOnUse: 1
   StaminaRestore: 16
-  UseText: 喝掉
+  UseText: "\u559D\u6389"
   LocalizedUseText:
-    chinese: 喝掉
+    chinese: "\u559D\u6389"
     english: Drink the Milk Carton.
+    traditionalChinese: 
+    russian: 
+    japanese: 

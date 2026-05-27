@@ -60,64 +60,6 @@ namespace NtingCampus.Gameplay.Characters
             return CampusNpcStableIds.PositiveModulo(CampusNpcStableIds.Hash(data.Id), Math.Max(1, peers.Count));
         }
 
-        public static int StudentIndexInClassroom(
-            CampusCharacterRuntime runtime,
-            CampusRosterService rosterService,
-            CampusWorldService worldService,
-            List<CampusGameplayRoom> classrooms,
-            CampusGameplayRoom classroom)
-        {
-            if (runtime == null || runtime.Data == null || rosterService == null || classroom == null)
-            {
-                return 0;
-            }
-
-            List<string> studentIds = new List<string>();
-            IReadOnlyList<CampusCharacterRuntime> peers = rosterService.Index.GetByRole(CampusCharacterRole.Student);
-            for (int i = 0; i < peers.Count; i++)
-            {
-                CampusCharacterRuntime peer = peers[i];
-                if (peer == null || peer.Data == null || peer.Data.Role != CampusCharacterRole.Student)
-                {
-                    continue;
-                }
-
-                CampusGameplayRoom peerClassroom = ResolveStudentClassroom(peer, worldService, classrooms);
-                if (CampusNpcRoomSelector.SameRoom(peerClassroom, classroom))
-                {
-                    studentIds.Add(CampusNpcStableIds.CharacterKey(peer));
-                }
-            }
-
-            studentIds.Sort(StringComparer.OrdinalIgnoreCase);
-            string targetId = CampusNpcStableIds.CharacterKey(runtime);
-            int index = studentIds.IndexOf(targetId);
-            return index >= 0 ? index : CampusNpcStableIds.PositiveModulo(CampusNpcStableIds.Hash(targetId), Math.Max(1, studentIds.Count));
-        }
-
-        public static bool TryResolveUniqueStudentDesk(
-            CampusCharacterRuntime runtime,
-            CampusRosterService rosterService,
-            CampusWorldService worldService,
-            List<CampusGameplayRoom> classrooms,
-            CampusGameplayRoom classroom,
-            out CampusGameplayRoom.FacilityRecord record)
-        {
-            return TryResolveUniqueFacility(
-                runtime,
-                rosterService,
-                classroom,
-                CampusNpcFacilityTypeSets.Get(CampusNpcFacilityTypeSets.StudentDesks),
-                peer => peer != null &&
-                        peer.Data != null &&
-                        peer.Data.Role == CampusCharacterRole.Student &&
-                        CampusNpcRoomSelector.SameRoom(ResolveStudentClassroom(peer, worldService, classrooms), classroom),
-                peer => peer != null && peer.Data != null && peer.Data.Assignments != null
-                    ? peer.Data.Assignments.StudentDeskId
-                    : string.Empty,
-                out record);
-        }
-
         public static int TeacherIndexInOffice(
             CampusCharacterRuntime runtime,
             CampusRosterService rosterService,
@@ -337,28 +279,6 @@ namespace NtingCampus.Gameplay.Characters
 
             string targetId = CampusNpcStableIds.CharacterKey(target);
             return finalFacilityByOwner.TryGetValue(targetId, out record) && record != null;
-        }
-
-        private static CampusGameplayRoom ResolveStudentClassroom(
-            CampusCharacterRuntime runtime,
-            CampusWorldService worldService,
-            List<CampusGameplayRoom> classrooms)
-        {
-            CampusCharacterData data = runtime != null ? runtime.Data : null;
-            CampusCharacterAssignmentData assignments = data != null ? data.Assignments : null;
-            CampusGameplayRoom assigned = CampusNpcRoomSelector.ResolveAssigned(
-                worldService,
-                assignments != null ? assignments.StudentClassroomId : string.Empty,
-                CampusRoomType.Classroom);
-            if (assigned != null)
-            {
-                return assigned;
-            }
-
-            string key = data != null && !string.IsNullOrWhiteSpace(data.ClassId)
-                ? data.ClassId
-                : data != null ? data.Id : string.Empty;
-            return CampusNpcRoomSelector.Choose(classrooms, key, 0);
         }
 
         private static CampusGameplayRoom ResolveTeacherOffice(

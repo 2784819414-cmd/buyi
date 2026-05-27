@@ -136,7 +136,7 @@
                 "Rotation180SpritePath": "",
                 "OverrideRotation270Sprite": false,
                 "Rotation270SpritePath": "",
-                "CanStackOnPlacedObjects": true,
+                "CanStackOnPlacedObjects": false,
                 "IsStorageContainer": false,
                 "InteractionPresetEid": "",
                 "StorageSize": {
@@ -322,7 +322,7 @@
                 "Rotation270SpritePath": "",
                 "CanStackOnPlacedObjects": false,
                 "IsStorageContainer": true,
-                "InteractionPresetEid": "",
+                "InteractionPresetEid": "object.retail_shelf.container",
                 "StorageSize": {
                     "x": 6,
                     "y": 4
@@ -413,7 +413,7 @@
                 "Rotation270SpritePath": "",
                 "CanStackOnPlacedObjects": false,
                 "IsStorageContainer": false,
-                "InteractionPresetEid": "",
+                "InteractionPresetEid": "object.retail_shelf.display",
                 "StorageSize": {
                     "x": 4,
                     "y": 4
@@ -596,7 +596,7 @@
                 "Rotation270SpritePath": "ObjectSettings/bookshelf_2x1/rotation_270.png",
                 "CanStackOnPlacedObjects": false,
                 "IsStorageContainer": true,
-                "InteractionPresetEid": "",
+                "InteractionPresetEid": "object.v005.library_bookshelf",
                 "StorageSize": {
                     "x": 6,
                     "y": 4
@@ -1249,9 +1249,9 @@
                 "japanese": ""
             },
             "Settings": {
-                "ObjectId": "CampusPrankSpot_StealFriedChicken",
+                "ObjectId": "CanteenBurgerChickenContainer_2x1",
                 "TypeId": "GoodsShelf",
-                "DisplayNameOverride": "偷炸鸡点",
+                "DisplayNameOverride": "Burger and Fried Chicken Container",
                 "LocalizedDisplayNameOverride": {
                     "chinese": "汉堡炸鸡容器",
                     "english": "Burger and Fried Chicken Container",
@@ -1280,7 +1280,7 @@
                 "Rotation180SpritePath": "",
                 "OverrideRotation270Sprite": false,
                 "Rotation270SpritePath": "",
-                "CanStackOnPlacedObjects": false,
+                "CanStackOnPlacedObjects": true,
                 "IsStorageContainer": true,
                 "InteractionPresetEid": "object.v005.canteen_burger_chicken_container",
                 "StorageSize": {
@@ -1380,9 +1380,9 @@
                 "Rotation180SpritePath": "",
                 "OverrideRotation270Sprite": false,
                 "Rotation270SpritePath": "",
-                "CanStackOnPlacedObjects": false,
+                "CanStackOnPlacedObjects": true,
                 "IsStorageContainer": true,
-                "InteractionPresetEid": "",
+                "InteractionPresetEid": "object.v005.canteen_oden_container",
                 "StorageSize": {
                     "x": 6,
                     "y": 6
@@ -2986,97 +2986,6 @@
             },
             "LegacyObjectIds": [
                 "CampusPrankSpot_PassNote"
-            ]
-        },
-        {
-            "ObjectId": "CampusPrankSpot_StealFriedChicken",
-            "SourceObjectId": "CanteenBurgerChickenContainer_2x1",
-            "ImagePath": "Objects/CanteenBurgerChickenContainer_2x1.png",
-            "GeneratedVisualKind": "",
-            "DisplayName": {
-                "chinese": "偷炸鸡点",
-                "english": "Fried Chicken Theft Spot",
-                "traditionalChinese": "",
-                "russian": "",
-                "japanese": ""
-            },
-            "Settings": {
-                "ObjectId": "CampusPrankSpot_StealFriedChicken",
-                "TypeId": "GoodsShelf",
-                "DisplayNameOverride": "偷炸鸡点",
-                "LocalizedDisplayNameOverride": {
-                    "chinese": "偷炸鸡点",
-                    "english": "Fried Chicken Theft Spot",
-                    "traditionalChinese": "",
-                    "russian": "",
-                    "japanese": ""
-                },
-                "OverrideFootprintSize": true,
-                "FootprintSize": {
-                    "x": 2,
-                    "y": 1
-                },
-                "VisualScale": {
-                    "x": 1.0,
-                    "y": 1.0
-                },
-                "LockVisualScaleAspect": true,
-                "IsWallMounted": false,
-                "OverrideAllowRotation": false,
-                "AllowRotation": false,
-                "OverrideRotation0Sprite": false,
-                "Rotation0SpritePath": "",
-                "OverrideRotation90Sprite": false,
-                "Rotation90SpritePath": "",
-                "OverrideRotation180Sprite": false,
-                "Rotation180SpritePath": "",
-                "OverrideRotation270Sprite": false,
-                "Rotation270SpritePath": "",
-                "CanStackOnPlacedObjects": false,
-                "IsStorageContainer": true,
-                "InteractionPresetEid": "object.v005.canteen_burger_chicken_container",
-                "StorageSize": {
-                    "x": 6,
-                    "y": 8
-                },
-                "StorageMaxWeight": 20.0,
-                "UseCustomInteractionAnchor": false,
-                "CustomInteractionAnchorLocalPosition": {
-                    "x": 0.0,
-                    "y": 0.0,
-                    "z": 0.0
-                },
-                "CustomInteractionAnchorRadius": 0.6499999761581421,
-                "CustomInteractionPromptText": "",
-                "LocalizedCustomInteractionPromptText": {
-                    "chinese": "",
-                    "english": "",
-                    "traditionalChinese": "",
-                    "russian": "",
-                    "japanese": ""
-                },
-                "CustomInteractionAnchors": [],
-                "RetailShelf": {
-                    "Enabled": false,
-                    "ShelfMode": 0,
-                    "ItemDefinitionId": "",
-                    "StockCount": 8,
-                    "DisplaySlotCount": 4,
-                    "AutoRestock": true
-                },
-                "ProtectedStockContainer": {
-                    "Enabled": false,
-                    "ContainerId": "",
-                    "OwnerId": "",
-                    "OwnerRole": "Campus",
-                    "AllowTakingContents": true,
-                    "SuspicionRisk": 4,
-                    "AutoRestock": true,
-                    "StockItems": []
-                }
-            },
-            "LegacyObjectIds": [
-                "CampusPrankSpot_StealFriedChicken"
             ]
         },
         {

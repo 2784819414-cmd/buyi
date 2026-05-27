@@ -134,18 +134,26 @@ namespace NtingCampus.Gameplay.Services
         ItemPrice = 1
     }
 
+    internal enum CampusServiceStationClearanceScope
+    {
+        StationRoom = 0,
+        AllPending = 1
+    }
+
     internal sealed class CampusServiceStationClearanceDefinition
     {
         public static readonly CampusServiceStationClearanceDefinition None =
             new CampusServiceStationClearanceDefinition(
                 CampusServiceStationClearanceMode.None,
                 CampusServiceStationClearancePriceMode.Free,
+                CampusServiceStationClearanceScope.StationRoom,
                 default,
                 default,
                 default);
 
         public readonly CampusServiceStationClearanceMode Mode;
         public readonly CampusServiceStationClearancePriceMode PriceMode;
+        public readonly CampusServiceStationClearanceScope Scope;
         public readonly CampusLocalizedText CompleteText;
         public readonly CampusLocalizedText NoPendingItemsText;
         public readonly CampusLocalizedText InsufficientFundsText;
@@ -153,12 +161,14 @@ namespace NtingCampus.Gameplay.Services
         public CampusServiceStationClearanceDefinition(
             CampusServiceStationClearanceMode mode,
             CampusServiceStationClearancePriceMode priceMode,
+            CampusServiceStationClearanceScope scope,
             CampusLocalizedText completeText,
             CampusLocalizedText noPendingItemsText,
             CampusLocalizedText insufficientFundsText)
         {
             Mode = mode;
             PriceMode = priceMode;
+            Scope = scope;
             CompleteText = completeText;
             NoPendingItemsText = noPendingItemsText;
             InsufficientFundsText = insufficientFundsText;
@@ -378,9 +388,14 @@ namespace NtingCampus.Gameplay.Services
                 Enum.TryParse(record.PriceMode, true, out CampusServiceStationClearancePriceMode parsedPriceMode)
                     ? parsedPriceMode
                     : CampusServiceStationClearancePriceMode.Free;
+            CampusServiceStationClearanceScope scope =
+                Enum.TryParse(record.Scope, true, out CampusServiceStationClearanceScope parsedScope)
+                    ? parsedScope
+                    : CampusServiceStationClearanceScope.StationRoom;
             return new CampusServiceStationClearanceDefinition(
                 mode,
                 priceMode,
+                scope,
                 record.CompleteText,
                 record.NoPendingItemsText,
                 record.InsufficientFundsText);
@@ -494,6 +509,7 @@ namespace NtingCampus.Gameplay.Services
         {
             public string Mode = string.Empty;
             public string PriceMode = string.Empty;
+            public string Scope = string.Empty;
             public CampusLocalizedText CompleteText = default;
             public CampusLocalizedText NoPendingItemsText = default;
             public CampusLocalizedText InsufficientFundsText = default;

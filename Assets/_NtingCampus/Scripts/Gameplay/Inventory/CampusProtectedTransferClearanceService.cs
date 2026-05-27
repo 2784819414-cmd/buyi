@@ -30,19 +30,32 @@ namespace NtingCampus.Gameplay.Inventory
 
     internal static class CampusProtectedTransferClearanceService
     {
+        private readonly struct ClearanceSourceScope
+        {
+            public ClearanceSourceScope(string roomId, CampusRoomType roomType)
+            {
+                RoomId = NormalizeId(roomId);
+                LegacyRoomTypeId = roomType == CampusRoomType.Unknown
+                    ? string.Empty
+                    : roomType.ToString();
+            }
+
+            public string RoomId { get; }
+            public string LegacyRoomTypeId { get; }
+        }
+
         public static CampusProtectedTransferClearanceSummary BuildSummary(
             CampusCharacterRuntime actor,
             string sourceRoomId,
             bool chargeItemPrice)
         {
             CampusCharacterInventory inventory = CampusCharacterInventoryService.GetOrCreateInventory(actor, false);
-            return BuildSummary(inventory, sourceRoomId, true, chargeItemPrice);
+            return BuildSummary(inventory, new ClearanceSourceScope(sourceRoomId, CampusRoomType.Unknown), true, chargeItemPrice);
         }
 
         public static bool TryClearPendingTransfers(
             CampusCharacterRuntime actor,
-            Component actionSource,
-            CampusServiceStationClearanceDefinition clearance,
+            CampusServiceStation station,
             out string message)
         {
             message = string.Empty;
@@ -51,7 +64,7 @@ namespace NtingCampus.Gameplay.Inventory
                 return false;
             }
 
-            clearance ??= CampusServiceStationClearanceDefinition.None;
+            CampusServiceStationClearanceDefinition clearance = station.Clearance ?? CampusServiceStationClearanceDefinition.None;
             if (!clearance.ClearsPendingProtectedTransfers)
             {
                 message = CampusProtectedTransferClearanceTextCatalog.Get(
@@ -59,11 +72,12 @@ namespace NtingCampus.Gameplay.Inventory
                 return false;
             }
 
-            string sourceRoomId = ResolveSourceRoomId(actor, actionSource);
+            ClearanceSourceScope sourceScope = ResolveSourceScope(station);
             bool chargeItemPrice = clearance.PriceMode == CampusServiceStationClearancePriceMode.ItemPrice;
+            bool filterBySourceRoom = clearance.Scope == CampusServiceStationClearanceScope.StationRoom;
             CampusCharacterInventory inventory = CampusCharacterInventoryService.GetOrCreateInventory(actor, false);
             CampusProtectedTransferClearanceSummary summary =
-                BuildSummary(inventory, sourceRoomId, true, chargeItemPrice);
+                BuildSummary(inventory, sourceScope, filterBySourceRoom, chargeItemPrice);
             if (!summary.HasPendingItems)
             {
                 message = ResolveText(
@@ -86,9 +100,9 @@ namespace NtingCampus.Gameplay.Inventory
                 return false;
             }
 
-            ClearPendingItems(inventory.Hands, actor.CharacterId, sourceRoomId);
-            ClearPendingItems(inventory.Pockets, actor.CharacterId, sourceRoomId);
-            ClearPendingItem(inventory.Backpack, actor.CharacterId, sourceRoomId);
+            ClearPendingItems(inventory.Hands, actor.CharacterId, sourceScope, filterBySourceRoom);
+            ClearPendingItems(inventory.Pockets, actor.CharacterId, sourceScope, filterBySourceRoom);
+            ClearPendingItem(inventory.Backpack, actor.CharacterId, sourceScope, filterBySourceRoom);
 
             if (actor.Data != null)
             {
@@ -105,9 +119,45 @@ namespace NtingCampus.Gameplay.Inventory
             return true;
         }
 
+        public static bool TryResolveClearanceStation(
+            string actionId,
+            UnityEngine.Object source,
+            out CampusServiceStation station)
+        {
+            station = default;
+            return CampusServiceStationRuntimeAvailability.TryResolveActionStation(
+                       actionId,
+                       source,
+                       out station) &&
+                   station.Clearance.ClearsPendingProtectedTransfers;
+        }
+
+        public static bool TryRequireClearanceStationAvailable(
+            string actionId,
+            UnityEngine.Object source,
+            out CampusServiceStation station,
+            out string unavailableMessage)
+        {
+            unavailableMessage = string.Empty;
+            if (!TryResolveClearanceStation(actionId, source, out station))
+            {
+                unavailableMessage = CampusProtectedTransferClearanceTextCatalog.Get(
+                    CampusProtectedTransferClearanceTextId.UnsupportedStation);
+                return false;
+            }
+
+            if (CampusServiceStationRuntimeAvailability.CanServeNow(station))
+            {
+                return true;
+            }
+
+            unavailableMessage = CampusServiceStationRuntimeAvailability.ResolveUnavailableMessage(station);
+            return false;
+        }
+
         private static CampusProtectedTransferClearanceSummary BuildSummary(
             CampusCharacterInventory inventory,
-            string sourceRoomId,
+            ClearanceSourceScope sourceScope,
             bool filterBySourceRoom,
             bool chargeItemPrice)
         {
@@ -116,18 +166,17 @@ namespace NtingCampus.Gameplay.Inventory
                 return default;
             }
 
-            string normalizedSourceRoomId = NormalizeId(sourceRoomId);
             int pendingItemCount = 0;
             int totalPrice = 0;
-            AccumulatePendingSummary(inventory.Hands, normalizedSourceRoomId, filterBySourceRoom, chargeItemPrice, ref pendingItemCount, ref totalPrice);
-            AccumulatePendingSummary(inventory.Pockets, normalizedSourceRoomId, filterBySourceRoom, chargeItemPrice, ref pendingItemCount, ref totalPrice);
-            AccumulatePendingSummary(inventory.Backpack, normalizedSourceRoomId, filterBySourceRoom, chargeItemPrice, ref pendingItemCount, ref totalPrice);
+            AccumulatePendingSummary(inventory.Hands, sourceScope, filterBySourceRoom, chargeItemPrice, ref pendingItemCount, ref totalPrice);
+            AccumulatePendingSummary(inventory.Pockets, sourceScope, filterBySourceRoom, chargeItemPrice, ref pendingItemCount, ref totalPrice);
+            AccumulatePendingSummary(inventory.Backpack, sourceScope, filterBySourceRoom, chargeItemPrice, ref pendingItemCount, ref totalPrice);
             return new CampusProtectedTransferClearanceSummary(pendingItemCount, totalPrice);
         }
 
         private static void AccumulatePendingSummary(
             StorageContainerModel[] containers,
-            string sourceRoomId,
+            ClearanceSourceScope sourceScope,
             bool filterBySourceRoom,
             bool chargeItemPrice,
             ref int pendingItemCount,
@@ -140,13 +189,13 @@ namespace NtingCampus.Gameplay.Inventory
 
             for (int i = 0; i < containers.Length; i++)
             {
-                AccumulatePendingSummary(containers[i], sourceRoomId, filterBySourceRoom, chargeItemPrice, ref pendingItemCount, ref totalPrice);
+                AccumulatePendingSummary(containers[i], sourceScope, filterBySourceRoom, chargeItemPrice, ref pendingItemCount, ref totalPrice);
             }
         }
 
         private static void AccumulatePendingSummary(
             StorageContainerModel container,
-            string sourceRoomId,
+            ClearanceSourceScope sourceScope,
             bool filterBySourceRoom,
             bool chargeItemPrice,
             ref int pendingItemCount,
@@ -162,7 +211,7 @@ namespace NtingCampus.Gameplay.Inventory
                 StorageItemModel item = container.Items[i];
                 if (item == null ||
                     !item.IsPendingProtectedTransfer ||
-                    !MatchesSourceRoom(item, sourceRoomId, filterBySourceRoom))
+                    !MatchesSourceRoom(item, sourceScope, filterBySourceRoom))
                 {
                     continue;
                 }
@@ -175,7 +224,11 @@ namespace NtingCampus.Gameplay.Inventory
             }
         }
 
-        private static int ClearPendingItems(StorageContainerModel[] containers, string actorId, string sourceRoomId)
+        private static int ClearPendingItems(
+            StorageContainerModel[] containers,
+            string actorId,
+            ClearanceSourceScope sourceScope,
+            bool filterBySourceRoom)
         {
             int clearedCount = 0;
             if (containers == null)
@@ -185,13 +238,17 @@ namespace NtingCampus.Gameplay.Inventory
 
             for (int i = 0; i < containers.Length; i++)
             {
-                clearedCount += ClearPendingItem(containers[i], actorId, sourceRoomId);
+                clearedCount += ClearPendingItem(containers[i], actorId, sourceScope, filterBySourceRoom);
             }
 
             return clearedCount;
         }
 
-        private static int ClearPendingItem(StorageContainerModel container, string actorId, string sourceRoomId)
+        private static int ClearPendingItem(
+            StorageContainerModel container,
+            string actorId,
+            ClearanceSourceScope sourceScope,
+            bool filterBySourceRoom)
         {
             if (container == null || container.Items == null)
             {
@@ -204,7 +261,7 @@ namespace NtingCampus.Gameplay.Inventory
                 StorageItemModel item = container.Items[i];
                 if (item == null ||
                     !item.IsPendingProtectedTransfer ||
-                    !MatchesSourceRoom(item, sourceRoomId, true))
+                    !MatchesSourceRoom(item, sourceScope, filterBySourceRoom))
                 {
                     continue;
                 }
@@ -216,50 +273,45 @@ namespace NtingCampus.Gameplay.Inventory
             return clearedCount;
         }
 
-        private static bool MatchesSourceRoom(StorageItemModel item, string sourceRoomId, bool filterBySourceRoom)
+        private static bool MatchesSourceRoom(StorageItemModel item, ClearanceSourceScope sourceScope, bool filterBySourceRoom)
         {
             if (item == null)
             {
                 return false;
             }
 
-            if (!filterBySourceRoom || string.IsNullOrEmpty(sourceRoomId))
+            if (!filterBySourceRoom)
             {
                 return true;
             }
 
-            return string.Equals(
-                item.SourceRoomId ?? string.Empty,
-                sourceRoomId,
-                System.StringComparison.OrdinalIgnoreCase);
+            if (string.IsNullOrEmpty(sourceScope.RoomId) &&
+                string.IsNullOrEmpty(sourceScope.LegacyRoomTypeId))
+            {
+                return true;
+            }
+
+            string itemSourceRoomId = NormalizeId(item.SourceRoomId);
+            if (string.Equals(itemSourceRoomId, sourceScope.RoomId, System.StringComparison.OrdinalIgnoreCase))
+            {
+                return true;
+            }
+
+            // Migration support for older pending items that stored a room type id
+            // such as "RetailArea" or "Library" before stable room ids owned clearance.
+            return !string.IsNullOrEmpty(sourceScope.LegacyRoomTypeId) &&
+                   string.Equals(
+                       itemSourceRoomId,
+                       sourceScope.LegacyRoomTypeId,
+                       System.StringComparison.OrdinalIgnoreCase);
         }
 
-        public static string ResolveSourceRoomId(CampusCharacterRuntime actor, Component source)
+        private static ClearanceSourceScope ResolveSourceScope(CampusServiceStation station)
         {
-            CampusGameBootstrap bootstrap = CampusGameBootstrap.Instance;
-            CampusWorldService worldService = bootstrap != null ? bootstrap.WorldService : null;
-            CampusPlacedObject placedObject = source != null ? source.GetComponentInParent<CampusPlacedObject>() : null;
-            if (worldService != null && placedObject != null)
-            {
-                CampusGameplayRoom sourceRoom = worldService.FindRoomForPosition(
-                    placedObject.FloorIndex,
-                    placedObject.transform.position);
-                if (sourceRoom != null)
-                {
-                    return sourceRoom.RoomId;
-                }
-            }
-
-            if (worldService != null && actor != null)
-            {
-                CampusGameplayRoom actorRoom = worldService.FindRoomForRuntime(actor);
-                if (actorRoom != null)
-                {
-                    return actorRoom.RoomId;
-                }
-            }
-
-            return actor != null && actor.Data != null ? actor.Data.CurrentRoomId : string.Empty;
+            CampusGameplayRoom room = station.Room;
+            return new ClearanceSourceScope(
+                room != null ? room.RoomId : string.Empty,
+                room != null ? room.RoomType : CampusRoomType.Unknown);
         }
 
         private static bool TrySpend(CampusCharacterRuntime actor, int totalPrice)
@@ -308,38 +360,33 @@ namespace NtingCampus.Gameplay.Inventory
         public bool TryExecute(CampusCharacterActionContext context, out StorageTransferResult result)
         {
             result = StorageTransferResult.Fail(string.Empty);
-            if (!CampusCharacterActionUtility.IdEquals(
-                    context.ActionId,
-                    CampusProtectedTransferClearanceActionIds.ClearPending) ||
-                context.Actor == null)
+            if (context.Actor == null)
             {
                 return false;
             }
 
             Component source = ResolveComponent(context.Target);
-            if (!CampusServiceStationRuntimeAvailability.TryRequireActionSourceAvailable(
+            if (!CampusProtectedTransferClearanceService.TryResolveClearanceStation(
                     context.ActionId,
                     source,
-                    out string unavailableMessage))
+                    out _))
+            {
+                return false;
+            }
+
+            if (!CampusProtectedTransferClearanceService.TryRequireClearanceStationAvailable(
+                context.ActionId,
+                source,
+                out CampusServiceStation station,
+                out string unavailableMessage))
             {
                 result = StorageTransferResult.Fail(unavailableMessage);
                 return true;
             }
 
-            if (!CampusServiceStationRuntimeAvailability.TryResolveActionStation(
-                    context.ActionId,
-                    source,
-                    out CampusServiceStation station))
-            {
-                result = StorageTransferResult.Fail(CampusProtectedTransferClearanceTextCatalog.Get(
-                    CampusProtectedTransferClearanceTextId.UnsupportedStation));
-                return true;
-            }
-
             bool succeeded = CampusProtectedTransferClearanceService.TryClearPendingTransfers(
                 context.Actor,
-                source,
-                station.Clearance,
+                station,
                 out string message);
             result = succeeded
                 ? CampusCharacterActionUtility.Success(message)
@@ -370,9 +417,10 @@ namespace NtingCampus.Gameplay.Inventory
         public bool TryHandle(CampusInteractionActionContext context, out string message)
         {
             message = string.Empty;
-            if (!CampusInteractionActionIds.Equals(
+            if (!CampusProtectedTransferClearanceService.TryResolveClearanceStation(
                     context.ActionId,
-                    CampusProtectedTransferClearanceActionIds.ClearPending))
+                    context.SourceObject,
+                    out _))
             {
                 return false;
             }
@@ -383,85 +431,41 @@ namespace NtingCampus.Gameplay.Inventory
                 return false;
             }
 
-            if (!CampusServiceStationRuntimeAvailability.TryRequireActionSourceAvailable(
+            if (!CampusProtectedTransferClearanceService.TryRequireClearanceStationAvailable(
                     context.ActionId,
                     context.SourceObject,
+                    out CampusServiceStation station,
                     out message))
             {
-                WriteInteractionLog(message);
-                return false;
-            }
-
-            if (!CampusServiceStationRuntimeAvailability.TryResolveActionStation(
-                    context.ActionId,
-                    context.SourceObject,
-                    out CampusServiceStation station))
-            {
-                message = CampusProtectedTransferClearanceTextCatalog.Get(
-                    CampusProtectedTransferClearanceTextId.UnsupportedStation);
-                WriteInteractionLog(message);
-                return false;
+                return true;
             }
 
             bool succeeded = CampusProtectedTransferClearanceService.TryClearPendingTransfers(
                 actor,
-                context.SourceObject,
-                station.Clearance,
+                station,
                 out message);
-            if (!succeeded)
-            {
-                WriteInteractionLog(message);
-            }
 
-            return succeeded;
+            return true;
         }
 
         public bool TryResolvePrompt(CampusInteractionActionContext context, out string prompt)
         {
             prompt = string.Empty;
-            if (!CampusInteractionActionIds.Equals(
+            if (!CampusProtectedTransferClearanceService.TryResolveClearanceStation(
                     context.ActionId,
-                    CampusProtectedTransferClearanceActionIds.ClearPending))
+                    context.SourceObject,
+                    out CampusServiceStation station))
             {
                 return false;
             }
 
-            if (!CampusServiceStationRuntimeAvailability.TryRequireActionSourceAvailable(
-                    context.ActionId,
-                    context.SourceObject,
-                    out prompt))
+            if (!CampusServiceStationRuntimeAvailability.CanServeNow(station))
             {
+                prompt = CampusServiceStationRuntimeAvailability.ResolveUnavailableMessage(station);
                 return true;
             }
 
-            if (CampusServiceStationRuntimeAvailability.TryResolveActionStation(
-                    context.ActionId,
-                    context.SourceObject,
-                    out CampusServiceStation station) &&
-                station.Clearance.CompleteText.HasAnyText)
-            {
-                prompt = CampusProtectedTransferClearanceTextCatalog.Get(
-                    CampusProtectedTransferClearanceTextId.ClearPrompt);
-                return true;
-            }
-
-            prompt = CampusProtectedTransferClearanceTextCatalog.Get(
-                CampusProtectedTransferClearanceTextId.ClearPrompt);
-            return true;
-        }
-
-        private static void WriteInteractionLog(string message)
-        {
-            if (string.IsNullOrWhiteSpace(message))
-            {
-                return;
-            }
-
-            CampusGameBootstrap bootstrap = CampusGameBootstrap.Instance;
-            if (bootstrap != null && bootstrap.EventLog != null)
-            {
-                bootstrap.EventLog.AddLog(message);
-            }
+            return false;
         }
     }
 

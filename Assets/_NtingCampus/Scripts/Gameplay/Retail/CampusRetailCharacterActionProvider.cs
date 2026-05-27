@@ -1,7 +1,6 @@
 using Nting.Storage;
 using NtingCampus.Gameplay.Characters;
 using NtingCampus.Gameplay.Inventory;
-using NtingCampus.Gameplay.Services;
 using NtingCampusMapEditor;
 using UnityEngine;
 
@@ -31,25 +30,6 @@ namespace NtingCampus.Gameplay.Retail
                 }
 
                 return shelf.TryTakeOneForActor(context.Actor, out result);
-            }
-
-            if (CampusCharacterActionUtility.IdEquals(context.ActionId, CampusRetailActionIds.Checkout))
-            {
-                Component source = ResolveComponent(context.Target);
-                if (!CampusServiceStationRuntimeAvailability.TryRequireActionSourceAvailable(
-                        context.ActionId,
-                        source,
-                        out string unavailableMessage))
-                {
-                    result = StorageTransferResult.Fail(unavailableMessage);
-                    return true;
-                }
-
-                bool succeeded = CampusRetailService.TryCheckoutActor(context.Actor, source, out string message);
-                result = succeeded
-                    ? CampusCharacterActionUtility.Success(message)
-                    : StorageTransferResult.Fail(message);
-                return true;
             }
 
             return false;

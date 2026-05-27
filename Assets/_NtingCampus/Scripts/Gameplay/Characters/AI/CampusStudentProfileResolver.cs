@@ -1,4 +1,3 @@
-using System.Collections.Generic;
 using NtingCampus.Gameplay.Rooms;
 
 namespace NtingCampus.Gameplay.Characters
@@ -13,59 +12,25 @@ namespace NtingCampus.Gameplay.Characters
         {
             CampusCharacterData data = runtime != null ? runtime.Data : null;
             CampusCharacterAssignmentData assignments = data != null ? data.Assignments : null;
-            List<CampusGameplayRoom> classrooms = CampusNpcRoomSelector.GetRooms(worldService, CampusRoomType.Classroom);
-            CampusGameplayRoom classroom = CampusNpcRoomSelector.ResolveAssigned(
-                worldService,
-                assignments != null ? assignments.StudentClassroomId : string.Empty,
-                CampusRoomType.Classroom);
-            if (classroom == null)
-            {
-                string classroomKey = data != null && !string.IsNullOrWhiteSpace(data.ClassId)
-                    ? data.ClassId
-                    : data != null ? data.Id : string.Empty;
-                classroom = CampusNpcRoomSelector.Choose(classrooms, classroomKey, 0);
-            }
-
-            if (CampusNpcRosterIndexer.TryResolveUniqueStudentDesk(
-                    runtime,
-                    rosterService,
+            if (CampusNpcFacilitySelector.FindAssigned(
                     worldService,
-                    classrooms,
-                    classroom,
-                    out CampusGameplayRoom.FacilityRecord assignedDesk))
-            {
-                profile.SetStudentDesk(
-                    classroom,
-                    CampusNpcFacilitySelector.KeyFor(classroom, assignedDesk),
-                    CampusNpcFacilitySelector.PositionOf(assignedDesk));
-                return;
-            }
-
-            int studentIndex = CampusNpcRosterIndexer.StudentIndexInClassroom(
-                runtime,
-                rosterService,
-                worldService,
-                classrooms,
-                classroom);
-
-            if (CampusNpcFacilitySelector.TryChooseUnique(
-                    classroom,
+                    assignments != null ? assignments.StudentDeskId : string.Empty,
                     CampusNpcFacilityTypeSets.Get(CampusNpcFacilityTypeSets.StudentDesks),
-                    studentIndex,
+                    out CampusGameplayRoom classroom,
                     out CampusGameplayRoom.FacilityRecord desk))
             {
                 profile.SetStudentDesk(
                     classroom,
                     CampusNpcFacilitySelector.KeyFor(classroom, desk),
                     CampusNpcFacilitySelector.PositionOf(desk));
+                return;
             }
-            else
-            {
-                profile.SetStudentDesk(
-                    classroom,
-                    string.Empty,
-                    CampusNpcRoomSelector.PointNearCenter(classroom, studentIndex, 0.45f));
-            }
+
+            CampusGameplayRoom assignedClassroom = CampusNpcRoomSelector.ResolveAssigned(
+                worldService,
+                assignments != null ? assignments.StudentClassroomId : string.Empty,
+                CampusRoomType.Classroom);
+            profile.SetStudentDesk(assignedClassroom, string.Empty, UnityEngine.Vector3.zero);
         }
     }
 }

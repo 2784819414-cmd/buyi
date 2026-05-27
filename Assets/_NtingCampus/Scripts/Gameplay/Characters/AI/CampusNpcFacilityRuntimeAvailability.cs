@@ -39,7 +39,6 @@ namespace NtingCampus.Gameplay.Characters
             CampusWorldService worldService = bootstrap != null ? bootstrap.WorldService : null;
             if (worldService == null ||
                 !worldService.ServiceStations.TryResolveByPlacedObject(
-                    worldService,
                     record.PlacedObject,
                     out CampusServiceStation station))
             {

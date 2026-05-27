@@ -15,6 +15,8 @@ namespace NtingCampus.Gameplay.Rooms
 
         private readonly Dictionary<string, CampusGameplayRoom> roomsById =
             new Dictionary<string, CampusGameplayRoom>(StringComparer.OrdinalIgnoreCase);
+        private readonly Dictionary<CampusPlacedObject, CampusGameplayRoom> roomsByPlacedObject =
+            new Dictionary<CampusPlacedObject, CampusGameplayRoom>();
 
         private readonly Dictionary<int, Dictionary<Vector3Int, RoomCellIndexEntry>> roomsByCellByFloor =
             new Dictionary<int, Dictionary<Vector3Int, RoomCellIndexEntry>>();
@@ -30,6 +32,7 @@ namespace NtingCampus.Gameplay.Rooms
             mapRoot = ResolveMapRoot();
             rooms.Clear();
             roomsById.Clear();
+            roomsByPlacedObject.Clear();
             roomsByCellByFloor.Clear();
             validationIssues.Clear();
 
@@ -49,6 +52,7 @@ namespace NtingCampus.Gameplay.Rooms
             IndexRoomsById();
             BuildRoomCellIndex();
             CampusGameplayFacilityCollector.AssignFacilities(mapRoot, overlayLoader, FindRoomByCell);
+            IndexRoomsByPlacedObject();
             CampusGameplayServiceStationCollector.AssignServiceStations(
                 overlayLoader,
                 roomId => TryGetRoom(roomId, out CampusGameplayRoom room) ? room : null);
@@ -61,6 +65,13 @@ namespace NtingCampus.Gameplay.Rooms
         public bool TryGetRoom(string roomId, out CampusGameplayRoom room)
         {
             return roomsById.TryGetValue(CampusGameplayRoomCollector.NormalizeRoomKey(roomId), out room);
+        }
+
+        public bool TryFindRoomForPlacedObject(CampusPlacedObject placedObject, out CampusGameplayRoom room)
+        {
+            room = null;
+            return placedObject != null &&
+                   roomsByPlacedObject.TryGetValue(placedObject, out room);
         }
 
         public CampusGameplayRoom FindRoomByCell(int floorIndex, Vector3Int cell)
@@ -104,6 +115,29 @@ namespace NtingCampus.Gameplay.Rooms
                 if (!roomsById.ContainsKey(room.RoomId))
                 {
                     roomsById.Add(room.RoomId, room);
+                }
+            }
+        }
+
+        private void IndexRoomsByPlacedObject()
+        {
+            roomsByPlacedObject.Clear();
+            for (int i = 0; i < rooms.Count; i++)
+            {
+                CampusGameplayRoom room = rooms[i];
+                if (room == null || room.Facilities == null)
+                {
+                    continue;
+                }
+
+                for (int facilityIndex = 0; facilityIndex < room.Facilities.Count; facilityIndex++)
+                {
+                    CampusGameplayRoom.FacilityRecord facility = room.Facilities[facilityIndex];
+                    CampusPlacedObject placedObject = facility != null ? facility.PlacedObject : null;
+                    if (placedObject != null && !roomsByPlacedObject.ContainsKey(placedObject))
+                    {
+                        roomsByPlacedObject.Add(placedObject, room);
+                    }
                 }
             }
         }

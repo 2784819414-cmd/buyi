@@ -51,6 +51,57 @@
         "Chinese": "\u5df2\u53d6\u5230{0}\u3002",
         "English": "Received {0}."
       }
+    },
+    {
+      "Id": "oden",
+      "ItemDefinitionId": "canteen_oden_cup",
+      "Price": 12,
+      "DisplayName": {
+        "Chinese": "\u5173\u4e1c\u716e",
+        "English": "Oden"
+      },
+      "PromptText": {
+        "Chinese": "\u70b9\u5173\u4e1c\u716e",
+        "English": "Order Oden"
+      },
+      "OrderedLogText": {
+        "Chinese": "\u5df2\u53d6\u5230{0}\u3002",
+        "English": "Received {0}."
+      }
+    },
+    {
+      "Id": "burger",
+      "ItemDefinitionId": "canteen_burger",
+      "Price": 14,
+      "DisplayName": {
+        "Chinese": "\u6c49\u5821",
+        "English": "Burger"
+      },
+      "PromptText": {
+        "Chinese": "\u70b9\u6c49\u5821",
+        "English": "Order Burger"
+      },
+      "OrderedLogText": {
+        "Chinese": "\u5df2\u53d6\u5230{0}\u3002",
+        "English": "Received {0}."
+      }
+    },
+    {
+      "Id": "fried_chicken",
+      "ItemDefinitionId": "canteen_fried_chicken",
+      "Price": 16,
+      "DisplayName": {
+        "Chinese": "\u70b8\u9e21",
+        "English": "Fried Chicken"
+      },
+      "PromptText": {
+        "Chinese": "\u70b9\u70b8\u9e21",
+        "English": "Order Fried Chicken"
+      },
+      "OrderedLogText": {
+        "Chinese": "\u5df2\u53d6\u5230{0}\u3002",
+        "English": "Received {0}."
+      }
     }
   ]
 }

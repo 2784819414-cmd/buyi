@@ -295,7 +295,7 @@ namespace NtingCampusMapEditor
             }
         }
 
-        private static string ResolveDefaultActionId(CampusPlacedObject placed)
+        public static string ResolveDefaultActionId(CampusPlacedObject placed)
         {
             if (TryResolveAuthoredPresetDefaultAction(placed, out string presetActionId))
             {
@@ -341,7 +341,6 @@ namespace NtingCampusMapEditor
             CampusWorldService worldService = bootstrap != null ? bootstrap.WorldService : null;
             if (worldService == null ||
                 !worldService.ServiceStations.TryResolveByPlacedObject(
-                    worldService,
                     placed,
                     out CampusServiceStation station) ||
                 string.IsNullOrWhiteSpace(station.InteractionActionId))

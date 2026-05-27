@@ -41,6 +41,9 @@ namespace NtingCampus.Gameplay.Rooms
             public string FacilityId = string.Empty;
             public string DisplayName = string.Empty;
             public CampusLocalizedText LocalizedDisplayName = default;
+            public string ObjectId = string.Empty;
+            public string TypeId = string.Empty;
+            public string InteractionPresetEid = string.Empty;
             public CampusFacilityType FacilityType = CampusFacilityType.Unknown;
             public CampusFacilityTypeSource FacilityTypeSource = CampusFacilityTypeSource.Unknown;
             public string FacilityTypeDiagnostic = string.Empty;
@@ -48,6 +51,7 @@ namespace NtingCampus.Gameplay.Rooms
             public CampusRoomType RoomType = CampusRoomType.Unknown;
             public int FloorIndex = 1;
             public Vector3Int Cell;
+            public string OwnerFacilityId = string.Empty;
             public bool HasPlacedObject;
             public bool HasExplicitFacilityType;
         }
@@ -277,6 +281,7 @@ namespace NtingCampus.Gameplay.Rooms
                 return;
             }
 
+            CampusPlacedObject placedObject = facility.PlacedObject;
             FacilityFact fact = new FacilityFact
             {
                 FacilityId = NormalizeId(facility.FacilityId),
@@ -284,6 +289,9 @@ namespace NtingCampus.Gameplay.Rooms
                     ? facility.FacilityType.ToString()
                     : facility.DisplayName.Trim(),
                 LocalizedDisplayName = facility.LocalizedDisplayName,
+                ObjectId = NormalizeId(placedObject != null ? placedObject.ObjectId : string.Empty),
+                TypeId = NormalizeId(placedObject != null ? placedObject.TypeId : string.Empty),
+                InteractionPresetEid = NormalizeId(placedObject != null ? placedObject.InteractionPresetEid : string.Empty),
                 FacilityType = facility.FacilityType,
                 FacilityTypeSource = facility.FacilityTypeSource,
                 FacilityTypeDiagnostic = facility.FacilityTypeDiagnostic,
@@ -291,7 +299,8 @@ namespace NtingCampus.Gameplay.Rooms
                 RoomType = room.RoomType,
                 FloorIndex = Mathf.Max(1, room.FloorIndex),
                 Cell = facility.Cell,
-                HasPlacedObject = facility.PlacedObject != null,
+                OwnerFacilityId = NormalizeId(facility.OwnerFacilityId),
+                HasPlacedObject = placedObject != null,
                 HasExplicitFacilityType = facility.HasExplicitFacilityType
             };
 

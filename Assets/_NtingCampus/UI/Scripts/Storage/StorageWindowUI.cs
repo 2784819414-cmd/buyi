@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using DG.Tweening;
 using NtingCampus.Gameplay.Characters;
@@ -73,6 +74,11 @@ namespace Nting.Storage
         private GameObject groundDropSource;
         private GameObject transferActor;
         private IStorageTransferHandler transferHandler = StorageDefaultTransferHandler.Instance;
+        private bool forceIllegalExternalTake;
+        private string externalTakeSourceLocation = string.Empty;
+        private string externalTakeOwnerId = string.Empty;
+        private int externalTakeSuspicionRiskOverride = -1;
+        private Func<bool> shouldCloseExternalTakeWindow;
         private StorageItemTooltipUI itemTooltip;
         private Tween visibilityTween;
         private RectTransform stackExpansionPanel;
@@ -94,6 +100,15 @@ namespace Nting.Storage
 
         private void Update()
         {
+            if (IsOpen &&
+                forceIllegalExternalTake &&
+                shouldCloseExternalTakeWindow != null &&
+                shouldCloseExternalTakeWindow())
+            {
+                Close();
+                return;
+            }
+
             if (IsOpen && WasEscapePressed())
             {
                 Close();
@@ -120,6 +135,7 @@ namespace Nting.Storage
             backpackEquipped = hasBackpack && backpack != null;
             externalContainer = rightContainer;
             showingBackpack = false;
+            ClearExternalTakePolicy();
 
             visibleRoot.SetActive(true);
             DragLayer.gameObject.SetActive(true);
@@ -146,6 +162,7 @@ namespace Nting.Storage
             backpackEquipped = hasBackpack && backpack != null;
             externalContainer = rightContainer;
             showingBackpack = startOnBackpack && backpackEquipped;
+            ClearExternalTakePolicy();
 
             visibleRoot.SetActive(true);
             DragLayer.gameObject.SetActive(true);
@@ -172,9 +189,56 @@ namespace Nting.Storage
             transferHandler = handler ?? StorageDefaultTransferHandler.Instance;
         }
 
+        public void SetExternalTakeIllegalContext(
+            string sourceLocation,
+            string ownerId,
+            int suspicionRiskOverride)
+        {
+            SetExternalTakeIllegalContext(sourceLocation, ownerId, suspicionRiskOverride, null);
+        }
+
+        public void SetExternalTakeIllegalContext(
+            string sourceLocation,
+            string ownerId,
+            int suspicionRiskOverride,
+            Func<bool> closeWhen)
+        {
+            forceIllegalExternalTake = true;
+            externalTakeSourceLocation = string.IsNullOrWhiteSpace(sourceLocation) ? string.Empty : sourceLocation.Trim();
+            externalTakeOwnerId = string.IsNullOrWhiteSpace(ownerId) ? string.Empty : ownerId.Trim();
+            externalTakeSuspicionRiskOverride = suspicionRiskOverride < 0 ? -1 : suspicionRiskOverride;
+            shouldCloseExternalTakeWindow = closeWhen;
+        }
+
+        public void ClearExternalTakePolicy()
+        {
+            forceIllegalExternalTake = false;
+            externalTakeSourceLocation = string.Empty;
+            externalTakeOwnerId = string.Empty;
+            externalTakeSuspicionRiskOverride = -1;
+            shouldCloseExternalTakeWindow = null;
+        }
+
         public StorageTransferContext CreateTransferContext(StorageTransferReason reason)
         {
             return StorageTransferContext.ForActor(transferActor != null ? transferActor : groundDropSource, reason);
+        }
+
+        private StorageTransferContext CreateTransferContext(
+            StorageTransferReason reason,
+            StorageContainerModel source,
+            StorageContainerModel target)
+        {
+            StorageTransferContext context = CreateTransferContext(reason);
+            if (ShouldForceIllegalExternalTake(source, target))
+            {
+                context.ForceIllegal = true;
+                context.SourceLocation = externalTakeSourceLocation;
+                context.OwnerId = externalTakeOwnerId;
+                context.SuspicionRiskOverride = externalTakeSuspicionRiskOverride;
+            }
+
+            return context;
         }
 
         public bool TryMoveItem(
@@ -195,7 +259,10 @@ namespace Nting.Storage
                 targetGrid.Container,
                 x,
                 y,
-                CreateTransferContext(StorageTransferReason.Move),
+                CreateTransferContext(
+                    StorageTransferReason.Move,
+                    sourceGrid != null ? sourceGrid.Container : null,
+                    targetGrid.Container),
                 out StorageTransferResult result);
             if (!moved && !string.IsNullOrWhiteSpace(result.Message))
             {
@@ -216,7 +283,10 @@ namespace Nting.Storage
                     groundDropSource,
                     item,
                     sourceGrid.Container,
-                    CreateTransferContext(StorageTransferReason.DropToGround),
+                    CreateTransferContext(
+                        StorageTransferReason.DropToGround,
+                        sourceGrid.Container,
+                        null),
                     out StorageTransferResult result))
             {
                 ShowStatus(string.IsNullOrWhiteSpace(result.Message) ? StorageTextCatalog.Get(StorageTextId.CouldNotDropToGround) : result.Message, true);
@@ -509,7 +579,10 @@ namespace Nting.Storage
                     item,
                     sourceGrid.Container,
                     filteredTargets.ToArray(),
-                    CreateTransferContext(StorageTransferReason.QuickTransfer),
+                    CreateTransferContext(
+                        StorageTransferReason.QuickTransfer,
+                        sourceGrid.Container,
+                        ResolveFirstTarget(filteredTargets)),
                     out StorageTransferResult result))
             {
                 RefreshAllGrids();
@@ -522,6 +595,19 @@ namespace Nting.Storage
             RefreshAllGrids();
             SelectItem(item);
             return false;
+        }
+
+        private bool ShouldForceIllegalExternalTake(StorageContainerModel source, StorageContainerModel target)
+        {
+            return forceIllegalExternalTake &&
+                   externalContainer != null &&
+                   source == externalContainer &&
+                   target != externalContainer;
+        }
+
+        private static StorageContainerModel ResolveFirstTarget(List<StorageContainerModel> targets)
+        {
+            return targets != null && targets.Count > 0 ? targets[0] : null;
         }
 
         private IStorageTransferHandler TransferHandler => transferHandler ?? StorageDefaultTransferHandler.Instance;

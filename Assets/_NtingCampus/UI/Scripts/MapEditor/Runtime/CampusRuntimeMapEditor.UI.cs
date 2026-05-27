@@ -6,6 +6,7 @@ using System.Runtime.InteropServices;
 using System.Text;
 using System.Text.RegularExpressions;
 using NtingCampus.Gameplay.Characters;
+using NtingCampus.Gameplay.Core;
 using NtingCampus.Gameplay.Retail;
 using NtingCampus.Gameplay.Rooms;
 using NtingCampus.UI.Runtime.Gameplay;
@@ -1361,6 +1362,15 @@ namespace NtingCampusMapEditor
         {
             try
             {
+                CampusGameBootstrap bootstrap = CampusGameBootstrap.Instance;
+                if (bootstrap != null && bootstrap.WorldService != null)
+                {
+                    bootstrap.WorldService.RebuildRegistries();
+                    bootstrap.RosterService?.RefreshWorldBindings();
+                    bootstrap.WorldService.ValidateEcology(bootstrap.RosterService, true);
+                    return;
+                }
+
                 CampusRoomRegistry registry =
                     FindFirstObjectByType<CampusRoomRegistry>(FindObjectsInactive.Include);
                 if (registry != null)

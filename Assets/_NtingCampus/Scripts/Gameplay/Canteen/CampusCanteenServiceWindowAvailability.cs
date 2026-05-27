@@ -14,7 +14,6 @@ namespace NtingCampus.Gameplay.Canteen
             CampusWorldService worldService = bootstrap != null ? bootstrap.WorldService : null;
             return worldService != null &&
                    worldService.ServiceStations.TryResolveByPlacedObject(
-                       worldService,
                        window,
                        out CampusServiceStation station) &&
                    CampusServiceStationRuntimeAvailability.CanServeNow(

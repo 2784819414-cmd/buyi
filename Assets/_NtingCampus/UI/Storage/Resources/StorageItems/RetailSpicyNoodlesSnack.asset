@@ -1,4 +1,4 @@
-﻿%YAML 1.1
+%YAML 1.1
 %TAG !u! tag:unity3d.com,2011:
 --- !u!114 &11400000
 MonoBehaviour:
@@ -17,21 +17,35 @@ MonoBehaviour:
   LocalizedDisplayName:
     chinese: "\u8FA3\u5473\u9762\u7B4B"
     english: Spicy Gluten Snack
+    traditionalChinese: 
+    russian: 
+    japanese: 
   Width: 2
   Height: 1
+  StackGroupId: 
+  MaxStackSize: 1
   Weight: 0.16
   Price: 10
+  SmellLevel: 0
+  EvidenceWeight: 0
+  CanPrankUse: 0
   Description: "\u7EA2\u6CB9\u5473\u5F88\u91CD\u7684\u888B\u88C5\u9762\u7B4B\u96F6\u98DF\u3002"
   LocalizedDescription:
     chinese: "\u7EA2\u6CB9\u5473\u5F88\u91CD\u7684\u888B\u88C5\u9762\u7B4B\u96F6\u98DF\u3002"
     english: A bagged spicy gluten snack with a strong chili oil flavor.
+    traditionalChinese: 
+    russian: 
+    japanese: 
   ThemeColor: {r: 0.76, g: 0.29, b: 0.23, a: 1}
   Icon: {fileID: 0}
   IsUsable: 1
   UseActionId: campus.item.consume_food
   ConsumeOnUse: 1
   StaminaRestore: 12
-  UseText: 吃掉
+  UseText: "\u5403\u6389"
   LocalizedUseText:
-    chinese: 吃掉
+    chinese: "\u5403\u6389"
     english: Eat the Spicy Gluten Snack.
+    traditionalChinese: 
+    russian: 
+    japanese: 

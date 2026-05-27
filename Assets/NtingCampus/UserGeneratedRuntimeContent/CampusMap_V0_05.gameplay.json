@@ -38,8 +38,8 @@
                 2
             ],
             "Assignments": {
-                "StudentClassroomId": "classroom_f1_1",
-                "StudentDeskId": "facility_f1_StudentDesk_-48_-22",
+                "StudentClassroomId": "classroom_f1_2",
+                "StudentDeskId": "facility_f1_StudentDesk_-48_-4",
                 "TeacherClassroomId": "",
                 "TeacherPodiumId": "",
                 "OfficeRoomId": "",
@@ -86,8 +86,8 @@
                 3
             ],
             "Assignments": {
-                "StudentClassroomId": "classroom_f1_1",
-                "StudentDeskId": "facility_f1_StudentDesk_-48_-22",
+                "StudentClassroomId": "classroom_f1_2",
+                "StudentDeskId": "facility_f1_StudentDesk_-44_-4",
                 "TeacherClassroomId": "",
                 "TeacherPodiumId": "",
                 "OfficeRoomId": "",
@@ -134,8 +134,8 @@
                 4
             ],
             "Assignments": {
-                "StudentClassroomId": "classroom_f1_1",
-                "StudentDeskId": "facility_f1_StudentDesk_-48_3",
+                "StudentClassroomId": "classroom_f1_2",
+                "StudentDeskId": "facility_f1_StudentDesk_-40_-4",
                 "TeacherClassroomId": "",
                 "TeacherPodiumId": "",
                 "OfficeRoomId": "",
@@ -182,8 +182,8 @@
                 1
             ],
             "Assignments": {
-                "StudentClassroomId": "classroom_f1_1",
-                "StudentDeskId": "facility_f1_StudentDesk_-48_-22",
+                "StudentClassroomId": "classroom_f1_2",
+                "StudentDeskId": "facility_f1_StudentDesk_-36_-4",
                 "TeacherClassroomId": "",
                 "TeacherPodiumId": "",
                 "OfficeRoomId": "",
@@ -230,8 +230,8 @@
                 2
             ],
             "Assignments": {
-                "StudentClassroomId": "classroom_f1_1",
-                "StudentDeskId": "facility_f1_StudentDesk_-48_6",
+                "StudentClassroomId": "classroom_f1_2",
+                "StudentDeskId": "facility_f1_StudentDesk_-32_-4",
                 "TeacherClassroomId": "",
                 "TeacherPodiumId": "",
                 "OfficeRoomId": "",
@@ -278,8 +278,8 @@
                 0
             ],
             "Assignments": {
-                "StudentClassroomId": "classroom_f1_1",
-                "StudentDeskId": "facility_f1_StudentDesk_-48_-22",
+                "StudentClassroomId": "classroom_f1_2",
+                "StudentDeskId": "facility_f1_StudentDesk_-48_3",
                 "TeacherClassroomId": "",
                 "TeacherPodiumId": "",
                 "OfficeRoomId": "",
@@ -326,8 +326,8 @@
                 1
             ],
             "Assignments": {
-                "StudentClassroomId": "classroom_f1_1",
-                "StudentDeskId": "facility_f1_StudentDesk_-48_9",
+                "StudentClassroomId": "classroom_f1_2",
+                "StudentDeskId": "facility_f1_StudentDesk_-44_3",
                 "TeacherClassroomId": "",
                 "TeacherPodiumId": "",
                 "OfficeRoomId": "",
@@ -374,8 +374,8 @@
                 2
             ],
             "Assignments": {
-                "StudentClassroomId": "classroom_f1_1",
-                "StudentDeskId": "facility_f1_StudentDesk_-44_-22",
+                "StudentClassroomId": "classroom_f1_2",
+                "StudentDeskId": "facility_f1_StudentDesk_-40_3",
                 "TeacherClassroomId": "",
                 "TeacherPodiumId": "",
                 "OfficeRoomId": "",
@@ -422,8 +422,8 @@
                 3
             ],
             "Assignments": {
-                "StudentClassroomId": "classroom_f1_1",
-                "StudentDeskId": "facility_f1_StudentDesk_-44_-22",
+                "StudentClassroomId": "classroom_f1_2",
+                "StudentDeskId": "facility_f1_StudentDesk_-36_3",
                 "TeacherClassroomId": "",
                 "TeacherPodiumId": "",
                 "OfficeRoomId": "",
@@ -470,8 +470,8 @@
                 4
             ],
             "Assignments": {
-                "StudentClassroomId": "classroom_f1_1",
-                "StudentDeskId": "facility_f1_StudentDesk_-44_3",
+                "StudentClassroomId": "classroom_f1_2",
+                "StudentDeskId": "facility_f1_StudentDesk_-32_3",
                 "TeacherClassroomId": "",
                 "TeacherPodiumId": "",
                 "OfficeRoomId": "",
@@ -518,8 +518,8 @@
                 0
             ],
             "Assignments": {
-                "StudentClassroomId": "classroom_f1_1",
-                "StudentDeskId": "facility_f1_StudentDesk_-44_-22",
+                "StudentClassroomId": "classroom_f1_2",
+                "StudentDeskId": "facility_f1_StudentDesk_-48_6",
                 "TeacherClassroomId": "",
                 "TeacherPodiumId": "",
                 "OfficeRoomId": "",
@@ -566,7 +566,7 @@
                 1
             ],
             "Assignments": {
-                "StudentClassroomId": "classroom_f1_1",
+                "StudentClassroomId": "classroom_f1_2",
                 "StudentDeskId": "facility_f1_StudentDesk_-44_6",
                 "TeacherClassroomId": "",
                 "TeacherPodiumId": "",
@@ -614,8 +614,8 @@
                 2
             ],
             "Assignments": {
-                "StudentClassroomId": "classroom_f1_1",
-                "StudentDeskId": "facility_f1_StudentDesk_-44_-22",
+                "StudentClassroomId": "classroom_f1_2",
+                "StudentDeskId": "facility_f1_StudentDesk_-40_6",
                 "TeacherClassroomId": "",
                 "TeacherPodiumId": "",
                 "OfficeRoomId": "",
@@ -664,8 +664,8 @@
             "Assignments": {
                 "StudentClassroomId": "",
                 "StudentDeskId": "",
-                "TeacherClassroomId": "classroom_f1_1",
-                "TeacherPodiumId": "facility_f1_Podium_class1",
+                "TeacherClassroomId": "classroom_f1_2",
+                "TeacherPodiumId": "facility_f1_Podium_class2",
                 "OfficeRoomId": "office_f1_1",
                 "OfficeDeskId": "facility_f1_OfficeDesk_-48_16",
                 "WorkRoomId": "",
@@ -1776,10 +1776,10 @@
         },
         {
             "Id": "facility_f1_canteen_ServiceWindow_0_-18",
-            "DisplayName": "Canteen Service Window",
+            "DisplayName": "Oden Window",
             "LocalizedDisplayName": {
-                "chinese": "",
-                "english": "",
+                "chinese": "关东煮窗口",
+                "english": "Oden Window",
                 "traditionalChinese": "",
                 "russian": "",
                 "japanese": ""
@@ -2376,10 +2376,10 @@
         },
         {
             "Id": "facility_f1_canteen_ServiceWindow_30_-18",
-            "DisplayName": "Canteen Service Window",
+            "DisplayName": "Burger and Fried Chicken Window",
             "LocalizedDisplayName": {
-                "chinese": "",
-                "english": "",
+                "chinese": "汉堡炸鸡窗口",
+                "english": "Burger and Fried Chicken Window",
                 "traditionalChinese": "",
                 "russian": "",
                 "japanese": ""
@@ -2970,6 +2970,26 @@
             "Cell": {
                 "x": 105,
                 "y": -16,
+                "z": 0
+            },
+            "CountsAsCoreFacility": true
+        },
+        {
+            "Id": "facility_f1_delivery_DropPoint_62_18",
+            "DisplayName": "Delivery Drop Point",
+            "LocalizedDisplayName": {
+                "chinese": "",
+                "english": "Delivery Drop Point",
+                "traditionalChinese": "",
+                "russian": "",
+                "japanese": ""
+            },
+            "FacilityTypeId": "DropPoint",
+            "FacilityType": 20,
+            "FloorIndex": 1,
+            "Cell": {
+                "x": 62,
+                "y": 18,
                 "z": 0
             },
             "CountsAsCoreFacility": true

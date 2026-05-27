@@ -1,4 +1,4 @@
-﻿%YAML 1.1
+%YAML 1.1
 %TAG !u! tag:unity3d.com,2011:
 --- !u!114 &11400000
 MonoBehaviour:
@@ -17,21 +17,35 @@ MonoBehaviour:
   LocalizedDisplayName:
     chinese: "\u5E03\u4E01\u676F"
     english: Pudding Cup
+    traditionalChinese: 
+    russian: 
+    japanese: 
   Width: 1
   Height: 1
+  StackGroupId: 
+  MaxStackSize: 1
   Weight: 0.12
   Price: 10
+  SmellLevel: 0
+  EvidenceWeight: 0
+  CanPrankUse: 0
   Description: "\u5E26\u7126\u7CD6\u5C42\u7684\u5C0F\u676F\u5E03\u4E01\u3002"
   LocalizedDescription:
     chinese: "\u5E26\u7126\u7CD6\u5C42\u7684\u5C0F\u676F\u5E03\u4E01\u3002"
     english: A small pudding cup with a caramel top.
+    traditionalChinese: 
+    russian: 
+    japanese: 
   ThemeColor: {r: 0.94, g: 0.78, b: 0.41, a: 1}
   Icon: {fileID: 0}
   IsUsable: 1
   UseActionId: campus.item.consume_food
   ConsumeOnUse: 1
   StaminaRestore: 16
-  UseText: 吃掉
+  UseText: "\u5403\u6389"
   LocalizedUseText:
-    chinese: 吃掉
+    chinese: "\u5403\u6389"
     english: Eat the Pudding Cup.
+    traditionalChinese: 
+    russian: 
+    japanese: 

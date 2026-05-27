@@ -266,7 +266,9 @@ namespace NtingCampus.UI.Runtime.Gameplay
         RetailDisplayCount = 129,
         RetailContainerMode = 130,
         RetailDisplayMode = 131,
-        InteractionPresetEid = 132
+        InteractionPresetEid = 132,
+        StudentDeskOwnerStatus = 133,
+        StudentDeskOwnerUnassignedStatus = 134
     }
 
     public static class CampusGameplayDebugTextCatalog
@@ -681,7 +683,9 @@ namespace NtingCampus.UI.Runtime.Gameplay
             { CampusRuntimeEditorTextId.RetailDisplayCount, new TextEntry("\u76f4\u6446\u6570\u91cf", "Display Count") },
             { CampusRuntimeEditorTextId.RetailContainerMode, new TextEntry("\u5bb9\u5668\u8d27\u67b6", "Container Shelf") },
             { CampusRuntimeEditorTextId.RetailDisplayMode, new TextEntry("\u76f4\u6446\u8d27\u67b6", "Direct Pickup Display") },
-            { CampusRuntimeEditorTextId.InteractionPresetEid, new TextEntry("\u4ea4\u4e92EID", "Interaction EID") }
+            { CampusRuntimeEditorTextId.InteractionPresetEid, new TextEntry("\u4ea4\u4e92EID", "Interaction EID") },
+            { CampusRuntimeEditorTextId.StudentDeskOwnerStatus, new TextEntry("\u8bfe\u684c\u6240\u5c5e\u5b66\u751f\uff1a{0}", "Student desk owner: {0}") },
+            { CampusRuntimeEditorTextId.StudentDeskOwnerUnassignedStatus, new TextEntry("\u8bfe\u684c\u5c1a\u672a\u5206\u914d\u5b66\u751f\u3002", "This student desk is not assigned to a student.") }
         };
 
         public static string Get(CampusDisplayLanguage language, CampusRuntimeEditorTextId id)

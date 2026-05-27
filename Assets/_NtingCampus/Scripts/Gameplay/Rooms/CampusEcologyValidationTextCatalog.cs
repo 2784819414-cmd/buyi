@@ -24,7 +24,9 @@ namespace NtingCampus.Gameplay.Rooms
         FacilityReferenceMissing = 15,
         FacilityReferenceWrongType = 16,
         DuplicateOwners = 17,
-        ValidationPassedLog = 18
+        ValidationPassedLog = 18,
+        StudentDeskDuplicateOwners = 19,
+        StudentDeskRoomMismatch = 20
     }
 
     internal static class CampusEcologyValidationTextCatalog
@@ -50,6 +52,8 @@ namespace NtingCampus.Gameplay.Rooms
             { CampusEcologyValidationTextId.FacilityReferenceWrongType, new Entry("{0} 指向 {1}，预期 {2}。", "{0} points to {1}, expected {2}.") },
             { CampusEcologyValidationTextId.DuplicateOwners, new Entry("{0} Owners={1}。", "{0} Owners={1}.") },
             { CampusEcologyValidationTextId.ValidationPassedLog, new Entry("[Ecology] 生态校验通过。", "[Ecology] Validation passed.") }
+            , { CampusEcologyValidationTextId.StudentDeskDuplicateOwners, new Entry("StudentDeskId is assigned to multiple students.", "StudentDeskId is assigned to multiple students.") }
+            , { CampusEcologyValidationTextId.StudentDeskRoomMismatch, new Entry("{0} points to {1}, but the desk belongs to room {2}.", "{0} points to {1}, but the desk belongs to room {2}.") }
         };
 
         public static string Get(CampusEcologyValidationTextId id)

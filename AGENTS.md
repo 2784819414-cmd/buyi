@@ -9,6 +9,19 @@
 - 新功能必须尽量进入可独立维护的清晰层级，不要硬插入旧架构。若旧路径已经混乱，应重写拥有路径，而不是叠加条件。
 - 每次改动都要面向开源读者和 mod 开发者：概念要有稳定 ID、显式数据定义、校验、编辑器/文档支持，并且能从顶层规则读懂。
 
+## CheckoutPoint 与服务站配置锁定
+
+`CheckoutPoint` 只表示“柜台/窗口类设施”的物理类型，不拥有收银、登记、借阅、取号、报到等玩法含义。
+
+硬规则：
+
+- 新增任何 `CheckoutPoint` 用途，只允许新增或修改配置表、overlay 数据、preset 或显式 mod 字段，不得新增运行时代码硬编码。
+- 收银、登记、借阅、取号、报到等差异必须由 `ServiceStationPresets.json` 的 `StationTypeId`、`InteractionActionId`、`Clearance`、`Availability`、slot 定义，以及对象交互 preset 表达。
+- 地图中的具体柜台必须在 gameplay overlay 中绑定稳定 service station，并在对象交互 preset 中显式绑定交互动作和本地化提示。不得依赖 `CheckoutPoint` 默认推断出“结账”或其他玩家可见含义。
+- 运行时代码不得写出 `CheckoutPoint -> retail checkout`、`CheckoutPoint -> registration` 之类的一对一硬编码。默认动作、提示、HUD 文案和清算规则都必须从服务站/交互配置解析。
+- 如果现有配置模型无法表达新的柜台功能，只能扩展最小拥有的配置模型和校验路径；扩展后必须删除旧硬编码路径，不能让配置路径和硬编码 fallback 并存。
+- mod 作者新增柜台变体时，正常入口应是：`ServiceStationPresets.json` 定义服务站类型，`ObjectInteractionPresets.json` 定义对象交互，地图 gameplay overlay 绑定 station/facility/slot，必要时补本地化文本目录。
+
 ## 开工前必须做的宏观分析
 
 所有代码变更必须从系统层面开始，不能先治症状。

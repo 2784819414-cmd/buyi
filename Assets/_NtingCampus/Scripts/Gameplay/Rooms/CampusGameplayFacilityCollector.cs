@@ -74,7 +74,8 @@ namespace NtingCampus.Gameplay.Rooms
                         facilityId,
                         facilityMarker.DisplayName,
                         facilityMarker.LocalizedDisplayName,
-                        facilityMarker.Cell);
+                        facilityMarker.Cell,
+                        facilityMarker.OwnerFacilityId);
                     continue;
                 }
 
@@ -87,7 +88,8 @@ namespace NtingCampus.Gameplay.Rooms
                         facilityId,
                         facilityMarker.DisplayName,
                         facilityMarker.LocalizedDisplayName,
-                        facilityMarker.Cell);
+                        facilityMarker.Cell,
+                        facilityMarker.OwnerFacilityId);
                     continue;
                 }
 
@@ -96,7 +98,8 @@ namespace NtingCampus.Gameplay.Rooms
                     facilityMarker.DisplayName,
                     facilityMarker.LocalizedDisplayName,
                     facilityMarker.FacilityType,
-                    facilityMarker.Cell);
+                    facilityMarker.Cell,
+                    facilityMarker.OwnerFacilityId);
             }
         }
 

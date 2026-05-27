@@ -14,6 +14,7 @@ namespace NtingCampus.Gameplay.Rooms
         [SerializeField, Min(1)] private int floorIndex = 1;
         [SerializeField] private Vector3Int cell;
         [SerializeField] private bool countsAsCoreFacility = true;
+        [SerializeField] private string ownerFacilityId = string.Empty;
         [SerializeField] private CampusPlacedObject linkedPlacedObject;
 
         public string FacilityId => facilityId;
@@ -23,6 +24,7 @@ namespace NtingCampus.Gameplay.Rooms
         public int FloorIndex => floorIndex;
         public Vector3Int Cell => cell;
         public bool CountsAsCoreFacility => countsAsCoreFacility;
+        public string OwnerFacilityId => ownerFacilityId;
         public CampusPlacedObject LinkedPlacedObject => linkedPlacedObject;
 
         public void Configure(
@@ -69,11 +71,58 @@ namespace NtingCampus.Gameplay.Rooms
         public void Configure(
             string targetFacilityId,
             string targetDisplayName,
+            CampusFacilityType type,
+            int targetFloorIndex,
+            Vector3Int targetCell,
+            bool coreFacility,
+            string targetOwnerFacilityId,
+            CampusPlacedObject placedObject)
+        {
+            Configure(
+                targetFacilityId,
+                targetDisplayName,
+                string.IsNullOrWhiteSpace(targetDisplayName)
+                    ? default
+                    : new CampusLocalizedText(targetDisplayName.Trim(), string.Empty),
+                type,
+                targetFloorIndex,
+                targetCell,
+                coreFacility,
+                targetOwnerFacilityId,
+                placedObject);
+        }
+
+        public void Configure(
+            string targetFacilityId,
+            string targetDisplayName,
             CampusLocalizedText targetLocalizedDisplayName,
             CampusFacilityType type,
             int targetFloorIndex,
             Vector3Int targetCell,
             bool coreFacility,
+            CampusPlacedObject placedObject)
+        {
+            Configure(
+                targetFacilityId,
+                targetDisplayName,
+                targetLocalizedDisplayName,
+                type,
+                targetFloorIndex,
+                targetCell,
+                coreFacility,
+                string.Empty,
+                placedObject);
+        }
+
+        public void Configure(
+            string targetFacilityId,
+            string targetDisplayName,
+            CampusLocalizedText targetLocalizedDisplayName,
+            CampusFacilityType type,
+            int targetFloorIndex,
+            Vector3Int targetCell,
+            bool coreFacility,
+            string targetOwnerFacilityId,
             CampusPlacedObject placedObject)
         {
             displayName = string.IsNullOrWhiteSpace(targetDisplayName) ? string.Empty : targetDisplayName.Trim();
@@ -82,6 +131,7 @@ namespace NtingCampus.Gameplay.Rooms
             floorIndex = Mathf.Max(1, targetFloorIndex);
             cell = targetCell;
             countsAsCoreFacility = coreFacility;
+            ownerFacilityId = NormalizeFacilityId(targetOwnerFacilityId);
             linkedPlacedObject = placedObject;
             facilityId = NormalizeFacilityId(targetFacilityId);
             if (string.IsNullOrEmpty(facilityId))

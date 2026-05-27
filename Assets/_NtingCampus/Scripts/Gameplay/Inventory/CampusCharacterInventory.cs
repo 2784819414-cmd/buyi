@@ -114,6 +114,11 @@ namespace NtingCampus.Gameplay.Inventory
         public static StorageItemModel ResolveHeldItem(StorageContainerModel[] hands, int handIndex)
         {
             StorageContainerModel hand = ResolveHandContainer(hands, handIndex);
+            return ResolveHeldItem(hand);
+        }
+
+        public static StorageItemModel ResolveHeldItem(StorageContainerModel hand)
+        {
             return hand != null && hand.Items != null && hand.Items.Count > 0
                 ? hand.Items[0]
                 : null;

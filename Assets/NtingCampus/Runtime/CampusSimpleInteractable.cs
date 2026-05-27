@@ -65,9 +65,16 @@ namespace NtingCampusMapEditor
 
         private string ResolveDefaultActionId(CampusInteractionAnchor anchor)
         {
-            if (!string.IsNullOrWhiteSpace(DefaultActionId))
+            string configuredActionId = ResolveConfiguredDefaultActionId();
+            if (!string.IsNullOrEmpty(configuredActionId))
             {
-                return DefaultActionId;
+                return configuredActionId;
+            }
+
+            string placedObjectActionId = ResolvePlacedObjectDefaultActionId();
+            if (!string.IsNullOrEmpty(placedObjectActionId))
+            {
+                return placedObjectActionId;
             }
 
             if (anchor != null && anchor.InteractionTarget is ICampusInteractable target && !ReferenceEquals(target, this))
@@ -76,6 +83,24 @@ namespace NtingCampusMapEditor
             }
 
             return CampusInteractionActionIds.Log;
+        }
+
+        private string ResolveConfiguredDefaultActionId()
+        {
+            string configuredActionId = CampusInteractionActionIds.Normalize(DefaultActionId);
+            return !string.IsNullOrEmpty(configuredActionId) &&
+                   !CampusInteractionActionIds.Equals(configuredActionId, CampusInteractionActionIds.Log)
+                ? configuredActionId
+                : string.Empty;
+        }
+
+        private string ResolvePlacedObjectDefaultActionId()
+        {
+            CampusPlacedObject placedObject = GetComponent<CampusPlacedObject>();
+            string placedActionId = placedObject != null
+                ? CampusPlacedObjectInteractionState.ResolveDefaultActionId(placedObject)
+                : string.Empty;
+            return CampusInteractionActionIds.Normalize(placedActionId);
         }
 
         protected override string ResolvePromptText(GameObject actor)

@@ -489,9 +489,7 @@ namespace NtingCampus.Gameplay.Retail
                 return null;
             }
 
-            return worldService.FindRoomForPosition(
-                placedObject.FloorIndex,
-                placedObject.transform.position);
+            return worldService.FindRoomForPlacedObject(placedObject);
         }
 
         private string ResolveStoreId(CampusGameplayRoom room)

@@ -72,9 +72,19 @@ namespace NtingCampusMapEditor
                 return false;
             }
 
-            if (TryGetPreset(placedObject.InteractionPresetEid, out preset))
+            return TryGetPreset(placedObject.InteractionPresetEid, out preset);
+        }
+
+        public bool TryResolveLegacyMappedPreset(
+            CampusPlacedObject placedObject,
+            out CampusObjectInteractionPreset preset,
+            out string mappedFrom)
+        {
+            preset = null;
+            mappedFrom = string.Empty;
+            if (placedObject == null)
             {
-                return true;
+                return false;
             }
 
             string objectId = NormalizeId(placedObject.ObjectId);
@@ -82,13 +92,20 @@ namespace NtingCampusMapEditor
                 objectIdsToPresetEid.TryGetValue(objectId, out string mappedEid) &&
                 TryGetPreset(mappedEid, out preset))
             {
+                mappedFrom = objectId;
                 return true;
             }
 
             string typeId = NormalizeId(placedObject.TypeId);
-            return !string.IsNullOrEmpty(typeId) &&
-                   objectIdsToPresetEid.TryGetValue(typeId, out mappedEid) &&
-                   TryGetPreset(mappedEid, out preset);
+            if (!string.IsNullOrEmpty(typeId) &&
+                objectIdsToPresetEid.TryGetValue(typeId, out mappedEid) &&
+                TryGetPreset(mappedEid, out preset))
+            {
+                mappedFrom = typeId;
+                return true;
+            }
+
+            return false;
         }
 
         public bool TryGetPreset(string eid, out CampusObjectInteractionPreset preset)

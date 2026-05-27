@@ -79,6 +79,7 @@ namespace NtingCampus.Gameplay.Characters
             public string[] ObjectIds = Array.Empty<string>();
             public string RoomType = string.Empty;
             public string[] FacilityTypes = Array.Empty<string>();
+            public string[] NavigationFacilityTypes = Array.Empty<string>();
             public string Owner = string.Empty;
             public string SourceLocation = string.Empty;
             public string SourceContainerPrefix = string.Empty;
@@ -153,6 +154,7 @@ namespace NtingCampus.Gameplay.Characters
             public string[] ObjectIds = Array.Empty<string>();
             public CampusRoomType RoomType = CampusRoomType.Unknown;
             public CampusFacilityType[] FacilityTypes = Array.Empty<CampusFacilityType>();
+            public CampusFacilityType[] NavigationFacilityTypes = Array.Empty<CampusFacilityType>();
             public string Owner = string.Empty;
             public string SourceLocation = string.Empty;
             public string SourceContainerPrefix = string.Empty;

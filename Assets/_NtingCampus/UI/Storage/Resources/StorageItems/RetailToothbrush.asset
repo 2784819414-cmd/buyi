@@ -1,4 +1,4 @@
-﻿%YAML 1.1
+%YAML 1.1
 %TAG !u! tag:unity3d.com,2011:
 --- !u!114 &11400000
 MonoBehaviour:
@@ -17,21 +17,35 @@ MonoBehaviour:
   LocalizedDisplayName:
     chinese: "\u7259\u5237"
     english: Toothbrush
+    traditionalChinese: 
+    russian: 
+    japanese: 
   Width: 1
   Height: 2
+  StackGroupId: 
+  MaxStackSize: 1
   Weight: 0.04
   Price: 10
+  SmellLevel: 0
+  EvidenceWeight: 0
+  CanPrankUse: 0
   Description: "\u5E26\u900F\u660E\u5851\u5C01\u7684\u65B0\u7259\u5237\u3002"
   LocalizedDescription:
     chinese: "\u5E26\u900F\u660E\u5851\u5C01\u7684\u65B0\u7259\u5237\u3002"
     english: A new toothbrush sealed in clear plastic.
+    traditionalChinese: 
+    russian: 
+    japanese: 
   ThemeColor: {r: 0.65, g: 0.84, b: 0.83, a: 1}
   Icon: {fileID: 0}
   IsUsable: 0
   UseActionId: 
   ConsumeOnUse: 1
+  StaminaRestore: 0
   UseText: 
   LocalizedUseText:
     chinese: 
     english: 
-
+    traditionalChinese: 
+    russian: 
+    japanese: 

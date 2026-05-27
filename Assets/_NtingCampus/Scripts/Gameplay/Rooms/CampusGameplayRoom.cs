@@ -26,6 +26,7 @@ namespace NtingCampus.Gameplay.Rooms
             [SerializeField] private CampusFacilityTypeSource facilityTypeSource;
             [SerializeField] private string facilityTypeDiagnostic = string.Empty;
             [SerializeField] private Vector3Int cell;
+            [SerializeField] private string ownerFacilityId = string.Empty;
             [SerializeField] private CampusPlacedObject placedObject;
 
             public string FacilityId => facilityId;
@@ -38,6 +39,7 @@ namespace NtingCampus.Gameplay.Rooms
                 facilityTypeSource == CampusFacilityTypeSource.ExplicitTypeId ||
                 facilityTypeSource == CampusFacilityTypeSource.ExplicitMarker;
             public Vector3Int Cell => cell;
+            public string OwnerFacilityId => ownerFacilityId;
             public CampusPlacedObject PlacedObject => placedObject;
 
             internal void Bind(
@@ -64,7 +66,8 @@ namespace NtingCampus.Gameplay.Rooms
                     explicitFacilityId,
                     resolvedDisplayName,
                     default,
-                    resolvedCell);
+                    resolvedCell,
+                    string.Empty);
             }
 
             internal void Bind(
@@ -75,10 +78,30 @@ namespace NtingCampus.Gameplay.Rooms
                 CampusLocalizedText explicitLocalizedDisplayName,
                 Vector3Int targetCell)
             {
+                Bind(
+                    source,
+                    resolution,
+                    explicitFacilityId,
+                    explicitDisplayName,
+                    explicitLocalizedDisplayName,
+                    targetCell,
+                    string.Empty);
+            }
+
+            internal void Bind(
+                CampusPlacedObject source,
+                CampusFacilityTypeResolution resolution,
+                string explicitFacilityId,
+                string explicitDisplayName,
+                CampusLocalizedText explicitLocalizedDisplayName,
+                Vector3Int targetCell,
+                string explicitOwnerFacilityId)
+            {
                 placedObject = source;
                 facilityType = resolution.FacilityType;
                 facilityTypeSource = resolution.Source;
                 facilityTypeDiagnostic = resolution.Diagnostic;
+                ownerFacilityId = CampusGameplayFacilityMarker.NormalizeFacilityId(explicitOwnerFacilityId);
                 localizedDisplayName = explicitLocalizedDisplayName.HasAnyText
                     ? explicitLocalizedDisplayName
                     : source != null ? source.LocalizedDisplayNameOverride : default;
@@ -106,10 +129,32 @@ namespace NtingCampus.Gameplay.Rooms
                 Vector3Int targetCell,
                 CampusFacilityTypeSource source)
             {
+                BindExplicit(
+                    explicitFacilityId,
+                    explicitDisplayName,
+                    explicitLocalizedDisplayName,
+                    type,
+                    targetFloorIndex,
+                    targetCell,
+                    string.Empty,
+                    source);
+            }
+
+            internal void BindExplicit(
+                string explicitFacilityId,
+                string explicitDisplayName,
+                CampusLocalizedText explicitLocalizedDisplayName,
+                CampusFacilityType type,
+                int targetFloorIndex,
+                Vector3Int targetCell,
+                string explicitOwnerFacilityId,
+                CampusFacilityTypeSource source)
+            {
                 placedObject = null;
                 facilityType = type;
                 facilityTypeSource = source;
                 facilityTypeDiagnostic = string.Empty;
+                ownerFacilityId = CampusGameplayFacilityMarker.NormalizeFacilityId(explicitOwnerFacilityId);
                 localizedDisplayName = explicitLocalizedDisplayName;
                 facilityId = CampusGameplayFacilityMarker.NormalizeFacilityId(explicitFacilityId);
                 if (string.IsNullOrEmpty(facilityId))
@@ -279,6 +324,25 @@ namespace NtingCampus.Gameplay.Rooms
             CampusLocalizedText localizedDisplayName,
             Vector3Int targetCell)
         {
+            AddLinkedFacility(
+                placedObject,
+                resolution,
+                facilityId,
+                displayName,
+                localizedDisplayName,
+                targetCell,
+                string.Empty);
+        }
+
+        internal void AddLinkedFacility(
+            CampusPlacedObject placedObject,
+            CampusFacilityTypeResolution resolution,
+            string facilityId,
+            string displayName,
+            CampusLocalizedText localizedDisplayName,
+            Vector3Int targetCell,
+            string ownerFacilityId)
+        {
             if (placedObject == null)
             {
                 return;
@@ -291,7 +355,8 @@ namespace NtingCampus.Gameplay.Rooms
                 facilityId,
                 displayName,
                 localizedDisplayName,
-                targetCell);
+                targetCell,
+                ownerFacilityId);
             facilities.Add(record);
         }
 
@@ -318,6 +383,23 @@ namespace NtingCampus.Gameplay.Rooms
             CampusFacilityType type,
             Vector3Int targetCell)
         {
+            AddExplicitFacility(
+                facilityId,
+                displayName,
+                localizedDisplayName,
+                type,
+                targetCell,
+                string.Empty);
+        }
+
+        internal void AddExplicitFacility(
+            string facilityId,
+            string displayName,
+            CampusLocalizedText localizedDisplayName,
+            CampusFacilityType type,
+            Vector3Int targetCell,
+            string ownerFacilityId)
+        {
             FacilityRecord record = new FacilityRecord();
             record.BindExplicit(
                 facilityId,
@@ -326,6 +408,7 @@ namespace NtingCampus.Gameplay.Rooms
                 type,
                 floorIndex,
                 targetCell,
+                ownerFacilityId,
                 CampusFacilityTypeSource.ExplicitMarker);
             facilities.Add(record);
         }

@@ -141,6 +141,12 @@ namespace NtingCampus.Gameplay.Characters
             aiRuntime.RequestDecisionSoon();
         }
 
+        public void RefreshPersonalProfile()
+        {
+            RebuildPersonalProfile();
+            aiRuntime.RequestDecisionSoon();
+        }
+
         private void RebuildPersonalProfile()
         {
             EnsureAiController();

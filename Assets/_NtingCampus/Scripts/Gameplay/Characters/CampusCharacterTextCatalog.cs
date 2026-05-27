@@ -33,7 +33,8 @@ namespace NtingCampus.Gameplay.Characters
         TeacherInvestigateAmbient = 25,
         StudentAvoidDisturbanceAmbient = 26,
         TeacherDefaultAmbient = 27,
-        StudentDefaultAmbient = 28
+        StudentDefaultAmbient = 28,
+        TheftAlertIcon = 29
     }
 
     public enum CampusSanctionReasonId
@@ -45,6 +46,11 @@ namespace NtingCampus.Gameplay.Characters
 
     public static class CampusCharacterTextCatalog
     {
+        public static string GetDialogue(CampusCharacterDialogueId id)
+        {
+            return GetDialogue(CampusLanguageState.CurrentLanguage, id);
+        }
+
         public static string GetDialogue(CampusDisplayLanguage language, CampusCharacterDialogueId id)
         {
             return id switch
@@ -77,6 +83,7 @@ namespace NtingCampus.Gameplay.Characters
                 CampusCharacterDialogueId.StudentAvoidDisturbanceAmbient => Resolve(language, "别把我扯进去。", "Do not drag me into it."),
                 CampusCharacterDialogueId.TeacherDefaultAmbient => Resolve(language, "安静，挺好。", "Quiet room, good."),
                 CampusCharacterDialogueId.StudentDefaultAmbient => Resolve(language, "嗯。", "Mm."),
+                CampusCharacterDialogueId.TheftAlertIcon => Resolve(language, "!", "!"),
                 _ => "..."
             };
         }

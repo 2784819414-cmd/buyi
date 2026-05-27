@@ -30,6 +30,7 @@ namespace NtingCampus.Gameplay.Rooms
         WorkerStandPoint = 25,
         PickupPoint = 26,
         ServiceWindow = 27,
-        ReadyItemContainer = 28
+        ReadyItemContainer = 28,
+        SeatPoint = 29
     }
 }

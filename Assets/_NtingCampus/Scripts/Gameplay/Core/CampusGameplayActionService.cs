@@ -165,21 +165,6 @@ namespace NtingCampus.Gameplay.Core
             return CampusInventoryActionExecutor.TryDropItemToGround(actor, item, source, groundDropContext, context, out result);
         }
 
-        public static bool TryOpenInventoryView(
-            CampusCharacterRuntime actor,
-            StorageContainerModel externalContainer,
-            GameObject groundDropContext,
-            bool includeBackpack,
-            out string message)
-        {
-            return CampusInventoryActionExecutor.TryOpenInventoryView(
-                actor,
-                externalContainer,
-                groundDropContext,
-                includeBackpack,
-                out message);
-        }
-
         private bool TryExecuteGlobalAction(CampusGameplayActionRequest request)
         {
             return false;

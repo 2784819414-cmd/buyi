@@ -7,6 +7,24 @@
   "OrderChancePercent": 35,
   "MinDeliveryMinutes": 20,
   "MaxDeliveryMinutes": 60,
-  "PickupScore": 66,
-  "WaitScore": 58
+  "OrderWindows": [
+    {
+      "MealId": "breakfast",
+      "StartClock": "06:30",
+      "EndClock": "07:00",
+      "ActiveScheduleSegments": [ "BreakfastPrep" ]
+    },
+    {
+      "MealId": "lunch",
+      "StartClock": "10:50",
+      "EndClock": "11:30",
+      "ActiveScheduleSegments": [ "LunchBreak" ]
+    },
+    {
+      "MealId": "dinner",
+      "StartClock": "16:35",
+      "EndClock": "17:15",
+      "ActiveScheduleSegments": [ "DinnerBreak" ]
+    }
+  ]
 }

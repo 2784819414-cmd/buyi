@@ -1,4 +1,4 @@
-﻿%YAML 1.1
+%YAML 1.1
 %TAG !u! tag:unity3d.com,2011:
 --- !u!114 &11400000
 MonoBehaviour:
@@ -17,21 +17,35 @@ MonoBehaviour:
   LocalizedDisplayName:
     chinese: "\u7206\u7C73\u82B1"
     english: Popcorn Bag
+    traditionalChinese: 
+    russian: 
+    japanese: 
   Width: 2
   Height: 2
+  StackGroupId: 
+  MaxStackSize: 1
   Weight: 0.12
   Price: 10
+  SmellLevel: 0
+  EvidenceWeight: 0
+  CanPrankUse: 0
   Description: "\u8F7B\u98D8\u98D8\u7684\u5927\u888B\u7206\u7C73\u82B1\u3002"
   LocalizedDescription:
     chinese: "\u8F7B\u98D8\u98D8\u7684\u5927\u888B\u7206\u7C73\u82B1\u3002"
     english: A light oversized bag of popcorn.
+    traditionalChinese: 
+    russian: 
+    japanese: 
   ThemeColor: {r: 0.95, g: 0.83, b: 0.48, a: 1}
   Icon: {fileID: 0}
   IsUsable: 1
   UseActionId: campus.item.consume_food
   ConsumeOnUse: 1
   StaminaRestore: 12
-  UseText: 吃掉
+  UseText: "\u5403\u6389"
   LocalizedUseText:
-    chinese: 吃掉
+    chinese: "\u5403\u6389"
     english: Eat the Popcorn Bag.
+    traditionalChinese: 
+    russian: 
+    japanese: 

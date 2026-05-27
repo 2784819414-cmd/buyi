@@ -3,7 +3,6 @@ using Nting.Storage;
 using NtingCampus.Gameplay.Characters;
 using NtingCampus.Gameplay.Core;
 using NtingCampus.Gameplay.Inventory;
-using NtingCampus.Gameplay.Retail;
 using NtingCampus.Gameplay.Rooms;
 using NtingCampusMapEditor;
 using UnityEngine;
@@ -99,7 +98,8 @@ namespace NtingCampus.UI.Runtime.Gameplay
             CampusGameplayRoom currentRoom = worldService != null ? worldService.FindRoomForRuntime(playerRuntime) : null;
             CampusCharacterStaminaController staminaController =
                 playerRuntime != null ? playerRuntime.GetComponent<CampusCharacterStaminaController>() : null;
-            CampusRetailCheckoutSummary pendingSummary = CampusRetailService.BuildPendingSummary(playerRuntime);
+            CampusProtectedTransferClearanceSummary pendingSummary =
+                CampusProtectedTransferClearanceService.BuildSummary(playerRuntime, string.Empty, true);
 
             StorageContainerModel backpack = inventory != null && inventory.HasBackpack ? inventory.Backpack : null;
             int suspicion = gameState != null ? gameState.PlayerSuspicion : 0;

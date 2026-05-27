@@ -99,6 +99,12 @@ namespace NtingCampus.Gameplay.Canteen
             return CreateMigrationDefault();
         }
 
+        public static CampusCanteenMenuItem ResolveDefault(string[] menuItemIds)
+        {
+            CampusCanteenMenuItem[] items = GetMenuItems(menuItemIds);
+            return items.Length > 0 ? items[0] : null;
+        }
+
         public static CampusCanteenMenuItem[] GetMenuItems()
         {
             EnsureLoaded();
@@ -107,6 +113,29 @@ namespace NtingCampus.Gameplay.Canteen
             {
                 string id = data.OrderedIds[i];
                 if (data.Items.TryGetValue(id, out CampusCanteenMenuItem item) && item != null)
+                {
+                    items.Add(item);
+                }
+            }
+
+            return items.ToArray();
+        }
+
+        public static CampusCanteenMenuItem[] GetMenuItems(string[] menuItemIds)
+        {
+            EnsureLoaded();
+            if (menuItemIds == null || menuItemIds.Length == 0)
+            {
+                return GetMenuItems();
+            }
+
+            List<CampusCanteenMenuItem> items = new List<CampusCanteenMenuItem>();
+            for (int i = 0; i < menuItemIds.Length; i++)
+            {
+                string id = NormalizeId(menuItemIds[i]);
+                if (!string.IsNullOrEmpty(id) &&
+                    data.Items.TryGetValue(id, out CampusCanteenMenuItem item) &&
+                    item != null)
                 {
                     items.Add(item);
                 }

@@ -8,6 +8,7 @@ namespace NtingCampus.Gameplay.Canteen
     {
         private CampusCharacterRuntime actor;
         private NtingCampusMapEditor.CampusPlacedObject window;
+        private string[] menuItemIds;
         private Vector2 scroll;
         private string statusMessage = string.Empty;
         private GUIStyle panelStyle;
@@ -16,6 +17,14 @@ namespace NtingCampus.Gameplay.Canteen
         private GUIStyle buttonStyle;
 
         public static void Open(CampusCharacterRuntime actor, NtingCampusMapEditor.CampusPlacedObject window)
+        {
+            Open(actor, window, null);
+        }
+
+        public static void Open(
+            CampusCharacterRuntime actor,
+            NtingCampusMapEditor.CampusPlacedObject window,
+            string[] menuItemIds)
         {
             if (actor == null || window == null)
             {
@@ -31,6 +40,7 @@ namespace NtingCampus.Gameplay.Canteen
 
             panel.actor = actor;
             panel.window = window;
+            panel.menuItemIds = CloneIds(menuItemIds);
             panel.statusMessage = string.Empty;
             panel.enabled = true;
         }
@@ -63,7 +73,7 @@ namespace NtingCampus.Gameplay.Canteen
             GUILayout.Space(10f);
 
             scroll = GUILayout.BeginScrollView(scroll, GUILayout.Height(Mathf.Max(140f, panelRect.height - 170f)));
-            CampusCanteenMenuItem[] items = CampusCanteenMenuCatalog.GetMenuItems();
+            CampusCanteenMenuItem[] items = CampusCanteenMenuCatalog.GetMenuItems(menuItemIds);
             for (int i = 0; i < items.Length; i++)
             {
                 DrawMenuItem(items[i]);
@@ -137,7 +147,24 @@ namespace NtingCampus.Gameplay.Canteen
             enabled = false;
             actor = null;
             window = null;
+            menuItemIds = null;
             statusMessage = string.Empty;
+        }
+
+        private static string[] CloneIds(string[] ids)
+        {
+            if (ids == null || ids.Length == 0)
+            {
+                return null;
+            }
+
+            string[] clone = new string[ids.Length];
+            for (int i = 0; i < ids.Length; i++)
+            {
+                clone[i] = ids[i];
+            }
+
+            return clone;
         }
 
         private static Rect ResolvePanelRect()

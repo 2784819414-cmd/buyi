@@ -133,7 +133,14 @@ namespace NtingCampusMapEditor
                 new CampusLocalizedTextEntry("\u653e\u7f6e\u4f4d", "Drop Slot", "\u653e\u7f6e\u4f4d", "\u041c\u0435\u0441\u0442\u043e \u0432\u044b\u043a\u043b\u0430\u0434\u043a\u0438", "\u914d\u7f6e\u4f4d\u7f6e"),
                 new CampusLocalizedTextEntry("\u653e\u7f6e\u4f4d", "Drop Slot", "\u653e\u7f6e\u4f4d", "\u041c\u0435\u0441\u0442\u043e \u0432\u044b\u043a\u043b\u0430\u0434\u043a\u0438", "\u914d\u7f6e\u4f4d\u7f6e"),
                 CampusFacilityType.DropPoint,
-                new Color(0.32f, 0.54f, 0.98f, 1f))
+                new Color(0.32f, 0.54f, 0.98f, 1f)),
+            CampusRuntimeGameplayMarkerPreset.FacilityPoint(
+                new CampusLocalizedTextEntry("\u5ea7\u4f4d\u70b9", "Seat Point", "\u5ea7\u4f4d\u9ede", "\u041c\u0435\u0441\u0442\u043e", "\u5ea7\u5e2d\u30dd\u30a4\u30f3\u30c8"),
+                new CampusLocalizedTextEntry("\u5ea7\u4f4d\u70b9", "Seat Point", "\u5ea7\u4f4d\u9ede", "\u041c\u0435\u0441\u0442\u043e", "\u5ea7\u5e2d\u30dd\u30a4\u30f3\u30c8"),
+                CampusFacilityType.SeatPoint,
+                new Color(0.55f, 0.80f, 0.37f, 1f),
+                true,
+                new[] { CampusFacilityType.StudentDesk })
         };
 
         private static CampusRuntimeGameplayMarkerPreset[] LoadPresets()

@@ -15,7 +15,6 @@ namespace NtingCampus.Gameplay.Characters
         TransferItemToFirstFit = 31,
         DropItemToGround = 40,
         UseHeldItem = 45,
-        OpenInventoryView = 50,
         DomainAction = 90
     }
 
@@ -36,7 +35,6 @@ namespace NtingCampus.Gameplay.Characters
         public StorageContainerModel[] TargetContainers { get; private set; }
         public int TargetX { get; private set; }
         public int TargetY { get; private set; }
-        public bool IncludeBackpack { get; private set; }
         public GameObject GroundDropContext { get; private set; }
 
         public static CampusCharacterAction PressInteract(Object target)
@@ -133,19 +131,5 @@ namespace NtingCampus.Gameplay.Characters
         {
             return new CampusCharacterAction(CampusCharacterActionKind.UseHeldItem);
         }
-
-        public static CampusCharacterAction OpenInventoryView(
-            StorageContainerModel externalContainer,
-            GameObject groundDropContext,
-            bool includeBackpack)
-        {
-            return new CampusCharacterAction(CampusCharacterActionKind.OpenInventoryView)
-            {
-                TargetContainer = externalContainer,
-                GroundDropContext = groundDropContext,
-                IncludeBackpack = includeBackpack
-            };
-        }
-
     }
 }

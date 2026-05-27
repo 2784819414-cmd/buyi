@@ -8,7 +8,7 @@ using UnityEngine.UI;
 namespace NtingCampus.UI.Runtime.Gameplay
 {
     [DisallowMultipleComponent]
-    public sealed class CampusHudHandSlotDragHandler : MonoBehaviour, IBeginDragHandler, IDragHandler, IEndDragHandler, IPointerEnterHandler, IPointerMoveHandler, IPointerExitHandler
+    public sealed class CampusHudHandSlotDragHandler : MonoBehaviour, IPointerClickHandler, IBeginDragHandler, IDragHandler, IEndDragHandler, IPointerEnterHandler, IPointerMoveHandler, IPointerExitHandler
     {
         [SerializeField] private CampusCharacterRuntime actor;
         [SerializeField] private StorageContainerModel handContainer;
@@ -45,8 +45,30 @@ namespace NtingCampus.UI.Runtime.Gameplay
             gameObject.SetActive(enabled);
         }
 
+        public void OnPointerClick(PointerEventData eventData)
+        {
+            if (eventData.button != PointerEventData.InputButton.Right)
+            {
+                return;
+            }
+
+            StorageItemModel item = ResolveHeldItem();
+            if (!StorageItemUseUtility.CanUse(item))
+            {
+                return;
+            }
+
+            HideTooltip();
+            CampusInventoryActionExecutor.TryUseHeldItem(actor, handContainer, out _);
+        }
+
         public void OnBeginDrag(PointerEventData eventData)
         {
+            if (eventData.button != PointerEventData.InputButton.Left)
+            {
+                return;
+            }
+
             StorageItemModel item = ResolveHeldItem();
             if (item == null || dragLayer == null)
             {

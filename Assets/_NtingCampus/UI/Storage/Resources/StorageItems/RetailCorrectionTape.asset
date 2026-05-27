@@ -1,4 +1,4 @@
-﻿%YAML 1.1
+%YAML 1.1
 %TAG !u! tag:unity3d.com,2011:
 --- !u!114 &11400000
 MonoBehaviour:
@@ -17,21 +17,35 @@ MonoBehaviour:
   LocalizedDisplayName:
     chinese: "\u4FEE\u6B63\u5E26"
     english: Correction Tape
+    traditionalChinese: 
+    russian: 
+    japanese: 
   Width: 1
   Height: 1
+  StackGroupId: 
+  MaxStackSize: 1
   Weight: 0.05
   Price: 10
+  SmellLevel: 0
+  EvidenceWeight: 0
+  CanPrankUse: 0
   Description: "\u5C0F\u578B\u4FEE\u6B63\u5E26\uFF0C\u58F3\u4F53\u504F\u5706\u3002"
   LocalizedDescription:
     chinese: "\u5C0F\u578B\u4FEE\u6B63\u5E26\uFF0C\u58F3\u4F53\u504F\u5706\u3002"
     english: A compact correction tape dispenser with a rounded shell.
+    traditionalChinese: 
+    russian: 
+    japanese: 
   ThemeColor: {r: 0.56, g: 0.76, b: 0.91, a: 1}
   Icon: {fileID: 0}
   IsUsable: 0
   UseActionId: 
   ConsumeOnUse: 1
+  StaminaRestore: 0
   UseText: 
   LocalizedUseText:
     chinese: 
     english: 
-
+    traditionalChinese: 
+    russian: 
+    japanese: 

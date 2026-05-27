@@ -49,9 +49,11 @@ namespace NtingCampus.UI.Runtime.Gameplay
         {
             CampusCharacterRuntime runtime = ResolvePlayerRuntime();
             CampusCharacterInventory inventory = CampusCharacterInventoryService.GetOrCreateInventory(runtime, true);
-            CampusCharacterActionExecutor.TryExecute(
+            CampusPlayerInventoryViewService.TryOpen(
                 runtime,
-                CampusCharacterAction.OpenInventoryView(null, ResolvePlayerObject(runtime), inventory != null && inventory.HasBackpack),
+                null,
+                ResolvePlayerObject(runtime),
+                inventory != null && inventory.HasBackpack,
                 out _);
         }
 

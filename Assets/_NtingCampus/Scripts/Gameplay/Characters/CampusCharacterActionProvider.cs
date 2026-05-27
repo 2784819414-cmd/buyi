@@ -311,7 +311,7 @@ namespace NtingCampus.Gameplay.Characters
         {
             result = StorageTransferResult.Fail(string.Empty);
             if (context.Actor == null ||
-                !CampusConfiguredActionPayload.TryParse(context.Payload, out CampusConfiguredActionPayload payload) ||
+                !TryResolvePayload(context.ActionId, context.Payload, out CampusConfiguredActionPayload payload) ||
                 !TargetPassesFilters(context.Target, payload))
             {
                 return false;
@@ -337,6 +337,19 @@ namespace NtingCampus.Gameplay.Characters
             }
 
             return false;
+        }
+
+        private static bool TryResolvePayload(
+            string actionId,
+            string inlinePayload,
+            out CampusConfiguredActionPayload payload)
+        {
+            if (CampusConfiguredActionPresetCatalog.TryResolvePayload(actionId, out payload))
+            {
+                return true;
+            }
+
+            return CampusConfiguredActionPayload.TryParse(inlinePayload, out payload);
         }
 
         private static bool TryTakeFromTargetContainer(
@@ -587,14 +600,14 @@ namespace NtingCampus.Gameplay.Characters
             CampusConfiguredActionPayload payload,
             StorageContainerModel source)
         {
-            if (payload != null && !string.IsNullOrWhiteSpace(payload.RoomId))
-            {
-                return payload.RoomId;
-            }
-
             if (source != null && !string.IsNullOrWhiteSpace(source.RoomId))
             {
                 return source.RoomId;
+            }
+
+            if (payload != null && !string.IsNullOrWhiteSpace(payload.RoomId))
+            {
+                return payload.RoomId;
             }
 
             return CampusProtectedTransferState.ResolveActorCurrentRoomId(actor);
@@ -608,9 +621,7 @@ namespace NtingCampus.Gameplay.Characters
                 CampusWorldService worldService = bootstrap != null ? bootstrap.WorldService : null;
                 if (worldService != null)
                 {
-                    var room = worldService.FindRoomForPosition(
-                        placedObject.FloorIndex,
-                        placedObject.transform.position);
+                    CampusGameplayRoom room = worldService.FindRoomForPlacedObject(placedObject);
                     return room != null ? room.RoomId : string.Empty;
                 }
             }

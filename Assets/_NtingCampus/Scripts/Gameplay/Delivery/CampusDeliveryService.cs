@@ -12,14 +12,6 @@ using UnityEngine;
 
 namespace NtingCampus.Gameplay.Delivery
 {
-    internal enum CampusDeliveryMealId
-    {
-        None = 0,
-        Breakfast = 1,
-        Lunch = 2,
-        Dinner = 3
-    }
-
     internal enum CampusDeliveryOrderState
     {
         Ordered = 0,
@@ -31,7 +23,7 @@ namespace NtingCampus.Gameplay.Delivery
     internal sealed class CampusDeliveryOrder
     {
         public string ActorId = string.Empty;
-        public CampusDeliveryMealId MealId;
+        public string MealId = string.Empty;
         public int Day;
         public int OrderedMinute;
         public int DeliveryMinute;
@@ -74,8 +66,8 @@ namespace NtingCampus.Gameplay.Delivery
                 return false;
             }
 
-            CampusDeliveryMealId mealId = ResolveUpcomingMeal();
-            if (mealId == CampusDeliveryMealId.None ||
+            string mealId = ResolveUpcomingMeal();
+            if (string.IsNullOrEmpty(mealId) ||
                 HasAnyMealOrder(actor.CharacterId, mealId) ||
                 skippedOrderKeys.Contains(BuildMealKey(actor.CharacterId, ResolveDay(), mealId)) ||
                 !HasDeliverySpot())
@@ -94,7 +86,7 @@ namespace NtingCampus.Gameplay.Delivery
                 return false;
             }
 
-            CampusDeliveryMealId mealId = ResolveUpcomingMeal();
+            string mealId = ResolveUpcomingMeal();
             CampusDeliveryRules rules = CampusDeliveryPresetCatalog.Rules;
             int now = ResolveCurrentMinute();
             int delay = ResolveDeliveryDelay(actor.CharacterId, mealId, rules);
@@ -110,6 +102,13 @@ namespace NtingCampus.Gameplay.Delivery
             };
 
             orders[BuildMealKey(order.ActorId, order.Day, order.MealId)] = order;
+            Debug.Log(CampusDeliveryTextCatalog.Format(
+                CampusDeliveryTextId.OrderPlacedConsole,
+                ResolveActorName(actor),
+                actor.CharacterId,
+                order.MealId,
+                CampusTimeSchedule.FormatClockMinute(order.OrderedMinute),
+                CampusTimeSchedule.FormatClockMinute(order.DeliveryMinute)));
             WriteLog(CampusDeliveryTextCatalog.Format(
                 CampusDeliveryTextId.OrderPlacedLog,
                 ResolveActorName(actor)));
@@ -329,8 +328,8 @@ namespace NtingCampus.Gameplay.Delivery
 
         private CampusDeliveryOrder ResolveMealOrder(string actorId)
         {
-            CampusDeliveryMealId currentMeal = ResolveCurrentMeal();
-            if (currentMeal == CampusDeliveryMealId.None)
+            string currentMeal = ResolveCurrentMeal();
+            if (string.IsNullOrEmpty(currentMeal))
             {
                 return null;
             }
@@ -339,12 +338,12 @@ namespace NtingCampus.Gameplay.Delivery
             return order;
         }
 
-        private bool HasAnyMealOrder(string actorId, CampusDeliveryMealId mealId)
+        private bool HasAnyMealOrder(string actorId, string mealId)
         {
             return orders.ContainsKey(BuildMealKey(actorId, ResolveDay(), mealId));
         }
 
-        private bool ShouldOrderForMeal(CampusCharacterRuntime actor, CampusDeliveryMealId mealId)
+        private bool ShouldOrderForMeal(CampusCharacterRuntime actor, string mealId)
         {
             int chance = CampusDeliveryPresetCatalog.Rules.OrderChancePercent;
             if (chance <= 0)
@@ -357,13 +356,13 @@ namespace NtingCampus.Gameplay.Delivery
                 return true;
             }
 
-            int roll = PositiveModulo(Hash(actor.CharacterId) + ResolveDay() * 97 + (int)mealId * 131, 100);
+            int roll = PositiveModulo(Hash(actor.CharacterId) + ResolveDay() * 97 + Hash(mealId) * 131, 100);
             return roll < chance;
         }
 
-        private void MarkSkipped(CampusCharacterRuntime actor, CampusDeliveryMealId mealId)
+        private void MarkSkipped(CampusCharacterRuntime actor, string mealId)
         {
-            if (actor == null || mealId == CampusDeliveryMealId.None)
+            if (actor == null || string.IsNullOrEmpty(mealId))
             {
                 return;
             }
@@ -381,39 +380,24 @@ namespace NtingCampus.Gameplay.Delivery
                 : now >= due && now < ordered;
         }
 
-        private int ResolveDeliveryDelay(string actorId, CampusDeliveryMealId mealId, CampusDeliveryRules rules)
+        private int ResolveDeliveryDelay(string actorId, string mealId, CampusDeliveryRules rules)
         {
             int range = Mathf.Max(1, rules.MaxDeliveryMinutes - rules.MinDeliveryMinutes + 1);
-            int offset = PositiveModulo(Hash(actorId) + ResolveDay() * 53 + (int)mealId * 197, range);
+            int offset = PositiveModulo(Hash(actorId) + ResolveDay() * 53 + Hash(mealId) * 197, range);
             return rules.MinDeliveryMinutes + offset;
         }
 
-        private CampusDeliveryMealId ResolveUpcomingMeal()
+        private string ResolveUpcomingMeal()
         {
             return CampusDeliveryPresetCatalog.ResolveUpcomingMeal(ResolveCurrentMinute());
         }
 
-        private CampusDeliveryMealId ResolveCurrentMeal()
+        private string ResolveCurrentMeal()
         {
             CampusTimeSegment segment = bootstrap != null && bootstrap.TimeController != null
                 ? bootstrap.TimeController.CurrentSegment
                 : CampusTimeSegment.MorningClass1;
-            if (CampusDeliveryPresetCatalog.IsMealPeakForOrder(CampusDeliveryMealId.Breakfast, segment))
-            {
-                return CampusDeliveryMealId.Breakfast;
-            }
-
-            if (CampusDeliveryPresetCatalog.IsMealPeakForOrder(CampusDeliveryMealId.Lunch, segment))
-            {
-                return CampusDeliveryMealId.Lunch;
-            }
-
-            if (CampusDeliveryPresetCatalog.IsMealPeakForOrder(CampusDeliveryMealId.Dinner, segment))
-            {
-                return CampusDeliveryMealId.Dinner;
-            }
-
-            return CampusDeliveryMealId.None;
+            return CampusDeliveryPresetCatalog.ResolveActiveMeal(segment);
         }
 
         private int ResolveCurrentMinute()
@@ -428,25 +412,25 @@ namespace NtingCampus.Gameplay.Delivery
             return bootstrap != null && bootstrap.GameState != null ? bootstrap.GameState.Day : 1;
         }
 
-        private string BuildMealKey(string actorId, int day, CampusDeliveryMealId mealId)
+        private string BuildMealKey(string actorId, int day, string mealId)
         {
-            return CleanId(actorId) + ":d" + Mathf.Max(1, day) + ":" + mealId;
+            return CleanId(actorId) + ":d" + Mathf.Max(1, day) + ":" + CleanId(mealId);
         }
 
-        private static string BuildItemInstanceId(string actorId, CampusDeliveryMealId mealId, int orderedMinute)
+        private static string BuildItemInstanceId(string actorId, string mealId, int orderedMinute)
         {
-            return CleanId(actorId) + ".delivery." + mealId + "." + orderedMinute.ToString("0000");
+            return CleanId(actorId) + ".delivery." + CleanId(mealId) + "." + orderedMinute.ToString("0000");
         }
 
         private static string BuildSourceContainerId(CampusDeliveryOrder order)
         {
             string prefix = CampusDeliveryPresetCatalog.Rules.SourceContainerPrefix;
-            return prefix + "." + CleanId(order.ActorId) + ".d" + Mathf.Max(1, order.Day) + "." + order.MealId;
+            return prefix + "." + CleanId(order.ActorId) + ".d" + Mathf.Max(1, order.Day) + "." + CleanId(order.MealId);
         }
 
         private static Vector3 ResolveDeliveryPosition(CampusPlacedObject spot, CampusDeliveryOrder order)
         {
-            int slot = PositiveModulo(Hash(order.ActorId) + (int)order.MealId * 7, 5);
+            int slot = PositiveModulo(Hash(order.ActorId) + Hash(order.MealId) * 7, 5);
             float x = (slot - 2) * 0.18f;
             return spot.transform.TransformPoint(new Vector3(x, -0.12f, 0f));
         }

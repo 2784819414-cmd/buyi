@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using NtingCampus.Gameplay.Characters;
 using NtingCampus.Gameplay.Services;
+using NtingCampusMapEditor;
 using UnityEngine;
 
 namespace NtingCampus.Gameplay.Rooms
@@ -260,6 +261,8 @@ namespace NtingCampus.Gameplay.Rooms
         {
             Dictionary<string, List<string>> officeDeskOwners =
                 new Dictionary<string, List<string>>(StringComparer.OrdinalIgnoreCase);
+            Dictionary<string, List<string>> studentDeskOwners =
+                new Dictionary<string, List<string>>(StringComparer.OrdinalIgnoreCase);
             Dictionary<string, List<string>> serviceWindowOwners =
                 new Dictionary<string, List<string>>(StringComparer.OrdinalIgnoreCase);
 
@@ -284,6 +287,13 @@ namespace NtingCampus.Gameplay.Rooms
                     "StudentDeskId",
                     assignments.StudentDeskId,
                     CampusFacilityType.StudentDesk);
+                ValidateAssignedFacilityRoom(
+                    facts,
+                    issues,
+                    actor.ActorId,
+                    "StudentDeskId",
+                    assignments.StudentDeskId,
+                    assignments.StudentClassroomId);
                 ValidateFacilityReference(
                     facts,
                     issues,
@@ -313,6 +323,11 @@ namespace NtingCampus.Gameplay.Rooms
                     "ServiceStationId",
                     assignments.ServiceStationId);
 
+                if (actor.Role == CampusCharacterRole.Student && !string.IsNullOrWhiteSpace(assignments.StudentDeskId))
+                {
+                    AddOwner(studentDeskOwners, assignments.StudentDeskId, actor.ActorId);
+                }
+
                 if (actor.Role == CampusCharacterRole.Teacher && !string.IsNullOrWhiteSpace(assignments.OfficeDeskId))
                 {
                     AddOwner(officeDeskOwners, assignments.OfficeDeskId, actor.ActorId);
@@ -326,6 +341,10 @@ namespace NtingCampus.Gameplay.Rooms
                 }
             }
 
+            ReportDuplicateOwners(
+                issues,
+                studentDeskOwners,
+                CampusEcologyValidationTextCatalog.Get(CampusEcologyValidationTextId.StudentDeskDuplicateOwners));
             ReportDuplicateOwners(
                 issues,
                 officeDeskOwners,
@@ -461,6 +480,15 @@ namespace NtingCampus.Gameplay.Rooms
                             CampusServiceStationValidationTextId.OwnerRoomMismatch)));
                     valid = false;
                 }
+
+                if (!ValidateServiceStationOwnerInteraction(
+                        issues,
+                        definition,
+                        ownerFacility,
+                        subjectId))
+                {
+                    valid = false;
+                }
             }
 
             for (int slotIndex = 0; slotIndex < definition.Slots.Count; slotIndex++)
@@ -493,6 +521,95 @@ namespace NtingCampus.Gameplay.Rooms
             }
 
             return valid;
+        }
+
+        private static bool ValidateServiceStationOwnerInteraction(
+            List<ValidationIssue> issues,
+            CampusServiceStationTypeDefinition definition,
+            CampusWorldFacts.FacilityFact ownerFacility,
+            string subjectId)
+        {
+            string actionId = CampusInteractionActionIds.Normalize(
+                definition != null ? definition.InteractionActionId : string.Empty);
+            if (string.IsNullOrEmpty(actionId))
+            {
+                issues.Add(new ValidationIssue(
+                    Severity.Error,
+                    subjectId,
+                    CampusServiceStationValidationTextCatalog.Format(
+                        CampusServiceStationValidationTextId.MissingInteractionAction,
+                        definition != null ? definition.StationTypeId : string.Empty)));
+                return false;
+            }
+
+            if (ownerFacility == null || !ownerFacility.HasPlacedObject)
+            {
+                issues.Add(new ValidationIssue(
+                    Severity.Error,
+                    subjectId,
+                    CampusServiceStationValidationTextCatalog.Get(
+                        CampusServiceStationValidationTextId.OwnerMissingPlacedObject)));
+                return false;
+            }
+
+            if (string.IsNullOrWhiteSpace(ownerFacility.InteractionPresetEid))
+            {
+                issues.Add(new ValidationIssue(
+                    Severity.Error,
+                    subjectId,
+                    CampusServiceStationValidationTextCatalog.Get(
+                        CampusServiceStationValidationTextId.OwnerMissingInteractionPreset)));
+                return false;
+            }
+
+            if (!CampusObjectInteractionPresetCatalog.Current.TryGetPreset(
+                    ownerFacility.InteractionPresetEid,
+                    out CampusObjectInteractionPreset preset))
+            {
+                issues.Add(new ValidationIssue(
+                    Severity.Error,
+                    subjectId,
+                    CampusServiceStationValidationTextCatalog.Format(
+                        CampusServiceStationValidationTextId.OwnerUnknownInteractionPreset,
+                        ownerFacility.InteractionPresetEid)));
+                return false;
+            }
+
+            if (!PresetContainsAction(preset, actionId))
+            {
+                issues.Add(new ValidationIssue(
+                    Severity.Error,
+                    subjectId,
+                    CampusServiceStationValidationTextCatalog.Format(
+                        CampusServiceStationValidationTextId.OwnerInteractionActionMissing,
+                        actionId)));
+                return false;
+            }
+
+            return true;
+        }
+
+        private static bool PresetContainsAction(CampusObjectInteractionPreset preset, string actionId)
+        {
+            if (preset == null ||
+                preset.Anchors == null ||
+                string.IsNullOrWhiteSpace(actionId))
+            {
+                return false;
+            }
+
+            for (int i = 0; i < preset.Anchors.Count; i++)
+            {
+                CampusPlacedObjectInteractionAnchor anchor = preset.Anchors[i];
+                if (anchor != null &&
+                    anchor.Enabled &&
+                    CampusInteractionActionIds.Equals(anchor.ActionId, actionId))
+                {
+                    return true;
+                }
+            }
+
+            return false;
         }
 
         private static int CountSlotFacilities(
@@ -633,6 +750,37 @@ namespace NtingCampus.Gameplay.Rooms
                     fieldName,
                     facility.FacilityType,
                     string.Join("/", allowedTypes))));
+        }
+
+        private static void ValidateAssignedFacilityRoom(
+            CampusWorldFacts facts,
+            List<ValidationIssue> issues,
+            string actorId,
+            string fieldName,
+            string facilityId,
+            string roomId)
+        {
+            if (string.IsNullOrWhiteSpace(facilityId) ||
+                string.IsNullOrWhiteSpace(roomId) ||
+                !facts.TryGetFacility(facilityId, out CampusWorldFacts.FacilityFact facility) ||
+                !facts.TryGetRoom(roomId, out _))
+            {
+                return;
+            }
+
+            if (string.Equals(facility.RoomId, roomId, StringComparison.OrdinalIgnoreCase))
+            {
+                return;
+            }
+
+            issues.Add(new ValidationIssue(
+                Severity.Error,
+                actorId,
+                CampusEcologyValidationTextCatalog.Format(
+                    CampusEcologyValidationTextId.StudentDeskRoomMismatch,
+                    fieldName,
+                    facilityId,
+                    facility.RoomId)));
         }
 
         private static void ValidateServiceStationReference(

@@ -1,3 +1,4 @@
+using System;
 using Nting.Storage;
 using NtingCampus.Gameplay.Characters;
 using NtingCampus.Gameplay.Core;
@@ -12,6 +13,27 @@ namespace NtingCampusMapEditor
     public static class CampusObjectStorageInteraction
     {
         public static bool TryOpenStorageView(Component source, GameObject actor, string payload)
+        {
+            return TryOpenStorageView(
+                source,
+                actor,
+                payload,
+                false,
+                string.Empty,
+                string.Empty,
+                -1,
+                null);
+        }
+
+        public static bool TryOpenStorageView(
+            Component source,
+            GameObject actor,
+            string payload,
+            bool forceIllegalExternalTake,
+            string externalTakeSourceLocation,
+            string externalTakeOwnerId,
+            int externalTakeSuspicionRiskOverride,
+            Func<bool> closeWhenExternalTakeUnavailable = null)
         {
             if (source == null)
             {
@@ -45,9 +67,16 @@ namespace NtingCampusMapEditor
 
             ConfigureObjectStorageContainer(source, placedObject, container);
 
-            return CampusCharacterActionExecutor.TryExecute(
+            return CampusPlayerInventoryViewService.TryOpen(
                 actorRuntime,
-                CampusCharacterAction.OpenInventoryView(container, source.gameObject, true),
+                container,
+                source.gameObject,
+                true,
+                forceIllegalExternalTake,
+                externalTakeSourceLocation,
+                externalTakeOwnerId,
+                externalTakeSuspicionRiskOverride,
+                closeWhenExternalTakeUnavailable,
                 out _);
         }
 

@@ -1,7 +1,7 @@
 {
     "Presets": [
         {
-            "ChineseLabel": "服务窗口",
+            "ChineseLabel": "\u670d\u52a1\u7a97\u53e3",
             "EnglishLabel": "Service Window",
             "FacilityType": "ServiceWindow",
             "Color": "#29C7C7",
@@ -9,7 +9,7 @@
             "OwnerFacilityTypes": []
         },
         {
-            "ChineseLabel": "操作员位",
+            "ChineseLabel": "\u64cd\u4f5c\u5458\u4f4d",
             "EnglishLabel": "Operator Slot",
             "FacilityType": "WorkerStandPoint",
             "Color": "#1F94AD",
@@ -17,7 +17,7 @@
             "OwnerFacilityTypes": []
         },
         {
-            "ChineseLabel": "顾客位",
+            "ChineseLabel": "\u987e\u5ba2\u4f4d",
             "EnglishLabel": "Customer Slot",
             "FacilityType": "PickupPoint",
             "Color": "#7AD19E",
@@ -25,7 +25,7 @@
             "OwnerFacilityTypes": []
         },
         {
-            "ChineseLabel": "排队位",
+            "ChineseLabel": "\u6392\u961f\u4f4d",
             "EnglishLabel": "Queue Slot",
             "FacilityType": "WaitingPoint",
             "Color": "#F2C247",
@@ -33,12 +33,22 @@
             "OwnerFacilityTypes": []
         },
         {
-            "ChineseLabel": "放置位",
+            "ChineseLabel": "\u653e\u7f6e\u4f4d",
             "EnglishLabel": "Drop Slot",
             "FacilityType": "DropPoint",
             "Color": "#528AFB",
             "RequiresOwnerFacility": false,
             "OwnerFacilityTypes": []
+        },
+        {
+            "ChineseLabel": "\u5ea7\u4f4d\u70b9",
+            "EnglishLabel": "Seat Point",
+            "FacilityType": "SeatPoint",
+            "Color": "#8CCB5E",
+            "RequiresOwnerFacility": true,
+            "OwnerFacilityTypes": [
+                "StudentDesk"
+            ]
         }
     ]
 }

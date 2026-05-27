@@ -442,6 +442,13 @@ namespace NtingCampus.Gameplay.Rooms
             });
             rules.Add(new FacilityRule
             {
+                FacilityType = nameof(CampusFacilityType.SeatPoint),
+                TypeIds = new[] { "SeatPoint", "seat_point", "seat_slot" },
+                DisplayNames = new[] { "seat point", "seat slot", "\u5ea7\u4f4d\u70b9", "\u5ea7\u4f4d" },
+                Contains = new[] { "seat_point", "seatslot", "\u5ea7\u4f4d\u70b9" }
+            });
+            rules.Add(new FacilityRule
+            {
                 FacilityType = nameof(CampusFacilityType.PickupPoint),
                 TypeIds = new[] { "PickupPoint", "pickup_point", "claim_point", "collection_point" },
                 DisplayNames = new[] { "pickup point", "claim point", "\u53d6\u7269\u70b9", "\u9886\u53d6\u70b9" },

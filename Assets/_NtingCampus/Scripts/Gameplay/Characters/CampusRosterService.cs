@@ -47,6 +47,12 @@ namespace NtingCampus.Gameplay.Characters
             WriteInitializationLog();
         }
 
+        public void RefreshWorldBindings()
+        {
+            SyncCurrentRoomsFromWorld();
+            RefreshNpcPersonalProfiles();
+        }
+
         public CampusCharacterRuntime FindRuntime(string characterId)
         {
             if (string.IsNullOrWhiteSpace(characterId))
@@ -99,6 +105,31 @@ namespace NtingCampus.Gameplay.Characters
             }
 
             return true;
+        }
+
+        public void ApplyGameplayActorAssignments(IReadOnlyList<CampusRuntimeGameplayActorSnapshot> actors)
+        {
+            if (actors == null || actors.Count == 0)
+            {
+                return;
+            }
+
+            for (int i = 0; i < actors.Count; i++)
+            {
+                CampusRuntimeGameplayActorSnapshot actor = actors[i];
+                if (actor == null || actor.Assignments == null)
+                {
+                    continue;
+                }
+
+                CampusCharacterRuntime runtime = FindRuntime(actor.Id);
+                if (runtime == null || runtime.Data == null)
+                {
+                    continue;
+                }
+
+                runtime.Data.SetAssignments(actor.Assignments);
+            }
         }
 
         public IEnumerable<CampusCharacterRuntime> EnumerateByRole(CampusCharacterRole role)
@@ -345,6 +376,21 @@ namespace NtingCampus.Gameplay.Characters
                 }
 
                 CampusCharacterCurrentRoomTracker.SyncRuntime(runtime, worldService);
+            }
+        }
+
+        private void RefreshNpcPersonalProfiles()
+        {
+            for (int i = 0; i < runtimes.Count; i++)
+            {
+                CampusCharacterRuntime runtime = runtimes[i];
+                if (runtime == null || runtime.Data == null || runtime.Data.IsPlayerControlled)
+                {
+                    continue;
+                }
+
+                CampusNpcAiHost host = runtime.GetComponent<CampusNpcAiHost>();
+                host?.RefreshPersonalProfile();
             }
         }
 

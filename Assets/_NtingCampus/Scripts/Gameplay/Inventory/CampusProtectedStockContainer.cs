@@ -225,9 +225,7 @@ namespace NtingCampus.Gameplay.Inventory
                 return null;
             }
 
-            return worldService.FindRoomForPosition(
-                placedObject.FloorIndex,
-                placedObject.transform.position);
+            return worldService.FindRoomForPlacedObject(placedObject);
         }
 
         private static string BuildInstanceId(string containerId, string definitionId, int index)

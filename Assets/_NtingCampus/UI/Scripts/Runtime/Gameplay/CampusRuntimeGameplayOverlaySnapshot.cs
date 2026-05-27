@@ -114,12 +114,14 @@ namespace NtingCampus.UI.Runtime.Gameplay
         public CampusFacilityType FacilityType = CampusFacilityType.Unknown;
         public int FloorIndex = 1;
         public Vector3Int Cell;
+        public string OwnerFacilityId = string.Empty;
         public bool CountsAsCoreFacility = true;
 
         public void Normalize()
         {
             FloorIndex = Mathf.Max(1, FloorIndex);
             DisplayName = string.IsNullOrWhiteSpace(DisplayName) ? string.Empty : DisplayName.Trim();
+            OwnerFacilityId = CampusGameplayFacilityMarker.NormalizeFacilityId(OwnerFacilityId);
             FacilityType = CampusGameplayOverlayEnumIds.Resolve(FacilityTypeId, FacilityType);
             FacilityTypeId = CampusGameplayOverlayEnumIds.ToId(FacilityType);
             Id = CampusGameplayFacilityMarker.NormalizeFacilityId(Id);

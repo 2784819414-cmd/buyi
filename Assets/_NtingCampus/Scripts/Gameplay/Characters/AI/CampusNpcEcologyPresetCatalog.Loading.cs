@@ -224,7 +224,8 @@ namespace NtingCampus.Gameplay.Characters
             }
 
             CampusFacilityType[] facilityTypes = ParseFacilityTypes(file.FacilityTypes, "ActionTargetRule '" + ruleId + "'", out bool hasInvalidFacilityType);
-            if (hasInvalidFacilityType)
+            CampusFacilityType[] navigationFacilityTypes = ParseFacilityTypes(file.NavigationFacilityTypes, "ActionTargetRule '" + ruleId + "' NavigationFacilityTypes", out bool hasInvalidNavigationFacilityType);
+            if (hasInvalidFacilityType || hasInvalidNavigationFacilityType)
             {
                 return null;
             }
@@ -239,6 +240,7 @@ namespace NtingCampus.Gameplay.Characters
                 ObjectIds = NormalizeIds(file.ObjectIds),
                 RoomType = roomType,
                 FacilityTypes = facilityTypes,
+                NavigationFacilityTypes = navigationFacilityTypes,
                 Owner = NormalizeId(file.Owner),
                 SourceLocation = NormalizeId(file.SourceLocation),
                 SourceContainerPrefix = NormalizeId(file.SourceContainerPrefix),

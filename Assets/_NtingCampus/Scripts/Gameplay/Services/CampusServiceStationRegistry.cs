@@ -14,6 +14,8 @@ namespace NtingCampus.Gameplay.Services
             new Dictionary<string, CampusServiceStation>(StringComparer.OrdinalIgnoreCase);
         private readonly Dictionary<string, List<CampusServiceStation>> stationsByFacilityId =
             new Dictionary<string, List<CampusServiceStation>>(StringComparer.OrdinalIgnoreCase);
+        private readonly Dictionary<CampusPlacedObject, List<CampusServiceStation>> stationsByPlacedObject =
+            new Dictionary<CampusPlacedObject, List<CampusServiceStation>>();
         private readonly Dictionary<string, List<CampusCharacterRuntime>> presentOperatorsByStationId =
             new Dictionary<string, List<CampusCharacterRuntime>>(StringComparer.OrdinalIgnoreCase);
 
@@ -27,6 +29,7 @@ namespace NtingCampus.Gameplay.Services
             stations.Clear();
             stationsById.Clear();
             stationsByFacilityId.Clear();
+            stationsByPlacedObject.Clear();
             ClearOperatorPresence();
 
             if (rooms == null)
@@ -150,30 +153,49 @@ namespace NtingCampus.Gameplay.Services
         }
 
         public bool TryResolveByPlacedObject(
-            CampusWorldService worldService,
             CampusPlacedObject placedObject,
             out CampusServiceStation station)
         {
             station = default;
-            if (worldService == null || placedObject == null)
+            if (placedObject == null)
             {
                 return false;
             }
 
-            CampusGameplayRoom room = worldService.FindRoomForPosition(
-                placedObject.FloorIndex,
-                placedObject.transform.position);
-            if (room == null || room.Facilities == null)
+            if (stationsByPlacedObject.TryGetValue(placedObject, out List<CampusServiceStation> matches) &&
+                matches != null &&
+                matches.Count > 0)
+            {
+                station = matches[0];
+                return true;
+            }
+
+            return false;
+        }
+
+        public bool TryResolveByPlacedObject(
+            CampusPlacedObject placedObject,
+            string interactionActionId,
+            out CampusServiceStation station)
+        {
+            station = default;
+            if (placedObject == null ||
+                !stationsByPlacedObject.TryGetValue(placedObject, out List<CampusServiceStation> matches) ||
+                matches == null ||
+                matches.Count == 0)
             {
                 return false;
             }
 
-            for (int i = 0; i < room.Facilities.Count; i++)
+            string normalizedActionId = CampusInteractionActionIds.Normalize(interactionActionId);
+            for (int i = 0; i < matches.Count; i++)
             {
-                CampusGameplayRoom.FacilityRecord facility = room.Facilities[i];
-                if (facility != null && facility.PlacedObject == placedObject)
+                CampusServiceStation candidate = matches[i];
+                if (string.IsNullOrEmpty(normalizedActionId) ||
+                    CampusInteractionActionIds.Equals(candidate.InteractionActionId, normalizedActionId))
                 {
-                    return TryResolveByFacility(facility, out station);
+                    station = candidate;
+                    return true;
                 }
             }
 
@@ -240,6 +262,21 @@ namespace NtingCampus.Gameplay.Services
             }
 
             matches.Add(station);
+
+            if (facility.PlacedObject == null)
+            {
+                return;
+            }
+
+            if (!stationsByPlacedObject.TryGetValue(
+                    facility.PlacedObject,
+                    out List<CampusServiceStation> placedObjectMatches))
+            {
+                placedObjectMatches = new List<CampusServiceStation>();
+                stationsByPlacedObject.Add(facility.PlacedObject, placedObjectMatches);
+            }
+
+            placedObjectMatches.Add(station);
         }
 
         private void RefreshOperatorPresence(CampusRosterService rosterService)

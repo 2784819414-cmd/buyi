@@ -5,7 +5,7 @@ using UnityEngine;
 namespace NtingCampus.Gameplay.Characters
 {
     [DisallowMultipleComponent]
-    public sealed class CampusNpcInteractable : MonoBehaviour, ICampusInteractable, ICampusInteractionActionHandler, ICampusInteractionAvailability, ICampusInteractionPromptProvider
+    public sealed class CampusNpcInteractable : MonoBehaviour, ICampusInteractionActionHandler, ICampusInteractionAvailability, ICampusInteractionPromptProvider
     {
         private ICampusNpcTalkSource talkSource;
         private CampusNpcSpeechBubble speechBubble;
@@ -19,11 +19,6 @@ namespace NtingCampus.Gameplay.Characters
         {
             talkSource = targetTalkSource;
             speechBubble = targetSpeechBubble;
-        }
-
-        public void Interact(GameObject actor)
-        {
-            TryTalk(actor);
         }
 
         public bool TryHandleInteractionAction(CampusInteractionAnchor anchor, string actionId, string payload, GameObject actor)
@@ -52,8 +47,6 @@ namespace NtingCampus.Gameplay.Characters
                     CampusLanguageState.CurrentLanguage,
                     CampusInteractionTextCatalog.Get(CampusInteractionTextId.UnknownActor));
             prompt = CampusInteractionPromptData.Create(promptText);
-            prompt.Anchor = transform;
-            prompt.WorldOffset = new Vector3(0f, 0.84f, 0f);
             prompt.Priority = 55;
             prompt.IsAvailable = talkSource != null && talkSource.IsTalkAvailable;
             prompt.HideVisual = speechBubble != null && speechBubble.IsVisible;

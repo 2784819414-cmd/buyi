@@ -1848,7 +1848,8 @@ namespace NtingCampusMapEditor
             bool leftUp = WasMouseButtonReleased(0);
             bool rightDown = WasMouseButtonPressed(1);
             bool pointerOverUi = IsPointerOverEditorUi(GetMouseScreenPosition());
-            bool forceErase = rightDown || (leftDown && (IsKeyHeld(KeyCode.LeftShift) || IsKeyHeld(KeyCode.RightShift)));
+            bool shiftHeld = IsKeyHeld(KeyCode.LeftShift) || IsKeyHeld(KeyCode.RightShift);
+            bool forceErase = rightDown || (leftDown && shiftHeld);
 
             if (!leftHeld && !leftUp && !IsMouseButtonHeld(1))
             {
@@ -1868,6 +1869,12 @@ namespace NtingCampusMapEditor
 
             if (brushMode == CampusRuntimeBrushMode.Pan)
             {
+                return;
+            }
+
+            if (leftDown && !shiftHeld && TryShowStudentDeskOwnerAtCell(floor, hoverCell))
+            {
+                lastPaintCell = hoverCell;
                 return;
             }
 
@@ -2739,12 +2746,19 @@ namespace NtingCampusMapEditor
                 return;
             }
 
+            if (!TryResolveGameplayMarkerOwnerFacilityId(preset, floor.FloorIndex, out string ownerFacilityId))
+            {
+                SetStatus(Tr("\u8bf7\u5148\u9009\u62e9\u8bbe\u65bd\u70b9\u7684\u6240\u5c5e\u8bbe\u65bd\u3002", "Select an owner facility for this facility point first."));
+                return;
+            }
+
             EraseGameplayMarkersAtCell(floor, cell, false, true, false, false);
             if (!CampusRuntimeGameplayOverlayAuthoring.CreateFacilityMarker(
                     floor,
                     cell,
                     GetGameplayPresetDisplayName(preset),
-                    preset.FacilityType))
+                    preset.FacilityType,
+                    ownerFacilityId))
             {
                 return;
             }
@@ -3315,6 +3329,97 @@ namespace NtingCampusMapEditor
             InvalidateEditableLightCache();
             SchedulePlayerMapSave();
             SetStatus(Tr("\u5df2\u653e\u7f6e\u706f\u5149\u3002", "Placed light."));
+        }
+
+        private bool TryShowStudentDeskOwnerAtCell(CampusFloorRoot floor, Vector3Int cell)
+        {
+            if (!TryFindStudentDeskAtCell(floor, cell, out CampusPlacedObject desk))
+            {
+                return false;
+            }
+
+            string facilityId = CampusGameplayFacilityMarker.BuildStableFacilityId(
+                desk.FloorIndex,
+                CampusFacilityType.StudentDesk,
+                desk.Cell);
+            List<string> ownerNames = ResolveStudentDeskOwnerNames(facilityId);
+            SetStatus(ownerNames.Count > 0
+                ? CampusRuntimeEditorTextCatalog.Format(
+                    displayLanguage,
+                    CampusRuntimeEditorTextId.StudentDeskOwnerStatus,
+                    string.Join(", ", ownerNames))
+                : CampusRuntimeEditorTextCatalog.Get(
+                    displayLanguage,
+                    CampusRuntimeEditorTextId.StudentDeskOwnerUnassignedStatus));
+            return true;
+        }
+
+        private bool TryFindStudentDeskAtCell(
+            CampusFloorRoot floor,
+            Vector3Int cell,
+            out CampusPlacedObject desk)
+        {
+            desk = null;
+            if (floor == null || floor.PropsRoot == null)
+            {
+                return false;
+            }
+
+            CampusPlacedObject[] objects = floor.PropsRoot.GetComponentsInChildren<CampusPlacedObject>(true);
+            for (int i = 0; i < objects.Length; i++)
+            {
+                CampusPlacedObject placed = objects[i];
+                if (placed == null ||
+                    !placed.ContainsCell(cell) ||
+                    CampusRuntimeObjectAuthoring.ResolveFacilityType(placed) != CampusFacilityType.StudentDesk)
+                {
+                    continue;
+                }
+
+                desk = placed;
+                return true;
+            }
+
+            return false;
+        }
+
+        private List<string> ResolveStudentDeskOwnerNames(string facilityId)
+        {
+            List<string> ownerNames = new List<string>();
+            if (string.IsNullOrWhiteSpace(facilityId))
+            {
+                return ownerNames;
+            }
+
+            NtingCampus.Gameplay.Core.CampusGameBootstrap bootstrap =
+                NtingCampus.Gameplay.Core.CampusGameBootstrap.Instance;
+            CampusRosterService rosterService = bootstrap != null ? bootstrap.RosterService : null;
+            IReadOnlyList<CampusCharacterRuntime> runtimes = rosterService != null
+                ? rosterService.Runtimes
+                : null;
+            if (runtimes == null)
+            {
+                return ownerNames;
+            }
+
+            for (int i = 0; i < runtimes.Count; i++)
+            {
+                CampusCharacterRuntime runtime = runtimes[i];
+                CampusCharacterData data = runtime != null ? runtime.Data : null;
+                CampusCharacterAssignmentData assignments = data != null ? data.Assignments : null;
+                if (data == null ||
+                    data.Role != CampusCharacterRole.Student ||
+                    assignments == null ||
+                    !string.Equals(assignments.StudentDeskId, facilityId, StringComparison.OrdinalIgnoreCase))
+                {
+                    continue;
+                }
+
+                ownerNames.Add(data.GetDisplayName(displayLanguage));
+            }
+
+            ownerNames.Sort(StringComparer.OrdinalIgnoreCase);
+            return ownerNames;
         }
 
         private void EraseAtCell(CampusFloorRoot floor, Vector3Int cell)
@@ -4462,6 +4567,9 @@ namespace NtingCampusMapEditor
             {
                 CacheGameplayActors(snapshot.Actors);
                 CampusRuntimeGameplayOverlayAuthoring.SpawnSceneMarkers(snapshot, EnsureFloor);
+                NtingCampus.Gameplay.Core.CampusGameBootstrap bootstrap =
+                    NtingCampus.Gameplay.Core.CampusGameBootstrap.Instance;
+                bootstrap?.RosterService?.ApplyGameplayActorAssignments(snapshot.Actors);
                 RebuildGameplayRoomRegistrySafe();
                 if (showStatus)
                 {

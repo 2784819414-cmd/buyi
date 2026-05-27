@@ -260,6 +260,11 @@ namespace NtingCampus.Gameplay.Characters
                                        npc.Data.Role == CampusCharacterRole.Staff;
 
             ApplyPersonalReaction(npc, observation, shouldIssueSanction);
+            if (shouldIssueSanction)
+            {
+                npc.ReactToObservedTheft(observation.WorldPosition, observation.RoomId);
+            }
+
             npc.EventHub.PublishItemTheftObserved(new CampusItemTheftObservedEvent(
                 observation.ActorId,
                 npc.Runtime.CharacterId,

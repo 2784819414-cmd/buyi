@@ -12,6 +12,8 @@ namespace NtingCampus.Gameplay.Characters
         private Func<float> resolveMoveSpeed;
         private Func<int> resolveFloorIndex;
         private Func<int> resolvePersonalSeed;
+        private float speedMultiplier = 1f;
+        private float speedMultiplierUntil = -1f;
 
         public bool HasDestination => navigationAgent != null && navigationAgent.HasDestination;
         public bool HasReachablePath => navigationAgent == null || navigationAgent.HasReachablePath;
@@ -63,7 +65,7 @@ namespace NtingCampus.Gameplay.Characters
             }
 
             navigationAgent.Configure(
-                resolveMoveSpeed != null ? resolveMoveSpeed() : 1f,
+                ResolveMoveSpeed(),
                 resolveFloorIndex != null ? resolveFloorIndex() : 1,
                 resolvePersonalSeed != null ? resolvePersonalSeed() : 1,
                 0.8f,
@@ -71,6 +73,12 @@ namespace NtingCampus.Gameplay.Characters
                 0.9f,
                 0.035f);
             navigationAgent.TickNavigation();
+        }
+
+        public void BoostMoveSpeed(float multiplier, float durationSeconds)
+        {
+            speedMultiplier = Mathf.Max(1f, multiplier);
+            speedMultiplierUntil = Time.time + Mathf.Max(0f, durationSeconds);
         }
 
         public bool HasArrived(CampusNpcIntent intent, float arrivalDistance)
@@ -82,6 +90,17 @@ namespace NtingCampus.Gameplay.Characters
 
             return Vector2.Distance(ownerTransform.position, intent.TargetPosition) <=
                    Mathf.Max(arrivalDistance, intent.StopDistance + 0.08f);
+        }
+
+        private float ResolveMoveSpeed()
+        {
+            float baseSpeed = resolveMoveSpeed != null ? resolveMoveSpeed() : 1f;
+            if (Time.time > speedMultiplierUntil)
+            {
+                speedMultiplier = 1f;
+            }
+
+            return baseSpeed * Mathf.Max(1f, speedMultiplier);
         }
     }
 }

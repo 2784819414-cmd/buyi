@@ -65,13 +65,14 @@
         "OperatorSlotRoleId": "operator",
         "OperatorActivationRadius": 0.85,
         "UnavailableText": {
-          "chinese": "\u8be5\u67dc\u53f0\u6682\u65e0\u6536\u94f6\u5458\u3002",
+          "chinese": "该柜台暂无收银员。",
           "english": "This checkout counter has no cashier right now."
         }
       },
       "Clearance": {
         "Mode": "ClearPendingProtectedTransfers",
         "PriceMode": "ItemPrice",
+        "Scope": "AllPending",
         "CompleteText": {
           "chinese": "已完成结账，花费 {0}。",
           "english": "Checkout complete. Spent {0}."
@@ -135,6 +136,7 @@
       "Clearance": {
         "Mode": "ClearPendingProtectedTransfers",
         "PriceMode": "Free",
+        "Scope": "StationRoom",
         "CompleteText": {
           "chinese": "已完成借阅登记，登记 {1} 本书。",
           "english": "Borrowing registered. Registered {1} book(s)."

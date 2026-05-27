@@ -1,4 +1,4 @@
-﻿%YAML 1.1
+%YAML 1.1
 %TAG !u! tag:unity3d.com,2011:
 --- !u!114 &11400000
 MonoBehaviour:
@@ -17,21 +17,35 @@ MonoBehaviour:
   LocalizedDisplayName:
     chinese: "\u6C14\u6CE1\u6C34"
     english: Sparkling Water
+    traditionalChinese: 
+    russian: 
+    japanese: 
   Width: 1
   Height: 2
+  StackGroupId: 
+  MaxStackSize: 1
   Weight: 0.5
   Price: 10
+  SmellLevel: 0
+  EvidenceWeight: 0
+  CanPrankUse: 0
   Description: "\u65E0\u7CD6\u900F\u660E\u6C14\u6CE1\u6C34\u3002"
   LocalizedDescription:
     chinese: "\u65E0\u7CD6\u900F\u660E\u6C14\u6CE1\u6C34\u3002"
     english: A sugar-free sparkling water.
+    traditionalChinese: 
+    russian: 
+    japanese: 
   ThemeColor: {r: 0.6, g: 0.82, b: 0.91, a: 1}
   Icon: {fileID: 0}
   IsUsable: 1
   UseActionId: campus.item.consume_food
   ConsumeOnUse: 1
   StaminaRestore: 9
-  UseText: 喝掉
+  UseText: "\u559D\u6389"
   LocalizedUseText:
-    chinese: 喝掉
+    chinese: "\u559D\u6389"
     english: Drink the Sparkling Water.
+    traditionalChinese: 
+    russian: 
+    japanese: 

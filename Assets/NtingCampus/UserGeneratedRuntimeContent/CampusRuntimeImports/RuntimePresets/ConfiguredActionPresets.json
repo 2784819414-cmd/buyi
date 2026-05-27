@@ -1,0 +1,129 @@
+{
+    "Actions": [
+        {
+            "ActionId": "campus.v005.prank.tease_zhuzi",
+            "Payload": {
+                "Mode": "RecordEvent",
+                "EventKind": "V005TeaseZhuzi",
+                "RoomId": "library_f1_1",
+                "TargetObjectId": "bookshelf_2x1",
+                "PlayerSuspicionDelta": 1,
+                "CampusRumorDelta": 1,
+                "CampusChaosDelta": 2,
+                "CampusOrderDelta": -1,
+                "AreaAlertDelta": 1
+            }
+        },
+        {
+            "ActionId": "campus.v005.steal.canteen_burger",
+            "Payload": {
+                "Mode": "TakeFromProtectedContainer",
+                "ItemDefinitionId": "canteen_burger",
+                "Count": 1,
+                "EventKind": "V005CanteenBurgerTheft",
+                "TargetObjectId": "CanteenBurgerChickenContainer_2x1",
+                "SourceLocation": "canteen_burger_chicken_container",
+                "OwnerId": "canteen",
+                "ForceIllegal": true,
+                "AllowProtectedTake": true,
+                "SuspicionRiskOverride": 16,
+                "PlayerSuspicionDelta": 2,
+                "PlayerTheftEvidenceDelta": 2,
+                "CampusRumorDelta": 1,
+                "CampusCrackdownDelta": 1,
+                "CampusChaosDelta": 1,
+                "CampusOrderDelta": -1,
+                "AreaAlertDelta": 2,
+                "AreaBagCheckDelta": 1,
+                "AreaPatrolDelta": 2
+            }
+        },
+        {
+            "ActionId": "campus.v005.steal.canteen_fried_chicken",
+            "Payload": {
+                "Mode": "TakeFromProtectedContainer",
+                "ItemDefinitionId": "canteen_fried_chicken",
+                "Count": 1,
+                "EventKind": "V005CanteenFriedChickenTheft",
+                "TargetObjectId": "CanteenBurgerChickenContainer_2x1",
+                "SourceLocation": "canteen_burger_chicken_container",
+                "OwnerId": "canteen",
+                "ForceIllegal": true,
+                "AllowProtectedTake": true,
+                "SuspicionRiskOverride": 18,
+                "PlayerSuspicionDelta": 2,
+                "PlayerTheftEvidenceDelta": 2,
+                "CampusRumorDelta": 1,
+                "CampusCrackdownDelta": 1,
+                "CampusChaosDelta": 1,
+                "CampusOrderDelta": -1,
+                "AreaAlertDelta": 2,
+                "AreaBagCheckDelta": 1,
+                "AreaPatrolDelta": 2
+            }
+        },
+        {
+            "ActionId": "campus.v005.steal.canteen_oden",
+            "Payload": {
+                "Mode": "TakeFromProtectedContainer",
+                "ItemDefinitionId": "canteen_oden_cup",
+                "Count": 1,
+                "EventKind": "V005CanteenOdenTheft",
+                "TargetObjectId": "CanteenOdenContainer_2x1",
+                "SourceLocation": "canteen_oden_container",
+                "OwnerId": "canteen",
+                "ForceIllegal": true,
+                "AllowProtectedTake": true,
+                "SuspicionRiskOverride": 15,
+                "PlayerSuspicionDelta": 2,
+                "PlayerTheftEvidenceDelta": 2,
+                "CampusRumorDelta": 1,
+                "CampusCrackdownDelta": 1,
+                "CampusChaosDelta": 1,
+                "CampusOrderDelta": -1,
+                "AreaAlertDelta": 2,
+                "AreaBagCheckDelta": 1,
+                "AreaPatrolDelta": 2
+            }
+        },
+        {
+            "ActionId": "campus.v005.steal.retail_mechanical_pencil",
+            "Payload": {
+                "Mode": "TakeFromProtectedContainer",
+                "ItemDefinitionId": "retail_mechanical_pencil",
+                "Count": 1,
+                "EventKind": "V005RetailProtectedGoodsTheft",
+                "TargetObjectId": "goods_shelf_2x1",
+                "SourceLocation": "retail_shelf",
+                "OwnerId": "retail_shop",
+                "ForceIllegal": true,
+                "AllowProtectedTake": true,
+                "SuspicionRiskOverride": 16,
+                "PlayerSuspicionDelta": 3,
+                "PlayerTheftEvidenceDelta": 2,
+                "CampusRumorDelta": 1,
+                "CampusCrackdownDelta": 1,
+                "CampusChaosDelta": 1,
+                "CampusOrderDelta": -1,
+                "AreaAlertDelta": 2,
+                "AreaBagCheckDelta": 1,
+                "AreaPatrolDelta": 1,
+                "LockHighValueGoods": true
+            }
+        },
+        {
+            "ActionId": "campus.v005.take.library_textbook",
+            "Payload": {
+                "Mode": "TakeFromProtectedContainer",
+                "ItemDefinitionId": "textbook",
+                "Count": 1,
+                "EventKind": "V005LibraryBookPendingBorrow",
+                "TargetObjectId": "bookshelf_2x1",
+                "SourceLocation": "library_bookshelf",
+                "OwnerId": "library",
+                "AllowProtectedTake": true,
+                "SuspicionRiskOverride": 14
+            }
+        }
+    ]
+}

@@ -114,6 +114,7 @@ namespace NtingCampusMapEditor
                     FacilityType = marker.FacilityType,
                     FloorIndex = Mathf.Max(1, marker.FloorIndex),
                     Cell = cell,
+                    OwnerFacilityId = marker.OwnerFacilityId,
                     CountsAsCoreFacility = marker.CountsAsCoreFacility
                 });
             }
@@ -316,6 +317,7 @@ namespace NtingCampusMapEditor
                     FacilityType = marker.FacilityType,
                     FloorIndex = 0,
                     Cell = ToRelativeCell(cell, originCell),
+                    OwnerFacilityId = marker.OwnerFacilityId,
                     CountsAsCoreFacility = marker.CountsAsCoreFacility
                 });
             }
@@ -424,6 +426,7 @@ namespace NtingCampusMapEditor
                     floor.FloorIndex,
                     cell,
                     facility.CountsAsCoreFacility,
+                    facility.OwnerFacilityId,
                     null);
             }
         }
@@ -471,6 +474,21 @@ namespace NtingCampusMapEditor
             string displayName,
             CampusFacilityType facilityType)
         {
+            return CreateFacilityMarker(
+                floor,
+                cell,
+                displayName,
+                facilityType,
+                string.Empty);
+        }
+
+        internal static bool CreateFacilityMarker(
+            CampusFloorRoot floor,
+            Vector3Int cell,
+            string displayName,
+            CampusFacilityType facilityType,
+            string ownerFacilityId)
+        {
             if (floor == null || floor.Grid == null || floor.PropsRoot == null)
             {
                 return false;
@@ -494,6 +512,7 @@ namespace NtingCampusMapEditor
                 floor.FloorIndex,
                 normalizedCell,
                 true,
+                ownerFacilityId,
                 null);
 
             floor.MarkUsedBoundsDirty();

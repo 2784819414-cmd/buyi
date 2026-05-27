@@ -3,7 +3,6 @@ using Nting.Storage;
 using NtingCampus.Gameplay.Characters;
 using NtingCampus.Gameplay.Canteen;
 using NtingCampus.Gameplay.Inventory;
-using NtingCampus.Gameplay.Retail;
 
 namespace NtingCampus.Gameplay.Core
 {
@@ -13,7 +12,6 @@ namespace NtingCampus.Gameplay.Core
         {
             CampusInteractionActionRegistry.Register(CampusCanteenInteractionProvider.Instance);
             CampusInteractionActionRegistry.Register(CampusProtectedTransferClearanceInteractionProvider.Instance);
-            CampusInteractionActionRegistry.Register(CampusRetailInteractionProvider.Instance);
             CampusInteractionActionRegistry.Register(CampusDomainInteractionActionProvider.Instance);
         }
     }
