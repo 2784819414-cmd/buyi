@@ -19,12 +19,22 @@
     { "Id": "ServiceArea", "Value": 9 },
     { "Id": "Library", "Value": 12 },
     { "Id": "Outdoor", "Value": 7 },
-    { "Id": "Office", "Value": 14 }
+    { "Id": "Office", "Value": 14 },
+    { "Id": "outside_delivery_spot", "Value": 13 },
+    { "Id": "canteen_evening_window", "Value": 12 },
+    { "Id": "library_front_desk", "Value": 16 }
   ],
   "ItemValues": [
     { "Id": "retail_water", "Value": 4 },
     { "Id": "retail_potato_chips", "Value": 6 },
+    { "Id": "retail_ballpoint_pen", "Value": 8 },
+    { "Id": "retail_gel_pen", "Value": 12 },
+    { "Id": "retail_mechanical_pencil", "Value": 18 },
     { "Id": "snack", "Value": 5 },
+    { "Id": "canteen_burger", "Value": 14 },
+    { "Id": "canteen_fried_chicken", "Value": 16 },
+    { "Id": "canteen_oden_cup", "Value": 12 },
+    { "Id": "delivery_meal_box", "Value": 22 },
     { "Id": "textbook", "Value": 14 },
     { "Id": "workbook", "Value": 10 },
     { "Id": "lunch_box", "Value": 12 },

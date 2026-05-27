@@ -1,6 +1,6 @@
 using System;
 using System.IO;
-using System.Text;
+using NtingCampus.Gameplay.Rooms;
 using UnityEngine;
 
 namespace NtingCampusMapEditor
@@ -10,75 +10,6 @@ namespace NtingCampusMapEditor
         internal static string GetFolder(string importRoot, string objectId)
         {
             return CampusRuntimeImportLibrary.GetObjectSettingsFolder(importRoot, objectId);
-        }
-
-        internal static string GetPath(string importRoot, string objectId)
-        {
-            return CampusRuntimeImportLibrary.GetObjectSettingsPath(importRoot, objectId);
-        }
-
-        internal static string Save(string importRoot, CampusRuntimeObjectSettings settings)
-        {
-            if (settings == null || string.IsNullOrWhiteSpace(settings.ObjectId))
-            {
-                return string.Empty;
-            }
-
-            Normalize(settings, importRoot, settings.ObjectId);
-            string folder = GetFolder(importRoot, settings.ObjectId);
-            Directory.CreateDirectory(folder);
-            string path = GetPath(importRoot, settings.ObjectId);
-            File.WriteAllText(path, JsonUtility.ToJson(settings, true), Encoding.UTF8);
-            return path;
-        }
-
-        internal static CampusRuntimeObjectSettings Load(string importRoot, string objectId, Action<string> logWarning)
-        {
-            if (string.IsNullOrWhiteSpace(objectId))
-            {
-                return null;
-            }
-
-            string normalizedObjectId = objectId.Trim();
-            string path = GetPath(importRoot, normalizedObjectId);
-            if (!File.Exists(path))
-            {
-                return null;
-            }
-
-            try
-            {
-                CampusRuntimeObjectSettings settings =
-                    JsonUtility.FromJson<CampusRuntimeObjectSettings>(File.ReadAllText(path, Encoding.UTF8));
-                Normalize(settings, importRoot, normalizedObjectId);
-                return settings;
-            }
-            catch (Exception exception)
-            {
-                if (logWarning != null)
-                {
-                    logWarning("Failed to load object settings '" + path + "': " + exception.Message);
-                }
-
-                return null;
-            }
-        }
-
-        internal static bool DeleteFolder(string importRoot, string objectId)
-        {
-            if (string.IsNullOrWhiteSpace(objectId))
-            {
-                return false;
-            }
-
-            string folder = GetFolder(importRoot, objectId);
-            if (!Directory.Exists(folder))
-            {
-                return false;
-            }
-
-            Directory.Delete(folder, true);
-            return true;
         }
 
         internal static string CopyDirectionSprite(
@@ -136,6 +67,9 @@ namespace NtingCampusMapEditor
             settings.DisplayNameOverride = string.IsNullOrWhiteSpace(settings.DisplayNameOverride)
                 ? string.Empty
                 : settings.DisplayNameOverride.Trim();
+            settings.LocalizedDisplayNameOverride = settings.LocalizedDisplayNameOverride.HasAnyText
+                ? settings.LocalizedDisplayNameOverride
+                : default;
             settings.FootprintSize = CampusPlacedObject.NormalizeFootprintSize(settings.FootprintSize);
             settings.VisualScale = CampusPlacedObject.NormalizeVisualScale(settings.VisualScale);
             settings.StorageSize = CampusPlacedObject.NormalizeStorageSize(settings.StorageSize);
@@ -145,6 +79,9 @@ namespace NtingCampusMapEditor
             settings.CustomInteractionPromptText = string.IsNullOrWhiteSpace(settings.CustomInteractionPromptText)
                 ? string.Empty
                 : settings.CustomInteractionPromptText.Trim();
+            settings.LocalizedCustomInteractionPromptText = settings.LocalizedCustomInteractionPromptText.HasAnyText
+                ? settings.LocalizedCustomInteractionPromptText
+                : default;
             settings.InteractionPresetEid =
                 CampusRuntimeObjectAuthoring.NormalizeInteractionPresetEid(settings.InteractionPresetEid);
             settings.CustomInteractionAnchors =
@@ -157,11 +94,97 @@ namespace NtingCampusMapEditor
                 CampusRuntimeImportLibrary.NormalizeSerializedPath(settings.Rotation180SpritePath, importRoot);
             settings.Rotation270SpritePath =
                 CampusRuntimeImportLibrary.NormalizeSerializedPath(settings.Rotation270SpritePath, importRoot);
+            settings.CanStackOnPlacedObjects =
+                settings.CanStackOnPlacedObjects ||
+                CampusRuntimeObjectAuthoring.IsStackableFacilityObject(
+                    CampusRuntimeObjectAuthoring.TryParseFacilityType(
+                        settings.TypeId,
+                        out CampusFacilityType facilityType)
+                        ? facilityType
+                        : CampusFacilityType.Unknown);
+            ApplyStoredDirectionSprites(settings, importRoot, settings.ObjectId);
             settings.RetailShelf = settings.RetailShelf ?? new CampusRuntimeRetailShelfData();
             CampusRuntimeObjectAuthoring.NormalizeRetailShelfData(settings.RetailShelf);
             settings.ProtectedStockContainer =
                 settings.ProtectedStockContainer ?? new CampusRuntimeProtectedStockContainerData();
             CampusRuntimeObjectAuthoring.NormalizeProtectedStockContainerData(settings.ProtectedStockContainer);
+        }
+
+        private static void ApplyStoredDirectionSprites(
+            CampusRuntimeObjectSettings settings,
+            string importRoot,
+            string objectId)
+        {
+            if (settings == null || string.IsNullOrWhiteSpace(importRoot) || string.IsNullOrWhiteSpace(objectId))
+            {
+                return;
+            }
+
+            bool hasRotation0 = ApplyStoredDirectionSprite(
+                importRoot,
+                objectId,
+                0,
+                ref settings.OverrideRotation0Sprite,
+                ref settings.Rotation0SpritePath);
+            bool hasRotation90 = ApplyStoredDirectionSprite(
+                importRoot,
+                objectId,
+                90,
+                ref settings.OverrideRotation90Sprite,
+                ref settings.Rotation90SpritePath);
+            bool hasRotation180 = ApplyStoredDirectionSprite(
+                importRoot,
+                objectId,
+                180,
+                ref settings.OverrideRotation180Sprite,
+                ref settings.Rotation180SpritePath);
+            bool hasRotation270 = ApplyStoredDirectionSprite(
+                importRoot,
+                objectId,
+                270,
+                ref settings.OverrideRotation270Sprite,
+                ref settings.Rotation270SpritePath);
+
+            if (hasRotation90 || hasRotation180 || hasRotation270)
+            {
+                settings.OverrideAllowRotation = true;
+                settings.AllowRotation = true;
+            }
+        }
+
+        private static bool ApplyStoredDirectionSprite(
+            string importRoot,
+            string objectId,
+            int degrees,
+            ref bool hasOverride,
+            ref string spritePath)
+        {
+            if (hasOverride && !string.IsNullOrWhiteSpace(spritePath))
+            {
+                return true;
+            }
+
+            string folder = GetFolder(importRoot, objectId);
+            if (!Directory.Exists(folder))
+            {
+                return false;
+            }
+
+            string[] files = Directory.GetFiles(folder, "rotation_" + degrees + ".*");
+            for (int i = 0; i < files.Length; i++)
+            {
+                string file = files[i];
+                if (!CampusRuntimeImportLibrary.IsSupportedImage(file))
+                {
+                    continue;
+                }
+
+                hasOverride = true;
+                spritePath = CampusRuntimeImportLibrary.NormalizeSerializedPath(file, importRoot);
+                return true;
+            }
+
+            return false;
         }
     }
 }

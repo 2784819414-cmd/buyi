@@ -27,11 +27,11 @@ MonoBehaviour:
     english: A lightly savory rice cracker in a small pack.
   ThemeColor: {r: 0.84, g: 0.76, b: 0.54, a: 1}
   Icon: {fileID: 0}
-  IsUsable: 0
-  UseActionId: 
+  IsUsable: 1
+  UseActionId: campus.item.consume_food
   ConsumeOnUse: 1
-  UseText: 
+  StaminaRestore: 8
+  UseText: 吃掉
   LocalizedUseText:
-    chinese: 
-    english: 
-
+    chinese: 吃掉
+    english: Eat the Rice Cracker.

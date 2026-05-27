@@ -27,11 +27,11 @@ MonoBehaviour:
     english: A soft bun filled with sweet cream.
   ThemeColor: {r: 0.91, g: 0.78, b: 0.66, a: 1}
   Icon: {fileID: 0}
-  IsUsable: 0
-  UseActionId: 
+  IsUsable: 1
+  UseActionId: campus.item.consume_food
   ConsumeOnUse: 1
-  UseText: 
+  StaminaRestore: 24
+  UseText: 吃掉
   LocalizedUseText:
-    chinese: 
-    english: 
-
+    chinese: 吃掉
+    english: Eat the Cream Bun.

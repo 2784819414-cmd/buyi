@@ -1,0 +1,12 @@
+{
+  "ItemDefinitionId": "delivery_meal_box",
+  "SourceLocationId": "outside_delivery_spot",
+  "SourceContainerPrefix": "delivery_order",
+  "DeliverySpotObjectId": "CampusPrankSpot_StealDelivery",
+  "DeliverySpotInteractionPresetEid": "object.v005.outdoor_delivery_spot",
+  "OrderChancePercent": 35,
+  "MinDeliveryMinutes": 20,
+  "MaxDeliveryMinutes": 60,
+  "PickupScore": 66,
+  "WaitScore": 58
+}

@@ -573,17 +573,45 @@ namespace NtingCampus.UI.Runtime.Gameplay
             areaBannerSubtitleText.text = snapshot.AreaSubtitle;
             moneyValueText.text = FormatNumber(snapshot.Money);
             backpackValueText.text = snapshot.BackpackStatus;
-            pendingCheckoutTitleText.text = CampusGameplayHudTextCatalog.Get(CampusGameplayHudTextId.PendingCheckout);
-            pendingCheckoutSummaryText.text = CampusGameplayHudTextCatalog.Format(
-                CampusGameplayHudTextId.PendingCheckoutSummary,
-                snapshot.PendingCheckoutCount,
-                FormatNumber(snapshot.PendingCheckoutTotal));
-            pendingCheckoutStatusText.text = CampusGameplayHudTextCatalog.Get(
-                snapshot.CanAffordCheckout
-                    ? CampusGameplayHudTextId.ReadyToPay
-                    : CampusGameplayHudTextId.NotEnoughMoney);
-            pendingCheckoutStatusText.color = snapshot.CanAffordCheckout ? StoragePalette.TextSecondary : StoragePalette.Warning;
+            pendingCheckoutTitleText.text = CampusGameplayHudTextCatalog.Get(ResolvePendingProtectedTransferTitle(snapshot));
+            pendingCheckoutSummaryText.text = FormatPendingProtectedTransferSummary(snapshot);
+            pendingCheckoutStatusText.text = CampusGameplayHudTextCatalog.Get(ResolvePendingProtectedTransferStatus(snapshot));
+            pendingCheckoutStatusText.color = snapshot.PendingProtectedTransferMode == CampusPendingProtectedTransferHudMode.Registration ||
+                                              snapshot.CanAffordCheckout
+                ? StoragePalette.TextSecondary
+                : StoragePalette.Warning;
             UpdateStaminaBar(snapshot.StaminaCurrent, snapshot.StaminaMax);
+        }
+
+        private static CampusGameplayHudTextId ResolvePendingProtectedTransferTitle(CampusGameplayHudSnapshot snapshot)
+        {
+            return snapshot.PendingProtectedTransferMode == CampusPendingProtectedTransferHudMode.Registration
+                ? CampusGameplayHudTextId.PendingRegistration
+                : CampusGameplayHudTextId.PendingCheckout;
+        }
+
+        private static string FormatPendingProtectedTransferSummary(CampusGameplayHudSnapshot snapshot)
+        {
+            return snapshot.PendingProtectedTransferMode == CampusPendingProtectedTransferHudMode.Registration
+                ? CampusGameplayHudTextCatalog.Format(
+                    CampusGameplayHudTextId.PendingRegistrationSummary,
+                    snapshot.PendingCheckoutCount)
+                : CampusGameplayHudTextCatalog.Format(
+                    CampusGameplayHudTextId.PendingCheckoutSummary,
+                    snapshot.PendingCheckoutCount,
+                    FormatNumber(snapshot.PendingCheckoutTotal));
+        }
+
+        private static CampusGameplayHudTextId ResolvePendingProtectedTransferStatus(CampusGameplayHudSnapshot snapshot)
+        {
+            if (snapshot.PendingProtectedTransferMode == CampusPendingProtectedTransferHudMode.Registration)
+            {
+                return CampusGameplayHudTextId.ReadyToRegister;
+            }
+
+            return snapshot.CanAffordCheckout
+                ? CampusGameplayHudTextId.ReadyToPay
+                : CampusGameplayHudTextId.NotEnoughMoney;
         }
 
         private void UpdatePendingCheckoutBar(CampusGameplayHudSnapshot snapshot, bool immediate)

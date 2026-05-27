@@ -27,11 +27,11 @@ MonoBehaviour:
     english: Classic bagged potato chips with a crisp texture.
   ThemeColor: {r: 0.85, g: 0.64, b: 0.25, a: 1}
   Icon: {fileID: 0}
-  IsUsable: 0
-  UseActionId: 
+  IsUsable: 1
+  UseActionId: campus.item.consume_food
   ConsumeOnUse: 1
-  UseText: 
+  StaminaRestore: 12
+  UseText: 吃掉
   LocalizedUseText:
-    chinese: 
-    english: 
-
+    chinese: 吃掉
+    english: Eat the Potato Chips.

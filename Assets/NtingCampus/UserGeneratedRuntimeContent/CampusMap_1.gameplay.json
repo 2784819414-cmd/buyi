@@ -1244,382 +1244,146 @@
                 "TeacherPodiumId": "",
                 "OfficeRoomId": "",
                 "OfficeDeskId": "",
-                "WorkRoomId": "",
+                "WorkRoomId": "retailarea_f1_1",
                 "WorkFacilityId": "facility_f1_WorkerStandPoint_20_-10",
                 "ServiceStationId": "retail_checkout_station_20",
                 "ServiceStationSlotRoleId": "operator"
             }
+        },
+        {
+            "Id": "staff_library_register_teacher",
+            "DisplayName": "LibraryRegistrationTeacher",
+            "LocalizedDisplayName": {
+                "chinese": "登记女老师",
+                "english": "Library Registration Teacher",
+                "traditionalChinese": "",
+                "russian": "",
+                "japanese": ""
+            },
+            "RoleId": "Staff",
+            "Role": 2,
+            "TeacherDutyId": "None",
+            "TeacherDuty": 0,
+            "StaffDutyId": "SupportStaff",
+            "StaffDuty": 1,
+            "ClassId": "",
+            "InitialStateId": "Normal",
+            "InitialState": 0,
+            "IsPlayerControlled": false,
+            "FloorIndex": 1,
+            "Cell": {
+                "x": 31,
+                "y": -21,
+                "z": 0
+            },
+            "Sleepiness": 8,
+            "Mischief": 0,
+            "InitialMoney": -1,
+            "TraitIds": [
+                "Ordinary"
+            ],
+            "Traits": [
+                0
+            ],
+            "Assignments": {
+                "StudentClassroomId": "",
+                "StudentDeskId": "",
+                "TeacherClassroomId": "",
+                "TeacherPodiumId": "",
+                "OfficeRoomId": "",
+                "OfficeDeskId": "",
+                "WorkRoomId": "library_f1_1",
+                "WorkFacilityId": "facility_f1_WorkerStandPoint_31_-23",
+                "ServiceStationId": "library_borrow_registration_f1_31",
+                "ServiceStationSlotRoleId": "operator"
+            }
+        },
+        {
+            "Id": "staff_zhuzi",
+            "DisplayName": "Zhuzi",
+            "LocalizedDisplayName": {
+                "chinese": "柱子",
+                "english": "Zhuzi",
+                "traditionalChinese": "",
+                "russian": "",
+                "japanese": ""
+            },
+            "RoleId": "Staff",
+            "Role": 2,
+            "TeacherDutyId": "None",
+            "TeacherDuty": 0,
+            "StaffDutyId": "SupportStaff",
+            "StaffDuty": 1,
+            "ClassId": "",
+            "InitialStateId": "Normal",
+            "InitialState": 0,
+            "IsPlayerControlled": false,
+            "FloorIndex": 1,
+            "Cell": {
+                "x": 40,
+                "y": -26,
+                "z": 0
+            },
+            "Sleepiness": 18,
+            "Mischief": 5,
+            "InitialMoney": -1,
+            "TraitIds": [
+                "Ordinary"
+            ],
+            "Traits": [
+                0
+            ],
+            "Assignments": {
+                "StudentClassroomId": "",
+                "StudentDeskId": "",
+                "TeacherClassroomId": "",
+                "TeacherPodiumId": "",
+                "OfficeRoomId": "",
+                "OfficeDeskId": "",
+                "WorkRoomId": "library_f1_1",
+                "WorkFacilityId": "facility_f1_WorkerStandPoint_library_zhuzi",
+                "ServiceStationId": "",
+                "ServiceStationSlotRoleId": ""
+            }
         }
     ],
-    "Rooms": [],
+    "Rooms": [
+        {
+            "Id": "library_f1_1",
+            "DisplayName": "图书馆",
+            "LocalizedDisplayName": {
+                "chinese": "图书馆",
+                "english": "Library",
+                "traditionalChinese": "",
+                "russian": "",
+                "japanese": ""
+            },
+            "RoomTypeId": "Library",
+            "RoomType": 7,
+            "FloorIndex": 1,
+            "AnchorCell": {
+                "x": 30,
+                "y": -35,
+                "z": 0
+            },
+            "Size": {
+                "x": 14,
+                "y": 17
+            },
+            "UsableForGameplay": true
+        }
+    ],
     "Facilities": [
-        {
-            "Id": "facility_f1_WorkerStandPoint_54_3",
-            "DisplayName": "工作站位",
-            "FacilityTypeId": "WorkerStandPoint",
-            "FacilityType": 25,
-            "FloorIndex": 1,
-            "Cell": {
-                "x": 54,
-                "y": 3,
-                "z": 0
-            },
-            "CountsAsCoreFacility": true
-        },
-        {
-            "Id": "facility_f1_WorkerStandPoint_52_3",
-            "DisplayName": "工作站位",
-            "FacilityTypeId": "WorkerStandPoint",
-            "FacilityType": 25,
-            "FloorIndex": 1,
-            "Cell": {
-                "x": 52,
-                "y": 3,
-                "z": 0
-            },
-            "CountsAsCoreFacility": true
-        },
-        {
-            "Id": "facility_f1_DropPoint_32_17",
-            "DisplayName": "放置点",
-            "FacilityTypeId": "DropPoint",
-            "FacilityType": 20,
-            "FloorIndex": 1,
-            "Cell": {
-                "x": 32,
-                "y": 17,
-                "z": 0
-            },
-            "CountsAsCoreFacility": true
-        },
-        {
-            "Id": "facility_f1_ServiceWindow_42_2",
-            "DisplayName": "打饭窗口",
-            "FacilityTypeId": "ServiceWindow",
-            "FacilityType": 27,
-            "FloorIndex": 1,
-            "Cell": {
-                "x": 42,
-                "y": 2,
-                "z": 0
-            },
-            "CountsAsCoreFacility": true
-        },
-        {
-            "Id": "facility_f1_WaitingPoint_46_-2",
-            "DisplayName": "等待点",
-            "FacilityTypeId": "WaitingPoint",
-            "FacilityType": 21,
-            "FloorIndex": 1,
-            "Cell": {
-                "x": 46,
-                "y": -2,
-                "z": 0
-            },
-            "CountsAsCoreFacility": true
-        },
-        {
-            "Id": "facility_f1_WaitingPoint_56_0",
-            "DisplayName": "等待点",
-            "FacilityTypeId": "WaitingPoint",
-            "FacilityType": 21,
-            "FloorIndex": 1,
-            "Cell": {
-                "x": 56,
-                "y": 0,
-                "z": 0
-            },
-            "CountsAsCoreFacility": true
-        },
-        {
-            "Id": "facility_f1_ServiceWindow_48_2",
-            "DisplayName": "打饭窗口",
-            "FacilityTypeId": "ServiceWindow",
-            "FacilityType": 27,
-            "FloorIndex": 1,
-            "Cell": {
-                "x": 48,
-                "y": 2,
-                "z": 0
-            },
-            "CountsAsCoreFacility": true
-        },
-        {
-            "Id": "facility_f1_WaitingPoint_42_-1",
-            "DisplayName": "等待点",
-            "FacilityTypeId": "WaitingPoint",
-            "FacilityType": 21,
-            "FloorIndex": 1,
-            "Cell": {
-                "x": 42,
-                "y": -1,
-                "z": 0
-            },
-            "CountsAsCoreFacility": true
-        },
-        {
-            "Id": "facility_f1_ServiceWindow_50_2",
-            "DisplayName": "打饭窗口",
-            "FacilityTypeId": "ServiceWindow",
-            "FacilityType": 27,
-            "FloorIndex": 1,
-            "Cell": {
-                "x": 50,
-                "y": 2,
-                "z": 0
-            },
-            "CountsAsCoreFacility": true
-        },
-        {
-            "Id": "facility_f1_ServiceWindow_46_2",
-            "DisplayName": "打饭窗口",
-            "FacilityTypeId": "ServiceWindow",
-            "FacilityType": 27,
-            "FloorIndex": 1,
-            "Cell": {
-                "x": 46,
-                "y": 2,
-                "z": 0
-            },
-            "CountsAsCoreFacility": true
-        },
-        {
-            "Id": "facility_f1_WorkerStandPoint_50_3",
-            "DisplayName": "工作站位",
-            "FacilityTypeId": "WorkerStandPoint",
-            "FacilityType": 25,
-            "FloorIndex": 1,
-            "Cell": {
-                "x": 50,
-                "y": 3,
-                "z": 0
-            },
-            "CountsAsCoreFacility": true
-        },
-        {
-            "Id": "facility_f1_WaitingPoint_56_-2",
-            "DisplayName": "等待点",
-            "FacilityTypeId": "WaitingPoint",
-            "FacilityType": 21,
-            "FloorIndex": 1,
-            "Cell": {
-                "x": 56,
-                "y": -2,
-                "z": 0
-            },
-            "CountsAsCoreFacility": true
-        },
-        {
-            "Id": "facility_f1_WaitingPoint_48_-2",
-            "DisplayName": "等待点",
-            "FacilityTypeId": "WaitingPoint",
-            "FacilityType": 21,
-            "FloorIndex": 1,
-            "Cell": {
-                "x": 48,
-                "y": -2,
-                "z": 0
-            },
-            "CountsAsCoreFacility": true
-        },
-        {
-            "Id": "facility_f1_WaitingPoint_54_-3",
-            "DisplayName": "等待点",
-            "FacilityTypeId": "WaitingPoint",
-            "FacilityType": 21,
-            "FloorIndex": 1,
-            "Cell": {
-                "x": 54,
-                "y": -3,
-                "z": 0
-            },
-            "CountsAsCoreFacility": true
-        },
-        {
-            "Id": "facility_f1_PickupPoint_20_-12",
-            "DisplayName": "顾客结账点",
-            "FacilityTypeId": "PickupPoint",
-            "FacilityType": 26,
-            "FloorIndex": 1,
-            "Cell": {
-                "x": 20,
-                "y": -12,
-                "z": 0
-            },
-            "CountsAsCoreFacility": true
-        },
-        {
-            "Id": "facility_f1_PickupPoint_23_-12",
-            "DisplayName": "顾客结账点",
-            "FacilityTypeId": "PickupPoint",
-            "FacilityType": 26,
-            "FloorIndex": 1,
-            "Cell": {
-                "x": 23,
-                "y": -12,
-                "z": 0
-            },
-            "CountsAsCoreFacility": true
-        },
-        {
-            "Id": "facility_f1_WaitingPoint_56_-1",
-            "DisplayName": "等待点",
-            "FacilityTypeId": "WaitingPoint",
-            "FacilityType": 21,
-            "FloorIndex": 1,
-            "Cell": {
-                "x": 56,
-                "y": -1,
-                "z": 0
-            },
-            "CountsAsCoreFacility": true
-        },
-        {
-            "Id": "facility_f1_WaitingPoint_48_-3",
-            "DisplayName": "等待点",
-            "FacilityTypeId": "WaitingPoint",
-            "FacilityType": 21,
-            "FloorIndex": 1,
-            "Cell": {
-                "x": 48,
-                "y": -3,
-                "z": 0
-            },
-            "CountsAsCoreFacility": true
-        },
-        {
-            "Id": "facility_f1_WaitingPoint_46_-1",
-            "DisplayName": "等待点",
-            "FacilityTypeId": "WaitingPoint",
-            "FacilityType": 21,
-            "FloorIndex": 1,
-            "Cell": {
-                "x": 46,
-                "y": -1,
-                "z": 0
-            },
-            "CountsAsCoreFacility": true
-        },
-        {
-            "Id": "facility_f1_PickupPoint_56_1",
-            "DisplayName": "顾客取餐点",
-            "FacilityTypeId": "PickupPoint",
-            "FacilityType": 26,
-            "FloorIndex": 1,
-            "Cell": {
-                "x": 56,
-                "y": 1,
-                "z": 0
-            },
-            "CountsAsCoreFacility": true
-        },
-        {
-            "Id": "facility_f1_WorkerStandPoint_48_3",
-            "DisplayName": "工作站位",
-            "FacilityTypeId": "WorkerStandPoint",
-            "FacilityType": 25,
-            "FloorIndex": 1,
-            "Cell": {
-                "x": 48,
-                "y": 3,
-                "z": 0
-            },
-            "CountsAsCoreFacility": true
-        },
-        {
-            "Id": "facility_f1_WaitingPoint_54_-2",
-            "DisplayName": "等待点",
-            "FacilityTypeId": "WaitingPoint",
-            "FacilityType": 21,
-            "FloorIndex": 1,
-            "Cell": {
-                "x": 54,
-                "y": -2,
-                "z": 0
-            },
-            "CountsAsCoreFacility": true
-        },
-        {
-            "Id": "facility_f1_ServiceWindow_56_2",
-            "DisplayName": "打饭窗口",
-            "FacilityTypeId": "ServiceWindow",
-            "FacilityType": 27,
-            "FloorIndex": 1,
-            "Cell": {
-                "x": 56,
-                "y": 2,
-                "z": 0
-            },
-            "CountsAsCoreFacility": true
-        },
-        {
-            "Id": "facility_f1_WaitingPoint_44_-1",
-            "DisplayName": "等待点",
-            "FacilityTypeId": "WaitingPoint",
-            "FacilityType": 21,
-            "FloorIndex": 1,
-            "Cell": {
-                "x": 44,
-                "y": -1,
-                "z": 0
-            },
-            "CountsAsCoreFacility": true
-        },
-        {
-            "Id": "facility_f1_WaitingPoint_52_-1",
-            "DisplayName": "等待点",
-            "FacilityTypeId": "WaitingPoint",
-            "FacilityType": 21,
-            "FloorIndex": 1,
-            "Cell": {
-                "x": 52,
-                "y": -1,
-                "z": 0
-            },
-            "CountsAsCoreFacility": true
-        },
-        {
-            "Id": "facility_f1_PickupPoint_52_1",
-            "DisplayName": "顾客取餐点",
-            "FacilityTypeId": "PickupPoint",
-            "FacilityType": 26,
-            "FloorIndex": 1,
-            "Cell": {
-                "x": 52,
-                "y": 1,
-                "z": 0
-            },
-            "CountsAsCoreFacility": true
-        },
-        {
-            "Id": "facility_f1_ServiceWindow_54_2",
-            "DisplayName": "打饭窗口",
-            "FacilityTypeId": "ServiceWindow",
-            "FacilityType": 27,
-            "FloorIndex": 1,
-            "Cell": {
-                "x": 54,
-                "y": 2,
-                "z": 0
-            },
-            "CountsAsCoreFacility": true
-        },
-        {
-            "Id": "facility_f1_WaitingPoint_44_-3",
-            "DisplayName": "等待点",
-            "FacilityTypeId": "WaitingPoint",
-            "FacilityType": 21,
-            "FloorIndex": 1,
-            "Cell": {
-                "x": 44,
-                "y": -3,
-                "z": 0
-            },
-            "CountsAsCoreFacility": true
-        },
         {
             "Id": "facility_f1_PickupPoint_46_1",
             "DisplayName": "顾客取餐点",
+            "LocalizedDisplayName": {
+                "chinese": "",
+                "english": "",
+                "traditionalChinese": "",
+                "russian": "",
+                "japanese": ""
+            },
             "FacilityTypeId": "PickupPoint",
             "FacilityType": 26,
             "FloorIndex": 1,
@@ -1631,92 +1395,121 @@
             "CountsAsCoreFacility": true
         },
         {
-            "Id": "facility_f1_WaitingPoint_52_0",
-            "DisplayName": "等待点",
-            "FacilityTypeId": "WaitingPoint",
-            "FacilityType": 21,
+            "Id": "facility_f1_PickupPoint_48_1",
+            "DisplayName": "顾客取餐点",
+            "LocalizedDisplayName": {
+                "chinese": "",
+                "english": "",
+                "traditionalChinese": "",
+                "russian": "",
+                "japanese": ""
+            },
+            "FacilityTypeId": "PickupPoint",
+            "FacilityType": 26,
             "FloorIndex": 1,
             "Cell": {
-                "x": 52,
-                "y": 0,
+                "x": 48,
+                "y": 1,
                 "z": 0
             },
             "CountsAsCoreFacility": true
         },
         {
-            "Id": "facility_f1_WorkerStandPoint_20_-10",
-            "DisplayName": "收银员站位",
+            "Id": "facility_f1_WorkerStandPoint_42_3",
+            "DisplayName": "工作站位",
+            "LocalizedDisplayName": {
+                "chinese": "",
+                "english": "",
+                "traditionalChinese": "",
+                "russian": "",
+                "japanese": ""
+            },
             "FacilityTypeId": "WorkerStandPoint",
             "FacilityType": 25,
-            "FloorIndex": 1,
-            "Cell": {
-                "x": 20,
-                "y": -10,
-                "z": 0
-            },
-            "CountsAsCoreFacility": true
-        },
-        {
-            "Id": "facility_f1_WorkerStandPoint_23_-10",
-            "DisplayName": "收银员站位",
-            "FacilityTypeId": "WorkerStandPoint",
-            "FacilityType": 25,
-            "FloorIndex": 1,
-            "Cell": {
-                "x": 23,
-                "y": -10,
-                "z": 0
-            },
-            "CountsAsCoreFacility": true
-        },
-        {
-            "Id": "facility_f1_WaitingPoint_54_-1",
-            "DisplayName": "等待点",
-            "FacilityTypeId": "WaitingPoint",
-            "FacilityType": 21,
-            "FloorIndex": 1,
-            "Cell": {
-                "x": 54,
-                "y": -1,
-                "z": 0
-            },
-            "CountsAsCoreFacility": true
-        },
-        {
-            "Id": "facility_f1_WaitingPoint_42_-3",
-            "DisplayName": "等待点",
-            "FacilityTypeId": "WaitingPoint",
-            "FacilityType": 21,
             "FloorIndex": 1,
             "Cell": {
                 "x": 42,
-                "y": -3,
+                "y": 3,
                 "z": 0
             },
             "CountsAsCoreFacility": true
         },
         {
-            "Id": "facility_f1_WaitingPoint_56_-3",
-            "DisplayName": "等待点",
+            "Id": "facility_f1_WaitingPoint_19_-9",
+            "DisplayName": "排队位",
+            "LocalizedDisplayName": {
+                "chinese": "",
+                "english": "",
+                "traditionalChinese": "",
+                "russian": "",
+                "japanese": ""
+            },
             "FacilityTypeId": "WaitingPoint",
             "FacilityType": 21,
             "FloorIndex": 1,
             "Cell": {
-                "x": 56,
-                "y": -3,
+                "x": 19,
+                "y": -9,
                 "z": 0
             },
             "CountsAsCoreFacility": true
         },
         {
-            "Id": "facility_f1_WaitingPoint_50_-2",
-            "DisplayName": "等待点",
-            "FacilityTypeId": "WaitingPoint",
-            "FacilityType": 21,
+            "Id": "facility_f1_CheckoutPoint_20_-11",
+            "DisplayName": "超市收银台",
+            "LocalizedDisplayName": {
+                "chinese": "",
+                "english": "",
+                "traditionalChinese": "",
+                "russian": "",
+                "japanese": ""
+            },
+            "FacilityTypeId": "CheckoutPoint",
+            "FacilityType": 23,
             "FloorIndex": 1,
             "Cell": {
-                "x": 50,
-                "y": -2,
+                "x": 20,
+                "y": -11,
+                "z": 0
+            },
+            "CountsAsCoreFacility": true
+        },
+        {
+            "Id": "facility_f1_CheckoutPoint_23_-11",
+            "DisplayName": "超市收银台",
+            "LocalizedDisplayName": {
+                "chinese": "",
+                "english": "",
+                "traditionalChinese": "",
+                "russian": "",
+                "japanese": ""
+            },
+            "FacilityTypeId": "CheckoutPoint",
+            "FacilityType": 23,
+            "FloorIndex": 1,
+            "Cell": {
+                "x": 23,
+                "y": -11,
+                "z": 0
+            },
+            "CountsAsCoreFacility": true
+        },
+        {
+            "Id": "facility_f1_WorkerStandPoint_31_-23",
+            "DisplayName": "操作员位",
+            "LocalizedDisplayName": {
+                "chinese": "",
+                "english": "",
+                "traditionalChinese": "",
+                "russian": "",
+                "japanese": ""
+            },
+            "FacilityTypeId": "WorkerStandPoint",
+            "FacilityType": 25,
+            "FloorIndex": 1,
+            "Cell": {
+                "x": 31,
+                "y": -23,
                 "z": 0
             },
             "CountsAsCoreFacility": true
@@ -1724,6 +1517,13 @@
         {
             "Id": "facility_f1_WaitingPoint_44_0",
             "DisplayName": "等待点",
+            "LocalizedDisplayName": {
+                "chinese": "",
+                "english": "",
+                "traditionalChinese": "",
+                "russian": "",
+                "japanese": ""
+            },
             "FacilityTypeId": "WaitingPoint",
             "FacilityType": 21,
             "FloorIndex": 1,
@@ -1735,40 +1535,61 @@
             "CountsAsCoreFacility": true
         },
         {
-            "Id": "facility_f1_WaitingPoint_46_-3",
-            "DisplayName": "等待点",
+            "Id": "facility_f1_WaitingPoint_22_-7",
+            "DisplayName": "排队位",
+            "LocalizedDisplayName": {
+                "chinese": "",
+                "english": "",
+                "traditionalChinese": "",
+                "russian": "",
+                "japanese": ""
+            },
             "FacilityTypeId": "WaitingPoint",
             "FacilityType": 21,
             "FloorIndex": 1,
             "Cell": {
-                "x": 46,
-                "y": -3,
+                "x": 22,
+                "y": -7,
                 "z": 0
             },
             "CountsAsCoreFacility": true
         },
         {
-            "Id": "facility_f1_WaitingPoint_21_-13",
-            "DisplayName": "结账等待点",
-            "FacilityTypeId": "WaitingPoint",
-            "FacilityType": 21,
-            "FloorIndex": 1,
-            "Cell": {
-                "x": 21,
-                "y": -13,
-                "z": 0
+            "Id": "facility_f1_WorkerStandPoint_44_3",
+            "DisplayName": "工作站位",
+            "LocalizedDisplayName": {
+                "chinese": "",
+                "english": "",
+                "traditionalChinese": "",
+                "russian": "",
+                "japanese": ""
             },
-            "CountsAsCoreFacility": true
-        },
-        {
-            "Id": "facility_f1_ServiceWindow_44_2",
-            "DisplayName": "打饭窗口",
-            "FacilityTypeId": "ServiceWindow",
-            "FacilityType": 27,
+            "FacilityTypeId": "WorkerStandPoint",
+            "FacilityType": 25,
             "FloorIndex": 1,
             "Cell": {
                 "x": 44,
-                "y": 2,
+                "y": 3,
+                "z": 0
+            },
+            "CountsAsCoreFacility": true
+        },
+        {
+            "Id": "facility_f1_WaitingPoint_44_-1",
+            "DisplayName": "等待点",
+            "LocalizedDisplayName": {
+                "chinese": "",
+                "english": "",
+                "traditionalChinese": "",
+                "russian": "",
+                "japanese": ""
+            },
+            "FacilityTypeId": "WaitingPoint",
+            "FacilityType": 21,
+            "FloorIndex": 1,
+            "Cell": {
+                "x": 44,
+                "y": -1,
                 "z": 0
             },
             "CountsAsCoreFacility": true
@@ -1776,11 +1597,178 @@
         {
             "Id": "facility_f1_PickupPoint_44_1",
             "DisplayName": "顾客取餐点",
+            "LocalizedDisplayName": {
+                "chinese": "",
+                "english": "",
+                "traditionalChinese": "",
+                "russian": "",
+                "japanese": ""
+            },
             "FacilityTypeId": "PickupPoint",
             "FacilityType": 26,
             "FloorIndex": 1,
             "Cell": {
                 "x": 44,
+                "y": 1,
+                "z": 0
+            },
+            "CountsAsCoreFacility": true
+        },
+        {
+            "Id": "facility_f1_WaitingPoint_52_-2",
+            "DisplayName": "等待点",
+            "LocalizedDisplayName": {
+                "chinese": "",
+                "english": "",
+                "traditionalChinese": "",
+                "russian": "",
+                "japanese": ""
+            },
+            "FacilityTypeId": "WaitingPoint",
+            "FacilityType": 21,
+            "FloorIndex": 1,
+            "Cell": {
+                "x": 52,
+                "y": -2,
+                "z": 0
+            },
+            "CountsAsCoreFacility": true
+        },
+        {
+            "Id": "facility_f1_WaitingPoint_42_-3",
+            "DisplayName": "等待点",
+            "LocalizedDisplayName": {
+                "chinese": "",
+                "english": "",
+                "traditionalChinese": "",
+                "russian": "",
+                "japanese": ""
+            },
+            "FacilityTypeId": "WaitingPoint",
+            "FacilityType": 21,
+            "FloorIndex": 1,
+            "Cell": {
+                "x": 42,
+                "y": -3,
+                "z": 0
+            },
+            "CountsAsCoreFacility": true
+        },
+        {
+            "Id": "facility_f1_ServiceWindow_52_2",
+            "DisplayName": "打饭窗口",
+            "LocalizedDisplayName": {
+                "chinese": "",
+                "english": "",
+                "traditionalChinese": "",
+                "russian": "",
+                "japanese": ""
+            },
+            "FacilityTypeId": "ServiceWindow",
+            "FacilityType": 27,
+            "FloorIndex": 1,
+            "Cell": {
+                "x": 52,
+                "y": 2,
+                "z": 0
+            },
+            "CountsAsCoreFacility": true
+        },
+        {
+            "Id": "facility_f1_WaitingPoint_42_0",
+            "DisplayName": "等待点",
+            "LocalizedDisplayName": {
+                "chinese": "",
+                "english": "",
+                "traditionalChinese": "",
+                "russian": "",
+                "japanese": ""
+            },
+            "FacilityTypeId": "WaitingPoint",
+            "FacilityType": 21,
+            "FloorIndex": 1,
+            "Cell": {
+                "x": 42,
+                "y": 0,
+                "z": 0
+            },
+            "CountsAsCoreFacility": true
+        },
+        {
+            "Id": "facility_f1_WorkerStandPoint_23_-10",
+            "DisplayName": "收银员站位",
+            "LocalizedDisplayName": {
+                "chinese": "",
+                "english": "",
+                "traditionalChinese": "",
+                "russian": "",
+                "japanese": ""
+            },
+            "FacilityTypeId": "WorkerStandPoint",
+            "FacilityType": 25,
+            "FloorIndex": 1,
+            "Cell": {
+                "x": 23,
+                "y": -10,
+                "z": 0
+            },
+            "CountsAsCoreFacility": true
+        },
+        {
+            "Id": "facility_f1_ServiceWindow_50_2",
+            "DisplayName": "打饭窗口",
+            "LocalizedDisplayName": {
+                "chinese": "",
+                "english": "",
+                "traditionalChinese": "",
+                "russian": "",
+                "japanese": ""
+            },
+            "FacilityTypeId": "ServiceWindow",
+            "FacilityType": 27,
+            "FloorIndex": 1,
+            "Cell": {
+                "x": 50,
+                "y": 2,
+                "z": 0
+            },
+            "CountsAsCoreFacility": true
+        },
+        {
+            "Id": "facility_f1_WaitingPoint_22_-8",
+            "DisplayName": "排队位",
+            "LocalizedDisplayName": {
+                "chinese": "",
+                "english": "",
+                "traditionalChinese": "",
+                "russian": "",
+                "japanese": ""
+            },
+            "FacilityTypeId": "WaitingPoint",
+            "FacilityType": 21,
+            "FloorIndex": 1,
+            "Cell": {
+                "x": 22,
+                "y": -8,
+                "z": 0
+            },
+            "CountsAsCoreFacility": true
+        },
+        {
+            "Id": "facility_f1_PickupPoint_56_1",
+            "DisplayName": "顾客取餐点",
+            "LocalizedDisplayName": {
+                "chinese": "",
+                "english": "",
+                "traditionalChinese": "",
+                "russian": "",
+                "japanese": ""
+            },
+            "FacilityTypeId": "PickupPoint",
+            "FacilityType": 26,
+            "FloorIndex": 1,
+            "Cell": {
+                "x": 56,
                 "y": 1,
                 "z": 0
             },
@@ -1789,6 +1777,13 @@
         {
             "Id": "facility_f1_WorkerStandPoint_46_3",
             "DisplayName": "工作站位",
+            "LocalizedDisplayName": {
+                "chinese": "",
+                "english": "",
+                "traditionalChinese": "",
+                "russian": "",
+                "japanese": ""
+            },
             "FacilityTypeId": "WorkerStandPoint",
             "FacilityType": 25,
             "FloorIndex": 1,
@@ -1800,14 +1795,141 @@
             "CountsAsCoreFacility": true
         },
         {
-            "Id": "facility_f1_WaitingPoint_46_0",
-            "DisplayName": "等待点",
+            "Id": "facility_f1_WaitingPoint_34_-21",
+            "DisplayName": "排队位",
+            "LocalizedDisplayName": {
+                "chinese": "",
+                "english": "",
+                "traditionalChinese": "",
+                "russian": "",
+                "japanese": ""
+            },
             "FacilityTypeId": "WaitingPoint",
             "FacilityType": 21,
             "FloorIndex": 1,
             "Cell": {
-                "x": 46,
+                "x": 34,
+                "y": -21,
+                "z": 0
+            },
+            "CountsAsCoreFacility": true
+        },
+        {
+            "Id": "facility_f1_ServiceWindow_42_2",
+            "DisplayName": "打饭窗口",
+            "LocalizedDisplayName": {
+                "chinese": "",
+                "english": "",
+                "traditionalChinese": "",
+                "russian": "",
+                "japanese": ""
+            },
+            "FacilityTypeId": "ServiceWindow",
+            "FacilityType": 27,
+            "FloorIndex": 1,
+            "Cell": {
+                "x": 42,
+                "y": 2,
+                "z": 0
+            },
+            "CountsAsCoreFacility": true
+        },
+        {
+            "Id": "facility_f1_WaitingPoint_54_0",
+            "DisplayName": "等待点",
+            "LocalizedDisplayName": {
+                "chinese": "",
+                "english": "",
+                "traditionalChinese": "",
+                "russian": "",
+                "japanese": ""
+            },
+            "FacilityTypeId": "WaitingPoint",
+            "FacilityType": 21,
+            "FloorIndex": 1,
+            "Cell": {
+                "x": 54,
                 "y": 0,
+                "z": 0
+            },
+            "CountsAsCoreFacility": true
+        },
+        {
+            "Id": "facility_f1_WorkerStandPoint_50_3",
+            "DisplayName": "工作站位",
+            "LocalizedDisplayName": {
+                "chinese": "",
+                "english": "",
+                "traditionalChinese": "",
+                "russian": "",
+                "japanese": ""
+            },
+            "FacilityTypeId": "WorkerStandPoint",
+            "FacilityType": 25,
+            "FloorIndex": 1,
+            "Cell": {
+                "x": 50,
+                "y": 3,
+                "z": 0
+            },
+            "CountsAsCoreFacility": true
+        },
+        {
+            "Id": "facility_f1_WaitingPoint_library_register_1",
+            "DisplayName": "借阅等待点",
+            "LocalizedDisplayName": {
+                "chinese": "",
+                "english": "",
+                "traditionalChinese": "",
+                "russian": "",
+                "japanese": ""
+            },
+            "FacilityTypeId": "WaitingPoint",
+            "FacilityType": 21,
+            "FloorIndex": 1,
+            "Cell": {
+                "x": 32,
+                "y": -23,
+                "z": 0
+            },
+            "CountsAsCoreFacility": true
+        },
+        {
+            "Id": "facility_f1_WaitingPoint_52_-3",
+            "DisplayName": "等待点",
+            "LocalizedDisplayName": {
+                "chinese": "",
+                "english": "",
+                "traditionalChinese": "",
+                "russian": "",
+                "japanese": ""
+            },
+            "FacilityTypeId": "WaitingPoint",
+            "FacilityType": 21,
+            "FloorIndex": 1,
+            "Cell": {
+                "x": 52,
+                "y": -3,
+                "z": 0
+            },
+            "CountsAsCoreFacility": true
+        },
+        {
+            "Id": "facility_f1_PickupPoint_31_-21",
+            "DisplayName": "顾客位",
+            "LocalizedDisplayName": {
+                "chinese": "",
+                "english": "",
+                "traditionalChinese": "",
+                "russian": "",
+                "japanese": ""
+            },
+            "FacilityTypeId": "PickupPoint",
+            "FacilityType": 26,
+            "FloorIndex": 1,
+            "Cell": {
+                "x": 31,
+                "y": -21,
                 "z": 0
             },
             "CountsAsCoreFacility": true
@@ -1815,6 +1937,13 @@
         {
             "Id": "facility_f1_PickupPoint_50_1",
             "DisplayName": "顾客取餐点",
+            "LocalizedDisplayName": {
+                "chinese": "",
+                "english": "",
+                "traditionalChinese": "",
+                "russian": "",
+                "japanese": ""
+            },
             "FacilityTypeId": "PickupPoint",
             "FacilityType": 26,
             "FloorIndex": 1,
@@ -1826,27 +1955,241 @@
             "CountsAsCoreFacility": true
         },
         {
-            "Id": "facility_f1_WaitingPoint_50_-3",
+            "Id": "facility_f1_WorkerStandPoint_20_-10",
+            "DisplayName": "收银员站位",
+            "LocalizedDisplayName": {
+                "chinese": "",
+                "english": "",
+                "traditionalChinese": "",
+                "russian": "",
+                "japanese": ""
+            },
+            "FacilityTypeId": "WorkerStandPoint",
+            "FacilityType": 25,
+            "FloorIndex": 1,
+            "Cell": {
+                "x": 20,
+                "y": -10,
+                "z": 0
+            },
+            "CountsAsCoreFacility": true
+        },
+        {
+            "Id": "facility_f1_WaitingPoint_46_-1",
             "DisplayName": "等待点",
+            "LocalizedDisplayName": {
+                "chinese": "",
+                "english": "",
+                "traditionalChinese": "",
+                "russian": "",
+                "japanese": ""
+            },
             "FacilityTypeId": "WaitingPoint",
             "FacilityType": 21,
             "FloorIndex": 1,
             "Cell": {
-                "x": 50,
+                "x": 46,
+                "y": -1,
+                "z": 0
+            },
+            "CountsAsCoreFacility": true
+        },
+        {
+            "Id": "facility_f1_WorkerStandPoint_48_3",
+            "DisplayName": "工作站位",
+            "LocalizedDisplayName": {
+                "chinese": "",
+                "english": "",
+                "traditionalChinese": "",
+                "russian": "",
+                "japanese": ""
+            },
+            "FacilityTypeId": "WorkerStandPoint",
+            "FacilityType": 25,
+            "FloorIndex": 1,
+            "Cell": {
+                "x": 48,
+                "y": 3,
+                "z": 0
+            },
+            "CountsAsCoreFacility": true
+        },
+        {
+            "Id": "facility_f1_ServiceWindow_44_2",
+            "DisplayName": "打饭窗口",
+            "LocalizedDisplayName": {
+                "chinese": "",
+                "english": "",
+                "traditionalChinese": "",
+                "russian": "",
+                "japanese": ""
+            },
+            "FacilityTypeId": "ServiceWindow",
+            "FacilityType": 27,
+            "FloorIndex": 1,
+            "Cell": {
+                "x": 44,
+                "y": 2,
+                "z": 0
+            },
+            "CountsAsCoreFacility": true
+        },
+        {
+            "Id": "facility_f1_PickupPoint_42_1",
+            "DisplayName": "顾客取餐点",
+            "LocalizedDisplayName": {
+                "chinese": "",
+                "english": "",
+                "traditionalChinese": "",
+                "russian": "",
+                "japanese": ""
+            },
+            "FacilityTypeId": "PickupPoint",
+            "FacilityType": 26,
+            "FloorIndex": 1,
+            "Cell": {
+                "x": 42,
+                "y": 1,
+                "z": 0
+            },
+            "CountsAsCoreFacility": true
+        },
+        {
+            "Id": "facility_f1_WorkerStandPoint_56_3",
+            "DisplayName": "工作站位",
+            "LocalizedDisplayName": {
+                "chinese": "",
+                "english": "",
+                "traditionalChinese": "",
+                "russian": "",
+                "japanese": ""
+            },
+            "FacilityTypeId": "WorkerStandPoint",
+            "FacilityType": 25,
+            "FloorIndex": 1,
+            "Cell": {
+                "x": 56,
+                "y": 3,
+                "z": 0
+            },
+            "CountsAsCoreFacility": true
+        },
+        {
+            "Id": "facility_f1_WaitingPoint_56_-1",
+            "DisplayName": "等待点",
+            "LocalizedDisplayName": {
+                "chinese": "",
+                "english": "",
+                "traditionalChinese": "",
+                "russian": "",
+                "japanese": ""
+            },
+            "FacilityTypeId": "WaitingPoint",
+            "FacilityType": 21,
+            "FloorIndex": 1,
+            "Cell": {
+                "x": 56,
+                "y": -1,
+                "z": 0
+            },
+            "CountsAsCoreFacility": true
+        },
+        {
+            "Id": "facility_f1_ServiceWindow_46_2",
+            "DisplayName": "打饭窗口",
+            "LocalizedDisplayName": {
+                "chinese": "",
+                "english": "",
+                "traditionalChinese": "",
+                "russian": "",
+                "japanese": ""
+            },
+            "FacilityTypeId": "ServiceWindow",
+            "FacilityType": 27,
+            "FloorIndex": 1,
+            "Cell": {
+                "x": 46,
+                "y": 2,
+                "z": 0
+            },
+            "CountsAsCoreFacility": true
+        },
+        {
+            "Id": "facility_f1_WaitingPoint_54_-3",
+            "DisplayName": "等待点",
+            "LocalizedDisplayName": {
+                "chinese": "",
+                "english": "",
+                "traditionalChinese": "",
+                "russian": "",
+                "japanese": ""
+            },
+            "FacilityTypeId": "WaitingPoint",
+            "FacilityType": 21,
+            "FloorIndex": 1,
+            "Cell": {
+                "x": 54,
                 "y": -3,
                 "z": 0
             },
             "CountsAsCoreFacility": true
         },
         {
-            "Id": "facility_f1_PickupPoint_48_1",
-            "DisplayName": "顾客取餐点",
-            "FacilityTypeId": "PickupPoint",
-            "FacilityType": 26,
+            "Id": "facility_f1_ServiceWindow_54_2",
+            "DisplayName": "打饭窗口",
+            "LocalizedDisplayName": {
+                "chinese": "",
+                "english": "",
+                "traditionalChinese": "",
+                "russian": "",
+                "japanese": ""
+            },
+            "FacilityTypeId": "ServiceWindow",
+            "FacilityType": 27,
+            "FloorIndex": 1,
+            "Cell": {
+                "x": 54,
+                "y": 2,
+                "z": 0
+            },
+            "CountsAsCoreFacility": true
+        },
+        {
+            "Id": "facility_f1_WaitingPoint_44_-2",
+            "DisplayName": "等待点",
+            "LocalizedDisplayName": {
+                "chinese": "",
+                "english": "",
+                "traditionalChinese": "",
+                "russian": "",
+                "japanese": ""
+            },
+            "FacilityTypeId": "WaitingPoint",
+            "FacilityType": 21,
+            "FloorIndex": 1,
+            "Cell": {
+                "x": 44,
+                "y": -2,
+                "z": 0
+            },
+            "CountsAsCoreFacility": true
+        },
+        {
+            "Id": "facility_f1_WaitingPoint_48_-3",
+            "DisplayName": "等待点",
+            "LocalizedDisplayName": {
+                "chinese": "",
+                "english": "",
+                "traditionalChinese": "",
+                "russian": "",
+                "japanese": ""
+            },
+            "FacilityTypeId": "WaitingPoint",
+            "FacilityType": 21,
             "FloorIndex": 1,
             "Cell": {
                 "x": 48,
-                "y": 1,
+                "y": -3,
                 "z": 0
             },
             "CountsAsCoreFacility": true
@@ -1854,6 +2197,13 @@
         {
             "Id": "facility_f1_WaitingPoint_50_0",
             "DisplayName": "等待点",
+            "LocalizedDisplayName": {
+                "chinese": "",
+                "english": "",
+                "traditionalChinese": "",
+                "russian": "",
+                "japanese": ""
+            },
             "FacilityTypeId": "WaitingPoint",
             "FacilityType": 21,
             "FloorIndex": 1,
@@ -1867,6 +2217,13 @@
         {
             "Id": "facility_f1_WaitingPoint_50_-1",
             "DisplayName": "等待点",
+            "LocalizedDisplayName": {
+                "chinese": "",
+                "english": "",
+                "traditionalChinese": "",
+                "russian": "",
+                "japanese": ""
+            },
             "FacilityTypeId": "WaitingPoint",
             "FacilityType": 21,
             "FloorIndex": 1,
@@ -1878,196 +2235,181 @@
             "CountsAsCoreFacility": true
         },
         {
-            "Id": "facility_f1_WorkerStandPoint_56_3",
+            "Id": "facility_f1_CheckoutPoint_library_register",
+            "DisplayName": "图书登记台",
+            "LocalizedDisplayName": {
+                "chinese": "",
+                "english": "",
+                "traditionalChinese": "",
+                "russian": "",
+                "japanese": ""
+            },
+            "FacilityTypeId": "CheckoutPoint",
+            "FacilityType": 23,
+            "FloorIndex": 1,
+            "Cell": {
+                "x": 31,
+                "y": -22,
+                "z": 0
+            },
+            "CountsAsCoreFacility": true
+        },
+        {
+            "Id": "facility_f1_WaitingPoint_56_-2",
+            "DisplayName": "等待点",
+            "LocalizedDisplayName": {
+                "chinese": "",
+                "english": "",
+                "traditionalChinese": "",
+                "russian": "",
+                "japanese": ""
+            },
+            "FacilityTypeId": "WaitingPoint",
+            "FacilityType": 21,
+            "FloorIndex": 1,
+            "Cell": {
+                "x": 56,
+                "y": -2,
+                "z": 0
+            },
+            "CountsAsCoreFacility": true
+        },
+        {
+            "Id": "facility_f1_WaitingPoint_52_-1",
+            "DisplayName": "等待点",
+            "LocalizedDisplayName": {
+                "chinese": "",
+                "english": "",
+                "traditionalChinese": "",
+                "russian": "",
+                "japanese": ""
+            },
+            "FacilityTypeId": "WaitingPoint",
+            "FacilityType": 21,
+            "FloorIndex": 1,
+            "Cell": {
+                "x": 52,
+                "y": -1,
+                "z": 0
+            },
+            "CountsAsCoreFacility": true
+        },
+        {
+            "Id": "facility_f1_WaitingPoint_46_0",
+            "DisplayName": "等待点",
+            "LocalizedDisplayName": {
+                "chinese": "",
+                "english": "",
+                "traditionalChinese": "",
+                "russian": "",
+                "japanese": ""
+            },
+            "FacilityTypeId": "WaitingPoint",
+            "FacilityType": 21,
+            "FloorIndex": 1,
+            "Cell": {
+                "x": 46,
+                "y": 0,
+                "z": 0
+            },
+            "CountsAsCoreFacility": true
+        },
+        {
+            "Id": "facility_f1_WorkerStandPoint_54_3",
             "DisplayName": "工作站位",
+            "LocalizedDisplayName": {
+                "chinese": "",
+                "english": "",
+                "traditionalChinese": "",
+                "russian": "",
+                "japanese": ""
+            },
             "FacilityTypeId": "WorkerStandPoint",
             "FacilityType": 25,
             "FloorIndex": 1,
             "Cell": {
-                "x": 56,
+                "x": 54,
                 "y": 3,
                 "z": 0
             },
             "CountsAsCoreFacility": true
         },
         {
-            "Id": "facility_f1_WaitingPoint_52_-3",
+            "Id": "facility_f1_WaitingPoint_48_-2",
             "DisplayName": "等待点",
+            "LocalizedDisplayName": {
+                "chinese": "",
+                "english": "",
+                "traditionalChinese": "",
+                "russian": "",
+                "japanese": ""
+            },
             "FacilityTypeId": "WaitingPoint",
             "FacilityType": 21,
             "FloorIndex": 1,
             "Cell": {
-                "x": 52,
+                "x": 48,
+                "y": -2,
+                "z": 0
+            },
+            "CountsAsCoreFacility": true
+        },
+        {
+            "Id": "facility_f1_WaitingPoint_46_-3",
+            "DisplayName": "等待点",
+            "LocalizedDisplayName": {
+                "chinese": "",
+                "english": "",
+                "traditionalChinese": "",
+                "russian": "",
+                "japanese": ""
+            },
+            "FacilityTypeId": "WaitingPoint",
+            "FacilityType": 21,
+            "FloorIndex": 1,
+            "Cell": {
+                "x": 46,
                 "y": -3,
                 "z": 0
             },
             "CountsAsCoreFacility": true
         },
         {
-            "Id": "facility_f1_WorkerStandPoint_42_3",
-            "DisplayName": "工作站位",
-            "FacilityTypeId": "WorkerStandPoint",
-            "FacilityType": 25,
-            "FloorIndex": 1,
-            "Cell": {
-                "x": 42,
-                "y": 3,
-                "z": 0
-            },
-            "CountsAsCoreFacility": true
-        },
-        {
-            "Id": "facility_f1_PickupPoint_54_1",
-            "DisplayName": "顾客取餐点",
-            "FacilityTypeId": "PickupPoint",
-            "FacilityType": 26,
-            "FloorIndex": 1,
-            "Cell": {
-                "x": 54,
-                "y": 1,
-                "z": 0
-            },
-            "CountsAsCoreFacility": true
-        },
-        {
-            "Id": "facility_f1_WaitingPoint_54_0",
+            "Id": "facility_f1_WaitingPoint_46_-2",
             "DisplayName": "等待点",
+            "LocalizedDisplayName": {
+                "chinese": "",
+                "english": "",
+                "traditionalChinese": "",
+                "russian": "",
+                "japanese": ""
+            },
             "FacilityTypeId": "WaitingPoint",
             "FacilityType": 21,
             "FloorIndex": 1,
             "Cell": {
-                "x": 54,
-                "y": 0,
-                "z": 0
-            },
-            "CountsAsCoreFacility": true
-        },
-        {
-            "Id": "facility_f1_ServiceWindow_52_2",
-            "DisplayName": "打饭窗口",
-            "FacilityTypeId": "ServiceWindow",
-            "FacilityType": 27,
-            "FloorIndex": 1,
-            "Cell": {
-                "x": 52,
-                "y": 2,
-                "z": 0
-            },
-            "CountsAsCoreFacility": true
-        },
-        {
-            "Id": "facility_f1_WaitingPoint_20_-13",
-            "DisplayName": "结账等待点",
-            "FacilityTypeId": "WaitingPoint",
-            "FacilityType": 21,
-            "FloorIndex": 1,
-            "Cell": {
-                "x": 20,
-                "y": -13,
-                "z": 0
-            },
-            "CountsAsCoreFacility": true
-        },
-        {
-            "Id": "facility_f1_WaitingPoint_23_-13",
-            "DisplayName": "结账等待点",
-            "FacilityTypeId": "WaitingPoint",
-            "FacilityType": 21,
-            "FloorIndex": 1,
-            "Cell": {
-                "x": 23,
-                "y": -13,
-                "z": 0
-            },
-            "CountsAsCoreFacility": true
-        },
-        {
-            "Id": "facility_f1_WaitingPoint_24_-13",
-            "DisplayName": "结账等待点",
-            "FacilityTypeId": "WaitingPoint",
-            "FacilityType": 21,
-            "FloorIndex": 1,
-            "Cell": {
-                "x": 24,
-                "y": -13,
-                "z": 0
-            },
-            "CountsAsCoreFacility": true
-        },
-        {
-            "Id": "facility_f1_WaitingPoint_42_-2",
-            "DisplayName": "等待点",
-            "FacilityTypeId": "WaitingPoint",
-            "FacilityType": 21,
-            "FloorIndex": 1,
-            "Cell": {
-                "x": 42,
+                "x": 46,
                 "y": -2,
                 "z": 0
             },
             "CountsAsCoreFacility": true
         },
         {
-            "Id": "facility_f1_WorkerStandPoint_44_3",
-            "DisplayName": "工作站位",
-            "FacilityTypeId": "WorkerStandPoint",
-            "FacilityType": 25,
-            "FloorIndex": 1,
-            "Cell": {
-                "x": 44,
-                "y": 3,
-                "z": 0
+            "Id": "facility_f1_WaitingPoint_22_-9",
+            "DisplayName": "排队位",
+            "LocalizedDisplayName": {
+                "chinese": "",
+                "english": "",
+                "traditionalChinese": "",
+                "russian": "",
+                "japanese": ""
             },
-            "CountsAsCoreFacility": true
-        },
-        {
-            "Id": "facility_f1_WaitingPoint_44_-2",
-            "DisplayName": "等待点",
             "FacilityTypeId": "WaitingPoint",
             "FacilityType": 21,
             "FloorIndex": 1,
             "Cell": {
-                "x": 44,
-                "y": -2,
-                "z": 0
-            },
-            "CountsAsCoreFacility": true
-        },
-        {
-            "Id": "facility_f1_WaitingPoint_42_0",
-            "DisplayName": "等待点",
-            "FacilityTypeId": "WaitingPoint",
-            "FacilityType": 21,
-            "FloorIndex": 1,
-            "Cell": {
-                "x": 42,
-                "y": 0,
-                "z": 0
-            },
-            "CountsAsCoreFacility": true
-        },
-        {
-            "Id": "facility_f1_PickupPoint_42_1",
-            "DisplayName": "顾客取餐点",
-            "FacilityTypeId": "PickupPoint",
-            "FacilityType": 26,
-            "FloorIndex": 1,
-            "Cell": {
-                "x": 42,
-                "y": 1,
-                "z": 0
-            },
-            "CountsAsCoreFacility": true
-        },
-        {
-            "Id": "facility_f1_WaitingPoint_52_-2",
-            "DisplayName": "等待点",
-            "FacilityTypeId": "WaitingPoint",
-            "FacilityType": 21,
-            "FloorIndex": 1,
-            "Cell": {
-                "x": 52,
-                "y": -2,
+                "x": 22,
+                "y": -9,
                 "z": 0
             },
             "CountsAsCoreFacility": true
@@ -2075,6 +2417,13 @@
         {
             "Id": "facility_f1_WaitingPoint_48_0",
             "DisplayName": "等待点",
+            "LocalizedDisplayName": {
+                "chinese": "",
+                "english": "",
+                "traditionalChinese": "",
+                "russian": "",
+                "japanese": ""
+            },
             "FacilityTypeId": "WaitingPoint",
             "FacilityType": 21,
             "FloorIndex": 1,
@@ -2086,8 +2435,395 @@
             "CountsAsCoreFacility": true
         },
         {
+            "Id": "facility_f1_PickupPoint_52_1",
+            "DisplayName": "顾客取餐点",
+            "LocalizedDisplayName": {
+                "chinese": "",
+                "english": "",
+                "traditionalChinese": "",
+                "russian": "",
+                "japanese": ""
+            },
+            "FacilityTypeId": "PickupPoint",
+            "FacilityType": 26,
+            "FloorIndex": 1,
+            "Cell": {
+                "x": 52,
+                "y": 1,
+                "z": 0
+            },
+            "CountsAsCoreFacility": true
+        },
+        {
+            "Id": "facility_f1_WaitingPoint_52_0",
+            "DisplayName": "等待点",
+            "LocalizedDisplayName": {
+                "chinese": "",
+                "english": "",
+                "traditionalChinese": "",
+                "russian": "",
+                "japanese": ""
+            },
+            "FacilityTypeId": "WaitingPoint",
+            "FacilityType": 21,
+            "FloorIndex": 1,
+            "Cell": {
+                "x": 52,
+                "y": 0,
+                "z": 0
+            },
+            "CountsAsCoreFacility": true
+        },
+        {
+            "Id": "facility_f1_PickupPoint_54_1",
+            "DisplayName": "顾客取餐点",
+            "LocalizedDisplayName": {
+                "chinese": "",
+                "english": "",
+                "traditionalChinese": "",
+                "russian": "",
+                "japanese": ""
+            },
+            "FacilityTypeId": "PickupPoint",
+            "FacilityType": 26,
+            "FloorIndex": 1,
+            "Cell": {
+                "x": 54,
+                "y": 1,
+                "z": 0
+            },
+            "CountsAsCoreFacility": true
+        },
+        {
+            "Id": "facility_f1_WaitingPoint_19_-7",
+            "DisplayName": "排队位",
+            "LocalizedDisplayName": {
+                "chinese": "",
+                "english": "",
+                "traditionalChinese": "",
+                "russian": "",
+                "japanese": ""
+            },
+            "FacilityTypeId": "WaitingPoint",
+            "FacilityType": 21,
+            "FloorIndex": 1,
+            "Cell": {
+                "x": 19,
+                "y": -7,
+                "z": 0
+            },
+            "CountsAsCoreFacility": true
+        },
+        {
+            "Id": "facility_f1_WaitingPoint_42_-1",
+            "DisplayName": "等待点",
+            "LocalizedDisplayName": {
+                "chinese": "",
+                "english": "",
+                "traditionalChinese": "",
+                "russian": "",
+                "japanese": ""
+            },
+            "FacilityTypeId": "WaitingPoint",
+            "FacilityType": 21,
+            "FloorIndex": 1,
+            "Cell": {
+                "x": 42,
+                "y": -1,
+                "z": 0
+            },
+            "CountsAsCoreFacility": true
+        },
+        {
+            "Id": "facility_f1_WorkerStandPoint_52_3",
+            "DisplayName": "工作站位",
+            "LocalizedDisplayName": {
+                "chinese": "",
+                "english": "",
+                "traditionalChinese": "",
+                "russian": "",
+                "japanese": ""
+            },
+            "FacilityTypeId": "WorkerStandPoint",
+            "FacilityType": 25,
+            "FloorIndex": 1,
+            "Cell": {
+                "x": 52,
+                "y": 3,
+                "z": 0
+            },
+            "CountsAsCoreFacility": true
+        },
+        {
+            "Id": "facility_f1_WaitingPoint_19_-8",
+            "DisplayName": "排队位",
+            "LocalizedDisplayName": {
+                "chinese": "",
+                "english": "",
+                "traditionalChinese": "",
+                "russian": "",
+                "japanese": ""
+            },
+            "FacilityTypeId": "WaitingPoint",
+            "FacilityType": 21,
+            "FloorIndex": 1,
+            "Cell": {
+                "x": 19,
+                "y": -8,
+                "z": 0
+            },
+            "CountsAsCoreFacility": true
+        },
+        {
+            "Id": "facility_f1_ServiceWindow_48_2",
+            "DisplayName": "打饭窗口",
+            "LocalizedDisplayName": {
+                "chinese": "",
+                "english": "",
+                "traditionalChinese": "",
+                "russian": "",
+                "japanese": ""
+            },
+            "FacilityTypeId": "ServiceWindow",
+            "FacilityType": 27,
+            "FloorIndex": 1,
+            "Cell": {
+                "x": 48,
+                "y": 2,
+                "z": 0
+            },
+            "CountsAsCoreFacility": true
+        },
+        {
+            "Id": "facility_f1_WaitingPoint_33_-21",
+            "DisplayName": "排队位",
+            "LocalizedDisplayName": {
+                "chinese": "",
+                "english": "",
+                "traditionalChinese": "",
+                "russian": "",
+                "japanese": ""
+            },
+            "FacilityTypeId": "WaitingPoint",
+            "FacilityType": 21,
+            "FloorIndex": 1,
+            "Cell": {
+                "x": 33,
+                "y": -21,
+                "z": 0
+            },
+            "CountsAsCoreFacility": true
+        },
+        {
+            "Id": "facility_f1_PickupPoint_19_-10",
+            "DisplayName": "顾客位",
+            "LocalizedDisplayName": {
+                "chinese": "",
+                "english": "",
+                "traditionalChinese": "",
+                "russian": "",
+                "japanese": ""
+            },
+            "FacilityTypeId": "PickupPoint",
+            "FacilityType": 26,
+            "FloorIndex": 1,
+            "Cell": {
+                "x": 19,
+                "y": -10,
+                "z": 0
+            },
+            "CountsAsCoreFacility": true
+        },
+        {
+            "Id": "facility_f1_WaitingPoint_50_-2",
+            "DisplayName": "等待点",
+            "LocalizedDisplayName": {
+                "chinese": "",
+                "english": "",
+                "traditionalChinese": "",
+                "russian": "",
+                "japanese": ""
+            },
+            "FacilityTypeId": "WaitingPoint",
+            "FacilityType": 21,
+            "FloorIndex": 1,
+            "Cell": {
+                "x": 50,
+                "y": -2,
+                "z": 0
+            },
+            "CountsAsCoreFacility": true
+        },
+        {
+            "Id": "facility_f1_WaitingPoint_54_-1",
+            "DisplayName": "等待点",
+            "LocalizedDisplayName": {
+                "chinese": "",
+                "english": "",
+                "traditionalChinese": "",
+                "russian": "",
+                "japanese": ""
+            },
+            "FacilityTypeId": "WaitingPoint",
+            "FacilityType": 21,
+            "FloorIndex": 1,
+            "Cell": {
+                "x": 54,
+                "y": -1,
+                "z": 0
+            },
+            "CountsAsCoreFacility": true
+        },
+        {
+            "Id": "facility_f1_WaitingPoint_50_-3",
+            "DisplayName": "等待点",
+            "LocalizedDisplayName": {
+                "chinese": "",
+                "english": "",
+                "traditionalChinese": "",
+                "russian": "",
+                "japanese": ""
+            },
+            "FacilityTypeId": "WaitingPoint",
+            "FacilityType": 21,
+            "FloorIndex": 1,
+            "Cell": {
+                "x": 50,
+                "y": -3,
+                "z": 0
+            },
+            "CountsAsCoreFacility": true
+        },
+        {
+            "Id": "facility_f1_WaitingPoint_32_-21",
+            "DisplayName": "排队位",
+            "LocalizedDisplayName": {
+                "chinese": "",
+                "english": "",
+                "traditionalChinese": "",
+                "russian": "",
+                "japanese": ""
+            },
+            "FacilityTypeId": "WaitingPoint",
+            "FacilityType": 21,
+            "FloorIndex": 1,
+            "Cell": {
+                "x": 32,
+                "y": -21,
+                "z": 0
+            },
+            "CountsAsCoreFacility": true
+        },
+        {
+            "Id": "facility_f1_ServiceWindow_56_2",
+            "DisplayName": "打饭窗口",
+            "LocalizedDisplayName": {
+                "chinese": "",
+                "english": "",
+                "traditionalChinese": "",
+                "russian": "",
+                "japanese": ""
+            },
+            "FacilityTypeId": "ServiceWindow",
+            "FacilityType": 27,
+            "FloorIndex": 1,
+            "Cell": {
+                "x": 56,
+                "y": 2,
+                "z": 0
+            },
+            "CountsAsCoreFacility": true
+        },
+        {
+            "Id": "facility_f1_WaitingPoint_56_-3",
+            "DisplayName": "等待点",
+            "LocalizedDisplayName": {
+                "chinese": "",
+                "english": "",
+                "traditionalChinese": "",
+                "russian": "",
+                "japanese": ""
+            },
+            "FacilityTypeId": "WaitingPoint",
+            "FacilityType": 21,
+            "FloorIndex": 1,
+            "Cell": {
+                "x": 56,
+                "y": -3,
+                "z": 0
+            },
+            "CountsAsCoreFacility": true
+        },
+        {
+            "Id": "facility_f1_PickupPoint_22_-10",
+            "DisplayName": "顾客位",
+            "LocalizedDisplayName": {
+                "chinese": "",
+                "english": "",
+                "traditionalChinese": "",
+                "russian": "",
+                "japanese": ""
+            },
+            "FacilityTypeId": "PickupPoint",
+            "FacilityType": 26,
+            "FloorIndex": 1,
+            "Cell": {
+                "x": 22,
+                "y": -10,
+                "z": 0
+            },
+            "CountsAsCoreFacility": true
+        },
+        {
+            "Id": "facility_f1_WaitingPoint_54_-2",
+            "DisplayName": "等待点",
+            "LocalizedDisplayName": {
+                "chinese": "",
+                "english": "",
+                "traditionalChinese": "",
+                "russian": "",
+                "japanese": ""
+            },
+            "FacilityTypeId": "WaitingPoint",
+            "FacilityType": 21,
+            "FloorIndex": 1,
+            "Cell": {
+                "x": 54,
+                "y": -2,
+                "z": 0
+            },
+            "CountsAsCoreFacility": true
+        },
+        {
+            "Id": "facility_f1_WaitingPoint_44_-3",
+            "DisplayName": "等待点",
+            "LocalizedDisplayName": {
+                "chinese": "",
+                "english": "",
+                "traditionalChinese": "",
+                "russian": "",
+                "japanese": ""
+            },
+            "FacilityTypeId": "WaitingPoint",
+            "FacilityType": 21,
+            "FloorIndex": 1,
+            "Cell": {
+                "x": 44,
+                "y": -3,
+                "z": 0
+            },
+            "CountsAsCoreFacility": true
+        },
+        {
             "Id": "facility_f1_WaitingPoint_48_-1",
             "DisplayName": "等待点",
+            "LocalizedDisplayName": {
+                "chinese": "",
+                "english": "",
+                "traditionalChinese": "",
+                "russian": "",
+                "japanese": ""
+            },
             "FacilityTypeId": "WaitingPoint",
             "FacilityType": 21,
             "FloorIndex": 1,
@@ -2097,96 +2833,89 @@
                 "z": 0
             },
             "CountsAsCoreFacility": true
+        },
+        {
+            "Id": "facility_f1_WaitingPoint_56_0",
+            "DisplayName": "等待点",
+            "LocalizedDisplayName": {
+                "chinese": "",
+                "english": "",
+                "traditionalChinese": "",
+                "russian": "",
+                "japanese": ""
+            },
+            "FacilityTypeId": "WaitingPoint",
+            "FacilityType": 21,
+            "FloorIndex": 1,
+            "Cell": {
+                "x": 56,
+                "y": 0,
+                "z": 0
+            },
+            "CountsAsCoreFacility": true
+        },
+        {
+            "Id": "facility_f1_WaitingPoint_library_register_2",
+            "DisplayName": "借阅等待点",
+            "LocalizedDisplayName": {
+                "chinese": "",
+                "english": "",
+                "traditionalChinese": "",
+                "russian": "",
+                "japanese": ""
+            },
+            "FacilityTypeId": "WaitingPoint",
+            "FacilityType": 21,
+            "FloorIndex": 1,
+            "Cell": {
+                "x": 33,
+                "y": -23,
+                "z": 0
+            },
+            "CountsAsCoreFacility": true
+        },
+        {
+            "Id": "facility_f1_WaitingPoint_42_-2",
+            "DisplayName": "等待点",
+            "LocalizedDisplayName": {
+                "chinese": "",
+                "english": "",
+                "traditionalChinese": "",
+                "russian": "",
+                "japanese": ""
+            },
+            "FacilityTypeId": "WaitingPoint",
+            "FacilityType": 21,
+            "FloorIndex": 1,
+            "Cell": {
+                "x": 42,
+                "y": -2,
+                "z": 0
+            },
+            "CountsAsCoreFacility": true
+        },
+        {
+            "Id": "facility_f1_WorkerStandPoint_library_zhuzi",
+            "DisplayName": "柱子整理点",
+            "LocalizedDisplayName": {
+                "chinese": "",
+                "english": "",
+                "traditionalChinese": "",
+                "russian": "",
+                "japanese": ""
+            },
+            "FacilityTypeId": "WorkerStandPoint",
+            "FacilityType": 25,
+            "FloorIndex": 1,
+            "Cell": {
+                "x": 40,
+                "y": -26,
+                "z": 0
+            },
+            "CountsAsCoreFacility": true
         }
     ],
     "ServiceStations": [
-        {
-            "Id": "canteen_station_48",
-            "StationTypeId": "canteen_meal_window",
-            "RoomId": "servicearea_f1_1",
-            "OwnerFacilityId": "facility_f1_ServiceWindow_48_2",
-            "Slots": [
-                {
-                    "RoleId": "operator",
-                    "FacilityIds": [
-                        "facility_f1_WorkerStandPoint_48_3"
-                    ]
-                },
-                {
-                    "RoleId": "customer",
-                    "FacilityIds": [
-                        "facility_f1_PickupPoint_48_1"
-                    ]
-                },
-                {
-                    "RoleId": "queue",
-                    "FacilityIds": [
-                        "facility_f1_WaitingPoint_48_-1",
-                        "facility_f1_WaitingPoint_48_0",
-                        "facility_f1_WaitingPoint_48_-2",
-                        "facility_f1_WaitingPoint_48_-3"
-                    ]
-                }
-            ]
-        },
-        {
-            "Id": "canteen_station_46",
-            "StationTypeId": "canteen_meal_window",
-            "RoomId": "servicearea_f1_1",
-            "OwnerFacilityId": "facility_f1_ServiceWindow_46_2",
-            "Slots": [
-                {
-                    "RoleId": "operator",
-                    "FacilityIds": [
-                        "facility_f1_WorkerStandPoint_46_3"
-                    ]
-                },
-                {
-                    "RoleId": "customer",
-                    "FacilityIds": [
-                        "facility_f1_PickupPoint_46_1"
-                    ]
-                },
-                {
-                    "RoleId": "queue",
-                    "FacilityIds": [
-                        "facility_f1_WaitingPoint_46_-3",
-                        "facility_f1_WaitingPoint_46_0",
-                        "facility_f1_WaitingPoint_46_-1",
-                        "facility_f1_WaitingPoint_46_-2"
-                    ]
-                }
-            ]
-        },
-        {
-            "Id": "canteen_station_52",
-            "StationTypeId": "canteen_meal_window",
-            "RoomId": "servicearea_f1_1",
-            "OwnerFacilityId": "facility_f1_ServiceWindow_52_2",
-            "Slots": [
-                {
-                    "RoleId": "operator",
-                    "FacilityIds": [
-                        "facility_f1_WorkerStandPoint_52_3"
-                    ]
-                },
-                {
-                    "RoleId": "customer",
-                    "FacilityIds": [
-                        "facility_f1_PickupPoint_52_1"
-                    ]
-                },
-                {
-                    "RoleId": "queue",
-                    "FacilityIds": [
-                        "facility_f1_WaitingPoint_52_-2",
-                        "facility_f1_WaitingPoint_52_-1",
-                        "facility_f1_WaitingPoint_52_0",
-                        "facility_f1_WaitingPoint_52_-3"
-                    ]
-                }
-            ]
-        },
         {
             "Id": "canteen_station_54",
             "StationTypeId": "canteen_meal_window",
@@ -2231,70 +2960,15 @@
                 {
                     "RoleId": "customer",
                     "FacilityIds": [
-                        "facility_f1_PickupPoint_20_-12"
+                        "facility_f1_PickupPoint_19_-10"
                     ]
                 },
                 {
                     "RoleId": "queue",
                     "FacilityIds": [
-                        "facility_f1_WaitingPoint_20_-13",
-                        "facility_f1_WaitingPoint_21_-13"
-                    ]
-                }
-            ]
-        },
-        {
-            "Id": "retail_checkout_station_23",
-            "StationTypeId": "retail_checkout",
-            "RoomId": "retailarea_f1_1",
-            "OwnerFacilityId": "facility_f1_CheckoutPoint_23_-11",
-            "Slots": [
-                {
-                    "RoleId": "operator",
-                    "FacilityIds": [
-                        "facility_f1_WorkerStandPoint_23_-10"
-                    ]
-                },
-                {
-                    "RoleId": "customer",
-                    "FacilityIds": [
-                        "facility_f1_PickupPoint_23_-12"
-                    ]
-                },
-                {
-                    "RoleId": "queue",
-                    "FacilityIds": [
-                        "facility_f1_WaitingPoint_23_-13",
-                        "facility_f1_WaitingPoint_24_-13"
-                    ]
-                }
-            ]
-        },
-        {
-            "Id": "canteen_station_44",
-            "StationTypeId": "canteen_meal_window",
-            "RoomId": "servicearea_f1_1",
-            "OwnerFacilityId": "facility_f1_ServiceWindow_44_2",
-            "Slots": [
-                {
-                    "RoleId": "operator",
-                    "FacilityIds": [
-                        "facility_f1_WorkerStandPoint_44_3"
-                    ]
-                },
-                {
-                    "RoleId": "customer",
-                    "FacilityIds": [
-                        "facility_f1_PickupPoint_44_1"
-                    ]
-                },
-                {
-                    "RoleId": "queue",
-                    "FacilityIds": [
-                        "facility_f1_WaitingPoint_44_-3",
-                        "facility_f1_WaitingPoint_44_-1",
-                        "facility_f1_WaitingPoint_44_0",
-                        "facility_f1_WaitingPoint_44_-2"
+                        "facility_f1_WaitingPoint_19_-9",
+                        "facility_f1_WaitingPoint_19_-8",
+                        "facility_f1_WaitingPoint_19_-7"
                     ]
                 }
             ]
@@ -2329,6 +3003,35 @@
             ]
         },
         {
+            "Id": "canteen_station_50",
+            "StationTypeId": "canteen_meal_window",
+            "RoomId": "servicearea_f1_1",
+            "OwnerFacilityId": "facility_f1_ServiceWindow_50_2",
+            "Slots": [
+                {
+                    "RoleId": "operator",
+                    "FacilityIds": [
+                        "facility_f1_WorkerStandPoint_50_3"
+                    ]
+                },
+                {
+                    "RoleId": "customer",
+                    "FacilityIds": [
+                        "facility_f1_PickupPoint_50_1"
+                    ]
+                },
+                {
+                    "RoleId": "queue",
+                    "FacilityIds": [
+                        "facility_f1_WaitingPoint_50_-1",
+                        "facility_f1_WaitingPoint_50_0",
+                        "facility_f1_WaitingPoint_50_-2",
+                        "facility_f1_WaitingPoint_50_-3"
+                    ]
+                }
+            ]
+        },
+        {
             "Id": "canteen_station_56",
             "StationTypeId": "canteen_meal_window",
             "RoomId": "servicearea_f1_1",
@@ -2358,30 +3061,172 @@
             ]
         },
         {
-            "Id": "canteen_station_50",
+            "Id": "canteen_station_52",
             "StationTypeId": "canteen_meal_window",
             "RoomId": "servicearea_f1_1",
-            "OwnerFacilityId": "facility_f1_ServiceWindow_50_2",
+            "OwnerFacilityId": "facility_f1_ServiceWindow_52_2",
             "Slots": [
                 {
                     "RoleId": "operator",
                     "FacilityIds": [
-                        "facility_f1_WorkerStandPoint_50_3"
+                        "facility_f1_WorkerStandPoint_52_3"
                     ]
                 },
                 {
                     "RoleId": "customer",
                     "FacilityIds": [
-                        "facility_f1_PickupPoint_50_1"
+                        "facility_f1_PickupPoint_52_1"
                     ]
                 },
                 {
                     "RoleId": "queue",
                     "FacilityIds": [
-                        "facility_f1_WaitingPoint_50_-1",
-                        "facility_f1_WaitingPoint_50_0",
-                        "facility_f1_WaitingPoint_50_-2",
-                        "facility_f1_WaitingPoint_50_-3"
+                        "facility_f1_WaitingPoint_52_-2",
+                        "facility_f1_WaitingPoint_52_-1",
+                        "facility_f1_WaitingPoint_52_0",
+                        "facility_f1_WaitingPoint_52_-3"
+                    ]
+                }
+            ]
+        },
+        {
+            "Id": "canteen_station_44",
+            "StationTypeId": "canteen_meal_window",
+            "RoomId": "servicearea_f1_1",
+            "OwnerFacilityId": "facility_f1_ServiceWindow_44_2",
+            "Slots": [
+                {
+                    "RoleId": "operator",
+                    "FacilityIds": [
+                        "facility_f1_WorkerStandPoint_44_3"
+                    ]
+                },
+                {
+                    "RoleId": "customer",
+                    "FacilityIds": [
+                        "facility_f1_PickupPoint_44_1"
+                    ]
+                },
+                {
+                    "RoleId": "queue",
+                    "FacilityIds": [
+                        "facility_f1_WaitingPoint_44_-3",
+                        "facility_f1_WaitingPoint_44_-1",
+                        "facility_f1_WaitingPoint_44_0",
+                        "facility_f1_WaitingPoint_44_-2"
+                    ]
+                }
+            ]
+        },
+        {
+            "Id": "canteen_station_48",
+            "StationTypeId": "canteen_meal_window",
+            "RoomId": "servicearea_f1_1",
+            "OwnerFacilityId": "facility_f1_ServiceWindow_48_2",
+            "Slots": [
+                {
+                    "RoleId": "operator",
+                    "FacilityIds": [
+                        "facility_f1_WorkerStandPoint_48_3"
+                    ]
+                },
+                {
+                    "RoleId": "customer",
+                    "FacilityIds": [
+                        "facility_f1_PickupPoint_48_1"
+                    ]
+                },
+                {
+                    "RoleId": "queue",
+                    "FacilityIds": [
+                        "facility_f1_WaitingPoint_48_-1",
+                        "facility_f1_WaitingPoint_48_0",
+                        "facility_f1_WaitingPoint_48_-2",
+                        "facility_f1_WaitingPoint_48_-3"
+                    ]
+                }
+            ]
+        },
+        {
+            "Id": "library_borrow_registration_f1_31",
+            "StationTypeId": "library_borrow_registration",
+            "RoomId": "library_f1_1",
+            "OwnerFacilityId": "facility_f1_CheckoutPoint_library_register",
+            "Slots": [
+                {
+                    "RoleId": "operator",
+                    "FacilityIds": [
+                        "facility_f1_WorkerStandPoint_31_-23"
+                    ]
+                },
+                {
+                    "RoleId": "customer",
+                    "FacilityIds": [
+                        "facility_f1_PickupPoint_31_-21"
+                    ]
+                },
+                {
+                    "RoleId": "queue",
+                    "FacilityIds": [
+                        "facility_f1_WaitingPoint_library_register_1",
+                        "facility_f1_WaitingPoint_library_register_2"
+                    ]
+                }
+            ]
+        },
+        {
+            "Id": "canteen_station_46",
+            "StationTypeId": "canteen_meal_window",
+            "RoomId": "servicearea_f1_1",
+            "OwnerFacilityId": "facility_f1_ServiceWindow_46_2",
+            "Slots": [
+                {
+                    "RoleId": "operator",
+                    "FacilityIds": [
+                        "facility_f1_WorkerStandPoint_46_3"
+                    ]
+                },
+                {
+                    "RoleId": "customer",
+                    "FacilityIds": [
+                        "facility_f1_PickupPoint_46_1"
+                    ]
+                },
+                {
+                    "RoleId": "queue",
+                    "FacilityIds": [
+                        "facility_f1_WaitingPoint_46_-3",
+                        "facility_f1_WaitingPoint_46_0",
+                        "facility_f1_WaitingPoint_46_-1",
+                        "facility_f1_WaitingPoint_46_-2"
+                    ]
+                }
+            ]
+        },
+        {
+            "Id": "retail_checkout_station_23",
+            "StationTypeId": "retail_checkout",
+            "RoomId": "retailarea_f1_1",
+            "OwnerFacilityId": "facility_f1_CheckoutPoint_23_-11",
+            "Slots": [
+                {
+                    "RoleId": "operator",
+                    "FacilityIds": [
+                        "facility_f1_WorkerStandPoint_23_-10"
+                    ]
+                },
+                {
+                    "RoleId": "customer",
+                    "FacilityIds": [
+                        "facility_f1_PickupPoint_22_-10"
+                    ]
+                },
+                {
+                    "RoleId": "queue",
+                    "FacilityIds": [
+                        "facility_f1_WaitingPoint_22_-9",
+                        "facility_f1_WaitingPoint_22_-8",
+                        "facility_f1_WaitingPoint_22_-7"
                     ]
                 }
             ]

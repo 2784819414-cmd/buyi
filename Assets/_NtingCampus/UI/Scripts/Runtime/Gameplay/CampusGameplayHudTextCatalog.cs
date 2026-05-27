@@ -29,7 +29,10 @@ namespace NtingCampus.UI.Runtime.Gameplay
         PendingCheckout = 21,
         PendingCheckoutSummary = 22,
         ReadyToPay = 23,
-        NotEnoughMoney = 24
+        NotEnoughMoney = 24,
+        PendingRegistration = 25,
+        PendingRegistrationSummary = 26,
+        ReadyToRegister = 27
     }
 
     public static class CampusGameplayHudTextCatalog
@@ -60,7 +63,10 @@ namespace NtingCampus.UI.Runtime.Gameplay
             { CampusGameplayHudTextId.PendingCheckout, new Entry("\u5f85\u7ed3\u7b97", "Pending Checkout") },
             { CampusGameplayHudTextId.PendingCheckoutSummary, new Entry("{0} \u4ef6 / {1}", "{0} items / {1}") },
             { CampusGameplayHudTextId.ReadyToPay, new Entry("\u524d\u5f80\u6536\u94f6\u53f0\u7ed3\u8d26", "Go to checkout") },
-            { CampusGameplayHudTextId.NotEnoughMoney, new Entry("\u4f59\u989d\u4e0d\u8db3", "Not enough money") }
+            { CampusGameplayHudTextId.NotEnoughMoney, new Entry("\u4f59\u989d\u4e0d\u8db3", "Not enough money") },
+            { CampusGameplayHudTextId.PendingRegistration, new Entry("\u5f85\u767b\u8bb0", "Pending Registration") },
+            { CampusGameplayHudTextId.PendingRegistrationSummary, new Entry("{0} \u672c", "{0} book(s)") },
+            { CampusGameplayHudTextId.ReadyToRegister, new Entry("\u524d\u5f80\u767b\u8bb0\u53f0\u767b\u8bb0", "Go to registration desk") }
         };
 
         public static string Get(CampusGameplayHudTextId id)

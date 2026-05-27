@@ -40,6 +40,7 @@ namespace NtingCampus.Gameplay.Rooms
         {
             public string FacilityId = string.Empty;
             public string DisplayName = string.Empty;
+            public CampusLocalizedText LocalizedDisplayName = default;
             public CampusFacilityType FacilityType = CampusFacilityType.Unknown;
             public CampusFacilityTypeSource FacilityTypeSource = CampusFacilityTypeSource.Unknown;
             public string FacilityTypeDiagnostic = string.Empty;
@@ -282,6 +283,7 @@ namespace NtingCampus.Gameplay.Rooms
                 DisplayName = string.IsNullOrWhiteSpace(facility.DisplayName)
                     ? facility.FacilityType.ToString()
                     : facility.DisplayName.Trim(),
+                LocalizedDisplayName = facility.LocalizedDisplayName,
                 FacilityType = facility.FacilityType,
                 FacilityTypeSource = facility.FacilityTypeSource,
                 FacilityTypeDiagnostic = facility.FacilityTypeDiagnostic,

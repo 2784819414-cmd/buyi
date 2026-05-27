@@ -27,11 +27,11 @@ MonoBehaviour:
     english: A long bread roll filled with sweet red bean paste.
   ThemeColor: {r: 0.6, g: 0.37, b: 0.29, a: 1}
   Icon: {fileID: 0}
-  IsUsable: 0
-  UseActionId: 
+  IsUsable: 1
+  UseActionId: campus.item.consume_food
   ConsumeOnUse: 1
-  UseText: 
+  StaminaRestore: 24
+  UseText: 吃掉
   LocalizedUseText:
-    chinese: 
-    english: 
-
+    chinese: 吃掉
+    english: Eat the Red Bean Bread.

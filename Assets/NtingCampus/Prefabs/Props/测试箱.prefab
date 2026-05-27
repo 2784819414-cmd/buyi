@@ -13,6 +13,7 @@ GameObject:
   - component: {fileID: 3449471303981517592}
   - component: {fileID: 6557554650066504739}
   - component: {fileID: 7759469812247025101}
+  - component: {fileID: -3669391039343064657}
   m_Layer: 0
   m_Name: "\u6D4B\u8BD5\u7BB1"
   m_TagString: Untagged
@@ -154,10 +155,17 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::NtingCampusMapEditor.CampusPlacedObject
   FloorIndex: 1
   ObjectId: "\u6D4B\u8BD5\u7BB1"
-  DisplayNameOverride: 
+  TypeId: Storage
+  DisplayNameOverride: "\u6821\u5916\u5916\u5356\u70B9"
+  LocalizedDisplayNameOverride:
+    chinese: "\u6821\u5916\u5916\u5356\u70B9"
+    english: Outside Delivery Spot
+    traditionalChinese: 
+    russian: 
+    japanese: 
   Cell: {x: 0, y: 0, z: 0}
   FootprintSize: {x: 1, y: 1}
-  OverrideFootprintSize: 0
+  OverrideFootprintSize: 1
   VisualScale: {x: 1, y: 1}
   LockVisualScaleAspect: 1
   OverrideAllowRotation: 0
@@ -174,32 +182,27 @@ MonoBehaviour:
   OverrideRotation270Sprite: 0
   Rotation270Sprite: {fileID: 0}
   Rotation270SpritePath: 
+  IsWallMounted: 0
   Rotation90: 0
   SortingOrderOffset: 0
   BlocksMovement: 1
   BlocksSight: 0
   IsInteractable: 1
   IsStorageContainer: 1
-  StorageSize: {x: 4, y: 4}
-  StorageMaxWeight: 12
-  UseCustomInteractionAnchor: 1
-  CustomInteractionAnchorLocalPosition: {x: 0, y: 0.5, z: 0}
+  InteractionPresetEid: object.v005.outdoor_delivery_spot
+  StorageSize: {x: 3, y: 3}
+  StorageMaxWeight: 8
+  UseCustomInteractionAnchor: 0
+  CustomInteractionAnchorLocalPosition: {x: 0, y: 0, z: 0}
   CustomInteractionAnchorRadius: 0.75
-  CustomInteractionPromptText: "\u6253\u5F00 \u6D4B\u8BD5\u7BB1"
-  CustomInteractionAnchors:
-  - AnchorId: test_box_storage
-    DisplayName: "\u6253\u5F00\u6D4B\u8BD5\u7BB1"
-    Enabled: 1
-    LocalPosition: {x: 0, y: 0.5, z: 0}
-    Radius: 0.75
-    PromptText: "\u6253\u5F00 \u6D4B\u8BD5\u7BB1"
-    ActionId: campus.storage.open
-    Payload: 
-    TargetComponentType: 
-    Priority: 130
-    UseTargetDoorStatePrompt: 0
-    LogInteraction: 0
-    InteractionLogMessage: 
+  CustomInteractionPromptText: interact
+  LocalizedCustomInteractionPromptText:
+    chinese: 
+    english: 
+    traditionalChinese: 
+    russian: 
+    japanese: 
+  CustomInteractionAnchors: []
 --- !u!114 &7759469812247025101
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -213,6 +216,12 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::NtingCampusMapEditor.CampusSimpleInteractable
   PromptText: "\u6253\u5F00 \u6D4B\u8BD5\u7BB1"
+  LocalizedPromptText:
+    chinese: 
+    english: 
+    traditionalChinese: 
+    russian: 
+    japanese: 
   KeyOverride: 
   Icon: {fileID: 0}
   Anchor: {fileID: 0}
@@ -221,7 +230,40 @@ MonoBehaviour:
   Priority: 0
   IsAvailable: 1
   UnavailableText: 
+  LocalizedUnavailableText:
+    chinese: 
+    english: 
+    traditionalChinese: 
+    russian: 
+    japanese: 
   HideWhenUnavailable: 0
   LogInteraction: 1
   InteractionLogMessage: "\u6D4B\u8BD5\u7BB1\u5DF2\u4EA4\u4E92"
+  LocalizedInteractionLogMessage:
+    chinese: 
+    english: 
+    traditionalChinese: 
+    russian: 
+    japanese: 
   DefaultActionId: campus.storage.open
+--- !u!114 &-3669391039343064657
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 522332454266628753}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 963a2ca612f846a38e402102b771292f, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::NtingCampus.Gameplay.Inventory.CampusProtectedStockContainer
+  ContainerId: outside_delivery_spot_unclaimed_meals
+  OwnerId: student_delivery_owner
+  OwnerRole: Student
+  AllowTakingContents: 1
+  SuspicionRisk: 10
+  AutoRestock: 1
+  StockItems:
+  - ItemDefinitionId: delivery_meal_box
+    StockCount: 3

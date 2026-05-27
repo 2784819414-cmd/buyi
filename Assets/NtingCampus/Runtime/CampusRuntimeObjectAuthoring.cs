@@ -28,6 +28,7 @@ namespace NtingCampusMapEditor
             settings.DisplayNameOverride = string.IsNullOrWhiteSpace(placed.DisplayNameOverride)
                 ? string.Empty
                 : placed.DisplayNameOverride.Trim();
+            settings.LocalizedDisplayNameOverride = placed.LocalizedDisplayNameOverride;
             settings.OverrideFootprintSize = placed.OverrideFootprintSize;
             settings.FootprintSize = placed.NormalizedFootprintSize;
             settings.VisualScale = placed.NormalizedVisualScale;
@@ -35,6 +36,9 @@ namespace NtingCampusMapEditor
             settings.IsWallMounted = placed.IsWallMounted;
             settings.OverrideAllowRotation = placed.OverrideAllowRotation;
             settings.AllowRotation = placed.AllowRotation;
+            settings.OverrideBlocking = placed.OverrideBlocking;
+            settings.BlocksMovement = placed.BlocksMovement;
+            settings.BlocksSight = placed.BlocksSight;
             settings.OverrideRotation0Sprite = placed.OverrideRotation0Sprite;
             settings.Rotation0SpritePath =
                 CampusRuntimeImportLibrary.NormalizeSerializedPath(placed.Rotation0SpritePath, importRoot);
@@ -47,6 +51,7 @@ namespace NtingCampusMapEditor
             settings.OverrideRotation270Sprite = placed.OverrideRotation270Sprite;
             settings.Rotation270SpritePath =
                 CampusRuntimeImportLibrary.NormalizeSerializedPath(placed.Rotation270SpritePath, importRoot);
+            settings.CanStackOnPlacedObjects = placed.CanStackOnPlacedObjects;
             settings.UseCustomInteractionAnchor = placed.UseCustomInteractionAnchor;
             settings.CustomInteractionAnchorLocalPosition = placed.CustomInteractionAnchorLocalPosition;
             settings.CustomInteractionAnchorRadius =
@@ -54,6 +59,7 @@ namespace NtingCampusMapEditor
             settings.CustomInteractionPromptText = string.IsNullOrWhiteSpace(placed.CustomInteractionPromptText)
                 ? defaultInteractionPrompt
                 : placed.CustomInteractionPromptText.Trim();
+            settings.LocalizedCustomInteractionPromptText = placed.LocalizedCustomInteractionPromptText;
             settings.CustomInteractionAnchors =
                 CampusPlacedObject.CloneInteractionAnchors(placed.CustomInteractionAnchors);
             settings.IsStorageContainer = placed.IsStorageContainer;
@@ -88,6 +94,7 @@ namespace NtingCampusMapEditor
             placed.DisplayNameOverride = string.IsNullOrWhiteSpace(settings.DisplayNameOverride)
                 ? string.Empty
                 : settings.DisplayNameOverride.Trim();
+            placed.LocalizedDisplayNameOverride = settings.LocalizedDisplayNameOverride;
             placed.VisualScale = CampusPlacedObject.NormalizeVisualScale(settings.VisualScale);
             placed.LockVisualScaleAspect = settings.LockVisualScaleAspect;
             if (placed.LockVisualScaleAspect)
@@ -105,8 +112,15 @@ namespace NtingCampusMapEditor
                 placed.FootprintSize = Vector2Int.one;
                 placed.OverrideAllowRotation = true;
                 placed.AllowRotation = true;
+                placed.OverrideBlocking = true;
                 placed.BlocksMovement = false;
                 placed.BlocksSight = false;
+            }
+            else if (settings.OverrideBlocking)
+            {
+                placed.OverrideBlocking = true;
+                placed.BlocksMovement = settings.BlocksMovement;
+                placed.BlocksSight = settings.BlocksSight;
             }
 
             placed.OverrideAllowRotation = settings.OverrideAllowRotation;
@@ -150,6 +164,7 @@ namespace NtingCampusMapEditor
                 importRoot,
                 spriteResolver);
 
+            placed.CanStackOnPlacedObjects = settings.CanStackOnPlacedObjects;
             placed.UseCustomInteractionAnchor = settings.UseCustomInteractionAnchor;
             placed.CustomInteractionAnchorLocalPosition = settings.CustomInteractionAnchorLocalPosition;
             placed.CustomInteractionAnchorRadius =
@@ -157,6 +172,7 @@ namespace NtingCampusMapEditor
             placed.CustomInteractionPromptText = string.IsNullOrWhiteSpace(settings.CustomInteractionPromptText)
                 ? defaultInteractionPrompt
                 : settings.CustomInteractionPromptText;
+            placed.LocalizedCustomInteractionPromptText = settings.LocalizedCustomInteractionPromptText;
             placed.CustomInteractionAnchors =
                 CampusPlacedObject.CloneInteractionAnchors(settings.CustomInteractionAnchors);
             placed.IsStorageContainer = settings.IsStorageContainer;
@@ -176,11 +192,13 @@ namespace NtingCampusMapEditor
 
             placed.IsInteractable = placed.UseCustomInteractionAnchor ||
                                     placed.IsStorageContainer ||
-                                    !string.IsNullOrWhiteSpace(placed.InteractionPresetEid);
+                                    !string.IsNullOrWhiteSpace(placed.InteractionPresetEid) ||
+                                    placed.UsesFacilityDefaultInteraction();
             NormalizeStackableFacilityObject(placed, ResolveFacilityType(placed));
 
             placed.ApplyRotationVisualState();
             placed.ApplyInteractionState();
+            placed.ApplyBlockingState();
             return placed;
         }
 
@@ -420,6 +438,7 @@ namespace NtingCampusMapEditor
 
             if (data == null || !data.Enabled)
             {
+                RemoveComponent<CampusRetailShelf>(target);
                 return;
             }
 
@@ -509,8 +528,14 @@ namespace NtingCampusMapEditor
             CampusRuntimeProtectedStockContainerData data)
         {
             NormalizeProtectedStockContainerData(data);
-            if (target == null || data == null || !data.Enabled)
+            if (target == null)
             {
+                return;
+            }
+
+            if (data == null || !data.Enabled)
+            {
+                RemoveComponent<CampusProtectedStockContainer>(target);
                 return;
             }
 
@@ -532,6 +557,30 @@ namespace NtingCampusMapEditor
             if (placed != null)
             {
                 placed.IsStorageContainer = true;
+            }
+        }
+
+        private static void RemoveComponent<T>(GameObject target)
+            where T : Component
+        {
+            if (target == null)
+            {
+                return;
+            }
+
+            T component = target.GetComponent<T>();
+            if (component == null)
+            {
+                return;
+            }
+
+            if (Application.isPlaying)
+            {
+                UnityEngine.Object.Destroy(component);
+            }
+            else
+            {
+                UnityEngine.Object.DestroyImmediate(component);
             }
         }
 
@@ -618,15 +667,22 @@ namespace NtingCampusMapEditor
             return false;
         }
 
+        internal static bool CanStackOnPlacedObjects(CampusPlacedObject placed, CampusFacilityType facilityType)
+        {
+            return placed != null && placed.CanStackOnPlacedObjects ||
+                   IsStackableFacilityObject(facilityType);
+        }
+
         internal static void NormalizeStackableFacilityObject(CampusPlacedObject placed, CampusFacilityType facilityType)
         {
-            if (placed == null || !IsStackableFacilityObject(facilityType))
+            if (placed == null || !CanStackOnPlacedObjects(placed, facilityType))
             {
                 return;
             }
 
             placed.OverrideFootprintSize = true;
             placed.FootprintSize = Vector2Int.one;
+            placed.OverrideBlocking = true;
             placed.BlocksMovement = false;
             placed.BlocksSight = false;
             placed.SortingOrderOffset = Mathf.Max(
@@ -715,7 +771,7 @@ namespace NtingCampusMapEditor
             return string.Empty;
         }
 
-        private static bool TryParseFacilityType(string typeId, out CampusFacilityType type)
+        internal static bool TryParseFacilityType(string typeId, out CampusFacilityType type)
         {
             type = CampusFacilityType.Unknown;
             return !string.IsNullOrWhiteSpace(typeId) &&

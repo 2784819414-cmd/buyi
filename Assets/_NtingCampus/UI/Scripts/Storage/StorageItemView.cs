@@ -27,7 +27,9 @@ namespace Nting.Storage
         private StorageBoxGraphic topRule;
         private StorageBoxGraphic sizePlate;
         private StorageBoxGraphic statusBadge;
+        private StorageBoxGraphic stackBadge;
         private Text statusBadgeText;
+        private Text stackBadgeText;
         private Image iconImage;
         private StorageItemModel item;
         private StorageGridUI ownerGrid;
@@ -133,7 +135,18 @@ namespace Nting.Storage
 
             if (eventData.button == PointerEventData.InputButton.Right)
             {
-                window.TryRotateItem(this);
+                if (StorageItemStackingService.GetStackCount(ownerGrid != null ? ownerGrid.Container : null, item) > 1)
+                {
+                    window.ShowStackExpansion(this);
+                    return;
+                }
+
+                if (StorageItemUseUtility.CanUse(item) && StoragePlayerInventoryUtility.IsHandGrid(ownerGrid))
+                {
+                    window.TryUseItem(this);
+                    return;
+                }
+
                 return;
             }
 
@@ -237,7 +250,9 @@ namespace Nting.Storage
             iconImage = EnsureIconImage(iconImage, "IconImage");
             sizePlate = EnsureFixedChildBox(sizePlate, "SizePlate", new Vector2(1f, 1f), new Vector2(1f, 1f), new Vector2(1f, 1f), new Vector2(-5f, -5f), new Vector2(38f, 18f));
             statusBadge = EnsureFixedChildBox(statusBadge, "StatusBadge", new Vector2(1f, 1f), new Vector2(1f, 1f), new Vector2(1f, 1f), new Vector2(-8f, -8f), new Vector2(20f, 20f));
+            stackBadge = EnsureFixedChildBox(stackBadge, "StackBadge", new Vector2(1f, 0f), new Vector2(1f, 0f), new Vector2(1f, 0f), new Vector2(-7f, 7f), new Vector2(30f, 20f));
             statusBadgeText = EnsureBadgeText(statusBadgeText, statusBadge.transform);
+            stackBadgeText = EnsureBadgeText(stackBadgeText, stackBadge.transform);
 
             if (NameText == null)
             {
@@ -284,6 +299,7 @@ namespace Nting.Storage
             topRule.gameObject.SetActive(false);
             sizePlate.gameObject.SetActive(false);
             statusBadge.gameObject.SetActive(false);
+            stackBadge.gameObject.SetActive(false);
         }
 
         private void ApplyContainerVisual(bool hasIcon)
@@ -365,11 +381,13 @@ namespace Nting.Storage
             if (!hasIcon)
             {
                 iconImage.sprite = null;
+                ApplyStackBadge();
                 return;
             }
 
             iconImage.sprite = item.Icon;
             iconImage.color = Color.white;
+            ApplyStackBadge();
         }
 
         private void ConfigureSizePlate(bool hasIcon)
@@ -446,6 +464,39 @@ namespace Nting.Storage
             {
                 statusBadge.transform.SetAsLastSibling();
             }
+
+            if (stackBadge != null)
+            {
+                stackBadge.transform.SetAsLastSibling();
+            }
+        }
+
+        private void ApplyStackBadge()
+        {
+            if (stackBadge == null || stackBadgeText == null)
+            {
+                return;
+            }
+
+            int count = StorageItemStackingService.GetStackCount(
+                ownerGrid != null ? ownerGrid.Container : null,
+                item);
+            if (count <= 1)
+            {
+                stackBadge.gameObject.SetActive(false);
+                stackBadgeText.text = string.Empty;
+                return;
+            }
+
+            stackBadge.gameObject.SetActive(true);
+            stackBadge.SetStyle(
+                new Color(0.05f, 0.065f, 0.085f, 0.94f),
+                StoragePalette.SlotHoverBorder,
+                0.8f,
+                6f);
+            stackBadgeText.fontSize = 11;
+            stackBadgeText.color = StoragePalette.Accent;
+            stackBadgeText.text = "x" + count;
         }
 
         private Text CreateChildText(string objectName, TextAnchor alignment, int size, Color color)

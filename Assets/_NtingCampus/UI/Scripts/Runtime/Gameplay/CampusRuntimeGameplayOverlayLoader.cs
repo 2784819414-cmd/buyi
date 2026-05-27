@@ -178,9 +178,10 @@ namespace NtingCampus.UI.Runtime.Gameplay
                 facility.Normalize();
                 CampusFloorRoot floor = mapRoot != null ? mapRoot.GetFloor(Mathf.Max(1, facility.FloorIndex)) : null;
                 Vector3 worldPosition = ResolveWorldPosition(floor, facility.Cell);
-                GameObject facilityObject = new GameObject(string.IsNullOrWhiteSpace(facility.DisplayName)
+                string primaryDisplayName = facility.GetPrimaryDisplayName();
+                GameObject facilityObject = new GameObject(string.IsNullOrWhiteSpace(primaryDisplayName)
                     ? "RuntimeFacility"
-                    : facility.DisplayName);
+                    : primaryDisplayName);
                 facilityObject.transform.SetParent(host, false);
                 facilityObject.transform.position = worldPosition;
 
@@ -192,6 +193,7 @@ namespace NtingCampus.UI.Runtime.Gameplay
                 marker.Configure(
                     facility.Id,
                     facility.DisplayName,
+                    facility.LocalizedDisplayName,
                     facility.FacilityType,
                     facility.FloorIndex,
                     facility.Cell,

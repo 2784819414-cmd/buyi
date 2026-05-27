@@ -30,6 +30,7 @@ MonoBehaviour:
   IsUsable: 1
   UseActionId: campus.item.consume_food
   ConsumeOnUse: 1
+  StaminaRestore: 55
   UseText: "\u5403\u6389\u4ECA\u65E5\u5957\u9910"
   LocalizedUseText:
     chinese: "\u5403\u6389\u4ECA\u65E5\u5957\u9910"

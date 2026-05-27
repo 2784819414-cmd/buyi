@@ -1,5 +1,6 @@
 using UnityEngine;
 using NtingCampus.Gameplay.Characters;
+using UnityEngine.EventSystems;
 
 namespace NtingCampusMapEditor
 {
@@ -61,7 +62,24 @@ namespace NtingCampusMapEditor
 
             ConfigureBodyController(ResolveMoveSpeed(moveInput, wantsSprint));
             bodyController.SetMovementInput(moveInput);
+            UpdateHeldItemUseState();
             UpdateInteractionState();
+        }
+
+        private void UpdateHeldItemUseState()
+        {
+            if (!CampusInteractionInput.WasMouseButtonPressed(1) || IsPointerOverUi())
+            {
+                return;
+            }
+
+            CampusCharacterRuntime runtime = GetComponent<CampusCharacterRuntime>();
+            CampusCharacterActionExecutor.TryExecute(runtime, CampusCharacterAction.UseHeldItem(), out _);
+        }
+
+        private static bool IsPointerOverUi()
+        {
+            return EventSystem.current != null && EventSystem.current.IsPointerOverGameObject();
         }
 
         private void UpdateInteractionState()

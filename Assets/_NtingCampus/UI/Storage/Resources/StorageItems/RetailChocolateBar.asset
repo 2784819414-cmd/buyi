@@ -27,11 +27,11 @@ MonoBehaviour:
     english: A slim chocolate bar wrapped in foil.
   ThemeColor: {r: 0.44, g: 0.31, b: 0.22, a: 1}
   Icon: {fileID: 0}
-  IsUsable: 0
-  UseActionId: 
+  IsUsable: 1
+  UseActionId: campus.item.consume_food
   ConsumeOnUse: 1
-  UseText: 
+  StaminaRestore: 18
+  UseText: 吃掉
   LocalizedUseText:
-    chinese: 
-    english: 
-
+    chinese: 吃掉
+    english: Eat the Chocolate Bar.

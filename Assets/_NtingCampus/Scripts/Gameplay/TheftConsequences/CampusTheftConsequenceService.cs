@@ -44,6 +44,8 @@ namespace NtingCampus.Gameplay.TheftConsequences
                 gameplayEventHub.ItemTheftObserved += HandleItemTheftObserved;
                 gameplayEventHub.ContrabandFound -= HandleContrabandFound;
                 gameplayEventHub.ContrabandFound += HandleContrabandFound;
+                gameplayEventHub.ConfiguredAction -= HandleConfiguredAction;
+                gameplayEventHub.ConfiguredAction += HandleConfiguredAction;
             }
         }
 
@@ -53,6 +55,7 @@ namespace NtingCampus.Gameplay.TheftConsequences
             {
                 gameplayEventHub.ItemTheftObserved -= HandleItemTheftObserved;
                 gameplayEventHub.ContrabandFound -= HandleContrabandFound;
+                gameplayEventHub.ConfiguredAction -= HandleConfiguredAction;
             }
         }
 
@@ -69,6 +72,18 @@ namespace NtingCampus.Gameplay.TheftConsequences
             CampusCharacterRuntime actorRuntime = FindRuntime(eventData.ActorId);
             CampusCharacterRuntime inspectorRuntime = FindRuntime(eventData.InspectorId);
             CampusTheftIncidentRecord incident = BuildContrabandIncident(eventData, actorRuntime, inspectorRuntime);
+            ApplyIncident(actorRuntime, incident);
+        }
+
+        private void HandleConfiguredAction(CampusConfiguredActionEvent eventData)
+        {
+            if (!eventData.Succeeded || string.IsNullOrWhiteSpace(eventData.ItemDefinitionId))
+            {
+                return;
+            }
+
+            CampusCharacterRuntime actorRuntime = FindRuntime(eventData.ActorId);
+            CampusTheftIncidentRecord incident = BuildConfiguredActionIncident(eventData, actorRuntime);
             ApplyIncident(actorRuntime, incident);
         }
 
@@ -136,6 +151,42 @@ namespace NtingCampus.Gameplay.TheftConsequences
                 RoomSensitivity = CampusTheftConsequencePresetCatalog.ResolveRoomSensitivity(room, eventData.RoomId),
                 OfficialWitness = eventData.ShouldIssueSanction,
                 FoundOnActor = true
+            };
+        }
+
+        private CampusTheftIncidentRecord BuildConfiguredActionIncident(
+            CampusConfiguredActionEvent eventData,
+            CampusCharacterRuntime actorRuntime)
+        {
+            CampusGameplayRoom room = ResolveRoom(eventData.RoomId, actorRuntime);
+            int eventRisk = eventData.EvidenceDelta +
+                            eventData.SuspicionDelta +
+                            eventData.RumorDelta +
+                            eventData.CrackdownDelta +
+                            eventData.AreaAlertDelta;
+            int itemValue = CampusTheftConsequencePresetCatalog.ResolveItemValue(
+                eventData.ItemDefinitionId,
+                eventRisk);
+
+            return new CampusTheftIncidentRecord
+            {
+                Kind = CampusTheftIncidentKind.ConfiguredActionTheft,
+                ActorId = Clean(eventData.ActorId),
+                WitnessId = string.Empty,
+                OwnerId = Clean(eventData.OwnerId),
+                ItemInstanceId = Clean(eventData.ItemInstanceId),
+                ItemDefinitionId = Clean(eventData.ItemDefinitionId),
+                ItemDisplayName = Clean(eventData.ItemDisplayName),
+                SourceContainerId = Clean(eventData.SourceLocation),
+                TargetContainerId = Clean(eventData.TargetId),
+                RoomId = ResolveRoomId(eventData.RoomId, room, actorRuntime),
+                Day = bootstrap != null && bootstrap.GameState != null ? bootstrap.GameState.Day : 0,
+                BaseItemValue = itemValue,
+                EvidenceValue = Mathf.Max(1, eventRisk),
+                WitnessWeight = 0,
+                RoomSensitivity = CampusTheftConsequencePresetCatalog.ResolveRoomSensitivity(room, eventData.RoomId),
+                OfficialWitness = false,
+                FoundOnActor = false
             };
         }
 

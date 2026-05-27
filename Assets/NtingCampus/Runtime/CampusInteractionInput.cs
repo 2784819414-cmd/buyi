@@ -59,6 +59,22 @@ namespace NtingCampusMapEditor
 #endif
         }
 
+        public static bool WasMouseButtonPressed(int button)
+        {
+#if ENABLE_INPUT_SYSTEM
+            if (TryReadMouseButtonPressedFromInputSystem(button, out bool inputSystemPressed))
+            {
+                return inputSystemPressed;
+            }
+#endif
+
+#if ENABLE_LEGACY_INPUT_MANAGER
+            return Input.GetMouseButtonDown(button);
+#else
+            return false;
+#endif
+        }
+
         public static bool TryReadPressedKeyboardKey(out KeyCode keyCode)
         {
             for (int i = 0; i < SupportedKeyboardKeys.Length; i++)
@@ -154,6 +170,31 @@ namespace NtingCampusMapEditor
         }
 
 #if ENABLE_INPUT_SYSTEM
+        private static bool TryReadMouseButtonPressedFromInputSystem(int button, out bool pressed)
+        {
+            pressed = false;
+            Mouse mouse = Mouse.current;
+            if (mouse == null)
+            {
+                return false;
+            }
+
+            switch (button)
+            {
+                case 0:
+                    pressed = mouse.leftButton.wasPressedThisFrame;
+                    return true;
+                case 1:
+                    pressed = mouse.rightButton.wasPressedThisFrame;
+                    return true;
+                case 2:
+                    pressed = mouse.middleButton.wasPressedThisFrame;
+                    return true;
+                default:
+                    return false;
+            }
+        }
+
         private static bool TryReadPressedFromInputSystem(KeyCode keyCode, out bool pressed)
         {
             pressed = false;

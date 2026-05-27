@@ -1,5 +1,6 @@
 using Nting.Storage;
 using NtingCampus.Gameplay.Characters;
+using NtingCampus.Gameplay.Core;
 using UnityEngine;
 
 namespace NtingCampus.Gameplay.Inventory
@@ -95,6 +96,28 @@ namespace NtingCampus.Gameplay.Inventory
             return CampusInventoryTransferService.Resolve().TryDropItemToGround(dropContext, item, source, context, out result);
         }
 
+        public static bool TryUseFirstHeldItem(
+            CampusCharacterRuntime actor,
+            out StorageTransferResult result)
+        {
+            result = StorageTransferResult.Fail(StorageTextCatalog.Get(StorageTextId.ItemCannotBeUsed));
+            if (actor == null)
+            {
+                result = StorageTransferResult.Fail(StorageTextCatalog.Get(StorageTextId.MissingItemOrSource));
+                return false;
+            }
+
+            StorageContainerModel[] hands = CampusHandInventoryUtility.ResolveHands(actor);
+            if (TryUseHeldItem(actor, hands, 1, out result) ||
+                TryUseHeldItem(actor, hands, 0, out result))
+            {
+                WriteUseLog(result.Message);
+                return true;
+            }
+
+            return false;
+        }
+
         public static bool TryOpenInventoryView(
             CampusCharacterRuntime actor,
             StorageContainerModel externalContainer,
@@ -135,6 +158,39 @@ namespace NtingCampus.Gameplay.Inventory
                 externalContainer,
                 includeBackpack);
             return true;
+        }
+
+        private static bool TryUseHeldItem(
+            CampusCharacterRuntime actor,
+            StorageContainerModel[] hands,
+            int handIndex,
+            out StorageTransferResult result)
+        {
+            result = StorageTransferResult.Fail(StorageTextCatalog.Get(StorageTextId.ItemCannotBeUsed));
+            StorageItemModel item = CampusHandInventoryUtility.ResolveHeldItem(hands, handIndex);
+            if (!StorageItemUseUtility.CanUse(item))
+            {
+                return false;
+            }
+
+            StorageItemUseContext useContext = StorageItemUseContext.ForActor(actor.gameObject, StorageTransferReason.UseItem);
+            if (!StorageItemUseUtility.TryUse(item, null, useContext, out string message))
+            {
+                result = StorageTransferResult.Fail(message);
+                return false;
+            }
+
+            result = new StorageTransferResult(true, false, false, message, string.Empty);
+            return true;
+        }
+
+        private static void WriteUseLog(string message)
+        {
+            CampusGameBootstrap bootstrap = CampusGameBootstrap.Instance;
+            if (bootstrap != null && bootstrap.EventLog != null && !string.IsNullOrWhiteSpace(message))
+            {
+                bootstrap.EventLog.AddLog(message);
+            }
         }
 
         private static StorageTransferContext BuildActorTransferContext(

@@ -15,6 +15,15 @@ namespace Nting.Storage
 
         public static bool TryUse(StorageItemModel item, StorageGridUI sourceGrid, out string statusMessage)
         {
+            return TryUse(item, sourceGrid, null, out statusMessage);
+        }
+
+        public static bool TryUse(
+            StorageItemModel item,
+            StorageGridUI sourceGrid,
+            StorageItemUseContext context,
+            out string statusMessage)
+        {
             statusMessage = string.Empty;
             if (item == null || !item.IsUsable)
             {
@@ -28,7 +37,7 @@ namespace Nting.Storage
                 return false;
             }
 
-            bool used = action.TryUse(item, sourceGrid, out statusMessage);
+            bool used = action.TryUse(item, sourceGrid, context, out statusMessage);
             if (used && !string.IsNullOrWhiteSpace(statusMessage))
             {
                 Debug.Log(StorageTextCatalog.Format(StorageTextId.StatusLog, statusMessage));

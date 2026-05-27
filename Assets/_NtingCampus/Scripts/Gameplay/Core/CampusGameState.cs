@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using UnityEngine;
 
 namespace NtingCampus.Gameplay.Core
@@ -23,6 +24,8 @@ namespace NtingCampus.Gameplay.Core
         [SerializeField, Min(0)] private int dailyWarningCount;
         [SerializeField] private bool shrineRoomUnlocked;
         [SerializeField] private bool landExpansionUnlocked;
+        [SerializeField] private List<CampusAreaRuntimeState> areaStates =
+            new List<CampusAreaRuntimeState>();
 
         public CampusGameMode CurrentMode => currentMode;
         public int Day => day;
@@ -38,6 +41,7 @@ namespace NtingCampus.Gameplay.Core
         public int DailyWarningCount => dailyWarningCount;
         public bool ShrineRoomUnlocked => shrineRoomUnlocked;
         public bool LandExpansionUnlocked => landExpansionUnlocked;
+        public IReadOnlyList<CampusAreaRuntimeState> AreaStates => areaStates;
 
         public void Reset(CampusGameStateInitialization initialization)
         {
@@ -55,6 +59,7 @@ namespace NtingCampus.Gameplay.Core
             dailyWarningCount = Mathf.Max(0, initialization.InitialDailyWarningCount);
             shrineRoomUnlocked = initialization.InitialShrineRoomUnlocked;
             landExpansionUnlocked = initialization.InitialLandExpansionUnlocked;
+            areaStates.Clear();
         }
 
         public void SetMode(CampusGameMode mode)
@@ -193,9 +198,149 @@ namespace NtingCampus.Gameplay.Core
             landExpansionUnlocked = unlocked;
         }
 
+        public CampusAreaRuntimeState GetOrCreateAreaState(string roomId)
+        {
+            string normalizedRoomId = NormalizeId(roomId);
+            if (string.IsNullOrEmpty(normalizedRoomId))
+            {
+                normalizedRoomId = "unknown";
+            }
+
+            for (int i = 0; i < areaStates.Count; i++)
+            {
+                CampusAreaRuntimeState existing = areaStates[i];
+                if (existing != null &&
+                    string.Equals(existing.RoomId, normalizedRoomId, StringComparison.OrdinalIgnoreCase))
+                {
+                    return existing;
+                }
+            }
+
+            CampusAreaRuntimeState created = new CampusAreaRuntimeState(normalizedRoomId);
+            areaStates.Add(created);
+            return created;
+        }
+
+        public void ApplyAreaDelta(
+            string roomId,
+            int alertDelta,
+            int bagCheckDelta,
+            int patrolDelta,
+            bool lockHighValueGoods,
+            bool moveDeliverySpot)
+        {
+            if (alertDelta == 0 &&
+                bagCheckDelta == 0 &&
+                patrolDelta == 0 &&
+                !lockHighValueGoods &&
+                !moveDeliverySpot)
+            {
+                return;
+            }
+
+            CampusAreaRuntimeState state = GetOrCreateAreaState(roomId);
+            state.AddAlert(alertDelta);
+            state.AddBagCheck(bagCheckDelta);
+            state.AddPatrolPressure(patrolDelta);
+            if (lockHighValueGoods)
+            {
+                state.SetHighValueGoodsLocked(true);
+            }
+
+            if (moveDeliverySpot)
+            {
+                state.SetDeliverySpotMoved(true);
+            }
+        }
+
+        public void DecayAreaStates(int amount)
+        {
+            int decay = Mathf.Max(0, amount);
+            if (decay == 0)
+            {
+                return;
+            }
+
+            for (int i = 0; i < areaStates.Count; i++)
+            {
+                areaStates[i]?.Decay(decay);
+            }
+        }
+
         private static int ClampStat(int value)
         {
             return Mathf.Clamp(value, StatMin, StatMax);
+        }
+
+        private static string NormalizeId(string value)
+        {
+            return string.IsNullOrWhiteSpace(value) ? string.Empty : value.Trim();
+        }
+    }
+
+    [Serializable]
+    public sealed class CampusAreaRuntimeState
+    {
+        [SerializeField] private string roomId;
+        [SerializeField, Range(CampusGameState.StatMin, CampusGameState.StatMax)] private int alertLevel;
+        [SerializeField, Range(CampusGameState.StatMin, CampusGameState.StatMax)] private int bagCheckLevel;
+        [SerializeField, Range(CampusGameState.StatMin, CampusGameState.StatMax)] private int patrolPressure;
+        [SerializeField] private bool highValueGoodsLocked;
+        [SerializeField] private bool deliverySpotMoved;
+
+        public CampusAreaRuntimeState(string roomId)
+        {
+            this.roomId = string.IsNullOrWhiteSpace(roomId) ? "unknown" : roomId.Trim();
+        }
+
+        public string RoomId => roomId;
+        public int AlertLevel => alertLevel;
+        public int BagCheckLevel => bagCheckLevel;
+        public int PatrolPressure => patrolPressure;
+        public bool HighValueGoodsLocked => highValueGoodsLocked;
+        public bool DeliverySpotMoved => deliverySpotMoved;
+
+        public void AddAlert(int delta)
+        {
+            alertLevel = Clamp(alertLevel + delta);
+        }
+
+        public void AddBagCheck(int delta)
+        {
+            bagCheckLevel = Clamp(bagCheckLevel + delta);
+        }
+
+        public void AddPatrolPressure(int delta)
+        {
+            patrolPressure = Clamp(patrolPressure + delta);
+        }
+
+        public void SetHighValueGoodsLocked(bool locked)
+        {
+            highValueGoodsLocked = locked;
+        }
+
+        public void SetDeliverySpotMoved(bool moved)
+        {
+            deliverySpotMoved = moved;
+        }
+
+        public void Decay(int amount)
+        {
+            int decay = Mathf.Max(0, amount);
+            alertLevel = Clamp(alertLevel - decay);
+            bagCheckLevel = Clamp(bagCheckLevel - decay);
+            patrolPressure = Clamp(patrolPressure - decay);
+            if (alertLevel == 0 && bagCheckLevel == 0 && patrolPressure == 0)
+            {
+                highValueGoodsLocked = false;
+                deliverySpotMoved = false;
+            }
+        }
+
+        private static int Clamp(int value)
+        {
+            return Mathf.Clamp(value, CampusGameState.StatMin, CampusGameState.StatMax);
         }
     }
 

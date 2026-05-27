@@ -158,6 +158,8 @@ namespace NtingCampus.Gameplay.Inventory
                 hash = CombineHash(hash, container.Columns);
                 hash = CombineHash(hash, container.Rows);
                 hash = CombineHash(hash, container.IsSingleItemSlot ? 1 : 0);
+                hash = CombineHash(hash, container.IsCarriedInventory ? 1 : 0);
+                hash = CombineHash(hash, (int)container.AccessPolicy);
 
                 var items = container.Items;
                 hash = CombineHash(hash, items != null ? items.Count : 0);
@@ -190,6 +192,29 @@ namespace NtingCampus.Gameplay.Inventory
                 hash = CombineHash(hash, item.Width);
                 hash = CombineHash(hash, item.Height);
                 hash = CombineHash(hash, item.Rotated ? 1 : 0);
+                hash = CombineHash(hash, BuildEvidenceHash(item.Evidence));
+                return hash;
+            }
+        }
+
+        private static int BuildEvidenceHash(StorageItemEvidenceState evidence)
+        {
+            if (evidence == null)
+            {
+                return 0;
+            }
+
+            unchecked
+            {
+                int hash = 17;
+                hash = CombineHash(hash, (int)evidence.LegalState);
+                hash = CombineHash(hash, evidence.OwnerId);
+                hash = CombineHash(hash, evidence.SourceContainerId);
+                hash = CombineHash(hash, evidence.SourceRoomId);
+                hash = CombineHash(hash, evidence.SourceLocation);
+                hash = CombineHash(hash, evidence.AllowTaking ? 1 : 0);
+                hash = CombineHash(hash, evidence.StolenDuringSession ? 1 : 0);
+                hash = CombineHash(hash, evidence.SuspicionRisk);
                 return hash;
             }
         }

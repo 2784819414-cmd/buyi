@@ -27,11 +27,11 @@ MonoBehaviour:
     english: A small sweet yogurt-style cultured drink.
   ThemeColor: {r: 0.97, g: 0.78, b: 0.84, a: 1}
   Icon: {fileID: 0}
-  IsUsable: 0
-  UseActionId: 
+  IsUsable: 1
+  UseActionId: campus.item.consume_food
   ConsumeOnUse: 1
-  UseText: 
+  StaminaRestore: 18
+  UseText: 喝掉
   LocalizedUseText:
-    chinese: 
-    english: 
-
+    chinese: 喝掉
+    english: Drink the Yogurt Drink.

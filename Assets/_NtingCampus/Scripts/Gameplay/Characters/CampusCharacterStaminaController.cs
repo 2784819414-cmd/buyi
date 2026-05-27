@@ -98,6 +98,21 @@ namespace NtingCampus.Gameplay.Characters
                 : CampusCharacterMovementTuning.ResolvePlayerMoveSpeed();
         }
 
+        public void RestoreStamina(float amount)
+        {
+            EnsureSetup();
+            if (amount <= 0f)
+            {
+                return;
+            }
+
+            currentStamina = Mathf.Min(maxStamina, currentStamina + amount);
+            if (currentStamina >= ResolveSprintResumeStamina())
+            {
+                exhausted = false;
+            }
+        }
+
         private void RefreshCapacity()
         {
             float previousMaxStamina = maxStamina;
@@ -143,7 +158,7 @@ namespace NtingCampus.Gameplay.Characters
         public const float BaseMaxStamina = 100f;
         public const float FullLoadMaxStaminaMultiplier = 0.55f;
         public const float SprintCostPerSecond = 24f;
-        public const float RecoveryPerSecond = 18f;
+        public const float RecoveryPerSecond = 3f;
         public const float SprintMinimumStamina = 0.01f;
         public const float SprintResumeStamina01 = 0.2f;
 

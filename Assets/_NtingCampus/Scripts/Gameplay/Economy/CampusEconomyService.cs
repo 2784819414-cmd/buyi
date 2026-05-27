@@ -59,4 +59,61 @@ namespace NtingCampus.Gameplay.Economy
             return true;
         }
     }
+
+    [DisallowMultipleComponent]
+    public sealed class CampusDailyBusinessSettlementService : MonoBehaviour
+    {
+        [SerializeField] private CampusGameBootstrap bootstrap;
+        [SerializeField, Min(0)] private int areaPressureDailyDecay = 8;
+
+        private CampusTimeController subscribedTimeController;
+
+        public void Initialize(CampusGameBootstrap targetBootstrap)
+        {
+            bootstrap = targetBootstrap != null ? targetBootstrap : CampusGameBootstrap.Instance;
+            Subscribe(bootstrap != null ? bootstrap.TimeController : null);
+        }
+
+        private void OnDisable()
+        {
+            Subscribe(null);
+        }
+
+        private void Subscribe(CampusTimeController timeController)
+        {
+            if (subscribedTimeController == timeController)
+            {
+                return;
+            }
+
+            if (subscribedTimeController != null)
+            {
+                subscribedTimeController.DailySettlementStarted -= HandleDailySettlementStarted;
+            }
+
+            subscribedTimeController = timeController;
+            if (subscribedTimeController != null)
+            {
+                subscribedTimeController.DailySettlementStarted += HandleDailySettlementStarted;
+            }
+        }
+
+        private void HandleDailySettlementStarted(CampusGameDate date)
+        {
+            CampusGameState state = bootstrap != null ? bootstrap.GameState : null;
+            if (state == null)
+            {
+                return;
+            }
+
+            int decay = Mathf.Max(0, areaPressureDailyDecay);
+            state.DecayAreaStates(decay);
+
+            CampusEventLog eventLog = bootstrap != null ? bootstrap.EventLog : null;
+            eventLog?.AddLog(CampusCoreTextCatalog.Format(
+                CampusCoreTextId.DailyBusinessSettlementSummary,
+                state.Day,
+                decay));
+        }
+    }
 }

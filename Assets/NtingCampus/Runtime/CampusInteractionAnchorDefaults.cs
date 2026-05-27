@@ -1,6 +1,4 @@
 using System;
-using NtingCampus.Gameplay.Retail;
-using NtingCampus.Gameplay.Rooms;
 using NtingCampus.UI.Runtime.Gameplay;
 using UnityEngine;
 
@@ -10,16 +8,16 @@ namespace NtingCampusMapEditor
     {
         private const string AnchorRootName = "\u4ea4\u4e92\u951a\u70b9";
         private const string GenericAnchorName = "\u9ed8\u8ba4\u4ea4\u4e92";
-        public static void EnsureDefaultAnchors(CampusPlacedObject placedObject)
+        public static bool EnsureDefaultAnchors(CampusPlacedObject placedObject)
         {
             if (placedObject == null)
             {
-                return;
+                return false;
             }
 
             if (placedObject.UseCustomInteractionAnchor)
             {
-                return;
+                return false;
             }
 
             string displayName = ResolveDisplayName(placedObject);
@@ -27,7 +25,7 @@ namespace NtingCampusMapEditor
             {
                 placedObject.IsInteractable = true;
                 EnsureDiningTableAnchors(placedObject);
-                return;
+                return true;
             }
 
             ResolveDefaultAnchorAction(
@@ -38,7 +36,18 @@ namespace NtingCampusMapEditor
                 out CampusLocalizedText promptText);
             if (string.IsNullOrWhiteSpace(actionId))
             {
-                return;
+                return false;
+            }
+
+            if (TryResolveConfiguredPrompt(placedObject, ref promptText, out string configuredPrompt))
+            {
+                promptText = placedObject.LocalizedCustomInteractionPromptText.HasAnyText
+                    ? placedObject.LocalizedCustomInteractionPromptText
+                    : promptText;
+            }
+            else
+            {
+                configuredPrompt = promptText.ResolvePrimary();
             }
 
             Vector3 fallbackPosition = ResolveColliderTopLocal(placedObject.transform, FindPrimaryCollider(placedObject), Vector3.zero);
@@ -47,7 +56,7 @@ namespace NtingCampusMapEditor
                 GenericAnchorName,
                 fallbackPosition,
                 0.65f,
-                promptText.ResolvePrimary(),
+                configuredPrompt,
                 promptText,
                 target,
                 actionId,
@@ -56,6 +65,34 @@ namespace NtingCampusMapEditor
                 false,
                 null,
                 default);
+            return true;
+        }
+
+        public static void RemoveDefaultAnchors(CampusPlacedObject placedObject)
+        {
+            if (placedObject == null)
+            {
+                return;
+            }
+
+            Transform root = placedObject.transform.Find(AnchorRootName);
+            if (root == null)
+            {
+                return;
+            }
+
+            for (int i = root.childCount - 1; i >= 0; i--)
+            {
+                Transform child = root.GetChild(i);
+                if (child == null ||
+                    !IsDefaultAnchorName(child.name) ||
+                    child.GetComponent<CampusInteractionAnchor>() == null)
+                {
+                    continue;
+                }
+
+                DestroyUnityObject(child.gameObject);
+            }
         }
 
         private static void ResolveDefaultAnchorAction(
@@ -80,21 +117,46 @@ namespace NtingCampusMapEditor
                 return;
             }
 
-            switch (CampusFacilityTypeResolver.Resolve(placedObject))
+            if (CampusPlacedObjectInteractionState.TryResolveFacilityDefaultAction(placedObject, out actionId))
             {
-                case CampusFacilityType.CheckoutPoint:
-                    actionId = CampusRetailActionIds.Checkout;
-                    promptText = new CampusLocalizedText(
-                        CampusRetailTextCatalog.Get(CampusDisplayLanguage.Chinese, CampusRetailTextId.CheckoutPrompt),
-                        CampusRetailTextCatalog.Get(CampusDisplayLanguage.English, CampusRetailTextId.CheckoutPrompt));
-                    return;
-                case CampusFacilityType.ServiceWindow:
-                    actionId = CampusInteractionActionIds.ServiceWindowUse;
-                    return;
+                return;
             }
 
             target = FindInteractionTarget(placedObject, null);
             actionId = target != null ? CampusInteractionActionIds.InteractTarget : string.Empty;
+        }
+
+        private static bool TryResolveConfiguredPrompt(
+            CampusPlacedObject placedObject,
+            ref CampusLocalizedText promptText,
+            out string prompt)
+        {
+            prompt = string.Empty;
+            if (placedObject == null)
+            {
+                return false;
+            }
+
+            if (placedObject.LocalizedCustomInteractionPromptText.HasAnyText)
+            {
+                prompt = placedObject.LocalizedCustomInteractionPromptText.ResolvePrimary(
+                    placedObject.CustomInteractionPromptText,
+                    promptText.ResolvePrimary());
+                return true;
+            }
+
+            if (string.IsNullOrWhiteSpace(placedObject.CustomInteractionPromptText) ||
+                string.Equals(
+                    placedObject.CustomInteractionPromptText,
+                    CampusPlacedObject.CustomInteractionPromptFallback,
+                    StringComparison.Ordinal))
+            {
+                return false;
+            }
+
+            prompt = placedObject.CustomInteractionPromptText.Trim();
+            promptText = new CampusLocalizedText(prompt, string.Empty);
+            return true;
         }
 
         private static void EnsureDiningTableAnchors(CampusPlacedObject placedObject)
@@ -107,6 +169,21 @@ namespace NtingCampusMapEditor
             EnsureAnchor(placedObject, "\u5ea7\u4f4d_\u53f3_1", new Vector3(1.35f, -1.2f, 0f), 0.42f, seatPrompt.ResolvePrimary(), seatPrompt, null, CampusInteractionActionIds.Log, string.Empty, 130, false, logMessage.ResolvePrimary(), logMessage);
             EnsureAnchor(placedObject, "\u5ea7\u4f4d_\u53f3_2", new Vector3(1.35f, 0f, 0f), 0.42f, seatPrompt.ResolvePrimary(), seatPrompt, null, CampusInteractionActionIds.Log, string.Empty, 130, false, logMessage.ResolvePrimary(), logMessage);
             EnsureAnchor(placedObject, "\u5ea7\u4f4d_\u53f3_3", new Vector3(1.35f, 1.2f, 0f), 0.42f, seatPrompt.ResolvePrimary(), seatPrompt, null, CampusInteractionActionIds.Log, string.Empty, 130, false, logMessage.ResolvePrimary(), logMessage);
+        }
+
+        private static bool IsDefaultAnchorName(string name)
+        {
+            if (string.Equals(name, GenericAnchorName, StringComparison.Ordinal))
+            {
+                return true;
+            }
+
+            return string.Equals(name, "\u5ea7\u4f4d_\u5de6_1", StringComparison.Ordinal) ||
+                   string.Equals(name, "\u5ea7\u4f4d_\u5de6_2", StringComparison.Ordinal) ||
+                   string.Equals(name, "\u5ea7\u4f4d_\u5de6_3", StringComparison.Ordinal) ||
+                   string.Equals(name, "\u5ea7\u4f4d_\u53f3_1", StringComparison.Ordinal) ||
+                   string.Equals(name, "\u5ea7\u4f4d_\u53f3_2", StringComparison.Ordinal) ||
+                   string.Equals(name, "\u5ea7\u4f4d_\u53f3_3", StringComparison.Ordinal);
         }
 
         private static CampusInteractionAnchor EnsureAnchor(
@@ -279,13 +356,23 @@ namespace NtingCampusMapEditor
                 return;
             }
 
+            DestroyUnityObject(anchor.gameObject);
+        }
+
+        private static void DestroyUnityObject(UnityEngine.Object target)
+        {
+            if (target == null)
+            {
+                return;
+            }
+
             if (Application.isPlaying)
             {
-                UnityEngine.Object.Destroy(anchor.gameObject);
+                UnityEngine.Object.Destroy(target);
             }
             else
             {
-                UnityEngine.Object.DestroyImmediate(anchor.gameObject);
+                UnityEngine.Object.DestroyImmediate(target);
             }
         }
 

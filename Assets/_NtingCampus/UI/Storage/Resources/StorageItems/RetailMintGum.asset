@@ -27,11 +27,11 @@ MonoBehaviour:
     english: A small box of mint chewing gum.
   ThemeColor: {r: 0.5, g: 0.83, b: 0.76, a: 1}
   Icon: {fileID: 0}
-  IsUsable: 0
-  UseActionId: 
+  IsUsable: 1
+  UseActionId: campus.item.consume_food
   ConsumeOnUse: 1
-  UseText: 
+  StaminaRestore: 4
+  UseText: 吃掉
   LocalizedUseText:
-    chinese: 
-    english: 
-
+    chinese: 吃掉
+    english: Eat the Mint Gum.

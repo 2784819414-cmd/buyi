@@ -27,11 +27,11 @@ MonoBehaviour:
     english: A boxed ham and lettuce sandwich.
   ThemeColor: {r: 0.84, g: 0.69, b: 0.43, a: 1}
   Icon: {fileID: 0}
-  IsUsable: 0
-  UseActionId: 
+  IsUsable: 1
+  UseActionId: campus.item.consume_food
   ConsumeOnUse: 1
-  UseText: 
+  StaminaRestore: 32
+  UseText: 吃掉
   LocalizedUseText:
-    chinese: 
-    english: 
-
+    chinese: 吃掉
+    english: Eat the Ham Sandwich.

@@ -13,21 +13,25 @@ MonoBehaviour:
   m_Name: Snack
   m_EditorClassIdentifier: 
   Id: snack
-  DisplayName: 辣条
+  DisplayName: 杈ｆ潯
   LocalizedDisplayName:
-    chinese: 辣条
+    chinese: 杈ｆ潯
     english: Spicy Snack
   Width: 2
   Height: 1
   Weight: 0.16
-  Description: 气味明显，最好别放在太显眼的位置。
+  Description: 姘斿懗鏄庢樉锛屾渶濂藉埆鏀惧湪澶樉鐪肩殑浣嶇疆銆?
   LocalizedDescription:
-    chinese: 气味明显，最好别放在太显眼的位置。
+    chinese: 姘斿懗鏄庢樉锛屾渶濂藉埆鏀惧湪澶樉鐪肩殑浣嶇疆銆?
     english: Strong-smelling spicy strips. Better not leave them somewhere obvious.
   UseAction: 0
-  UseText: 
+  IsUsable: 1
+  UseActionId: campus.item.consume_food
+  ConsumeOnUse: 1
+  StaminaRestore: 10
+  UseText: 吃掉
   LocalizedUseText:
-    chinese: 
-    english: 
+    chinese: 吃掉
+    english: Eat the Spicy Snack.
   ThemeColor: {r: 0.52, g: 0.34, b: 0.28, a: 1}
   Icon: {fileID: 21300000, guid: 8f7c2e83b9fd4a54a8b0e6a79f2b7a15, type: 3}

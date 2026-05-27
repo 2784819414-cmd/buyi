@@ -270,6 +270,62 @@ namespace NtingCampus.Gameplay.Events
         public bool ShouldIssueSanction { get; }
     }
 
+    public readonly struct CampusConfiguredActionEvent
+    {
+        public CampusConfiguredActionEvent(
+            string actionId,
+            string actorId,
+            string targetId,
+            string roomId,
+            string itemInstanceId,
+            string itemDefinitionId,
+            string itemDisplayName,
+            string ownerId,
+            string sourceLocation,
+            string eventKind,
+            int suspicionDelta,
+            int evidenceDelta,
+            int rumorDelta,
+            int crackdownDelta,
+            int areaAlertDelta,
+            bool succeeded)
+        {
+            ActionId = actionId ?? string.Empty;
+            ActorId = actorId ?? string.Empty;
+            TargetId = targetId ?? string.Empty;
+            RoomId = roomId ?? string.Empty;
+            ItemInstanceId = itemInstanceId ?? string.Empty;
+            ItemDefinitionId = itemDefinitionId ?? string.Empty;
+            ItemDisplayName = itemDisplayName ?? string.Empty;
+            OwnerId = ownerId ?? string.Empty;
+            SourceLocation = sourceLocation ?? string.Empty;
+            EventKind = eventKind ?? string.Empty;
+            SuspicionDelta = suspicionDelta;
+            EvidenceDelta = evidenceDelta;
+            RumorDelta = rumorDelta;
+            CrackdownDelta = crackdownDelta;
+            AreaAlertDelta = areaAlertDelta;
+            Succeeded = succeeded;
+        }
+
+        public string ActionId { get; }
+        public string ActorId { get; }
+        public string TargetId { get; }
+        public string RoomId { get; }
+        public string ItemInstanceId { get; }
+        public string ItemDefinitionId { get; }
+        public string ItemDisplayName { get; }
+        public string OwnerId { get; }
+        public string SourceLocation { get; }
+        public string EventKind { get; }
+        public int SuspicionDelta { get; }
+        public int EvidenceDelta { get; }
+        public int RumorDelta { get; }
+        public int CrackdownDelta { get; }
+        public int AreaAlertDelta { get; }
+        public bool Succeeded { get; }
+    }
+
     [DisallowMultipleComponent]
     public sealed class CampusGameplayEventHub : MonoBehaviour
     {
@@ -296,6 +352,7 @@ namespace NtingCampus.Gameplay.Events
         public event System.Action<CampusItemTheftObservedEvent> ItemTheftObserved;
         public event System.Action<CampusInventoryQuestionedEvent> InventoryQuestioned;
         public event System.Action<CampusContrabandFoundEvent> ContrabandFound;
+        public event System.Action<CampusConfiguredActionEvent> ConfiguredAction;
 
         public void Initialize(CampusGameBootstrap targetBootstrap)
         {
@@ -402,6 +459,15 @@ namespace NtingCampus.Gameplay.Events
             ContrabandFound?.Invoke(eventData);
         }
 
+        public void PublishConfiguredAction(CampusConfiguredActionEvent eventData)
+        {
+            string suffix = string.IsNullOrWhiteSpace(eventData.EventKind)
+                ? eventData.ActionId
+                : eventData.EventKind;
+            Record("configured_action." + Normalize(suffix));
+            ConfiguredAction?.Invoke(eventData);
+        }
+
         private static string Normalize(CampusSanctionLevel sanctionLevel)
         {
             return sanctionLevel.ToString().ToLowerInvariant();
@@ -410,6 +476,25 @@ namespace NtingCampus.Gameplay.Events
         private static string Normalize(StorageTransferReason reason)
         {
             return reason.ToString().ToLowerInvariant();
+        }
+
+        private static string Normalize(string value)
+        {
+            if (string.IsNullOrWhiteSpace(value))
+            {
+                return "unknown";
+            }
+
+            char[] chars = value.Trim().ToLowerInvariant().ToCharArray();
+            for (int i = 0; i < chars.Length; i++)
+            {
+                if (!char.IsLetterOrDigit(chars[i]) && chars[i] != '_' && chars[i] != '-')
+                {
+                    chars[i] = '_';
+                }
+            }
+
+            return new string(chars).Trim('_');
         }
     }
 }

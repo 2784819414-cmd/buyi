@@ -6,7 +6,8 @@ namespace NtingCampus.Gameplay.TheftConsequences
     public enum CampusTheftIncidentKind
     {
         ObservedProtectedItemMove = 0,
-        ContrabandFound = 1
+        ContrabandFound = 1,
+        ConfiguredActionTheft = 2
     }
 
     public enum CampusTheftConsequenceSeverity

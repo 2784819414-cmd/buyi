@@ -19,6 +19,8 @@ MonoBehaviour:
     english: Workbook
   Width: 2
   Height: 1
+  StackGroupId: workbook
+  MaxStackSize: 9
   Weight: 0.45
   Description: 边角卷起的练习册。
   LocalizedDescription:

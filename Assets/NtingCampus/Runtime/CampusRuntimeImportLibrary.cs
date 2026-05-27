@@ -13,7 +13,7 @@ namespace NtingCampusMapEditor
         internal const string WallImportFolder = "Walls";
         internal const string ObjectImportFolder = "Objects";
         internal const string ObjectSettingsFolder = "ObjectSettings";
-        internal const string ObjectDefinitionsFile = "ObjectDefinitions.json";
+        internal const string ObjectCatalogFile = "RuntimeObjectCatalog.json";
         internal const string RoomImportFile = "Rooms.txt";
         internal const string RoomPrefabFolder = "RoomPrefabs";
 
@@ -47,14 +47,9 @@ namespace NtingCampusMapEditor
             return Path.Combine(GetObjectSettingsRootFolder(importRoot), SanitizeFileName(objectId));
         }
 
-        internal static string GetObjectSettingsPath(string importRoot, string objectId)
+        internal static string GetObjectCatalogPath(string importRoot)
         {
-            return Path.Combine(GetObjectSettingsFolder(importRoot, objectId), "settings.json");
-        }
-
-        internal static string GetObjectDefinitionsPath(string importRoot)
-        {
-            return Path.Combine(importRoot, ObjectDefinitionsFile);
+            return Path.Combine(importRoot, ObjectCatalogFile);
         }
 
         internal static string GetRoomImportFile(string importRoot)

@@ -85,11 +85,21 @@ namespace Nting.Storage
 
             if (!Items.Contains(item))
             {
+                StorageItemStackingService.PrepareItemForPlacement(this, item, x, y, ignoreItem);
                 Items.Add(item);
+            }
+            else
+            {
+                StorageItemStackingService.PrepareItemForPlacement(this, item, x, y, ignoreItem);
             }
 
             item.X = IsSingleItemSlot ? 0 : x;
             item.Y = IsSingleItemSlot ? 0 : y;
+            if (!string.IsNullOrWhiteSpace(item.StackId))
+            {
+                StorageItemStackingService.MoveStackMembers(this, item, item.X, item.Y);
+            }
+
             item.CurrentContainer = this;
             return true;
         }
@@ -106,6 +116,7 @@ namespace Nting.Storage
                 item.CurrentContainer = null;
             }
 
+            StorageItemStackingService.NormalizeItemAfterRemoval(this, item);
             return true;
         }
 

@@ -27,11 +27,11 @@ MonoBehaviour:
     english: A low-sugar bottled tea with a light tea aroma.
   ThemeColor: {r: 0.5, g: 0.69, b: 0.41, a: 1}
   Icon: {fileID: 0}
-  IsUsable: 0
-  UseActionId: 
+  IsUsable: 1
+  UseActionId: campus.item.consume_food
   ConsumeOnUse: 1
-  UseText: 
+  StaminaRestore: 12
+  UseText: 喝掉
   LocalizedUseText:
-    chinese: 
-    english: 
-
+    chinese: 喝掉
+    english: Drink the Green Tea.

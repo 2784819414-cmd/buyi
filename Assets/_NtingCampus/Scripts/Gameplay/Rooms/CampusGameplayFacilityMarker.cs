@@ -1,4 +1,5 @@
 using NtingCampusMapEditor;
+using NtingCampus.UI.Runtime.Gameplay;
 using UnityEngine;
 
 namespace NtingCampus.Gameplay.Rooms
@@ -8,6 +9,7 @@ namespace NtingCampus.Gameplay.Rooms
     {
         [SerializeField] private string facilityId = string.Empty;
         [SerializeField] private string displayName = string.Empty;
+        [SerializeField] private CampusLocalizedText localizedDisplayName = default;
         [SerializeField] private CampusFacilityType facilityType = CampusFacilityType.Unknown;
         [SerializeField, Min(1)] private int floorIndex = 1;
         [SerializeField] private Vector3Int cell;
@@ -16,6 +18,7 @@ namespace NtingCampus.Gameplay.Rooms
 
         public string FacilityId => facilityId;
         public string DisplayName => displayName;
+        public CampusLocalizedText LocalizedDisplayName => localizedDisplayName;
         public CampusFacilityType FacilityType => facilityType;
         public int FloorIndex => floorIndex;
         public Vector3Int Cell => cell;
@@ -33,6 +36,7 @@ namespace NtingCampus.Gameplay.Rooms
             Configure(
                 string.Empty,
                 targetDisplayName,
+                default,
                 type,
                 targetFloorIndex,
                 targetCell,
@@ -49,7 +53,31 @@ namespace NtingCampus.Gameplay.Rooms
             bool coreFacility,
             CampusPlacedObject placedObject)
         {
+            Configure(
+                targetFacilityId,
+                targetDisplayName,
+                string.IsNullOrWhiteSpace(targetDisplayName)
+                    ? default
+                    : new CampusLocalizedText(targetDisplayName.Trim(), string.Empty),
+                type,
+                targetFloorIndex,
+                targetCell,
+                coreFacility,
+                placedObject);
+        }
+
+        public void Configure(
+            string targetFacilityId,
+            string targetDisplayName,
+            CampusLocalizedText targetLocalizedDisplayName,
+            CampusFacilityType type,
+            int targetFloorIndex,
+            Vector3Int targetCell,
+            bool coreFacility,
+            CampusPlacedObject placedObject)
+        {
             displayName = string.IsNullOrWhiteSpace(targetDisplayName) ? string.Empty : targetDisplayName.Trim();
+            localizedDisplayName = targetLocalizedDisplayName;
             facilityType = type;
             floorIndex = Mathf.Max(1, targetFloorIndex);
             cell = targetCell;

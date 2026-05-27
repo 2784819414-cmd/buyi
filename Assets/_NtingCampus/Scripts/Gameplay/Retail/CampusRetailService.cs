@@ -4,6 +4,7 @@ using NtingCampus.Gameplay.Core;
 using NtingCampus.Gameplay.Economy;
 using NtingCampus.Gameplay.Inventory;
 using NtingCampus.Gameplay.Rooms;
+using NtingCampus.Gameplay.Services;
 using NtingCampusMapEditor;
 using UnityEngine;
 
@@ -48,32 +49,50 @@ namespace NtingCampus.Gameplay.Retail
             }
 
             string storeRoomId = ResolveStoreRoomId(actor, checkoutSource);
-            CampusCharacterInventory inventory = CampusCharacterInventoryService.GetOrCreateInventory(actor, false);
-            CampusRetailCheckoutSummary summary = BuildSummary(inventory, storeRoomId, true);
+            CampusProtectedTransferClearanceSummary summary =
+                CampusProtectedTransferClearanceService.BuildSummary(actor, storeRoomId, true);
             if (!summary.HasPendingItems)
             {
                 message = CampusRetailTextCatalog.Get(CampusRetailTextId.NoPendingItems);
                 return false;
             }
 
-            if (summary.TotalPrice > 0 && !TrySpendForCheckout(actor, summary.TotalPrice))
+            CampusServiceStationClearanceDefinition clearance = ResolveCheckoutClearance(checkoutSource);
+
+            if (!CampusProtectedTransferClearanceService.TryClearPendingTransfers(
+                    actor,
+                    checkoutSource,
+                    clearance,
+                    out message))
             {
-                message = CampusRetailTextCatalog.Format(CampusRetailTextId.InsufficientFunds, summary.TotalPrice);
                 return false;
             }
+            return true;
+        }
 
-            ClearPendingItems(inventory.Hands, actor.CharacterId, storeRoomId);
-            ClearPendingItems(inventory.Pockets, actor.CharacterId, storeRoomId);
-            ClearPendingItem(inventory.Backpack, actor.CharacterId, storeRoomId);
-
-            if (actor.Data != null)
+        private static CampusServiceStationClearanceDefinition ResolveCheckoutClearance(Component checkoutSource)
+        {
+            if (CampusServiceStationRuntimeAvailability.TryResolveActionStation(
+                    CampusRetailActionIds.Checkout,
+                    checkoutSource,
+                    out CampusServiceStation station) &&
+                station.Clearance.ClearsPendingProtectedTransfers)
             {
-                actor.Data.AddMemory(CampusCharacterMemoryId.ClearedProtectedTransfer);
-                actor.Data.AddMemory(CampusCharacterMemoryId.ReceivedClearedGoods);
+                return station.Clearance;
             }
 
-            message = CampusRetailTextCatalog.Format(CampusRetailTextId.CheckoutComplete, summary.TotalPrice);
-            return true;
+            return new CampusServiceStationClearanceDefinition(
+                CampusServiceStationClearanceMode.ClearPendingProtectedTransfers,
+                CampusServiceStationClearancePriceMode.ItemPrice,
+                new NtingCampus.UI.Runtime.Gameplay.CampusLocalizedText(
+                    CampusRetailTextCatalog.Get(NtingCampus.UI.Runtime.Gameplay.CampusDisplayLanguage.Chinese, CampusRetailTextId.CheckoutComplete),
+                    CampusRetailTextCatalog.Get(NtingCampus.UI.Runtime.Gameplay.CampusDisplayLanguage.English, CampusRetailTextId.CheckoutComplete)),
+                new NtingCampus.UI.Runtime.Gameplay.CampusLocalizedText(
+                    CampusRetailTextCatalog.Get(NtingCampus.UI.Runtime.Gameplay.CampusDisplayLanguage.Chinese, CampusRetailTextId.NoPendingItems),
+                    CampusRetailTextCatalog.Get(NtingCampus.UI.Runtime.Gameplay.CampusDisplayLanguage.English, CampusRetailTextId.NoPendingItems)),
+                new NtingCampus.UI.Runtime.Gameplay.CampusLocalizedText(
+                    CampusRetailTextCatalog.Get(NtingCampus.UI.Runtime.Gameplay.CampusDisplayLanguage.Chinese, CampusRetailTextId.InsufficientFunds),
+                    CampusRetailTextCatalog.Get(NtingCampus.UI.Runtime.Gameplay.CampusDisplayLanguage.English, CampusRetailTextId.InsufficientFunds)));
         }
 
         public static string ResolveStoreRoomId(
@@ -111,184 +130,9 @@ namespace NtingCampus.Gameplay.Retail
             string storeRoomId,
             bool filterByStore)
         {
-            CampusCharacterInventory inventory = CampusCharacterInventoryService.GetOrCreateInventory(actor, false);
-            return BuildSummary(inventory, storeRoomId, filterByStore);
-        }
-
-        private static CampusRetailCheckoutSummary BuildSummary(
-            CampusCharacterInventory inventory,
-            string storeRoomId,
-            bool filterByStore)
-        {
-            if (inventory == null)
-            {
-                return default;
-            }
-
-            string normalizedStoreRoomId = NormalizeStoreRoomId(storeRoomId);
-            int pendingItemCount = 0;
-            int totalPrice = 0;
-            AccumulatePendingSummary(
-                inventory.Hands,
-                normalizedStoreRoomId,
-                filterByStore,
-                ref pendingItemCount,
-                ref totalPrice);
-            AccumulatePendingSummary(
-                inventory.Pockets,
-                normalizedStoreRoomId,
-                filterByStore,
-                ref pendingItemCount,
-                ref totalPrice);
-            AccumulatePendingSummary(
-                inventory.Backpack,
-                normalizedStoreRoomId,
-                filterByStore,
-                ref pendingItemCount,
-                ref totalPrice);
-            return new CampusRetailCheckoutSummary(pendingItemCount, totalPrice);
-        }
-
-        private static bool TrySpendForCheckout(CampusCharacterRuntime actor, int totalPrice)
-        {
-            if (totalPrice <= 0)
-            {
-                return true;
-            }
-
-            CampusGameBootstrap bootstrap = CampusGameBootstrap.Instance;
-            CampusEconomyService economyService = bootstrap != null ? bootstrap.EconomyService : null;
-            if (economyService != null)
-            {
-                return economyService.TrySpendMoney(actor, totalPrice);
-            }
-
-            return actor != null &&
-                   actor.Data != null &&
-                   actor.Data.TrySpendMoney(totalPrice);
-        }
-
-        private static void AccumulatePendingSummary(
-            StorageContainerModel[] containers,
-            string storeRoomId,
-            bool filterByStore,
-            ref int pendingItemCount,
-            ref int totalPrice)
-        {
-            if (containers == null)
-            {
-                return;
-            }
-
-            for (int i = 0; i < containers.Length; i++)
-            {
-                AccumulatePendingSummary(
-                    containers[i],
-                    storeRoomId,
-                    filterByStore,
-                    ref pendingItemCount,
-                    ref totalPrice);
-            }
-        }
-
-        private static void AccumulatePendingSummary(
-            StorageContainerModel container,
-            string storeRoomId,
-            bool filterByStore,
-            ref int pendingItemCount,
-            ref int totalPrice)
-        {
-            if (container == null || container.Items == null)
-            {
-                return;
-            }
-
-            for (int i = 0; i < container.Items.Count; i++)
-            {
-                StorageItemModel item = container.Items[i];
-                if (item == null ||
-                    !item.IsPendingProtectedTransfer ||
-                    !MatchesStore(item, storeRoomId, filterByStore))
-                {
-                    continue;
-                }
-
-                pendingItemCount++;
-                totalPrice += Mathf.Max(0, item.Price);
-            }
-        }
-
-        private static int ClearPendingItems(
-            StorageContainerModel[] containers,
-            string actorId,
-            string storeRoomId)
-        {
-            int clearedCount = 0;
-            if (containers == null)
-            {
-                return clearedCount;
-            }
-
-            for (int i = 0; i < containers.Length; i++)
-            {
-                clearedCount += ClearPendingItem(containers[i], actorId, storeRoomId);
-            }
-
-            return clearedCount;
-        }
-
-        private static int ClearPendingItem(
-            StorageContainerModel container,
-            string actorId,
-            string storeRoomId)
-        {
-            if (container == null || container.Items == null)
-            {
-                return 0;
-            }
-
-            int clearedCount = 0;
-            for (int i = 0; i < container.Items.Count; i++)
-            {
-                StorageItemModel item = container.Items[i];
-                if (item == null ||
-                    !item.IsPendingProtectedTransfer ||
-                    !MatchesStore(item, storeRoomId, true))
-                {
-                    continue;
-                }
-
-                CampusProtectedTransferState.ClearPendingTransfer(item, actorId);
-                clearedCount++;
-            }
-
-            return clearedCount;
-        }
-
-        private static bool MatchesStore(
-            StorageItemModel item,
-            string storeRoomId,
-            bool filterByStore)
-        {
-            if (item == null)
-            {
-                return false;
-            }
-
-            if (!filterByStore || string.IsNullOrEmpty(storeRoomId))
-            {
-                return true;
-            }
-
-            return string.Equals(
-                item.SourceRoomId ?? string.Empty,
-                storeRoomId,
-                System.StringComparison.OrdinalIgnoreCase);
-        }
-
-        private static string NormalizeStoreRoomId(string storeRoomId)
-        {
-            return string.IsNullOrWhiteSpace(storeRoomId) ? string.Empty : storeRoomId.Trim();
+            CampusProtectedTransferClearanceSummary summary =
+                CampusProtectedTransferClearanceService.BuildSummary(actor, storeRoomId, true);
+            return new CampusRetailCheckoutSummary(summary.PendingItemCount, summary.TotalPrice);
         }
     }
 }

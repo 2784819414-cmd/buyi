@@ -14,6 +14,7 @@ namespace NtingCampus.Gameplay.Characters
         TransferItem = 30,
         TransferItemToFirstFit = 31,
         DropItemToGround = 40,
+        UseHeldItem = 45,
         OpenInventoryView = 50,
         DomainAction = 90
     }
@@ -126,6 +127,11 @@ namespace NtingCampus.Gameplay.Characters
                 SourceContainer = source,
                 GroundDropContext = groundDropContext
             };
+        }
+
+        public static CampusCharacterAction UseHeldItem()
+        {
+            return new CampusCharacterAction(CampusCharacterActionKind.UseHeldItem);
         }
 
         public static CampusCharacterAction OpenInventoryView(

@@ -27,11 +27,11 @@ MonoBehaviour:
     english: A square box of butter cookies.
   ThemeColor: {r: 0.79, g: 0.62, b: 0.35, a: 1}
   Icon: {fileID: 0}
-  IsUsable: 0
-  UseActionId: 
+  IsUsable: 1
+  UseActionId: campus.item.consume_food
   ConsumeOnUse: 1
-  UseText: 
+  StaminaRestore: 15
+  UseText: 吃掉
   LocalizedUseText:
-    chinese: 
-    english: 
-
+    chinese: 吃掉
+    english: Eat the Butter Cookies.

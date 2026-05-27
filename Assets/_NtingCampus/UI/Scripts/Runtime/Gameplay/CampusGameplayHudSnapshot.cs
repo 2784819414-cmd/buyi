@@ -2,6 +2,12 @@ using System;
 
 namespace NtingCampus.UI.Runtime.Gameplay
 {
+    public enum CampusPendingProtectedTransferHudMode
+    {
+        Checkout = 0,
+        Registration = 1
+    }
+
     public readonly struct CampusGameplayHudSnapshot : IEquatable<CampusGameplayHudSnapshot>
     {
         public CampusGameplayHudSnapshot(
@@ -23,7 +29,8 @@ namespace NtingCampus.UI.Runtime.Gameplay
             string backpackStatus,
             int pendingCheckoutCount,
             int pendingCheckoutTotal,
-            bool canAffordCheckout)
+            bool canAffordCheckout,
+            CampusPendingProtectedTransferHudMode pendingProtectedTransferMode)
         {
             DateText = dateText ?? string.Empty;
             WeekdayText = weekdayText ?? string.Empty;
@@ -44,6 +51,7 @@ namespace NtingCampus.UI.Runtime.Gameplay
             PendingCheckoutCount = Math.Max(0, pendingCheckoutCount);
             PendingCheckoutTotal = Math.Max(0, pendingCheckoutTotal);
             CanAffordCheckout = canAffordCheckout;
+            PendingProtectedTransferMode = pendingProtectedTransferMode;
         }
 
         public string DateText { get; }
@@ -65,6 +73,7 @@ namespace NtingCampus.UI.Runtime.Gameplay
         public int PendingCheckoutCount { get; }
         public int PendingCheckoutTotal { get; }
         public bool CanAffordCheckout { get; }
+        public CampusPendingProtectedTransferHudMode PendingProtectedTransferMode { get; }
         public bool ShowPendingCheckout => PendingCheckoutCount > 0;
 
         public bool Equals(CampusGameplayHudSnapshot other)
@@ -87,7 +96,8 @@ namespace NtingCampus.UI.Runtime.Gameplay
                    BackpackStatus == other.BackpackStatus &&
                    PendingCheckoutCount == other.PendingCheckoutCount &&
                    PendingCheckoutTotal == other.PendingCheckoutTotal &&
-                   CanAffordCheckout == other.CanAffordCheckout;
+                   CanAffordCheckout == other.CanAffordCheckout &&
+                   PendingProtectedTransferMode == other.PendingProtectedTransferMode;
         }
 
         public override bool Equals(object obj)
@@ -118,6 +128,7 @@ namespace NtingCampus.UI.Runtime.Gameplay
                 hashCode = (hashCode * 397) ^ PendingCheckoutCount;
                 hashCode = (hashCode * 397) ^ PendingCheckoutTotal;
                 hashCode = (hashCode * 397) ^ CanAffordCheckout.GetHashCode();
+                hashCode = (hashCode * 397) ^ (int)PendingProtectedTransferMode;
                 return hashCode;
             }
         }

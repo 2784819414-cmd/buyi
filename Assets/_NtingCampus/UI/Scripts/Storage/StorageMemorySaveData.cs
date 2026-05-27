@@ -40,8 +40,14 @@ namespace Nting.Storage
         public CampusLocalizedText LocalizedDisplayName;
         public int Width;
         public int Height;
+        public string StackGroupId;
+        public int MaxStackSize;
+        public string StackId;
         public float Weight;
         public int Price;
+        public int SmellLevel;
+        public int EvidenceWeight;
+        public bool CanPrankUse;
         public string Description;
         public CampusLocalizedText LocalizedDescription;
         public int X;
@@ -51,6 +57,7 @@ namespace Nting.Storage
         public bool IsUsable;
         public string UseActionId;
         public bool ConsumeOnUse;
+        public float StaminaRestore;
         public string UseText;
         public CampusLocalizedText LocalizedUseText;
         public StorageItemLegalState LegalState;

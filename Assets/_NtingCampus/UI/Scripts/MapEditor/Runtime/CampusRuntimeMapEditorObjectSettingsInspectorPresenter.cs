@@ -241,6 +241,7 @@ namespace NtingCampusMapEditor
         {
             if (placed != null && placed.IsWallMounted)
             {
+                placed.OverrideBlocking = true;
                 placed.BlocksMovement = false;
                 placed.BlocksSight = false;
             }

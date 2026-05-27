@@ -27,11 +27,11 @@ MonoBehaviour:
     english: A sugar-free sparkling water.
   ThemeColor: {r: 0.6, g: 0.82, b: 0.91, a: 1}
   Icon: {fileID: 0}
-  IsUsable: 0
-  UseActionId: 
+  IsUsable: 1
+  UseActionId: campus.item.consume_food
   ConsumeOnUse: 1
-  UseText: 
+  StaminaRestore: 9
+  UseText: 喝掉
   LocalizedUseText:
-    chinese: 
-    english: 
-
+    chinese: 喝掉
+    english: Drink the Sparkling Water.

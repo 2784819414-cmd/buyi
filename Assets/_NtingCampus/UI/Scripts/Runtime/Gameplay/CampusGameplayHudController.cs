@@ -134,7 +134,76 @@ namespace NtingCampus.UI.Runtime.Gameplay
                 ResolveBackpackStatus(backpack),
                 pendingSummary.PendingItemCount,
                 pendingSummary.TotalPrice,
-                money >= pendingSummary.TotalPrice);
+                money >= pendingSummary.TotalPrice,
+                ResolvePendingProtectedTransferMode(inventory, worldService));
+        }
+
+        private static CampusPendingProtectedTransferHudMode ResolvePendingProtectedTransferMode(
+            CampusCharacterInventory inventory,
+            CampusWorldService worldService)
+        {
+            bool hasCheckoutSource = false;
+            bool hasRegistrationSource = false;
+            AccumulatePendingProtectedTransferMode(inventory != null ? inventory.Hands : null, worldService, ref hasCheckoutSource, ref hasRegistrationSource);
+            AccumulatePendingProtectedTransferMode(inventory != null ? inventory.Pockets : null, worldService, ref hasCheckoutSource, ref hasRegistrationSource);
+            AccumulatePendingProtectedTransferMode(inventory != null ? inventory.Backpack : null, worldService, ref hasCheckoutSource, ref hasRegistrationSource);
+
+            return hasRegistrationSource && !hasCheckoutSource
+                ? CampusPendingProtectedTransferHudMode.Registration
+                : CampusPendingProtectedTransferHudMode.Checkout;
+        }
+
+        private static void AccumulatePendingProtectedTransferMode(
+            StorageContainerModel[] containers,
+            CampusWorldService worldService,
+            ref bool hasCheckoutSource,
+            ref bool hasRegistrationSource)
+        {
+            if (containers == null)
+            {
+                return;
+            }
+
+            for (int i = 0; i < containers.Length; i++)
+            {
+                AccumulatePendingProtectedTransferMode(
+                    containers[i],
+                    worldService,
+                    ref hasCheckoutSource,
+                    ref hasRegistrationSource);
+            }
+        }
+
+        private static void AccumulatePendingProtectedTransferMode(
+            StorageContainerModel container,
+            CampusWorldService worldService,
+            ref bool hasCheckoutSource,
+            ref bool hasRegistrationSource)
+        {
+            if (container == null || container.Items == null)
+            {
+                return;
+            }
+
+            for (int i = 0; i < container.Items.Count; i++)
+            {
+                StorageItemModel item = container.Items[i];
+                if (item == null || !item.IsPendingProtectedTransfer)
+                {
+                    continue;
+                }
+
+                CampusGameplayRoom sourceRoom = worldService != null
+                    ? worldService.FindRoomById(item.SourceRoomId)
+                    : null;
+                if (sourceRoom != null && sourceRoom.RoomType == CampusRoomType.Library)
+                {
+                    hasRegistrationSource = true;
+                    continue;
+                }
+
+                hasCheckoutSource = true;
+            }
         }
 
         private CampusCharacterRuntime ResolvePlayerRuntime()

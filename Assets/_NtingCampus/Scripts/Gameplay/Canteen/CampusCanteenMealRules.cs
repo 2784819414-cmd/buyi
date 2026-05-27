@@ -1,6 +1,7 @@
 using System.Collections.Generic;
 using Nting.Storage;
 using NtingCampus.Gameplay.Characters;
+using NtingCampus.Gameplay.Delivery;
 using NtingCampus.Gameplay.Inventory;
 using NtingCampusMapEditor;
 
@@ -10,7 +11,9 @@ namespace NtingCampus.Gameplay.Canteen
     {
         public static bool CanOrderMeal(CampusCharacterRuntime actor)
         {
-            return CanReceiveMenuItem(actor) && !HasOwnServedCanteenItem(actor);
+            return CanReceiveMenuItem(actor) &&
+                   !HasOwnServedCanteenItem(actor) &&
+                   !CampusDeliveryMealRules.ShouldSkipCanteen(actor);
         }
 
         public static bool HasOwnServedCanteenItem(CampusCharacterRuntime actor)

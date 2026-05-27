@@ -1,4 +1,5 @@
 using Nting.Storage;
+using NtingCampus.Gameplay.Characters;
 using UnityEngine;
 
 namespace NtingCampus.Gameplay.Inventory
@@ -31,7 +32,11 @@ namespace NtingCampus.Gameplay.Inventory
             return true;
         }
 
-        public bool TryUse(StorageItemModel item, StorageGridUI sourceGrid, out string statusMessage)
+        public bool TryUse(
+            StorageItemModel item,
+            StorageGridUI sourceGrid,
+            StorageItemUseContext context,
+            out string statusMessage)
         {
             if (!CanUse(item, sourceGrid, out statusMessage))
             {
@@ -44,17 +49,16 @@ namespace NtingCampus.Gameplay.Inventory
 
             if (!item.ConsumeOnUse)
             {
+                ApplyUseEffects(item, context);
                 return true;
             }
 
             CampusInventoryTransferService service = CampusInventoryTransferService.Resolve();
             StorageContainerModel source = sourceGrid != null ? sourceGrid.Container : item.CurrentContainer;
-            StorageTransferContext context = new StorageTransferContext
+            StorageTransferContext transferContext = BuildTransferContext(context);
+            if (service.TryConsumeItem(item, source, transferContext, out StorageTransferResult result))
             {
-                Reason = StorageTransferReason.UseItem
-            };
-            if (service.TryConsumeItem(item, source, context, out StorageTransferResult result))
-            {
+                ApplyUseEffects(item, context);
                 return true;
             }
 
@@ -62,6 +66,36 @@ namespace NtingCampus.Gameplay.Inventory
                 ? StorageTextCatalog.Format(StorageTextId.CouldNotConsumeItem, ResolveItemName(item))
                 : result.Message;
             return false;
+        }
+
+        private static StorageTransferContext BuildTransferContext(StorageItemUseContext context)
+        {
+            StorageTransferReason reason = context != null
+                ? context.Reason
+                : StorageTransferReason.UseItem;
+            return StorageTransferContext.ForActor(context != null ? context.Actor : null, reason);
+        }
+
+        private static void ApplyUseEffects(StorageItemModel item, StorageItemUseContext context)
+        {
+            if (item == null || item.StaminaRestore <= 0f || context == null || context.Actor == null)
+            {
+                return;
+            }
+
+            CampusCharacterRuntime runtime = context.Actor.GetComponentInParent<CampusCharacterRuntime>();
+            if (runtime == null)
+            {
+                return;
+            }
+
+            CampusCharacterStaminaController stamina = runtime.GetComponent<CampusCharacterStaminaController>();
+            if (stamina == null)
+            {
+                stamina = runtime.gameObject.AddComponent<CampusCharacterStaminaController>();
+            }
+
+            stamina.RestoreStamina(item.StaminaRestore);
         }
 
         private static string ResolveItemName(StorageItemModel item)

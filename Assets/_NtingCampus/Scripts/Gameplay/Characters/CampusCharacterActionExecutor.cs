@@ -72,6 +72,9 @@ namespace NtingCampus.Gameplay.Characters
                         action.GroundDropContext,
                         out result);
 
+                case CampusCharacterActionKind.UseHeldItem:
+                    return CampusInventoryActionExecutor.TryUseFirstHeldItem(actor, out result);
+
                 case CampusCharacterActionKind.OpenInventoryView:
                     bool opened = CampusInventoryActionExecutor.TryOpenInventoryView(
                         actor,

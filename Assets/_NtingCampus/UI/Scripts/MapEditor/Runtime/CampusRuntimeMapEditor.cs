@@ -113,6 +113,9 @@ namespace NtingCampusMapEditor
         private const float AmbientLightIntensity = 0.3f;
         private const float PlacedLightIntensity = 1.15f;
         private const int PaletteTileSize = 92;
+        private const float PaletteCellGap = 10f;
+        private const float PaletteLabelHeight = 44f;
+        private const float PaletteRowStride = PaletteTileSize + PaletteLabelHeight + 8f;
         private const string BuiltInRetailShelfContainerObjectId = "retail_shelf_container_2x1";
         private const string BuiltInRetailShelfDisplayObjectId = "retail_shelf_display_2x1";
         private const int ToolbarButtonWidth = 110;
@@ -253,7 +256,7 @@ namespace NtingCampusMapEditor
         private readonly List<Sprite> importedSprites = new List<Sprite>();
         private readonly CampusRuntimeMapEditorObjectSettingsSession objectSettingsSession =
             new CampusRuntimeMapEditorObjectSettingsSession();
-        private CampusRuntimeObjectDefinitionCatalog objectDefinitionCatalog = CampusRuntimeObjectDefinitionCatalog.Empty;
+        private CampusRuntimeObjectCatalog objectCatalog = CampusRuntimeObjectCatalog.Empty;
         private readonly List<UnityEngine.Object> importedAssets = new List<UnityEngine.Object>();
         private readonly Dictionary<string, Texture2D> importedTextureCache = new Dictionary<string, Texture2D>(StringComparer.OrdinalIgnoreCase);
         private readonly Dictionary<string, long> importedTextureRevisionCache = new Dictionary<string, long>(StringComparer.OrdinalIgnoreCase);
@@ -277,6 +280,7 @@ namespace NtingCampusMapEditor
         private GUIStyle headerStyle;
         private GUIStyle bodyStyle;
         private GUIStyle smallBodyStyle;
+        private GUIStyle paletteLabelStyle;
         private GUIStyle mutedStyle;
         private GUIStyle buttonStyle;
         private GUIStyle selectedButtonStyle;
@@ -485,24 +489,6 @@ namespace NtingCampusMapEditor
                 }
             }
 
-            CampusPrefabPalette[] prefabPalettes = Resources.LoadAll<CampusPrefabPalette>(RuntimeResourceFolder);
-            for (int i = 0; i < prefabPalettes.Length; i++)
-            {
-                CampusPrefabPalette palette = prefabPalettes[i];
-                if (palette == null)
-                {
-                    continue;
-                }
-
-                palette.RemoveInvalidEntries();
-                for (int prefabIndex = 0; prefabIndex < palette.Prefabs.Count; prefabIndex++)
-                {
-                    AddUnique(objectPrefabs, palette.Prefabs[prefabIndex]);
-                }
-            }
-
-            AddBuiltInRetailShelfPrefabs();
-
             CampusWallVisualCatalog[] catalogs = Resources.LoadAll<CampusWallVisualCatalog>(RuntimeResourceFolder);
             if (catalogs.Length > 0)
             {
@@ -564,14 +550,15 @@ namespace NtingCampusMapEditor
 
         private void LoadUserImports()
         {
-            objectDefinitionCatalog = CampusRuntimeObjectDefinitionCatalog.Load(
+            objectCatalog = CampusRuntimeObjectCatalog.Load(
                 GetImportRootFolder(),
                 message => CampusRuntimeMapEditorLogTextCatalog.Warning(
                     CampusRuntimeMapEditorLogTextId.WarningMessage,
                     message));
+            MigratePrefabPaletteObjectsIntoCatalog();
             LoadImportedTiles(GetFloorImportFolder(), floorTiles);
             LoadImportedTiles(GetWallImportFolder(), wallTiles);
-            LoadImportedObjects(GetObjectImportFolder());
+            LoadCatalogObjects();
             LoadImportedRooms();
             LoadImportedRoomPrefabs();
             selectedFloorTileIndex = Mathf.Clamp(selectedFloorTileIndex, 0, Mathf.Max(0, floorTiles.Count - 1));
@@ -656,144 +643,60 @@ namespace NtingCampusMapEditor
             }
         }
 
-        private void LoadImportedObjects(string folder)
+        private void LoadCatalogObjects()
         {
-            string[] files = CampusRuntimeImportLibrary.GetImageFiles(folder);
-            if (files.Length == 0)
+            if (objectCatalog == null || objectCatalog.Objects == null || objectCatalog.Objects.Count == 0)
             {
                 return;
             }
 
             Transform root = EnsureRuntimeImportPrefabRoot();
-            List<RuntimeImportedObjectDefinition> definitions =
-                CampusRuntimeImportedObjectLibrary.BuildDefinitions(files, GetImportRootFolder());
-            for (int i = 0; i < definitions.Count; i++)
+            for (int i = 0; i < objectCatalog.Objects.Count; i++)
             {
-                RuntimeImportedObjectDefinition definition = definitions[i];
-                string objectId = objectDefinitionCatalog.ResolveObjectIdForSource(definition.ObjectName);
-                if (string.IsNullOrWhiteSpace(objectId))
-                {
-                    objectId = definition.ObjectName;
-                }
-
-                Texture2D texture = LoadImportedTexture(definition.BaseSpritePath);
-                if (texture == null)
+                CampusRuntimeObjectCatalogEntry entry = objectCatalog.Objects[i];
+                if (entry == null || string.IsNullOrWhiteSpace(entry.ObjectId))
                 {
                     continue;
                 }
 
-                Vector2Int footprint = ResolveImportedObjectFootprint(definition.ObjectName, texture);
-                Sprite sprite = CreateObjectSprite(texture, objectId, footprint);
-
-                GameObject prefab = new GameObject(objectId);
-                prefab.hideFlags = HideFlags.DontSave;
-                prefab.transform.SetParent(root, false);
-                prefab.SetActive(false);
-                CreateRuntimeImportedObjectVisual(prefab.transform, sprite);
-                BoxCollider2D collider = prefab.AddComponent<BoxCollider2D>();
-                collider.isTrigger = false;
-                collider.size = new Vector2(footprint.x, footprint.y);
-                CampusPlacedObject placed = prefab.AddComponent<CampusPlacedObject>();
-                placed.ObjectId = objectId;
-                placed.TypeId = objectDefinitionCatalog.ResolveTypeId(objectId, placed.TypeId);
-                placed.LocalizedDisplayNameOverride =
-                    objectDefinitionCatalog.ResolveDisplayName(objectId, placed.LocalizedDisplayNameOverride);
-                placed.DisplayNameOverride =
-                    objectDefinitionCatalog.ResolveDisplayNameText(objectId, placed.DisplayNameOverride);
-                placed.FootprintSize = footprint;
-                placed.BlocksMovement = true;
-                if (definition.HasDirectionalSprites)
+                GameObject prefab = CreateCatalogObjectPrefab(root, entry);
+                if (prefab != null)
                 {
-                    placed.OverrideAllowRotation = true;
-                    placed.AllowRotation = true;
-                    for (int rotation90 = 0; rotation90 < 4; rotation90++)
-                    {
-                        if (!string.IsNullOrWhiteSpace(definition.DirectionSpritePaths[rotation90]))
-                        {
-                            AssignRuntimeObjectDirectionSprite(
-                                placed,
-                                rotation90,
-                                true,
-                                definition.DirectionSpritePaths[rotation90],
-                                objectId);
-                        }
-                    }
-
-                    placed.ApplyRotationVisualState();
+                    AddUnique(objectPrefabs, prefab);
                 }
-
-                importedAssets.Add(prefab);
-                AddUnique(objectPrefabs, prefab);
             }
         }
 
-        private void AddBuiltInRetailShelfPrefabs()
+        private GameObject CreateCatalogObjectPrefab(Transform root, CampusRuntimeObjectCatalogEntry entry)
         {
-            Transform root = EnsureRuntimeImportPrefabRoot();
-            AddBuiltInRetailShelfPrefab(
-                root,
-                BuiltInRetailShelfContainerObjectId,
-                new CampusLocalizedText(
-                    "超市货架（容器）",
-                    "Retail Shelf (Container)",
-                    "超市貨架（容器）",
-                    "Полка магазина (контейнер)",
-                    "売店棚（コンテナ）"),
-                CampusRetailShelfMode.Container,
-                "retail_water",
-                true,
-                true,
-                new Vector2Int(2, 1),
-                new Vector2Int(6, 4),
-                24f,
-                new Color(0.51f, 0.41f, 0.31f, 1f),
-                new Color(0.72f, 0.82f, 0.91f, 1f));
-            AddBuiltInRetailShelfPrefab(
-                root,
-                BuiltInRetailShelfDisplayObjectId,
-                new CampusLocalizedText(
-                    "超市货架（直摆）",
-                    "Retail Shelf (Display)",
-                    "超市貨架（直擺）",
-                    "Полка магазина (витрина)",
-                    "売店棚（陳列）"),
-                CampusRetailShelfMode.DirectPickupDisplay,
-                "retail_potato_chips",
-                false,
-                false,
-                new Vector2Int(2, 1),
-                new Vector2Int(4, 4),
-                18f,
-                new Color(0.54f, 0.35f, 0.24f, 1f),
-                new Color(0.95f, 0.82f, 0.41f, 1f));
-        }
-
-        private void AddBuiltInRetailShelfPrefab(
-            Transform root,
-            string objectId,
-            CampusLocalizedText displayName,
-            CampusRetailShelfMode shelfMode,
-            string itemDefinitionId,
-            bool isStorageContainer,
-            bool isInteractable,
-            Vector2Int footprint,
-            Vector2Int storageSize,
-            float storageMaxWeight,
-            Color frameColor,
-            Color productColor)
-        {
-            if (root == null || string.IsNullOrWhiteSpace(objectId))
+            if (root == null || entry == null || string.IsNullOrWhiteSpace(entry.ObjectId))
             {
-                return;
+                return null;
             }
 
-            Sprite sprite = CreateBuiltInRetailShelfSprite(objectId, footprint, frameColor, productColor, shelfMode);
+            Vector2Int footprint = entry.Settings != null && entry.Settings.OverrideFootprintSize
+                ? entry.Settings.FootprintSize
+                : Vector2Int.one;
+            Sprite sprite = ResolveCatalogObjectSprite(entry, footprint);
             if (sprite == null)
             {
-                return;
+                GameObject sourcePrefab = ResolveCatalogSourcePrefab(entry);
+                if (sourcePrefab == null)
+                {
+                    return null;
+                }
+
+                GameObject prefabClone = Instantiate(sourcePrefab, root);
+                CampusSceneInstanceUtility.NormalizeSceneInstance(prefabClone);
+                prefabClone.name = entry.ObjectId.Trim();
+                prefabClone.hideFlags = HideFlags.DontSave;
+                prefabClone.SetActive(false);
+                ApplyCatalogSettingsToPrefab(prefabClone, entry);
+                importedAssets.Add(prefabClone);
+                return prefabClone;
             }
 
-            GameObject prefab = new GameObject(objectId.Trim());
+            GameObject prefab = new GameObject(entry.ObjectId.Trim());
             prefab.hideFlags = HideFlags.DontSave;
             prefab.transform.SetParent(root, false);
             prefab.SetActive(false);
@@ -804,37 +707,190 @@ namespace NtingCampusMapEditor
             collider.size = new Vector2(Mathf.Max(1, footprint.x), Mathf.Max(1, footprint.y));
 
             CampusPlacedObject placed = prefab.AddComponent<CampusPlacedObject>();
-            placed.ObjectId = objectId.Trim();
-            placed.TypeId = nameof(CampusFacilityType.GoodsShelf);
-            placed.DisplayNameOverride = displayName.ResolvePrimary(objectId);
-            placed.LocalizedDisplayNameOverride = displayName;
+            placed.ObjectId = entry.ObjectId.Trim();
+            placed.TypeId = entry.Settings != null ? entry.Settings.TypeId : string.Empty;
+            placed.DisplayNameOverride = objectCatalog.ResolveDisplayNameText(entry.ObjectId, entry.ObjectId);
+            placed.LocalizedDisplayNameOverride = objectCatalog.ResolveDisplayName(entry.ObjectId, default);
             placed.OverrideFootprintSize = true;
             placed.FootprintSize = CampusPlacedObject.NormalizeFootprintSize(footprint);
+            placed.OverrideBlocking = true;
             placed.BlocksMovement = true;
             placed.BlocksSight = false;
-            placed.IsInteractable = isInteractable;
-            placed.IsStorageContainer = isStorageContainer;
-            placed.StorageSize = CampusPlacedObject.NormalizeStorageSize(storageSize);
-            placed.StorageMaxWeight = CampusPlacedObject.NormalizeStorageMaxWeight(storageMaxWeight);
             placed.VisualScale = Vector2.one;
             placed.LockVisualScaleAspect = true;
-            placed.OverrideAllowRotation = false;
-            placed.AllowRotation = false;
 
-            CampusRetailShelf shelf = prefab.AddComponent<CampusRetailShelf>();
-            shelf.ShelfId = objectId.Trim();
-            shelf.ItemDefinitionId = string.IsNullOrWhiteSpace(itemDefinitionId) ? string.Empty : itemDefinitionId.Trim();
-            shelf.ShelfMode = shelfMode;
-            shelf.StockCount = shelfMode == CampusRetailShelfMode.Container ? 12 : 8;
-            shelf.AutoRestock = true;
-            shelf.DisplaySlotCount = shelfMode == CampusRetailShelfMode.DirectPickupDisplay ? 4 : 3;
-            shelf.DisplaySpread = shelfMode == CampusRetailShelfMode.DirectPickupDisplay
-                ? new Vector2(1.05f, 0.22f)
-                : new Vector2(0.9f, 0.18f);
-            shelf.DisplayHeight = shelfMode == CampusRetailShelfMode.DirectPickupDisplay ? 0.44f : 0.36f;
-
+            ApplyCatalogSettingsToPrefab(prefab, entry);
             importedAssets.Add(prefab);
-            AddUnique(objectPrefabs, prefab);
+            return prefab;
+        }
+
+        private void MigratePrefabPaletteObjectsIntoCatalog()
+        {
+            if (objectCatalog == null)
+            {
+                return;
+            }
+
+            CampusPrefabPalette[] prefabPalettes = Resources.LoadAll<CampusPrefabPalette>(RuntimeResourceFolder);
+            for (int paletteIndex = 0; paletteIndex < prefabPalettes.Length; paletteIndex++)
+            {
+                CampusPrefabPalette palette = prefabPalettes[paletteIndex];
+                if (palette == null || palette.Prefabs == null)
+                {
+                    continue;
+                }
+
+                palette.RemoveInvalidEntries();
+                for (int prefabIndex = 0; prefabIndex < palette.Prefabs.Count; prefabIndex++)
+                {
+                    GameObject prefab = palette.Prefabs[prefabIndex];
+                    if (prefab == null)
+                    {
+                        continue;
+                    }
+
+                    CampusPlacedObject placed = prefab.GetComponent<CampusPlacedObject>();
+                    string objectId = prefab.name.Trim();
+                    CampusRuntimeObjectSettings settings = CampusRuntimeObjectAuthoring.CaptureSettings(
+                        prefab,
+                        placed,
+                        GetImportRootFolder(),
+                        Tr("\u4ea4\u4e92", "Interact"));
+                    settings.ObjectId = objectId;
+                    CampusLocalizedText displayName = placed != null && placed.LocalizedDisplayNameOverride.HasAnyText
+                        ? placed.LocalizedDisplayNameOverride
+                        : new CampusLocalizedText(CampusObjectNames.GetDisplayName(objectId), objectId);
+                    List<string> aliases = new List<string> { objectId };
+                    if (placed != null && !string.IsNullOrWhiteSpace(placed.ObjectId))
+                    {
+                        aliases.Add(placed.ObjectId.Trim());
+                    }
+
+                    objectCatalog.EnsureSourceObject(objectId, objectId, displayName, settings, aliases);
+                }
+            }
+        }
+
+        private void ApplyCatalogSettingsToPrefab(GameObject prefab, CampusRuntimeObjectCatalogEntry entry)
+        {
+            if (prefab == null || entry == null || entry.Settings == null)
+            {
+                return;
+            }
+
+            ApplyRuntimeObjectSettings(prefab, entry.Settings);
+        }
+
+        private GameObject ResolveCatalogSourcePrefab(CampusRuntimeObjectCatalogEntry entry)
+        {
+            if (entry == null)
+            {
+                return null;
+            }
+
+            GameObject[] runtimePrefabs = Resources.LoadAll<GameObject>(RuntimeResourceFolder);
+            for (int i = 0; i < runtimePrefabs.Length; i++)
+            {
+                GameObject prefab = runtimePrefabs[i];
+                if (prefab == null)
+                {
+                    continue;
+                }
+
+                if (string.Equals(prefab.name, entry.ObjectId, StringComparison.OrdinalIgnoreCase) ||
+                    string.Equals(prefab.name, entry.SourceObjectId, StringComparison.OrdinalIgnoreCase))
+                {
+                    return prefab;
+                }
+            }
+
+            CampusPrefabPalette[] prefabPalettes = Resources.LoadAll<CampusPrefabPalette>(RuntimeResourceFolder);
+            for (int paletteIndex = 0; paletteIndex < prefabPalettes.Length; paletteIndex++)
+            {
+                CampusPrefabPalette palette = prefabPalettes[paletteIndex];
+                if (palette == null || palette.Prefabs == null)
+                {
+                    continue;
+                }
+
+                for (int prefabIndex = 0; prefabIndex < palette.Prefabs.Count; prefabIndex++)
+                {
+                    GameObject prefab = palette.Prefabs[prefabIndex];
+                    if (prefab == null)
+                    {
+                        continue;
+                    }
+
+                    if (string.Equals(prefab.name, entry.ObjectId, StringComparison.OrdinalIgnoreCase) ||
+                        string.Equals(prefab.name, entry.SourceObjectId, StringComparison.OrdinalIgnoreCase))
+                    {
+                        return prefab;
+                    }
+                }
+            }
+
+            return null;
+        }
+
+        private Sprite ResolveCatalogObjectSprite(CampusRuntimeObjectCatalogEntry entry, Vector2Int footprint)
+        {
+            if (entry == null)
+            {
+                return null;
+            }
+
+            if (!string.IsNullOrWhiteSpace(entry.ImagePath))
+            {
+                Texture2D texture = LoadImportedTexture(
+                    CampusRuntimeImportLibrary.ResolveContentPath(entry.ImagePath, GetImportRootFolder()));
+                return texture != null ? CreateObjectSprite(texture, entry.ObjectId, footprint) : null;
+            }
+
+            string imagePath = FindCatalogImagePath(entry);
+            if (!string.IsNullOrWhiteSpace(imagePath))
+            {
+                Texture2D texture = LoadImportedTexture(imagePath);
+                return texture != null ? CreateObjectSprite(texture, entry.ObjectId, footprint) : null;
+            }
+
+            if (string.Equals(entry.GeneratedVisualKind, "RetailShelfContainer", StringComparison.OrdinalIgnoreCase))
+            {
+                return CreateBuiltInRetailShelfSprite(
+                    entry.ObjectId,
+                    footprint,
+                    new Color(0.51f, 0.41f, 0.31f, 1f),
+                    new Color(0.72f, 0.82f, 0.91f, 1f),
+                    CampusRetailShelfMode.Container);
+            }
+
+            if (string.Equals(entry.GeneratedVisualKind, "RetailShelfDisplay", StringComparison.OrdinalIgnoreCase))
+            {
+                return CreateBuiltInRetailShelfSprite(
+                    entry.ObjectId,
+                    footprint,
+                    new Color(0.54f, 0.35f, 0.24f, 1f),
+                    new Color(0.95f, 0.82f, 0.41f, 1f),
+                    CampusRetailShelfMode.DirectPickupDisplay);
+            }
+
+            return null;
+        }
+
+        private string FindCatalogImagePath(CampusRuntimeObjectCatalogEntry entry)
+        {
+            if (entry == null)
+            {
+                return string.Empty;
+            }
+
+            string objectFolder = GetObjectImportFolder();
+            string path = CampusRuntimeImportLibrary.FindImagePathByName(objectFolder, entry.SourceObjectId);
+            if (!string.IsNullOrWhiteSpace(path))
+            {
+                return path;
+            }
+
+            return CampusRuntimeImportLibrary.FindImagePathByName(objectFolder, entry.ObjectId);
         }
 
         private Sprite CreateBuiltInRetailShelfSprite(
@@ -1041,7 +1097,7 @@ namespace NtingCampusMapEditor
                 Mathf.Clamp(newObjectFootprintY, 1, 32));
 
             EnsureImportFolders();
-            string objectId = CampusRuntimeObjectDefinitionCatalog.BuildStableObjectId(
+            string objectId = CampusRuntimeObjectCatalog.BuildStableObjectId(
                 displayName,
                 footprint,
                 CandidateObjectIdExists);
@@ -1050,6 +1106,25 @@ namespace NtingCampusMapEditor
             try
             {
                 File.WriteAllBytes(path, texture.EncodeToPNG());
+                CampusRuntimeObjectSettings settings = new CampusRuntimeObjectSettings
+                {
+                    ObjectId = objectId,
+                    TypeId = CampusRuntimeObjectAuthoring.InferObjectTypeId(objectId, displayName, newObjectIsStorageContainer),
+                    DisplayNameOverride = displayName,
+                    OverrideFootprintSize = true,
+                    FootprintSize = footprint,
+                    OverrideBlocking = true,
+                    BlocksMovement = newObjectBlocksMovement,
+                    BlocksSight = false,
+                    IsStorageContainer = newObjectIsStorageContainer,
+                    StorageSize = CampusPlacedObject.DefaultStorageSize,
+                    StorageMaxWeight = CampusPlacedObject.DefaultStorageMaxWeight
+                };
+                objectCatalog.AddOrUpdateImageObject(
+                    objectId,
+                    path,
+                    new CampusLocalizedText(displayName, displayName),
+                    settings);
                 RefreshImportAssetDatabaseIfProjectBacked();
             }
             catch (Exception exception)
@@ -1087,6 +1162,7 @@ namespace NtingCampusMapEditor
                 placed.DisplayNameOverride = displayName;
                 placed.OverrideFootprintSize = true;
                 placed.FootprintSize = footprint;
+                placed.OverrideBlocking = true;
                 placed.BlocksMovement = newObjectBlocksMovement;
                 placed.BlocksSight = false;
                 placed.IsInteractable = newObjectIsInteractable || newObjectIsStorageContainer;
@@ -1110,7 +1186,7 @@ namespace NtingCampusMapEditor
         {
             return !string.IsNullOrWhiteSpace(objectId) &&
                    (FindPrefabIndexByName(objectId) >= 0 ||
-                    File.Exists(CampusRuntimeImportLibrary.GetObjectSettingsPath(GetImportRootFolder(), objectId)) ||
+                    objectCatalog.ContainsObjectId(objectId) ||
                     File.Exists(Path.Combine(GetObjectImportFolder(), objectId + ".png")));
         }
 
@@ -2308,13 +2384,13 @@ namespace NtingCampusMapEditor
                 }
             }
 
-            if (CampusRuntimeObjectAuthoring.IsStackableFacilityObject(placementType))
+            if (CampusRuntimeObjectAuthoring.CanStackOnPlacedObjects(prefabPlaced, placementType))
             {
                 footprint = Vector2Int.one;
             }
 
             Vector2Int rotatedFootprint = CampusPlacedObject.RotateFootprintSize(footprint, effectiveRotation90);
-            if (CampusRuntimeObjectAuthoring.IsStackableFacilityObject(placementType))
+            if (CampusRuntimeObjectAuthoring.CanStackOnPlacedObjects(prefabPlaced, placementType))
             {
                 EraseStackableFacilityObjectsAtCells(floor, cell, rotatedFootprint);
             }
@@ -2344,6 +2420,7 @@ namespace NtingCampusMapEditor
             placed.ApplyPlacementRotation(effectiveRotation90);
             if (prefabPlaced != null)
             {
+                placed.OverrideBlocking = prefabPlaced.OverrideBlocking;
                 placed.BlocksMovement = prefabPlaced.BlocksMovement;
                 placed.BlocksSight = prefabPlaced.BlocksSight;
                 placed.IsInteractable = prefabPlaced.IsInteractable;
@@ -2363,6 +2440,7 @@ namespace NtingCampusMapEditor
             CampusRuntimeObjectAuthoring.NormalizeStackableFacilityObject(placed, placementType);
             placed.ApplyCellToTransform(floor.Grid);
             placed.ApplyInteractionState();
+            placed.ApplyBlockingState();
             RefreshPlacedRetailShelf(placed);
             placed.EnsureShadowRegistration();
             CampusDynamicShadowUtility.EnsureObjectShadowCasters(placed, floor.Grid);
@@ -3312,7 +3390,8 @@ namespace NtingCampusMapEditor
                         CampusPlacedObject placed = objects[i];
                         if (placed != null &&
                             placed.ContainsCell(cell) &&
-                            CampusRuntimeObjectAuthoring.IsStackableFacilityObject(
+                            CampusRuntimeObjectAuthoring.CanStackOnPlacedObjects(
+                                placed,
                                 CampusRuntimeObjectAuthoring.ResolveFacilityType(placed)))
                         {
                             targets.Add(placed);
@@ -4664,15 +4743,19 @@ namespace NtingCampusMapEditor
                 return objectSnapshot;
             }
 
-            objectSnapshot.ObjectId = objectDefinitionCatalog.NormalizeObjectId(
+            objectSnapshot.ObjectId = objectCatalog.NormalizeObjectId(
                 string.IsNullOrEmpty(placed.ObjectId) ? placed.gameObject.name : placed.ObjectId);
             objectSnapshot.DisplayNameOverride = placed.DisplayNameOverride;
+            objectSnapshot.LocalizedDisplayNameOverride = placed.LocalizedDisplayNameOverride;
             objectSnapshot.TypeId = CampusRuntimeObjectAuthoring.ResolveTypeIdForPlacedObject(placed);
             if (!string.IsNullOrEmpty(objectSnapshot.TypeId) && string.IsNullOrWhiteSpace(placed.TypeId))
             {
                 placed.TypeId = objectSnapshot.TypeId;
             }
 
+            objectCatalog.TryGetSettings(
+                objectSnapshot.ObjectId,
+                out CampusRuntimeObjectSettings catalogSettings);
             CampusRuntimeObjectAuthoring.NormalizeStackableFacilityObject(
                 placed,
                 CampusRuntimeObjectAuthoring.ResolveFacilityType(placed));
@@ -4696,8 +4779,10 @@ namespace NtingCampusMapEditor
             objectSnapshot.OverrideRotation270Sprite = placed.OverrideRotation270Sprite;
             objectSnapshot.Rotation270SpritePath = NormalizeSerializedImportPath(placed.Rotation270SpritePath);
             objectSnapshot.Rotation90 = placed.Rotation90;
+            objectSnapshot.OverrideBlocking = placed.OverrideBlocking;
             objectSnapshot.BlocksMovement = placed.BlocksMovement;
             objectSnapshot.BlocksSight = placed.BlocksSight;
+            objectSnapshot.CanStackOnPlacedObjects = placed.CanStackOnPlacedObjects;
             objectSnapshot.IsInteractable = placed.IsInteractable;
             objectSnapshot.IsStorageContainer = placed.IsStorageContainer;
             objectSnapshot.InteractionPresetEid =
@@ -4708,10 +4793,14 @@ namespace NtingCampusMapEditor
             objectSnapshot.CustomInteractionAnchorLocalPosition = placed.CustomInteractionAnchorLocalPosition;
             objectSnapshot.CustomInteractionAnchorRadius = placed.CustomInteractionAnchorRadius;
             objectSnapshot.CustomInteractionPromptText = placed.CustomInteractionPromptText;
+            objectSnapshot.LocalizedCustomInteractionPromptText = placed.LocalizedCustomInteractionPromptText;
             objectSnapshot.CustomInteractionAnchors = CampusPlacedObject.CloneInteractionAnchors(placed.CustomInteractionAnchors);
-            objectSnapshot.RetailShelf = CampusRuntimeObjectAuthoring.CaptureRetailShelfData(placed.gameObject);
-            objectSnapshot.ProtectedStockContainer =
-                CampusRuntimeObjectAuthoring.CaptureProtectedStockContainerData(placed.gameObject);
+            objectSnapshot.RetailShelf = catalogSettings != null
+                ? CampusRuntimeObjectAuthoring.CloneRetailShelfData(catalogSettings.RetailShelf)
+                : CampusRuntimeObjectAuthoring.CaptureRetailShelfData(placed.gameObject);
+            objectSnapshot.ProtectedStockContainer = catalogSettings != null
+                ? CampusRuntimeObjectAuthoring.CloneProtectedStockContainerData(catalogSettings.ProtectedStockContainer)
+                : CampusRuntimeObjectAuthoring.CaptureProtectedStockContainerData(placed.gameObject);
             return objectSnapshot;
         }
 
@@ -4726,6 +4815,7 @@ namespace NtingCampusMapEditor
             clone.ObjectId = source.ObjectId;
             clone.TypeId = source.TypeId;
             clone.DisplayNameOverride = source.DisplayNameOverride;
+            clone.LocalizedDisplayNameOverride = source.LocalizedDisplayNameOverride;
             clone.PaletteIndex = source.PaletteIndex;
             clone.Position = source.Position;
             clone.Cell = source.Cell;
@@ -4746,8 +4836,10 @@ namespace NtingCampusMapEditor
             clone.OverrideRotation270Sprite = source.OverrideRotation270Sprite;
             clone.Rotation270SpritePath = source.Rotation270SpritePath;
             clone.Rotation90 = source.Rotation90;
+            clone.OverrideBlocking = source.OverrideBlocking;
             clone.BlocksMovement = source.BlocksMovement;
             clone.BlocksSight = source.BlocksSight;
+            clone.CanStackOnPlacedObjects = source.CanStackOnPlacedObjects;
             clone.IsInteractable = source.IsInteractable;
             clone.IsStorageContainer = source.IsStorageContainer;
             clone.InteractionPresetEid =
@@ -4758,6 +4850,7 @@ namespace NtingCampusMapEditor
             clone.CustomInteractionAnchorLocalPosition = source.CustomInteractionAnchorLocalPosition;
             clone.CustomInteractionAnchorRadius = source.CustomInteractionAnchorRadius;
             clone.CustomInteractionPromptText = source.CustomInteractionPromptText;
+            clone.LocalizedCustomInteractionPromptText = source.LocalizedCustomInteractionPromptText;
             clone.CustomInteractionAnchors = CampusPlacedObject.CloneInteractionAnchors(source.CustomInteractionAnchors);
             clone.RetailShelf = CampusRuntimeObjectAuthoring.CloneRetailShelfData(source.RetailShelf);
             clone.ProtectedStockContainer =
@@ -4785,15 +4878,18 @@ namespace NtingCampusMapEditor
                 CampusSceneInstanceUtility.NormalizeSceneInstance(instance);
                 instance.SetActive(true);
                 objectSnapshot.ObjectId = string.IsNullOrWhiteSpace(objectSnapshot.ObjectId)
-                    ? objectDefinitionCatalog.NormalizeObjectId(prefab.name)
-                    : objectDefinitionCatalog.NormalizeObjectId(objectSnapshot.ObjectId);
+                    ? objectCatalog.NormalizeObjectId(prefab.name)
+                    : objectCatalog.NormalizeObjectId(objectSnapshot.ObjectId);
                 string displayName = string.IsNullOrWhiteSpace(objectSnapshot.DisplayNameOverride)
                     ? GetObjectDisplayName(prefab)
                     : objectSnapshot.DisplayNameOverride.Trim();
-                displayName = objectDefinitionCatalog.ResolveDisplayNameText(objectSnapshot.ObjectId, displayName);
+                displayName = objectCatalog.ResolveDisplayNameText(objectSnapshot.ObjectId, displayName);
                 objectSnapshot.TypeId =
                     CampusRuntimeObjectAuthoring.ResolveTypeIdForSnapshot(objectSnapshot, prefab, displayName);
-                objectSnapshot.TypeId = objectDefinitionCatalog.ResolveTypeId(objectSnapshot.ObjectId, objectSnapshot.TypeId);
+                objectSnapshot.TypeId = objectCatalog.ResolveTypeId(objectSnapshot.ObjectId, objectSnapshot.TypeId);
+                objectCatalog.TryGetSettings(
+                    objectSnapshot.ObjectId,
+                    out CampusRuntimeObjectSettings catalogSettings);
                 instance.name = displayName + "_F" + floor.FloorIndex + "_" + objectSnapshot.Cell.x + "_" + objectSnapshot.Cell.y;
                 CampusPlacedObject placed = instance.GetComponent<CampusPlacedObject>();
                 if (placed == null)
@@ -4804,6 +4900,7 @@ namespace NtingCampusMapEditor
                 placed.ObjectId = objectSnapshot.ObjectId;
                 placed.TypeId = objectSnapshot.TypeId;
                 placed.DisplayNameOverride = objectSnapshot.DisplayNameOverride;
+                placed.LocalizedDisplayNameOverride = objectSnapshot.LocalizedDisplayNameOverride;
                 placed.FloorIndex = floor.FloorIndex;
                 placed.Cell = objectSnapshot.Cell;
                 placed.OverrideFootprintSize = objectSnapshot.OverrideFootprintSize;
@@ -4818,6 +4915,7 @@ namespace NtingCampusMapEditor
                     placed.OverrideAllowRotation = true;
                     placed.AllowRotation = true;
                     placed.SortingOrderOffset = Mathf.Max(placed.SortingOrderOffset, 1);
+                    placed.OverrideBlocking = true;
                     placed.BlocksMovement = false;
                     placed.BlocksSight = false;
                 }
@@ -4840,30 +4938,79 @@ namespace NtingCampusMapEditor
                 AssignRuntimeObjectDirectionSprite(placed, 3, objectSnapshot.OverrideRotation270Sprite, objectSnapshot.Rotation270SpritePath, objectSnapshot.ObjectId);
                 placed.Rotation90 = objectSnapshot.Rotation90;
                 placed.ApplyRotationVisualState();
-                placed.BlocksMovement = objectSnapshot.BlocksMovement;
-                placed.BlocksSight = objectSnapshot.BlocksSight;
+                placed.OverrideBlocking = objectSnapshot.OverrideBlocking;
+                if (objectSnapshot.OverrideBlocking)
+                {
+                    placed.BlocksMovement = objectSnapshot.BlocksMovement;
+                    placed.BlocksSight = objectSnapshot.BlocksSight;
+                }
+
+                if (catalogSettings != null && catalogSettings.OverrideBlocking)
+                {
+                    placed.OverrideBlocking = true;
+                    placed.BlocksMovement = catalogSettings.BlocksMovement;
+                    placed.BlocksSight = catalogSettings.BlocksSight;
+                }
+
+                placed.CanStackOnPlacedObjects =
+                    catalogSettings != null
+                        ? catalogSettings.CanStackOnPlacedObjects
+                        : objectSnapshot.CanStackOnPlacedObjects;
                 placed.IsInteractable = objectSnapshot.IsInteractable;
-                placed.IsStorageContainer = objectSnapshot.IsStorageContainer;
+                placed.IsStorageContainer =
+                    catalogSettings != null
+                        ? catalogSettings.IsStorageContainer
+                        : objectSnapshot.IsStorageContainer;
                 placed.InteractionPresetEid =
-                    CampusRuntimeObjectAuthoring.NormalizeInteractionPresetEid(objectSnapshot.InteractionPresetEid);
-                placed.StorageSize = CampusPlacedObject.NormalizeStorageSize(objectSnapshot.StorageSize);
-                placed.StorageMaxWeight = CampusPlacedObject.NormalizeStorageMaxWeight(objectSnapshot.StorageMaxWeight);
-                placed.UseCustomInteractionAnchor = objectSnapshot.UseCustomInteractionAnchor;
-                placed.CustomInteractionAnchorLocalPosition = objectSnapshot.CustomInteractionAnchorLocalPosition;
-                placed.CustomInteractionAnchorRadius = CampusPlacedObject.NormalizeInteractionAnchorRadius(objectSnapshot.CustomInteractionAnchorRadius);
-                placed.CustomInteractionPromptText = string.IsNullOrWhiteSpace(objectSnapshot.CustomInteractionPromptText)
-                    ? Tr("\u4ea4\u4e92", "Interact")
+                    CampusRuntimeObjectAuthoring.NormalizeInteractionPresetEid(
+                        catalogSettings != null
+                            ? catalogSettings.InteractionPresetEid
+                            : objectSnapshot.InteractionPresetEid);
+                placed.StorageSize = CampusPlacedObject.NormalizeStorageSize(
+                    catalogSettings != null ? catalogSettings.StorageSize : objectSnapshot.StorageSize);
+                placed.StorageMaxWeight = CampusPlacedObject.NormalizeStorageMaxWeight(
+                    catalogSettings != null ? catalogSettings.StorageMaxWeight : objectSnapshot.StorageMaxWeight);
+                placed.UseCustomInteractionAnchor =
+                    catalogSettings != null
+                        ? catalogSettings.UseCustomInteractionAnchor
+                        : objectSnapshot.UseCustomInteractionAnchor;
+                placed.CustomInteractionAnchorLocalPosition =
+                    catalogSettings != null
+                        ? catalogSettings.CustomInteractionAnchorLocalPosition
+                        : objectSnapshot.CustomInteractionAnchorLocalPosition;
+                placed.CustomInteractionAnchorRadius = CampusPlacedObject.NormalizeInteractionAnchorRadius(
+                    catalogSettings != null
+                        ? catalogSettings.CustomInteractionAnchorRadius
+                        : objectSnapshot.CustomInteractionAnchorRadius);
+                string promptText = catalogSettings != null
+                    ? catalogSettings.CustomInteractionPromptText
                     : objectSnapshot.CustomInteractionPromptText;
-                placed.CustomInteractionAnchors = CampusPlacedObject.CloneInteractionAnchors(objectSnapshot.CustomInteractionAnchors);
-                CampusRuntimeObjectAuthoring.ApplyRetailShelfData(instance, placed, objectSnapshot.RetailShelf);
+                placed.CustomInteractionPromptText = string.IsNullOrWhiteSpace(promptText)
+                    ? Tr("\u4ea4\u4e92", "Interact")
+                    : promptText;
+                placed.LocalizedCustomInteractionPromptText =
+                    catalogSettings != null
+                        ? catalogSettings.LocalizedCustomInteractionPromptText
+                        : objectSnapshot.LocalizedCustomInteractionPromptText;
+                placed.CustomInteractionAnchors = CampusPlacedObject.CloneInteractionAnchors(
+                    catalogSettings != null
+                        ? catalogSettings.CustomInteractionAnchors
+                        : objectSnapshot.CustomInteractionAnchors);
+                CampusRuntimeObjectAuthoring.ApplyRetailShelfData(
+                    instance,
+                    placed,
+                    catalogSettings != null ? catalogSettings.RetailShelf : objectSnapshot.RetailShelf);
                 CampusRuntimeObjectAuthoring.ApplyProtectedStockContainerData(
                     instance,
                     placed,
-                    objectSnapshot.ProtectedStockContainer);
+                    catalogSettings != null
+                        ? catalogSettings.ProtectedStockContainer
+                        : objectSnapshot.ProtectedStockContainer);
                 CampusRuntimeObjectAuthoring.NormalizeStackableFacilityObject(
                     placed,
                     CampusRuntimeObjectAuthoring.ResolveFacilityType(placed));
                 placed.ApplyInteractionState();
+                placed.ApplyBlockingState();
                 if (floor.Grid != null)
                 {
                     placed.ApplyCellToTransform(floor.Grid);
@@ -5392,7 +5539,7 @@ namespace NtingCampusMapEditor
             try
             {
                 File.Delete(path);
-                CampusRuntimeObjectSettingsStore.DeleteFolder(GetImportRootFolder(), objectId);
+                objectCatalog.TryRemove(objectId);
 
                 if (objectSettingsSession.LastSelectedPrefab == prefab)
                 {

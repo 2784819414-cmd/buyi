@@ -73,6 +73,7 @@ namespace Nting.Storage
                 return;
             }
 
+            StorageItemStackingService.NormalizeContainer(container);
             RectTransform.sizeDelta = GetGridPixelSize(container.Columns, container.Rows);
             SlotsRoot.sizeDelta = RectTransform.sizeDelta;
             ItemsRoot.sizeDelta = RectTransform.sizeDelta;
@@ -89,7 +90,7 @@ namespace Nting.Storage
             for (int i = 0; i < container.Items.Count; i++)
             {
                 StorageItemModel item = container.Items[i];
-                if (item != null)
+                if (item != null && StorageItemStackingService.IsRepresentative(container, item))
                 {
                     CreateItemView(item);
                 }

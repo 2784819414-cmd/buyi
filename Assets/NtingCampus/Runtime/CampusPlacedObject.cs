@@ -1,7 +1,5 @@
 using System;
 using System.Collections.Generic;
-using NtingCampus.Gameplay.Rooms;
-using NtingCampus.Gameplay.Retail;
 using NtingCampus.UI.Runtime.Gameplay;
 using UnityEngine;
 
@@ -61,10 +59,7 @@ namespace NtingCampusMapEditor
     /// </summary>
     public sealed class CampusPlacedObject : MonoBehaviour
     {
-        private const string CustomInteractionAnchorRootName = "\u4ea4\u4e92\u951a\u70b9";
-        private const string CustomInteractionAnchorName = "\u73a9\u5bb6\u4ea4\u4e92";
-        private const string CustomInteractionAnchorPrefix = "\u81ea\u5b9a\u4e49\u4ea4\u4e92_";
-        private const string CustomInteractionPromptFallback = "\u4ea4\u4e92";
+        internal const string CustomInteractionPromptFallback = "\u4ea4\u4e92";
         private const string WallMountedVisualRootName = "WallMountedVisual";
         private const string WallMountedMeshNamePrefix = "WallMountedPlateMesh_";
         private const string WallMountedMaterialNamePrefix = "WallMountedPlateMaterial_";
@@ -91,6 +86,7 @@ namespace NtingCampusMapEditor
         public bool LockVisualScaleAspect = true;
         public bool OverrideAllowRotation;
         public bool AllowRotation;
+        public bool OverrideBlocking;
         public bool OverrideRotation0Sprite;
         public Sprite Rotation0Sprite;
         public string Rotation0SpritePath;
@@ -108,6 +104,7 @@ namespace NtingCampusMapEditor
         public int SortingOrderOffset;
         public bool BlocksMovement;
         public bool BlocksSight;
+        public bool CanStackOnPlacedObjects;
         public bool IsInteractable;
         public bool IsStorageContainer;
         public string InteractionPresetEid;
@@ -244,6 +241,16 @@ namespace NtingCampusMapEditor
             EnsureShadowRegistration();
         }
 
+        public void ApplyBlockingState()
+        {
+            if (!CanEditSceneHierarchy())
+            {
+                return;
+            }
+
+            ApplyColliderFootprintSize();
+        }
+
         public void EnsureShadowRegistration()
         {
             if (!CanEditSceneHierarchy())
@@ -263,212 +270,24 @@ namespace NtingCampusMapEditor
             }
         }
 
-        public void ApplyCustomInteractionAnchorState()
-        {
-            if (!CanEditSceneHierarchy())
-            {
-                return;
-            }
-
-            NormalizeCustomInteractionAnchors();
-            List<CampusPlacedObjectInteractionAnchor> anchors = ResolveAuthoredInteractionAnchors(out bool hasAuthoredPreset);
-            Transform root = transform.Find(CustomInteractionAnchorRootName);
-            if (!hasAuthoredPreset && !UseCustomInteractionAnchor)
-            {
-                RemoveStaleCustomInteractionAnchors(root, null);
-                return;
-            }
-
-            if (anchors.Count == 0)
-            {
-                IsInteractable = false;
-                if (hasAuthoredPreset)
-                {
-                    RemoveStaleAuthoredInteractionAnchors(root, new HashSet<string>());
-                }
-                else
-                {
-                    RemoveStaleCustomInteractionAnchors(root, null);
-                }
-
-                return;
-            }
-
-            IsInteractable = true;
-            root = root != null ? root : EnsureCustomInteractionAnchorRoot();
-            HashSet<string> expectedNames = new HashSet<string>();
-            for (int i = 0; i < anchors.Count; i++)
-            {
-                CampusPlacedObjectInteractionAnchor data = anchors[i];
-                if (data == null || !data.Enabled)
-                {
-                    continue;
-                }
-
-                string anchorName = BuildCustomInteractionAnchorName(data, i);
-                expectedNames.Add(anchorName);
-                ConfigureCustomInteractionAnchor(root, anchorName, data, i);
-            }
-
-            if (hasAuthoredPreset)
-            {
-                RemoveStaleAuthoredInteractionAnchors(root, expectedNames);
-            }
-            else
-            {
-                RemoveStaleCustomInteractionAnchors(root, expectedNames);
-            }
-        }
-
         public void ApplyInteractionState()
         {
-            NormalizeStorageSettings();
-            NormalizeCustomInteractionAnchors();
-            if (!CanEditSceneHierarchy())
-            {
-                return;
-            }
+            CampusPlacedObjectInteractionState.Apply(this);
+        }
 
-            bool hasAuthoredPreset = HasInteractionPreset();
-            if (!hasAuthoredPreset)
-            {
-                CampusInteractionAnchorDefaults.EnsureDefaultAnchors(this);
-            }
-
-            EnsureUnifiedInteractionHandler();
-            ApplyCustomInteractionAnchorState();
+        public void ApplyCustomInteractionAnchorState()
+        {
+            CampusPlacedObjectInteractionState.ApplyCustomInteractionAnchors(this);
         }
 
         public void NormalizeCustomInteractionAnchors()
         {
-            if (CustomInteractionAnchors == null)
-            {
-                CustomInteractionAnchors = new List<CampusPlacedObjectInteractionAnchor>();
-            }
-
-            if (UseCustomInteractionAnchor && CustomInteractionAnchors.Count == 0)
-            {
-                CustomInteractionAnchors.Add(new CampusPlacedObjectInteractionAnchor
-                {
-                    AnchorId = "custom_1",
-                    DisplayName = CustomInteractionAnchorName,
-                    Enabled = true,
-                    LocalPosition = CustomInteractionAnchorLocalPosition,
-                    Radius = NormalizeInteractionAnchorRadius(CustomInteractionAnchorRadius),
-                    PromptText = ResolveCustomInteractionPromptText(),
-                    LocalizedPromptText = LocalizedCustomInteractionPromptText,
-                    Priority = 120,
-                    LogInteraction = true
-                });
-            }
-
-            if (UseCustomInteractionAnchor && ShouldSyncLegacyPrimaryAnchorFields())
-            {
-                CampusPlacedObjectInteractionAnchor editablePrimary = GetFirstEnabledCustomInteractionAnchor();
-                if (editablePrimary == null && CustomInteractionAnchors.Count > 0)
-                {
-                    editablePrimary = CustomInteractionAnchors[0];
-                }
-
-                if (editablePrimary != null)
-                {
-                    editablePrimary.LocalPosition = CustomInteractionAnchorLocalPosition;
-                    editablePrimary.Radius = NormalizeInteractionAnchorRadius(CustomInteractionAnchorRadius);
-                    editablePrimary.PromptText = ResolveCustomInteractionPromptText();
-                    editablePrimary.LocalizedPromptText = LocalizedCustomInteractionPromptText;
-                }
-            }
-
-            for (int i = 0; i < CustomInteractionAnchors.Count; i++)
-            {
-                CampusPlacedObjectInteractionAnchor data = CustomInteractionAnchors[i];
-                if (data == null)
-                {
-                    data = new CampusPlacedObjectInteractionAnchor();
-                    CustomInteractionAnchors[i] = data;
-                }
-
-                if (string.IsNullOrWhiteSpace(data.AnchorId))
-                {
-                    data.AnchorId = "custom_" + (i + 1);
-                }
-
-                if (string.IsNullOrWhiteSpace(data.DisplayName))
-                {
-                    data.DisplayName = CustomInteractionAnchorName + " " + (i + 1);
-                }
-
-                if (string.IsNullOrWhiteSpace(data.PromptText))
-                {
-                    data.PromptText = CampusInteractionTextCatalog.Get(CampusInteractionTextId.Interact);
-                }
-
-                data.Radius = NormalizeInteractionAnchorRadius(data.Radius);
-                data.Priority = Mathf.Max(0, data.Priority);
-            }
-
-            CampusPlacedObjectInteractionAnchor primary = GetFirstEnabledCustomInteractionAnchor();
-            if (primary != null)
-            {
-                CustomInteractionAnchorLocalPosition = primary.LocalPosition;
-                CustomInteractionAnchorRadius = NormalizeInteractionAnchorRadius(primary.Radius);
-                CustomInteractionPromptText = string.IsNullOrWhiteSpace(primary.PromptText)
-                    ? CampusInteractionTextCatalog.Get(CampusInteractionTextId.Interact)
-                    : primary.PromptText;
-                LocalizedCustomInteractionPromptText = primary.LocalizedPromptText;
-            }
-        }
-
-        private bool ShouldSyncLegacyPrimaryAnchorFields()
-        {
-            return CustomInteractionAnchors == null || CustomInteractionAnchors.Count <= 1;
-        }
-
-        private bool HasInteractionPreset()
-        {
-            return CampusObjectInteractionPresetCatalog.Current.TryResolvePreset(this, out _);
-        }
-
-        private bool HasInteractionPresetAnchors()
-        {
-            return CampusObjectInteractionPresetCatalog.Current.TryResolvePreset(
-                       this,
-                       out CampusObjectInteractionPreset preset) &&
-                   preset != null &&
-                   preset.Anchors != null &&
-                   preset.Anchors.Count > 0;
-        }
-
-        private List<CampusPlacedObjectInteractionAnchor> ResolveAuthoredInteractionAnchors(out bool hasAuthoredPreset)
-        {
-            hasAuthoredPreset = CampusObjectInteractionPresetCatalog.Current.TryResolvePreset(
-                this,
-                out CampusObjectInteractionPreset preset);
-            if (hasAuthoredPreset)
-            {
-                return CampusObjectInteractionPresetCatalog.ClonePresetAnchors(preset);
-            }
-
-            return CloneInteractionAnchors(CustomInteractionAnchors);
+            CampusPlacedObjectInteractionState.NormalizeCustomAnchors(this);
         }
 
         public CampusPlacedObjectInteractionAnchor GetFirstEnabledCustomInteractionAnchor()
         {
-            if (CustomInteractionAnchors == null)
-            {
-                return null;
-            }
-
-            for (int i = 0; i < CustomInteractionAnchors.Count; i++)
-            {
-                CampusPlacedObjectInteractionAnchor data = CustomInteractionAnchors[i];
-                if (data != null && data.Enabled)
-                {
-                    return data;
-                }
-            }
-
-            return CustomInteractionAnchors.Count > 0 ? CustomInteractionAnchors[0] : null;
+            return CampusPlacedObjectInteractionState.GetFirstEnabledCustomAnchor(this);
         }
 
         public void NormalizeStorageSettings()
@@ -498,111 +317,6 @@ namespace NtingCampusMapEditor
         }
 
 
-        private void ConfigureCustomInteractionAnchor(Transform root, string anchorName, CampusPlacedObjectInteractionAnchor data, int index)
-        {
-            Transform anchorTransform = root.Find(anchorName);
-            if (anchorTransform == null)
-            {
-                GameObject anchorObject = new GameObject(anchorName);
-                anchorObject.layer = gameObject.layer;
-                anchorObject.transform.SetParent(root, false);
-                anchorTransform = anchorObject.transform;
-            }
-
-            anchorTransform.gameObject.layer = gameObject.layer;
-            anchorTransform.localPosition = ResolveAnchorLocalPosition(data.LocalPosition);
-            anchorTransform.localRotation = Quaternion.identity;
-            anchorTransform.localScale = Vector3.one;
-
-            CircleCollider2D collider = anchorTransform.GetComponent<CircleCollider2D>();
-            if (collider == null)
-            {
-                collider = anchorTransform.gameObject.AddComponent<CircleCollider2D>();
-            }
-
-            collider.isTrigger = true;
-            collider.offset = Vector2.zero;
-            collider.radius = NormalizeInteractionAnchorRadius(data.Radius);
-
-            CampusInteractionAnchor anchor = anchorTransform.GetComponent<CampusInteractionAnchor>();
-            if (anchor == null)
-            {
-                anchor = anchorTransform.gameObject.AddComponent<CampusInteractionAnchor>();
-            }
-
-            string prompt = data.LocalizedPromptText.HasAnyText
-                ? data.LocalizedPromptText.Current(data.PromptText)
-                : ResolvePromptText(data.PromptText);
-            MonoBehaviour target = ResolveCustomInteractionTarget(data.TargetComponentType);
-            string actionId = ResolveCustomInteractionAction(data, target);
-            anchor.InteractionTarget = target;
-            anchor.ActionId = actionId;
-            anchor.Payload = data.Payload;
-            anchor.PromptAnchor = anchorTransform;
-            anchor.PromptText = prompt;
-            anchor.LocalizedPromptText = data.LocalizedPromptText;
-            anchor.KeyOverride = string.Empty;
-            anchor.Icon = null;
-            anchor.AccentColor = new Color(0.95f, 0.82f, 0.38f, 1f);
-            anchor.Priority = Mathf.Max(0, data.Priority);
-            anchor.IsAvailable = true;
-            anchor.UnavailableText = string.Empty;
-            anchor.HideWhenUnavailable = false;
-            anchor.UseTargetDoorStatePrompt = data.UseTargetDoorStatePrompt;
-            anchor.LogInteraction = data.LogInteraction && CampusInteractionActionIds.Equals(actionId, CampusInteractionActionIds.Log);
-            anchor.InteractionLogMessage = prompt + " " + DisplayName;
-            anchor.LocalizedInteractionLogMessage = data.LocalizedInteractionLogMessage;
-            if (!string.IsNullOrWhiteSpace(data.InteractionLogMessage))
-            {
-                anchor.InteractionLogMessage = data.InteractionLogMessage.Trim();
-            }
-        }
-
-        private MonoBehaviour ResolveCustomInteractionTarget(string targetComponentType)
-        {
-            MonoBehaviour fallback = null;
-            MonoBehaviour[] behaviours = GetComponentsInChildren<MonoBehaviour>(true);
-            for (int i = 0; i < behaviours.Length; i++)
-            {
-                MonoBehaviour behaviour = behaviours[i];
-                if (behaviour == null ||
-                    behaviour is CampusInteractionAnchor ||
-                    behaviour is CampusSimpleInteractable ||
-                    !(behaviour is ICampusInteractable))
-                {
-                    continue;
-                }
-
-                if (string.IsNullOrWhiteSpace(targetComponentType))
-                {
-                    return behaviour;
-                }
-
-                Type type = behaviour.GetType();
-                if (type.Name == targetComponentType || type.FullName == targetComponentType)
-                {
-                    return behaviour;
-                }
-
-                if (fallback == null)
-                {
-                    fallback = behaviour;
-                }
-            }
-
-            return fallback;
-        }
-
-        private string ResolveCustomInteractionAction(CampusPlacedObjectInteractionAnchor data, MonoBehaviour target)
-        {
-            if (data != null && !string.IsNullOrWhiteSpace(data.ActionId))
-            {
-                return CampusInteractionActionIds.Normalize(data.ActionId);
-            }
-
-            return target != null ? CampusInteractionActionIds.InteractTarget : string.Empty;
-        }
-
         private static Vector3 RotateLocalPositionForAnchor(Vector3 position, int rotation90)
         {
             switch (NormalizeRotation90(rotation90))
@@ -616,23 +330,6 @@ namespace NtingCampusMapEditor
                 default:
                     return position;
             }
-        }
-
-        private static string BuildCustomInteractionAnchorName(CampusPlacedObjectInteractionAnchor data, int index)
-        {
-            string id = data != null && !string.IsNullOrWhiteSpace(data.AnchorId) ? data.AnchorId.Trim() : "custom_" + (index + 1);
-            return CustomInteractionAnchorPrefix + SanitizeAnchorName(id);
-        }
-
-        private static string SanitizeAnchorName(string value)
-        {
-            if (string.IsNullOrWhiteSpace(value))
-            {
-                return "custom";
-            }
-
-            string sanitized = value.Trim().Replace('/', '_').Replace('\\', '_');
-            return string.IsNullOrWhiteSpace(sanitized) ? "custom" : sanitized;
         }
 
         public Sprite ResolveSpriteForRotation(int requestedRotation90, out bool usesAuthoredDirectionalSprite, out int effectiveRotation90)
@@ -806,8 +503,12 @@ namespace NtingCampusMapEditor
             BoxCollider2D box = GetComponent<BoxCollider2D>();
             if (box != null)
             {
-                box.enabled = !IsWallMounted;
-                if (IsWallMounted)
+                if (!box.isTrigger)
+                {
+                    box.enabled = !IsWallMounted && (!OverrideBlocking || BlocksMovement);
+                }
+
+                if (!box.enabled)
                 {
                     return;
                 }
@@ -1148,7 +849,7 @@ namespace NtingCampusMapEditor
             return Quaternion.Euler(0f, 0f, Rotation90 * 90f);
         }
 
-        private Vector3 ResolveAnchorLocalPosition(Vector3 authoredLocalPosition)
+        internal Vector3 ResolveInteractionAnchorLocalPosition(Vector3 authoredLocalPosition)
         {
             return ShouldRotateRootTransformForPlacement()
                 ? authoredLocalPosition
@@ -1208,173 +909,9 @@ namespace NtingCampusMapEditor
             }
         }
 
-        private Transform EnsureCustomInteractionAnchorRoot()
+        public bool UsesFacilityDefaultInteraction()
         {
-            GameObject rootObject = new GameObject(CustomInteractionAnchorRootName);
-            rootObject.layer = gameObject.layer;
-            rootObject.transform.SetParent(transform, false);
-            rootObject.transform.localPosition = Vector3.zero;
-            rootObject.transform.localRotation = Quaternion.identity;
-            rootObject.transform.localScale = Vector3.one;
-            return rootObject.transform;
-        }
-
-        private static void RemoveStaleCustomInteractionAnchors(Transform root, HashSet<string> expectedNames)
-        {
-            if (root == null)
-            {
-                return;
-            }
-
-            for (int i = root.childCount - 1; i >= 0; i--)
-            {
-                Transform child = root.GetChild(i);
-                if (child == null)
-                {
-                    continue;
-                }
-
-                bool isCustomAnchor = child.name.StartsWith(CustomInteractionAnchorPrefix, StringComparison.Ordinal) ||
-                                      child.name == CustomInteractionAnchorName;
-                if (!isCustomAnchor)
-                {
-                    continue;
-                }
-
-                if (expectedNames != null && expectedNames.Contains(child.name))
-                {
-                    continue;
-                }
-
-                if (child.GetComponent<CampusInteractionAnchor>() != null)
-                {
-                    DestroyUnityObject(child.gameObject);
-                }
-            }
-        }
-
-        private static void RemoveStaleAuthoredInteractionAnchors(Transform root, HashSet<string> expectedNames)
-        {
-            if (root == null)
-            {
-                return;
-            }
-
-            for (int i = root.childCount - 1; i >= 0; i--)
-            {
-                Transform child = root.GetChild(i);
-                if (child == null ||
-                    child.GetComponent<CampusInteractionAnchor>() == null ||
-                    expectedNames != null && expectedNames.Contains(child.name))
-                {
-                    continue;
-                }
-
-                DestroyUnityObject(child.gameObject);
-            }
-        }
-
-        private static void DestroyUnityObject(UnityEngine.Object target)
-        {
-            if (target == null)
-            {
-                return;
-            }
-
-            if (Application.isPlaying)
-            {
-                Destroy(target);
-            }
-            else
-            {
-                DestroyImmediate(target);
-            }
-        }
-
-        private void EnsureUnifiedInteractionHandler()
-        {
-            if (!ShouldUseUnifiedInteractionHandler())
-            {
-                return;
-            }
-
-            CampusSimpleInteractable handler = GetComponent<CampusSimpleInteractable>();
-            if (handler == null)
-            {
-                handler = gameObject.AddComponent<CampusSimpleInteractable>();
-            }
-
-            handler.IsAvailable = true;
-            handler.HideWhenUnavailable = false;
-            ApplyFacilityDefaultAction(handler);
-            if (IsStorageContainer)
-            {
-                if (string.IsNullOrWhiteSpace(handler.DefaultActionId))
-                {
-                    handler.DefaultActionId = CampusInteractionActionIds.OpenStorage;
-                }
-
-                if (string.IsNullOrWhiteSpace(handler.PromptText) || handler.PromptText == CustomInteractionPromptFallback)
-                {
-                    handler.PromptText = CampusInteractionTextCatalog.Format(CampusInteractionTextId.OpenObject, DisplayName);
-                }
-            }
-        }
-
-        private bool ShouldUseUnifiedInteractionHandler()
-        {
-            return IsInteractable ||
-                   UseCustomInteractionAnchor ||
-                   HasInteractionPresetAnchors() ||
-                   IsStorageContainer ||
-                   UsesFacilityDefaultInteraction();
-        }
-
-        private void ApplyFacilityDefaultAction(CampusSimpleInteractable handler)
-        {
-            if (handler == null || !string.IsNullOrWhiteSpace(handler.DefaultActionId))
-            {
-                return;
-            }
-
-            switch (CampusFacilityTypeResolver.Resolve(this))
-            {
-                case CampusFacilityType.ServiceWindow:
-                    handler.DefaultActionId = CampusInteractionActionIds.ServiceWindowUse;
-                    break;
-                case CampusFacilityType.CheckoutPoint:
-                    handler.DefaultActionId = CampusRetailActionIds.Checkout;
-                    break;
-            }
-        }
-
-        private bool UsesFacilityDefaultInteraction()
-        {
-            switch (CampusFacilityTypeResolver.Resolve(this))
-            {
-                case CampusFacilityType.ServiceWindow:
-                case CampusFacilityType.CheckoutPoint:
-                    return true;
-                default:
-                    return false;
-            }
-        }
-
-        private string ResolveCustomInteractionPromptText()
-        {
-            if (LocalizedCustomInteractionPromptText.HasAnyText)
-            {
-                return LocalizedCustomInteractionPromptText.Current(CustomInteractionPromptText);
-            }
-
-            return ResolvePromptText(CustomInteractionPromptText);
-        }
-
-        private static string ResolvePromptText(string promptText)
-        {
-            return string.IsNullOrWhiteSpace(promptText) || promptText.Trim() == CustomInteractionPromptFallback
-                ? CampusInteractionTextCatalog.Get(CampusInteractionTextId.Interact)
-                : promptText.Trim();
+            return CampusPlacedObjectInteractionState.UsesFacilityDefaultInteraction(this);
         }
 
         private bool CanEditSceneHierarchy()

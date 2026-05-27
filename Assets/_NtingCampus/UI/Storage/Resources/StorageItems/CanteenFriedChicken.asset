@@ -21,6 +21,9 @@ MonoBehaviour:
   Height: 2
   Weight: 0.36
   Price: 16
+  SmellLevel: 4
+  EvidenceWeight: 5
+  CanPrankUse: 0
   Description: "\u4ECE\u6C49\u5821\u70B8\u9E21\u5BB9\u5668\u91CC\u53D6\u51FA\u7684\u70B8\u9E21\u3002"
   LocalizedDescription:
     chinese: "\u4ECE\u6C49\u5821\u70B8\u9E21\u5BB9\u5668\u91CC\u53D6\u51FA\u7684\u70B8\u9E21\u3002"
@@ -30,6 +33,7 @@ MonoBehaviour:
   IsUsable: 1
   UseActionId: campus.item.consume_food
   ConsumeOnUse: 1
+  StaminaRestore: 35
   UseText: "\u5403\u6389\u70B8\u9E21"
   LocalizedUseText:
     chinese: "\u5403\u6389\u70B8\u9E21"

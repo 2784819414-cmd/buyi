@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using NtingCampus.Gameplay.Canteen;
+using NtingCampus.Gameplay.Delivery;
 
 namespace NtingCampus.Gameplay.Characters
 {
@@ -8,12 +9,18 @@ namespace NtingCampus.Gameplay.Characters
     {
         public const string CanOrderMeal = "CanOrderMeal";
         public const string HasOwnServedCanteenItem = "HasOwnServedCanteenItem";
+        public const string CanPlaceDeliveryOrder = "CanPlaceDeliveryOrder";
+        public const string HasActiveDeliveryOrder = "HasActiveDeliveryOrder";
+        public const string HasDeliveredDeliveryOrder = "HasDeliveredDeliveryOrder";
 
         private static readonly Dictionary<string, Func<CampusCharacterRuntime, bool>> Requirements =
             new Dictionary<string, Func<CampusCharacterRuntime, bool>>(StringComparer.OrdinalIgnoreCase)
             {
                 [CanOrderMeal] = CampusCanteenMealRules.CanOrderMeal,
-                [HasOwnServedCanteenItem] = CampusCanteenMealRules.HasOwnServedCanteenItem
+                [HasOwnServedCanteenItem] = CampusCanteenMealRules.HasOwnServedCanteenItem,
+                [CanPlaceDeliveryOrder] = CampusDeliveryMealRules.CanPlaceDeliveryOrder,
+                [HasActiveDeliveryOrder] = CampusDeliveryMealRules.HasActiveDeliveryOrder,
+                [HasDeliveredDeliveryOrder] = CampusDeliveryMealRules.HasDeliveredDeliveryOrder
             };
 
         public static bool IsKnownRequirement(string requirementId)

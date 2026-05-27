@@ -11,8 +11,14 @@ namespace Nting.Storage
         public CampusLocalizedText LocalizedDisplayName;
         public int Width = 1;
         public int Height = 1;
+        public string StackGroupId;
+        [Range(1, StorageItemStackingService.MaxSupportedStackSize)]
+        public int MaxStackSize = 1;
         public float Weight;
         [Min(0)] public int Price;
+        [Min(0)] public int SmellLevel;
+        [Min(0)] public int EvidenceWeight;
+        public bool CanPrankUse;
         [TextArea]
         public string Description;
         public CampusLocalizedText LocalizedDescription;
@@ -21,6 +27,7 @@ namespace Nting.Storage
         public bool IsUsable;
         public string UseActionId;
         public bool ConsumeOnUse = true;
+        [Min(0f)] public float StaminaRestore;
         public string UseText;
         public CampusLocalizedText LocalizedUseText;
 

@@ -15,6 +15,7 @@ namespace NtingCampus.Gameplay.Services
             string interactionActionId,
             string availabilityRuleId,
             CampusServiceStationAvailabilityDefinition availability,
+            CampusServiceStationClearanceDefinition clearance,
             CampusGameplayRoom.FacilityRecord interactionFacility,
             CampusGameplayRoom.FacilityRecord operatorSlot,
             CampusGameplayRoom.FacilityRecord customerSlot,
@@ -28,6 +29,7 @@ namespace NtingCampus.Gameplay.Services
             InteractionActionId = interactionActionId ?? string.Empty;
             AvailabilityRuleId = availabilityRuleId ?? string.Empty;
             Availability = availability ?? CampusServiceStationAvailabilityDefinition.Always;
+            Clearance = clearance ?? CampusServiceStationClearanceDefinition.None;
             InteractionFacility = interactionFacility;
             OperatorSlot = operatorSlot;
             CustomerSlot = customerSlot;
@@ -42,6 +44,7 @@ namespace NtingCampus.Gameplay.Services
         public string InteractionActionId { get; }
         public string AvailabilityRuleId { get; }
         public CampusServiceStationAvailabilityDefinition Availability { get; }
+        public CampusServiceStationClearanceDefinition Clearance { get; }
         public CampusGameplayRoom.FacilityRecord InteractionFacility { get; }
         public CampusGameplayRoom.FacilityRecord OperatorSlot { get; }
         public CampusGameplayRoom.FacilityRecord CustomerSlot { get; }
@@ -148,6 +151,7 @@ namespace NtingCampus.Gameplay.Services
                 definition.InteractionActionId,
                 definition.AvailabilityRuleId,
                 definition.Availability,
+                definition.Clearance,
                 owner,
                 operatorSlot,
                 customerSlot,

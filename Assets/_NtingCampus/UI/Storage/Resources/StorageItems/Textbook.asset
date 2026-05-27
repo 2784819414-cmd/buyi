@@ -19,7 +19,13 @@ MonoBehaviour:
     english: Textbook
   Width: 2
   Height: 3
+  StackGroupId: textbook
+  MaxStackSize: 9
   Weight: 1.2
+  Price: 18
+  SmellLevel: 0
+  EvidenceWeight: 6
+  CanPrankUse: 0
   Description: 厚重的主科教材。
   LocalizedDescription:
     chinese: 厚重的主科教材。

@@ -72,7 +72,10 @@ namespace Nting.Storage
         MemoryMissingItemRegistry = 63,
         MemoryKeptPreviousSize = 64,
         ItemRegistryMissingDefinition = 65,
-        StatusLog = 66
+        StatusLog = 66,
+        StackHeader = 67,
+        StackEntryLabel = 68,
+        StackSelected = 69
     }
 
     public static class StorageTextCatalog
@@ -81,8 +84,8 @@ namespace Nting.Storage
         {
             { StorageTextId.WindowEyebrow, new Entry("物品收纳", "Inventory") },
             { StorageTextId.WindowTitle, new Entry("随身与容器", "Carried Items And Container") },
-            { StorageTextId.WindowHint, new Entry("拖拽物品，右键旋转，双击快速转移，拖出窗口可丢到地面，Esc 关闭。", "Drag items, right click to rotate, double click to transfer, drag outside to drop, Esc closes.") },
-            { StorageTextId.PlayerWindowHint, new Entry("拖拽物品，右键旋转，双击快速转移，从手部格使用物品，Esc 关闭。", "Drag items, right click to rotate, double click to transfer, use items from hand slots, Esc closes.") },
+            { StorageTextId.WindowHint, new Entry("拖拽物品，右键展开堆叠，双击快速转移，拖出窗口可丢到地面，Esc 关闭。", "Drag items, right click to expand stacks, double click to transfer, drag outside to drop, Esc closes.") },
+            { StorageTextId.PlayerWindowHint, new Entry("拖拽物品，右键展开堆叠，从手部格使用物品，双击快速转移，Esc 关闭。", "Drag items, right click to expand stacks, use items from hand slots, double click to transfer, Esc closes.") },
             { StorageTextId.PocketTab, new Entry("口袋", "Pockets") },
             { StorageTextId.BackpackTab, new Entry("背包", "Backpack") },
             { StorageTextId.BackpackUnavailableTab, new Entry("背包 / 未装备", "Backpack / Not Equipped") },
@@ -145,7 +148,10 @@ namespace Nting.Storage
             { StorageTextId.MemoryMissingItemRegistry, new Entry("Storage memory 失败：item registry 未分配。", "Storage memory failed: item registry is not assigned.") },
             { StorageTextId.MemoryKeptPreviousSize, new Entry("Storage memory 保留容器 {0} 的旧尺寸，因为现有物品会越界。", "Storage memory kept previous size for container '{0}' because existing items would be out of bounds.") },
             { StorageTextId.ItemRegistryMissingDefinition, new Entry("Storage item registry 失败：缺少物品定义 {0}。", "Storage item registry failed: missing item definition '{0}'.") },
-            { StorageTextId.StatusLog, new Entry("[Storage] {0}", "[Storage] {0}") }
+            { StorageTextId.StatusLog, new Entry("[Storage] {0}", "[Storage] {0}") },
+            { StorageTextId.StackHeader, new Entry("\u4e66\u672c\u5806\u53e0", "Book Stack") },
+            { StorageTextId.StackEntryLabel, new Entry("{0} #{1}", "{0} #{1}") },
+            { StorageTextId.StackSelected, new Entry("\u5df2\u9009\u4e2d {0}\u3002", "Selected {0}.") }
         };
 
         public static string Get(StorageTextId id)

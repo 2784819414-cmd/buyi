@@ -1,4 +1,5 @@
 ﻿using NtingCampus.Gameplay.Characters;
+using NtingCampus.Gameplay.Delivery;
 using NtingCampus.Gameplay.Economy;
 using NtingCampus.Gameplay.Events;
 using NtingCampus.Gameplay.Inventory;
@@ -28,7 +29,9 @@ namespace NtingCampus.Gameplay.Core
         [SerializeField] private CampusInventoryTransferService inventoryTransferService;
         [SerializeField] private CampusSanctionService sanctionService;
         [SerializeField] private CampusTheftConsequenceService theftConsequenceService;
+        [SerializeField] private CampusDeliveryService deliveryService;
         [SerializeField] private CampusEconomyService economyService;
+        [SerializeField] private CampusDailyBusinessSettlementService dailyBusinessSettlementService;
         [SerializeField] private CampusGameplayHudController gameplayHudController;
         [SerializeField] private CampusPlayerInventoryController playerInventoryController;
         [SerializeField] private CampusGameState gameState = new CampusGameState();
@@ -50,7 +53,9 @@ namespace NtingCampus.Gameplay.Core
         public CampusInventoryTransferService InventoryTransferService => inventoryTransferService;
         public CampusSanctionService SanctionService => sanctionService;
         public CampusTheftConsequenceService TheftConsequenceService => theftConsequenceService;
+        public CampusDeliveryService DeliveryService => deliveryService;
         public CampusEconomyService EconomyService => economyService;
+        public CampusDailyBusinessSettlementService DailyBusinessSettlementService => dailyBusinessSettlementService;
         public CampusGameplayHudController GameplayHudController => gameplayHudController;
         public CampusPlayerInventoryController PlayerInventoryController => playerInventoryController;
 
@@ -74,7 +79,9 @@ namespace NtingCampus.Gameplay.Core
             bootstrap.EnsureInventoryTransferService();
             bootstrap.EnsureSanctionService();
             bootstrap.EnsureTheftConsequenceService();
+            bootstrap.EnsureDeliveryService();
             bootstrap.EnsureEconomyService();
+            bootstrap.EnsureDailyBusinessSettlementService();
             bootstrap.EnsureGameplayHudController();
             bootstrap.EnsurePlayerInventoryController();
             bootstrap.EnsureSettingsOverlay();
@@ -128,8 +135,14 @@ namespace NtingCampus.Gameplay.Core
             economyService = EnsureEconomyService();
             economyService.Initialize(this);
 
+            dailyBusinessSettlementService = EnsureDailyBusinessSettlementService();
+            dailyBusinessSettlementService.Initialize(this);
+
             theftConsequenceService = EnsureTheftConsequenceService();
             theftConsequenceService.Initialize(this);
+
+            deliveryService = EnsureDeliveryService();
+            deliveryService.Initialize(this);
 
             playerInventoryController = EnsurePlayerInventoryController();
             playerInventoryController.Initialize(this);
@@ -161,6 +174,8 @@ namespace NtingCampus.Gameplay.Core
             EnsurePlayerInventoryController();
             EnsureInventoryTransferService();
             EnsureTheftConsequenceService();
+            EnsureDeliveryService();
+            EnsureDailyBusinessSettlementService();
             EnsureGameplayHudController();
         }
 
@@ -404,6 +419,22 @@ namespace NtingCampus.Gameplay.Core
             return theftConsequenceService;
         }
 
+        private CampusDeliveryService EnsureDeliveryService()
+        {
+            if (deliveryService != null)
+            {
+                return deliveryService;
+            }
+
+            deliveryService = GetComponent<CampusDeliveryService>();
+            if (deliveryService == null)
+            {
+                deliveryService = gameObject.AddComponent<CampusDeliveryService>();
+            }
+
+            return deliveryService;
+        }
+
         private CampusEconomyService EnsureEconomyService()
         {
             if (economyService != null)
@@ -418,6 +449,22 @@ namespace NtingCampus.Gameplay.Core
             }
 
             return economyService;
+        }
+
+        private CampusDailyBusinessSettlementService EnsureDailyBusinessSettlementService()
+        {
+            if (dailyBusinessSettlementService != null)
+            {
+                return dailyBusinessSettlementService;
+            }
+
+            dailyBusinessSettlementService = GetComponent<CampusDailyBusinessSettlementService>();
+            if (dailyBusinessSettlementService == null)
+            {
+                dailyBusinessSettlementService = gameObject.AddComponent<CampusDailyBusinessSettlementService>();
+            }
+
+            return dailyBusinessSettlementService;
         }
     }
 }

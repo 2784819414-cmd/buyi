@@ -21,6 +21,17 @@ namespace Nting.Storage
                 return CanPlaceInSingleItemSlot(container, item, x, y, ignoreItem);
             }
 
+            if (StorageItemStackingService.TryFindCompatibleStackAt(
+                    container,
+                    item,
+                    x,
+                    y,
+                    ignoreItem,
+                    out _))
+            {
+                return CanAcceptWeight(container, item, ignoreItem);
+            }
+
             return IsInside(container, item, x, y) &&
                    !HasOverlap(container, item, x, y, ignoreItem) &&
                    CanAcceptWeight(container, item, ignoreItem);
@@ -49,6 +60,30 @@ namespace Nting.Storage
             }
 
             StorageItemModel ignoreItem = container.Contains(item) ? item : null;
+            if (StorageItemStackingService.CanItemStack(item))
+            {
+                for (int i = 0; i < container.Items.Count; i++)
+                {
+                    StorageItemModel candidate = container.Items[i];
+                    if (candidate == null || candidate == ignoreItem)
+                    {
+                        continue;
+                    }
+
+                    if (StorageItemStackingService.TryFindCompatibleStackAt(
+                            container,
+                            item,
+                            candidate.X,
+                            candidate.Y,
+                            ignoreItem,
+                            out _))
+                    {
+                        position = new Vector2Int(candidate.X, candidate.Y);
+                        return true;
+                    }
+                }
+            }
+
             for (int y = 0; y < container.Rows; y++)
             {
                 for (int x = 0; x < container.Columns; x++)
@@ -118,6 +153,11 @@ namespace Nting.Storage
             {
                 StorageItemModel other = container.Items[i];
                 if (other == null || other == ignoreItem)
+                {
+                    continue;
+                }
+
+                if (StorageItemStackingService.IsSameStack(item, other))
                 {
                     continue;
                 }

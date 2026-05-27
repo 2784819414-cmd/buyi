@@ -85,8 +85,14 @@ namespace Nting.Storage
                 LocalizedDisplayName = item.LocalizedDisplayName,
                 Width = item.CurrentWidth,
                 Height = item.CurrentHeight,
+                StackGroupId = item.StackGroupId,
+                MaxStackSize = item.MaxStackSize,
+                StackId = item.StackId,
                 Weight = item.Weight,
                 Price = item.Price,
+                SmellLevel = item.SmellLevel,
+                EvidenceWeight = item.EvidenceWeight,
+                CanPrankUse = item.CanPrankUse,
                 Description = item.Description,
                 LocalizedDescription = item.LocalizedDescription,
                 X = item.X,
@@ -96,6 +102,7 @@ namespace Nting.Storage
                 IsUsable = item.IsUsable,
                 UseActionId = item.UseActionId,
                 ConsumeOnUse = item.ConsumeOnUse,
+                StaminaRestore = item.StaminaRestore,
                 UseText = item.UseText,
                 LocalizedUseText = item.LocalizedUseText,
                 LegalState = item.LegalState,
@@ -151,6 +158,8 @@ namespace Nting.Storage
                         item.DisplayName));
                 }
             }
+
+            StorageItemStackingService.NormalizeContainer(container);
         }
 
         private static StorageItemModel CreateItem(StorageItemRegistry registry, StorageItemSaveData data)
@@ -177,8 +186,19 @@ namespace Nting.Storage
             item.LocalizedDisplayName = data.LocalizedDisplayName;
             item.Width = Mathf.Max(1, data.Width);
             item.Height = Mathf.Max(1, data.Height);
+            item.StackGroupId = string.IsNullOrWhiteSpace(data.StackGroupId)
+                ? string.Empty
+                : data.StackGroupId.Trim();
+            item.MaxStackSize = Mathf.Clamp(
+                data.MaxStackSize,
+                1,
+                StorageItemStackingService.MaxSupportedStackSize);
+            item.StackId = string.IsNullOrWhiteSpace(data.StackId) ? string.Empty : data.StackId.Trim();
             item.Weight = Mathf.Max(0f, data.Weight);
             item.Price = Mathf.Max(0, data.Price);
+            item.SmellLevel = Mathf.Max(0, data.SmellLevel);
+            item.EvidenceWeight = Mathf.Max(0, data.EvidenceWeight);
+            item.CanPrankUse = data.CanPrankUse;
             item.Description = data.Description;
             item.LocalizedDescription = data.LocalizedDescription;
             item.Rotated = data.Rotated;
@@ -186,6 +206,7 @@ namespace Nting.Storage
             item.IsUsable = data.IsUsable;
             item.UseActionId = data.UseActionId;
             item.ConsumeOnUse = data.ConsumeOnUse;
+            item.StaminaRestore = Mathf.Max(0f, data.StaminaRestore);
             item.UseText = data.UseText;
             item.LocalizedUseText = data.LocalizedUseText;
             item.Icon = StorageItemIconUtility.Resolve(item);

@@ -884,6 +884,11 @@ namespace NtingCampus.Gameplay.Characters
                     continue;
                 }
 
+                if (!MatchesObjectIdFilter(record, targetRule.ObjectIds))
+                {
+                    continue;
+                }
+
                 candidates.Add(record);
             }
 
@@ -1015,6 +1020,25 @@ namespace NtingCampus.Gameplay.Characters
             }
 
             return false;
+        }
+
+        private static bool MatchesObjectIdFilter(
+            CampusGameplayRoom.FacilityRecord record,
+            string[] objectIds)
+        {
+            if (objectIds == null || objectIds.Length == 0)
+            {
+                return true;
+            }
+
+            CampusPlacedObject placed = record != null ? record.PlacedObject : null;
+            string objectId = NormalizeId(placed != null ? placed.ObjectId : string.Empty);
+            if (string.IsNullOrEmpty(objectId))
+            {
+                return false;
+            }
+
+            return ContainsId(objectIds, objectId);
         }
 
         private static int ChooseFacilityTargetIndex(

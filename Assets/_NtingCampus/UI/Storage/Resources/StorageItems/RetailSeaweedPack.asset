@@ -27,11 +27,11 @@ MonoBehaviour:
     english: A light snack pack of ready-to-eat seaweed.
   ThemeColor: {r: 0.27, g: 0.42, b: 0.34, a: 1}
   Icon: {fileID: 0}
-  IsUsable: 0
-  UseActionId: 
+  IsUsable: 1
+  UseActionId: campus.item.consume_food
   ConsumeOnUse: 1
-  UseText: 
+  StaminaRestore: 6
+  UseText: 吃掉
   LocalizedUseText:
-    chinese: 
-    english: 
-
+    chinese: 吃掉
+    english: Eat the Seaweed Pack.

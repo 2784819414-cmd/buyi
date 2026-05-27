@@ -132,6 +132,7 @@ namespace NtingCampusMapEditor
             droppedItem.IsUsable = item.IsUsable;
             droppedItem.UseActionId = item.UseActionId;
             droppedItem.ConsumeOnUse = item.ConsumeOnUse;
+            droppedItem.StaminaRestore = item.StaminaRestore;
             droppedItem.UseText = item.UseText;
             droppedItem.LocalizedUseText = item.LocalizedUseText;
             droppedItem.LegalState = item.LegalState;

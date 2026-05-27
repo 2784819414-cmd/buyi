@@ -1,0 +1,79 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 3ebeac336d6bf1642a6228cf46c1683d, type: 3}
+  m_Name: CampusAiMapAuthoringAssetCatalog
+  m_EditorClassIdentifier: Assembly-CSharp::NtingCampusMapEditor.CampusAiMapAuthoringAssetCatalog
+  FloorTiles:
+  - Id: floor.d5945520
+    Tile: {fileID: 11400000, guid: d59455202bce0a14ea279a18b86aca05, type: 2}
+  - Id: floor.6bc973a3
+    Tile: {fileID: 11400000, guid: 6bc973a3368179e4b93c05d2992ab6ab, type: 2}
+  - Id: floor.58b5994d
+    Tile: {fileID: 11400000, guid: 58b5994d84ed18a45a7a1af46d742aa6, type: 2}
+  - Id: floor.ec768df5
+    Tile: {fileID: 11400000, guid: ec768df5f9551384abd8b6ed31faa71e, type: 2}
+  - Id: floor.e0c27009
+    Tile: {fileID: 11400000, guid: e0c270091e8de45438a940c8403980d0, type: 2}
+  - Id: floor.b3a31f7b
+    Tile: {fileID: 11400000, guid: b3a31f7b3b8b6504bb379943bb3ffe04, type: 2}
+  - Id: floor.8ae0ef92
+    Tile: {fileID: 11400000, guid: 8ae0ef92f3afcb54caea3f7e76d2cab6, type: 2}
+  - Id: floor.652703e0
+    Tile: {fileID: 11400000, guid: 652703e05ccc2374b9e227ab99475c56, type: 2}
+  - Id: floor.e6140b37
+    Tile: {fileID: 11400000, guid: e6140b37acf5ccc4b88f1da5e46ec9cf, type: 2}
+  - Id: floor.8caa4db4
+    Tile: {fileID: 11400000, guid: 8caa4db49d2d17747bc051a06aecc372, type: 2}
+  WallTiles:
+  - Id: wall.default.walllogic
+    Tile: {fileID: 11400000, guid: bc42c6cdd93ba5f4281ea9e7becca663, type: 2}
+  - Id: wall.a168719d
+    Tile: {fileID: 11400000, guid: a168719de1dbe054bb7c4a823919be66, type: 2}
+  - Id: wall.9612aff7
+    Tile: {fileID: 11400000, guid: 9612aff7c93d638439d3700ef2318842, type: 2}
+  - Id: wall.19123aae
+    Tile: {fileID: 11400000, guid: 19123aae4e2d08041899c33b03e73d66, type: 2}
+  - Id: wall.41c1bf3c
+    Tile: {fileID: 11400000, guid: 41c1bf3cb1edbbc40a26347e854fe871, type: 2}
+  - Id: wall.d92cdfd4
+    Tile: {fileID: 11400000, guid: d92cdfd41dbdfb0409206aaa6b3299a8, type: 2}
+  - Id: wall.05c22096
+    Tile: {fileID: 11400000, guid: 05c22096686fdcb4d88cb158bc2fa575, type: 2}
+  Objects:
+  - Id: "\u6D4B\u8BD5\u7BB1"
+    Prefab: {fileID: 522332454266628753, guid: dc35aae266bd05941a97f4cd1bc536f8, type: 3}
+  - Id: "\u98DF\u5802\u67DC\u53F0"
+    Prefab: {fileID: 6400000000000000001, guid: bbee318e636d47cfa92ece1236eb39b4, type: 3}
+  - Id: "\u5C0F\u4FBF\u6C60"
+    Prefab: {fileID: 6200000000000000001, guid: 3d6c4f5210a144b39ea5622ea486f77e, type: 3}
+  - Id: "\u8E72\u5751\u5305\u95F4"
+    Prefab: {fileID: 6100000000000000001, guid: 6ef6a7a899504ce38d1262f80fe871f1, type: 3}
+  - Id: "\u95E8"
+    Prefab: {fileID: 2106052849600011001, guid: a8f85402b8a04f2d94b54df247cf3c74, type: 3}
+  - Id: "\u9910\u684C_3x4"
+    Prefab: {fileID: 6300000000000000001, guid: 6f6ccb7b3f0548b49e852bd388523224, type: 3}
+  - Id: "\u6905\u5B50"
+    Prefab: {fileID: 6500000000000000001, guid: 9bdf190869bf4e1388bad5ec228d6108, type: 3}
+  - Id: "\u5DE5\u4F5C\u53F0"
+    Prefab: {fileID: 6600000000000000001, guid: c521f0066bf9445697262a49155d2c98, type: 3}
+  - Id: "\u624B\u5DE5\u53F0"
+    Prefab: {fileID: 6700000000000000001, guid: 5d6cefc5ea404868b8aa8708b7a27a19, type: 3}
+  - Id: "\u5E8A"
+    Prefab: {fileID: 6800000000000000001, guid: a118d0727a394a848c6a51c630fc623d, type: 3}
+  - Id: "\u6905\u5B50_1x2"
+    Prefab: {fileID: 6900000000000000001, guid: 2b30c18d7081421ea7d07910eb49fcef, type: 3}
+  - Id: "\u6905\u8BFE\u684C"
+    Prefab: {fileID: 7000000000000000001, guid: b753a8b39f6342aa8bac783be5379e43, type: 3}
+  - Id: "\u4FA7\u9762\u6905\u5B50"
+    Prefab: {fileID: 7100000000000000001, guid: 7e849832908d48f582d907a2bd190d01, type: 3}
+  - Id: "\u6D17\u624B\u6C60"
+    Prefab: {fileID: 7200000000000000001, guid: 7b6821e622e2463cb6a0cb1f77d640c6, type: 3}

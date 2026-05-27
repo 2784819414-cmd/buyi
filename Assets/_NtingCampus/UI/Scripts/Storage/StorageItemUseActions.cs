@@ -1,14 +1,34 @@
 using System.Collections.Generic;
+using UnityEngine;
 
 namespace Nting.Storage
 {
+    public sealed class StorageItemUseContext
+    {
+        public GameObject Actor;
+        public StorageTransferReason Reason = StorageTransferReason.UseItem;
+
+        public static StorageItemUseContext ForActor(GameObject actor, StorageTransferReason reason)
+        {
+            return new StorageItemUseContext
+            {
+                Actor = actor,
+                Reason = reason
+            };
+        }
+    }
+
     public interface IStorageItemUseAction
     {
         string ActionId { get; }
 
         bool CanUse(StorageItemModel item, StorageGridUI sourceGrid, out string reason);
 
-        bool TryUse(StorageItemModel item, StorageGridUI sourceGrid, out string statusMessage);
+        bool TryUse(
+            StorageItemModel item,
+            StorageGridUI sourceGrid,
+            StorageItemUseContext context,
+            out string statusMessage);
     }
 
     public static class StorageItemUseActionRegistry

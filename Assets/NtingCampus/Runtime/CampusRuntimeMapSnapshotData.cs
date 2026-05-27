@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using NtingCampus.Gameplay.Inventory;
 using NtingCampus.Gameplay.Retail;
+using NtingCampus.UI.Runtime.Gameplay;
 using UnityEngine;
 
 namespace NtingCampusMapEditor
@@ -87,6 +88,7 @@ namespace NtingCampusMapEditor
         public string ObjectId;
         public string TypeId;
         public string DisplayNameOverride;
+        public CampusLocalizedText LocalizedDisplayNameOverride;
         public int PaletteIndex = -1;
         public Vector3 Position;
         public Vector3Int Cell;
@@ -107,8 +109,10 @@ namespace NtingCampusMapEditor
         public bool OverrideRotation270Sprite;
         public string Rotation270SpritePath;
         public int Rotation90;
+        public bool OverrideBlocking;
         public bool BlocksMovement;
         public bool BlocksSight;
+        public bool CanStackOnPlacedObjects;
         public bool IsInteractable;
         public bool IsStorageContainer;
         public string InteractionPresetEid;
@@ -118,6 +122,7 @@ namespace NtingCampusMapEditor
         public Vector3 CustomInteractionAnchorLocalPosition;
         public float CustomInteractionAnchorRadius = CampusPlacedObject.DefaultInteractionAnchorRadius;
         public string CustomInteractionPromptText;
+        public CampusLocalizedText LocalizedCustomInteractionPromptText;
         public List<CampusPlacedObjectInteractionAnchor> CustomInteractionAnchors = new List<CampusPlacedObjectInteractionAnchor>();
         public CampusRuntimeRetailShelfData RetailShelf = new CampusRuntimeRetailShelfData();
         public CampusRuntimeProtectedStockContainerData ProtectedStockContainer = new CampusRuntimeProtectedStockContainerData();
@@ -129,6 +134,7 @@ namespace NtingCampusMapEditor
         public string ObjectId;
         public string TypeId;
         public string DisplayNameOverride;
+        public CampusLocalizedText LocalizedDisplayNameOverride;
         public bool OverrideFootprintSize;
         public Vector2Int FootprintSize = Vector2Int.one;
         public Vector2 VisualScale = Vector2.one;
@@ -136,6 +142,9 @@ namespace NtingCampusMapEditor
         public bool IsWallMounted;
         public bool OverrideAllowRotation;
         public bool AllowRotation;
+        public bool OverrideBlocking;
+        public bool BlocksMovement = true;
+        public bool BlocksSight;
         public bool OverrideRotation0Sprite;
         public string Rotation0SpritePath;
         public bool OverrideRotation90Sprite;
@@ -144,6 +153,7 @@ namespace NtingCampusMapEditor
         public string Rotation180SpritePath;
         public bool OverrideRotation270Sprite;
         public string Rotation270SpritePath;
+        public bool CanStackOnPlacedObjects;
         public bool IsStorageContainer;
         public string InteractionPresetEid;
         public Vector2Int StorageSize = new Vector2Int(4, 4);
@@ -152,6 +162,7 @@ namespace NtingCampusMapEditor
         public Vector3 CustomInteractionAnchorLocalPosition;
         public float CustomInteractionAnchorRadius = CampusPlacedObject.DefaultInteractionAnchorRadius;
         public string CustomInteractionPromptText;
+        public CampusLocalizedText LocalizedCustomInteractionPromptText;
         public List<CampusPlacedObjectInteractionAnchor> CustomInteractionAnchors = new List<CampusPlacedObjectInteractionAnchor>();
         public CampusRuntimeRetailShelfData RetailShelf = new CampusRuntimeRetailShelfData();
         public CampusRuntimeProtectedStockContainerData ProtectedStockContainer = new CampusRuntimeProtectedStockContainerData();

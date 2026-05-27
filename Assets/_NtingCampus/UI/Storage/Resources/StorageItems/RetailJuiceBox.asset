@@ -27,11 +27,11 @@ MonoBehaviour:
     english: A mixed fruit juice box with a straw.
   ThemeColor: {r: 0.85, g: 0.55, b: 0.31, a: 1}
   Icon: {fileID: 0}
-  IsUsable: 0
-  UseActionId: 
+  IsUsable: 1
+  UseActionId: campus.item.consume_food
   ConsumeOnUse: 1
-  UseText: 
+  StaminaRestore: 14
+  UseText: 喝掉
   LocalizedUseText:
-    chinese: 
-    english: 
-
+    chinese: 喝掉
+    english: Drink the Juice Box.

@@ -27,11 +27,11 @@ MonoBehaviour:
     english: A golden fried bread stuffed with curry.
   ThemeColor: {r: 0.85, g: 0.6, b: 0.27, a: 1}
   Icon: {fileID: 0}
-  IsUsable: 0
-  UseActionId: 
+  IsUsable: 1
+  UseActionId: campus.item.consume_food
   ConsumeOnUse: 1
-  UseText: 
+  StaminaRestore: 30
+  UseText: 吃掉
   LocalizedUseText:
-    chinese: 
-    english: 
-
+    chinese: 吃掉
+    english: Eat the Curry Bread.

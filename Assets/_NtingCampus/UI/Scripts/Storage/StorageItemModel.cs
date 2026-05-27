@@ -17,8 +17,14 @@ namespace Nting.Storage
         public CampusLocalizedText LocalizedDisplayName;
         public int Width = 1;
         public int Height = 1;
+        public string StackGroupId;
+        public int MaxStackSize = 1;
+        public string StackId;
         public float Weight;
         public int Price;
+        public int SmellLevel;
+        public int EvidenceWeight;
+        public bool CanPrankUse;
         [TextArea]
         public string Description;
         public CampusLocalizedText LocalizedDescription;
@@ -29,6 +35,7 @@ namespace Nting.Storage
         public bool IsUsable;
         public string UseActionId;
         public bool ConsumeOnUse = true;
+        public float StaminaRestore;
         public string UseText;
         public CampusLocalizedText LocalizedUseText;
 
@@ -124,8 +131,19 @@ namespace Nting.Storage
             LocalizedDisplayName = definition.LocalizedDisplayName;
             Width = Mathf.Max(1, definition.Width);
             Height = Mathf.Max(1, definition.Height);
+            StackGroupId = string.IsNullOrWhiteSpace(definition.StackGroupId)
+                ? string.Empty
+                : definition.StackGroupId.Trim();
+            MaxStackSize = Mathf.Clamp(
+                definition.MaxStackSize,
+                1,
+                StorageItemStackingService.MaxSupportedStackSize);
+            StackId = string.Empty;
             Weight = Mathf.Max(0f, definition.Weight);
             Price = Mathf.Max(0, definition.Price);
+            SmellLevel = Mathf.Max(0, definition.SmellLevel);
+            EvidenceWeight = Mathf.Max(0, definition.EvidenceWeight);
+            CanPrankUse = definition.CanPrankUse;
             Description = definition.Description;
             LocalizedDescription = definition.LocalizedDescription;
             ThemeColor = definition.ThemeColor;
@@ -133,6 +151,7 @@ namespace Nting.Storage
             IsUsable = definition.IsUsable;
             UseActionId = definition.UseActionId;
             ConsumeOnUse = definition.ConsumeOnUse;
+            StaminaRestore = Mathf.Max(0f, definition.StaminaRestore);
             UseText = definition.UseText;
             LocalizedUseText = definition.LocalizedUseText;
             EnsureEvidence().ResetAsPersonal();
@@ -166,14 +185,6 @@ namespace Nting.Storage
         public string GetUseText()
         {
             return GetUseText(CampusLanguageState.CurrentLanguage);
-        }
-
-        public void Rotate()
-        {
-            int previousWidth = Width;
-            Width = Height;
-            Height = previousWidth;
-            Rotated = !Rotated;
         }
 
         public StorageItemModel CloneForPreview()

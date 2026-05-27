@@ -470,13 +470,6 @@ namespace NtingCampus.Gameplay.Rooms
             });
             rules.Add(new FacilityRule
             {
-                FacilityType = nameof(CampusFacilityType.CheckoutPoint),
-                TypeIds = new[] { "CheckoutPoint", "checkout_point", "settlement_point", "cash_register" },
-                DisplayNames = new[] { "checkout point", "settlement point", "cash register", "\u7ed3\u7b97\u70b9" },
-                Contains = new[] { "checkout_point", "settlementpoint", "cashregister", "\u7ed3\u7b97\u70b9", "\u7ed3\u8d26" }
-            });
-            rules.Add(new FacilityRule
-            {
                 FacilityType = nameof(CampusFacilityType.CheckoutQueuePoint),
                 TypeIds = new[] { "CheckoutQueuePoint", "checkout_queue_point", "checkout_queue", "settlement_queue" },
                 DisplayNames = new[] { "checkout queue point", "settlement queue", "\u7ed3\u7b97\u6392\u961f\u70b9" },

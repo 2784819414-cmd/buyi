@@ -27,11 +27,11 @@ MonoBehaviour:
     english: A triangular rice ball with pickled plum filling.
   ThemeColor: {r: 0.96, g: 0.96, b: 0.95, a: 1}
   Icon: {fileID: 0}
-  IsUsable: 0
-  UseActionId: 
+  IsUsable: 1
+  UseActionId: campus.item.consume_food
   ConsumeOnUse: 1
-  UseText: 
+  StaminaRestore: 26
+  UseText: 吃掉
   LocalizedUseText:
-    chinese: 
-    english: 
-
+    chinese: 吃掉
+    english: Eat the Plum Rice Ball.

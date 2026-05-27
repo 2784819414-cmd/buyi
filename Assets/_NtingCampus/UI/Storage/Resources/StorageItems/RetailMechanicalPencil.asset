@@ -21,6 +21,9 @@ MonoBehaviour:
   Height: 2
   Weight: 0.02
   Price: 10
+  SmellLevel: 0
+  EvidenceWeight: 4
+  CanPrankUse: 0
   Description: "\u900F\u660E\u58F3\u81EA\u52A8\u94C5\u7B14\u3002"
   LocalizedDescription:
     chinese: "\u900F\u660E\u58F3\u81EA\u52A8\u94C5\u7B14\u3002"

@@ -14,7 +14,8 @@ namespace NtingCampus.Gameplay.Core
         TestTimeAdjusted = 5,
         TestTimePaused = 6,
         TestTimeResumed = 7,
-        MultipleBootstrapInstances = 8
+        MultipleBootstrapInstances = 8,
+        DailyBusinessSettlementSummary = 9
     }
 
     public static class CampusCoreTextCatalog
@@ -31,6 +32,12 @@ namespace NtingCampus.Gameplay.Core
             { CampusCoreTextId.TestTimeResumed, new Entry("[测试] 时间已恢复为 {0}。", "[Test] Time resumed as {0}.") },
             { CampusCoreTextId.MultipleBootstrapInstances, new Entry("检测到多个 CampusGameBootstrap 实例。保留第一个实例。", "Multiple CampusGameBootstrap instances detected. Keeping the first instance.") }
         };
+
+        static CampusCoreTextCatalog()
+        {
+            Entries[CampusCoreTextId.DailyBusinessSettlementSummary] =
+                new Entry("[Settlement] Day {0}: area pressure decayed by {1}.", "[Settlement] Day {0}: area pressure decayed by {1}.");
+        }
 
         public static string Get(CampusCoreTextId id)
         {

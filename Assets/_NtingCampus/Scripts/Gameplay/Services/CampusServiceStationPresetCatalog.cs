@@ -122,6 +122,52 @@ namespace NtingCampus.Gameplay.Services
         }
     }
 
+    internal enum CampusServiceStationClearanceMode
+    {
+        None = 0,
+        ClearPendingProtectedTransfers = 1
+    }
+
+    internal enum CampusServiceStationClearancePriceMode
+    {
+        Free = 0,
+        ItemPrice = 1
+    }
+
+    internal sealed class CampusServiceStationClearanceDefinition
+    {
+        public static readonly CampusServiceStationClearanceDefinition None =
+            new CampusServiceStationClearanceDefinition(
+                CampusServiceStationClearanceMode.None,
+                CampusServiceStationClearancePriceMode.Free,
+                default,
+                default,
+                default);
+
+        public readonly CampusServiceStationClearanceMode Mode;
+        public readonly CampusServiceStationClearancePriceMode PriceMode;
+        public readonly CampusLocalizedText CompleteText;
+        public readonly CampusLocalizedText NoPendingItemsText;
+        public readonly CampusLocalizedText InsufficientFundsText;
+
+        public CampusServiceStationClearanceDefinition(
+            CampusServiceStationClearanceMode mode,
+            CampusServiceStationClearancePriceMode priceMode,
+            CampusLocalizedText completeText,
+            CampusLocalizedText noPendingItemsText,
+            CampusLocalizedText insufficientFundsText)
+        {
+            Mode = mode;
+            PriceMode = priceMode;
+            CompleteText = completeText;
+            NoPendingItemsText = noPendingItemsText;
+            InsufficientFundsText = insufficientFundsText;
+        }
+
+        public bool ClearsPendingProtectedTransfers =>
+            Mode == CampusServiceStationClearanceMode.ClearPendingProtectedTransfers;
+    }
+
     internal sealed class CampusServiceStationTypeDefinition
     {
         private readonly Dictionary<string, CampusServiceStationSlotDefinition> slotsByRoleId =
@@ -132,6 +178,7 @@ namespace NtingCampus.Gameplay.Services
         public readonly string InteractionActionId;
         public readonly string AvailabilityRuleId;
         public readonly CampusServiceStationAvailabilityDefinition Availability;
+        public readonly CampusServiceStationClearanceDefinition Clearance;
         public readonly CampusRoomType[] AllowedRoomTypes;
         public readonly CampusFacilityType[] OwnerFacilityTypes;
         public readonly IReadOnlyList<CampusServiceStationSlotDefinition> Slots;
@@ -142,6 +189,7 @@ namespace NtingCampus.Gameplay.Services
             string interactionActionId,
             string availabilityRuleId,
             CampusServiceStationAvailabilityDefinition availability,
+            CampusServiceStationClearanceDefinition clearance,
             CampusRoomType[] allowedRoomTypes,
             CampusFacilityType[] ownerFacilityTypes,
             List<CampusServiceStationSlotDefinition> slots)
@@ -151,6 +199,7 @@ namespace NtingCampus.Gameplay.Services
             InteractionActionId = CampusInteractionActionIds.Normalize(interactionActionId);
             AvailabilityRuleId = NormalizeId(availabilityRuleId);
             Availability = availability ?? CampusServiceStationAvailabilityDefinition.Always;
+            Clearance = clearance ?? CampusServiceStationClearanceDefinition.None;
             AllowedRoomTypes = allowedRoomTypes ?? Array.Empty<CampusRoomType>();
             OwnerFacilityTypes = ownerFacilityTypes ?? Array.Empty<CampusFacilityType>();
             Slots = slots ?? new List<CampusServiceStationSlotDefinition>();
@@ -307,9 +356,34 @@ namespace NtingCampus.Gameplay.Services
                 record.InteractionActionId,
                 record.AvailabilityRuleId,
                 BuildAvailability(record.Availability),
+                BuildClearance(record.Clearance),
                 ParseRoomTypes(record.AllowedRoomTypes),
                 ParseFacilityTypes(record.OwnerFacilityTypes),
                 slots);
+        }
+
+        private static CampusServiceStationClearanceDefinition BuildClearance(
+            ServiceStationClearancePresetRecord record)
+        {
+            if (record == null)
+            {
+                return CampusServiceStationClearanceDefinition.None;
+            }
+
+            CampusServiceStationClearanceMode mode =
+                Enum.TryParse(record.Mode, true, out CampusServiceStationClearanceMode parsedMode)
+                    ? parsedMode
+                    : CampusServiceStationClearanceMode.None;
+            CampusServiceStationClearancePriceMode priceMode =
+                Enum.TryParse(record.PriceMode, true, out CampusServiceStationClearancePriceMode parsedPriceMode)
+                    ? parsedPriceMode
+                    : CampusServiceStationClearancePriceMode.Free;
+            return new CampusServiceStationClearanceDefinition(
+                mode,
+                priceMode,
+                record.CompleteText,
+                record.NoPendingItemsText,
+                record.InsufficientFundsText);
         }
 
         private static CampusServiceStationAvailabilityDefinition BuildAvailability(
@@ -408,10 +482,21 @@ namespace NtingCampus.Gameplay.Services
             public string InteractionActionId = string.Empty;
             public string AvailabilityRuleId = string.Empty;
             public ServiceStationAvailabilityPresetRecord Availability = null;
+            public ServiceStationClearancePresetRecord Clearance = null;
             public string[] AllowedRoomTypes = Array.Empty<string>();
             public string[] OwnerFacilityTypes = Array.Empty<string>();
             public List<ServiceStationSlotPresetRecord> Slots =
                 new List<ServiceStationSlotPresetRecord>();
+        }
+
+        [Serializable]
+        private sealed class ServiceStationClearancePresetRecord
+        {
+            public string Mode = string.Empty;
+            public string PriceMode = string.Empty;
+            public CampusLocalizedText CompleteText = default;
+            public CampusLocalizedText NoPendingItemsText = default;
+            public CampusLocalizedText InsufficientFundsText = default;
         }
 
         [Serializable]

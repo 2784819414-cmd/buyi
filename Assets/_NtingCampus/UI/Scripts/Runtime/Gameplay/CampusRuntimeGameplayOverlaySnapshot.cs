@@ -109,6 +109,7 @@ namespace NtingCampus.UI.Runtime.Gameplay
     {
         public string Id = string.Empty;
         public string DisplayName = string.Empty;
+        public CampusLocalizedText LocalizedDisplayName = default;
         public string FacilityTypeId = string.Empty;
         public CampusFacilityType FacilityType = CampusFacilityType.Unknown;
         public int FloorIndex = 1;
@@ -126,6 +127,18 @@ namespace NtingCampus.UI.Runtime.Gameplay
             {
                 Id = CampusGameplayFacilityMarker.BuildStableFacilityId(FloorIndex, FacilityType, Cell);
             }
+        }
+
+        public string GetPrimaryDisplayName()
+        {
+            if (LocalizedDisplayName.HasAnyText)
+            {
+                return LocalizedDisplayName.ResolvePrimary(DisplayName, FacilityType.ToString());
+            }
+
+            return string.IsNullOrWhiteSpace(DisplayName)
+                ? FacilityType.ToString()
+                : DisplayName.Trim();
         }
     }
 

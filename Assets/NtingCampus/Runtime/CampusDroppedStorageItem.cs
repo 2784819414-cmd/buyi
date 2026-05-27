@@ -25,6 +25,7 @@ namespace NtingCampusMapEditor
         public bool IsUsable;
         public string UseActionId;
         public bool ConsumeOnUse = true;
+        public float StaminaRestore;
         public string UseText;
         public CampusLocalizedText LocalizedUseText;
         public StorageItemLegalState LegalState;
@@ -176,6 +177,7 @@ namespace NtingCampusMapEditor
             item.IsUsable = IsUsable;
             item.UseActionId = UseActionId;
             item.ConsumeOnUse = ConsumeOnUse;
+            item.StaminaRestore = Mathf.Max(0f, StaminaRestore);
             item.UseText = UseText;
             item.LocalizedUseText = LocalizedUseText;
             item.LegalState = LegalState == StorageItemLegalState.Unknown ? StorageItemLegalState.Personal : LegalState;

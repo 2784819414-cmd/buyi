@@ -42,7 +42,7 @@ BoxCollider2D:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 2106052849600011001}
-  m_Enabled: 1
+  m_Enabled: 0
   serializedVersion: 3
   m_Density: 1
   m_Material: {fileID: 0}
@@ -95,33 +95,79 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::NtingCampusMapEditor.CampusPlacedObject
   FloorIndex: 1
   ObjectId: "\u95E8"
+  TypeId: Door
+  DisplayNameOverride: "\u95E8"
+  LocalizedDisplayNameOverride:
+    chinese: 
+    english: 
+    traditionalChinese: 
+    russian: 
+    japanese: 
   Cell: {x: 0, y: 0, z: 0}
   FootprintSize: {x: 1, y: 1}
-  Rotation90: 0
+  OverrideFootprintSize: 1
+  VisualScale: {x: 1, y: 1}
+  LockVisualScaleAspect: 1
   OverrideAllowRotation: 1
   AllowRotation: 1
+  OverrideRotation0Sprite: 0
+  Rotation0Sprite: {fileID: 0}
+  Rotation0SpritePath: 
+  OverrideRotation90Sprite: 0
+  Rotation90Sprite: {fileID: 0}
+  Rotation90SpritePath: 
+  OverrideRotation180Sprite: 0
+  Rotation180Sprite: {fileID: 0}
+  Rotation180SpritePath: 
+  OverrideRotation270Sprite: 0
+  Rotation270Sprite: {fileID: 0}
+  Rotation270SpritePath: 
+  IsWallMounted: 0
+  Rotation90: 0
   SortingOrderOffset: 8
-  BlocksMovement: 1
-  BlocksSight: 1
-  IsInteractable: 1
+  BlocksMovement: 0
+  BlocksSight: 0
+  IsInteractable: 0
+  IsStorageContainer: 0
+  InteractionPresetEid: 
+  StorageSize: {x: 4, y: 4}
+  StorageMaxWeight: 12
   UseCustomInteractionAnchor: 1
   CustomInteractionAnchorLocalPosition: {x: 0, y: 0, z: 0}
   CustomInteractionAnchorRadius: 0.7
-  CustomInteractionPromptText: 开门
+  CustomInteractionPromptText: "\u5F00\u95E8"
+  LocalizedCustomInteractionPromptText:
+    chinese: 
+    english: 
+    traditionalChinese: 
+    russian: 
+    japanese: 
   CustomInteractionAnchors:
   - AnchorId: door_toggle
-    DisplayName: 门
+    DisplayName: "\u95E8"
     Enabled: 1
     LocalPosition: {x: 0, y: 0, z: 0}
     Radius: 0.7
-    PromptText: 开门
+    PromptText: "\u5F00\u95E8"
+    LocalizedPromptText:
+      chinese: 
+      english: 
+      traditionalChinese: 
+      russian: 
+      japanese: 
     ActionId: campus.door.toggle
-    Payload: ""
+    Payload: 
     TargetComponentType: CampusDoor3D
     Priority: 130
     UseTargetDoorStatePrompt: 1
     LogInteraction: 0
-    InteractionLogMessage: ""
+    InteractionLogMessage: 
+    LocalizedInteractionLogMessage:
+      chinese: 
+      english: 
+      traditionalChinese: 
+      russian: 
+      japanese: 
 --- !u!114 &2106052849600011005
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -153,6 +199,16 @@ MonoBehaviour:
   PanelDepth: 0.42
   TopDepth: -0.015
   EndBevel: 0.055
+  HingeWidth: 0.06
+  OpenClockwise: 0
+  AutoOpenForNearbyCharacters: 1
+  AutoOpenRadius: 1.15
+  AutoCloseDelay: 0.7
+  AutoScanInterval: 0.15
+  RequiresPermission: 0
+  RequiredPermissionId: 
+  AllowedCharacterIds: []
+  AllowedRoles: 
   isOpen: 0
 --- !u!1 &2106052849600011011
 GameObject:
@@ -270,7 +326,7 @@ Transform:
   m_GameObject: {fileID: 2106052849600011021}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: -0.47, y: 0, z: 0}
+  m_LocalPosition: {x: -0.47, y: -0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
@@ -317,7 +373,7 @@ BoxCollider2D:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 2106052849600011031}
-  m_Enabled: 1
+  m_Enabled: 0
   serializedVersion: 3
   m_Density: 1
   m_Material: {fileID: 0}

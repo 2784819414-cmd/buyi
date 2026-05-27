@@ -75,6 +75,12 @@ namespace Nting.Storage
         private IStorageTransferHandler transferHandler = StorageDefaultTransferHandler.Instance;
         private StorageItemTooltipUI itemTooltip;
         private Tween visibilityTween;
+        private RectTransform stackExpansionPanel;
+        private RectTransform stackExpansionRows;
+        private CanvasGroup stackExpansionGroup;
+        private Tween stackExpansionTween;
+        private StorageItemModel expandedStackItem;
+        private StorageGridUI expandedStackGrid;
 
         public bool IsOpen => visibleRoot != null && visibleRoot.activeSelf;
 
@@ -228,6 +234,7 @@ namespace Nting.Storage
                 DragController.CancelDrag();
             }
 
+            HideStackExpansion();
             HideItemTooltip();
             HideAnimated();
             RestoreMapEditorOverlay();
@@ -246,6 +253,7 @@ namespace Nting.Storage
                 DragLayer.gameObject.SetActive(false);
             }
 
+            HideStackExpansion();
             HideItemTooltip();
         }
 
@@ -269,6 +277,7 @@ namespace Nting.Storage
 
         public void RefreshAllGrids()
         {
+            HideStackExpansion();
             RefreshActorCarriedEvidenceState();
             ApplyCurrentLayout();
 
@@ -344,13 +353,56 @@ namespace Nting.Storage
             }
         }
 
+        public void ShowStackExpansion(StorageItemView view)
+        {
+            if (view == null || view.Item == null || view.OwnerGrid == null || Root == null)
+            {
+                return;
+            }
+
+            List<StorageItemModel> members = StorageItemStackingService.GetStackMembers(
+                view.OwnerGrid.Container,
+                view.Item);
+            if (members.Count <= 1)
+            {
+                HideStackExpansion();
+                return;
+            }
+
+            EnsureStackExpansionPanel();
+            expandedStackItem = view.Item;
+            expandedStackGrid = view.OwnerGrid;
+            BuildStackExpansionRows(members);
+            PositionStackExpansionPanel(view.RectTransform, members.Count);
+            ShowStackExpansionAnimated();
+        }
+
+        private void HideStackExpansion()
+        {
+            expandedStackItem = null;
+            expandedStackGrid = null;
+            if (stackExpansionTween != null && stackExpansionTween.IsActive())
+            {
+                stackExpansionTween.Kill();
+            }
+
+            stackExpansionTween = null;
+            if (stackExpansionPanel != null)
+            {
+                stackExpansionPanel.gameObject.SetActive(false);
+            }
+        }
+
         public void ShowStatus(string message, bool warning)
         {
         }
 
         public bool TryUseSelectedItem()
         {
-            if (!StorageItemUseUtility.TryUse(selectedItem, selectedItemGrid, out string statusMessage))
+            StorageItemUseContext useContext = StorageItemUseContext.ForActor(
+                transferActor != null ? transferActor : groundDropSource,
+                StorageTransferReason.UseItem);
+            if (!StorageItemUseUtility.TryUse(selectedItem, selectedItemGrid, useContext, out string statusMessage))
             {
                 ShowStatus(statusMessage, true);
                 return false;
@@ -362,28 +414,15 @@ namespace Nting.Storage
             return true;
         }
 
-        public bool TryRotateItem(StorageItemView view)
+        public bool TryUseItem(StorageItemView view)
         {
-            if (view == null || view.Item == null || view.OwnerGrid == null)
+            if (view == null || view.Item == null)
             {
                 return false;
             }
 
-            StorageItemModel item = view.Item;
-            item.Rotate();
-            if (view.OwnerGrid.CanPlace(item, item.X, item.Y))
-            {
-                RefreshAllGrids();
-                SelectItem(item, view.OwnerGrid);
-                ShowStatus(StorageTextCatalog.Format(StorageTextId.Rotated, item.GetDisplayName()), false);
-                return true;
-            }
-
-            item.Rotate();
-            ShowStatus(StorageTextCatalog.Get(StorageTextId.RotationBlocked), true);
-            RefreshAllGrids();
-            SelectItem(item, view.OwnerGrid);
-            return false;
+            SelectItem(view.Item, view.OwnerGrid);
+            return TryUseSelectedItem();
         }
 
         public bool TryQuickTransfer(StorageItemView view)
@@ -812,6 +851,7 @@ namespace Nting.Storage
             CreateWindowControls(WindowPanel);
             CreateBody(WindowPanel);
             itemTooltip = StorageItemTooltipUI.Create(Root);
+            EnsureStackExpansionPanel();
         }
 
         private void CreateWindowControls(RectTransform parent)
@@ -821,6 +861,187 @@ namespace Nting.Storage
             closeButtonRect = close.GetComponent<RectTransform>();
             StorageUIUtility.SetTopLeft(closeButtonRect, 1428f, 18f, 42f, 34f);
             StorageUIUtility.StyleButton(close, StoragePalette.ButtonNormal, Color.clear, 0f, 9f, StoragePalette.TextSecondary);
+        }
+
+        private void EnsureStackExpansionPanel()
+        {
+            if (stackExpansionPanel != null || Root == null)
+            {
+                return;
+            }
+
+            stackExpansionPanel = CreateBox(
+                Root,
+                "StackExpansionPanel",
+                Vector2.zero,
+                new Vector2(238f, 84f),
+                new Color(0.055f, 0.068f, 0.086f, 0.96f),
+                StoragePalette.PanelBorder,
+                12f,
+                1f,
+                false);
+            stackExpansionPanel.SetAsLastSibling();
+            stackExpansionGroup = stackExpansionPanel.gameObject.AddComponent<CanvasGroup>();
+
+            RectTransform header = CreateBox(
+                stackExpansionPanel,
+                "Header",
+                new Vector2(10f, -10f),
+                new Vector2(218f, 28f),
+                StoragePalette.PanelHeader,
+                Color.clear,
+                8f,
+                0f,
+                false);
+            Text title = StorageUIUtility.CreateText(
+                "Title",
+                header,
+                StorageTextCatalog.Get(StorageTextId.StackHeader),
+                14,
+                TextAnchor.MiddleLeft,
+                StoragePalette.TextPrimary);
+            title.rectTransform.offsetMin = new Vector2(12f, 0f);
+            title.rectTransform.offsetMax = new Vector2(-8f, 0f);
+
+            stackExpansionRows = StorageUIUtility.CreateRectObject("Rows", stackExpansionPanel).GetComponent<RectTransform>();
+            StorageUIUtility.SetTopLeft(stackExpansionRows, 10f, 44f, 218f, 34f);
+            stackExpansionPanel.gameObject.SetActive(false);
+        }
+
+        private void BuildStackExpansionRows(List<StorageItemModel> members)
+        {
+            ClearChildren(stackExpansionRows);
+            if (members == null || stackExpansionRows == null)
+            {
+                return;
+            }
+
+            for (int i = 0; i < members.Count; i++)
+            {
+                StorageItemModel member = members[i];
+                if (member == null)
+                {
+                    continue;
+                }
+
+                int rowIndex = i;
+                StorageItemModel selectedMember = member;
+                Button row = StorageUIUtility.CreateButton(
+                    "StackItem_" + i,
+                    stackExpansionRows,
+                    StorageTextCatalog.Format(
+                        StorageTextId.StackEntryLabel,
+                        member.GetDisplayName(),
+                        ResolveShortInstanceId(member)),
+                    delegate
+                    {
+                        SelectExpandedStackItem(selectedMember);
+                    },
+                    StoragePalette.ButtonNormal,
+                    Color.clear);
+                RectTransform rowRect = row.GetComponent<RectTransform>();
+                rowRect.anchoredPosition = new Vector2(0f, -rowIndex * 34f);
+                rowRect.sizeDelta = new Vector2(218f, 30f);
+                StorageUIUtility.StyleButton(
+                    row,
+                    member == selectedItem ? StoragePalette.TabSelected : StoragePalette.ButtonNormal,
+                    member == selectedItem ? StoragePalette.SlotHoverBorder : Color.clear,
+                    member == selectedItem ? 1f : 0f,
+                    8f,
+                    StoragePalette.TextSecondary);
+            }
+        }
+
+        private void SelectExpandedStackItem(StorageItemModel item)
+        {
+            if (item == null)
+            {
+                return;
+            }
+
+            SelectItem(item, expandedStackGrid);
+            ShowStatus(StorageTextCatalog.Format(StorageTextId.StackSelected, item.GetDisplayName()), false);
+            List<StorageItemModel> members = StorageItemStackingService.GetStackMembers(
+                expandedStackGrid != null ? expandedStackGrid.Container : null,
+                expandedStackItem);
+            BuildStackExpansionRows(members);
+        }
+
+        private void PositionStackExpansionPanel(RectTransform sourceRect, int memberCount)
+        {
+            if (stackExpansionPanel == null || sourceRect == null || Root == null)
+            {
+                return;
+            }
+
+            float panelHeight = 54f + Mathf.Max(1, memberCount) * 34f;
+            stackExpansionPanel.sizeDelta = new Vector2(238f, panelHeight);
+            if (stackExpansionRows != null)
+            {
+                stackExpansionRows.sizeDelta = new Vector2(218f, Mathf.Max(1, memberCount) * 34f);
+            }
+
+            Vector3[] corners = new Vector3[4];
+            sourceRect.GetWorldCorners(corners);
+            Vector2 screenPoint = RectTransformUtility.WorldToScreenPoint(
+                Canvas != null && Canvas.renderMode != RenderMode.ScreenSpaceOverlay ? Canvas.worldCamera : null,
+                corners[2]);
+            RectTransformUtility.ScreenPointToLocalPointInRectangle(
+                Root,
+                screenPoint,
+                Canvas != null && Canvas.renderMode != RenderMode.ScreenSpaceOverlay ? Canvas.worldCamera : null,
+                out Vector2 localPoint);
+
+            Rect rootRect = Root.rect;
+            Vector2 size = stackExpansionPanel.sizeDelta;
+            float x = Mathf.Clamp(localPoint.x + 14f, rootRect.xMin + 12f, rootRect.xMax - size.x - 12f);
+            float y = Mathf.Clamp(localPoint.y - 8f, rootRect.yMin + size.y + 12f, rootRect.yMax - 12f);
+            StorageUIUtility.SetAnchor(stackExpansionPanel, new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), new Vector2(0f, 1f));
+            stackExpansionPanel.anchoredPosition = new Vector2(x, y);
+        }
+
+        private void ShowStackExpansionAnimated()
+        {
+            if (stackExpansionPanel == null || stackExpansionGroup == null)
+            {
+                return;
+            }
+
+            if (stackExpansionTween != null && stackExpansionTween.IsActive())
+            {
+                stackExpansionTween.Kill();
+            }
+
+            stackExpansionPanel.gameObject.SetActive(true);
+            stackExpansionPanel.SetAsLastSibling();
+            stackExpansionPanel.localScale = Vector3.one * 0.96f;
+            stackExpansionGroup.alpha = 0f;
+            stackExpansionTween = DOTween.Sequence().SetUpdate(true)
+                .Join(stackExpansionGroup.DOFade(1f, 0.16f).SetEase(Ease.OutCubic))
+                .Join(stackExpansionPanel.DOScale(Vector3.one, 0.18f).SetEase(Ease.OutCubic));
+        }
+
+        private static string ResolveShortInstanceId(StorageItemModel item)
+        {
+            string value = item != null && !string.IsNullOrWhiteSpace(item.InstanceId)
+                ? item.InstanceId.Trim()
+                : item != null && !string.IsNullOrWhiteSpace(item.Id)
+                    ? item.Id.Trim()
+                    : string.Empty;
+            return value.Length <= 4 ? value : value.Substring(value.Length - 4);
+        }
+
+        private static void ClearChildren(Transform parent)
+        {
+            if (parent == null)
+            {
+                return;
+            }
+
+            for (int i = parent.childCount - 1; i >= 0; i--)
+            {
+                Destroy(parent.GetChild(i).gameObject);
+            }
         }
 
         private void CreateBody(RectTransform parent)

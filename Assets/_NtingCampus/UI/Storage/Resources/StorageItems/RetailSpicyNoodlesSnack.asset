@@ -27,11 +27,11 @@ MonoBehaviour:
     english: A bagged spicy gluten snack with a strong chili oil flavor.
   ThemeColor: {r: 0.76, g: 0.29, b: 0.23, a: 1}
   Icon: {fileID: 0}
-  IsUsable: 0
-  UseActionId: 
+  IsUsable: 1
+  UseActionId: campus.item.consume_food
   ConsumeOnUse: 1
-  UseText: 
+  StaminaRestore: 12
+  UseText: 吃掉
   LocalizedUseText:
-    chinese: 
-    english: 
-
+    chinese: 吃掉
+    english: Eat the Spicy Gluten Snack.

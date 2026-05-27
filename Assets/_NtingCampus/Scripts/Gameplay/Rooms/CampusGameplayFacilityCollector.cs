@@ -73,6 +73,7 @@ namespace NtingCampus.Gameplay.Rooms
                         CampusFacilityTypeResolution.ExplicitMarker(facilityMarker.FacilityType),
                         facilityId,
                         facilityMarker.DisplayName,
+                        facilityMarker.LocalizedDisplayName,
                         facilityMarker.Cell);
                     continue;
                 }
@@ -85,6 +86,7 @@ namespace NtingCampus.Gameplay.Rooms
                         CampusFacilityTypeResolution.ExplicitMarker(facilityMarker.FacilityType),
                         facilityId,
                         facilityMarker.DisplayName,
+                        facilityMarker.LocalizedDisplayName,
                         facilityMarker.Cell);
                     continue;
                 }
@@ -92,6 +94,7 @@ namespace NtingCampus.Gameplay.Rooms
                 room.AddExplicitFacility(
                     facilityId,
                     facilityMarker.DisplayName,
+                    facilityMarker.LocalizedDisplayName,
                     facilityMarker.FacilityType,
                     facilityMarker.Cell);
             }

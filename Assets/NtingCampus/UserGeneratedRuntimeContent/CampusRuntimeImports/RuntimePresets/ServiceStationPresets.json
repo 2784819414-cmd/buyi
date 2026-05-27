@@ -69,7 +69,86 @@
           "english": "This checkout counter has no cashier right now."
         }
       },
+      "Clearance": {
+        "Mode": "ClearPendingProtectedTransfers",
+        "PriceMode": "ItemPrice",
+        "CompleteText": {
+          "chinese": "已完成结账，花费 {0}。",
+          "english": "Checkout complete. Spent {0}."
+        },
+        "NoPendingItemsText": {
+          "chinese": "没有待结算商品。",
+          "english": "No pending items to check out."
+        },
+        "InsufficientFundsText": {
+          "chinese": "金钱不足，需要 {0}。",
+          "english": "Not enough money. Need {0}."
+        }
+      },
       "AllowedRoomTypes": [ "RetailArea" ],
+      "OwnerFacilityTypes": [ "CheckoutPoint" ],
+      "Slots": [
+        {
+          "RoleId": "operator",
+          "FacilityTypes": [ "WorkerStandPoint" ],
+          "MinCount": 1,
+          "MaxCount": 1,
+          "NavigationTargetWhenAvailable": false,
+          "NavigationTargetWhenWaiting": false
+        },
+        {
+          "RoleId": "customer",
+          "FacilityTypes": [ "PickupPoint" ],
+          "MinCount": 1,
+          "MaxCount": 1,
+          "NavigationTargetWhenAvailable": true,
+          "NavigationTargetWhenWaiting": true
+        },
+        {
+          "RoleId": "queue",
+          "FacilityTypes": [ "WaitingPoint" ],
+          "MinCount": 0,
+          "MaxCount": 99,
+          "NavigationTargetWhenAvailable": false,
+          "NavigationTargetWhenWaiting": true
+        }
+      ]
+    },
+    {
+      "StationTypeId": "library_borrow_registration",
+      "DisplayName": {
+        "chinese": "图书借阅登记台",
+        "english": "Library Borrow Registration"
+      },
+      "InteractionActionId": "campus.protected_transfer.clear",
+      "AvailabilityRuleId": "requires_operator_always",
+      "Availability": {
+        "Mode": "RequiresAssignedOperator",
+        "ScheduleWindows": [ "Always" ],
+        "OperatorSlotRoleId": "operator",
+        "OperatorActivationRadius": 0.85,
+        "UnavailableText": {
+          "chinese": "借阅登记台暂时没有老师。",
+          "english": "The borrow registration desk has no teacher right now."
+        }
+      },
+      "Clearance": {
+        "Mode": "ClearPendingProtectedTransfers",
+        "PriceMode": "Free",
+        "CompleteText": {
+          "chinese": "已完成借阅登记，登记 {1} 本书。",
+          "english": "Borrowing registered. Registered {1} book(s)."
+        },
+        "NoPendingItemsText": {
+          "chinese": "没有待登记借阅的书。",
+          "english": "No pending books to register."
+        },
+        "InsufficientFundsText": {
+          "chinese": "借阅登记不需要付费。",
+          "english": "Borrow registration does not require payment."
+        }
+      },
+      "AllowedRoomTypes": [ "Library" ],
       "OwnerFacilityTypes": [ "CheckoutPoint" ],
       "Slots": [
         {

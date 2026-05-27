@@ -607,6 +607,18 @@ namespace NtingCampusMapEditor
             EnsureDebugAssets();
         }
 
+        [MenuItem("Tools/Nting Campus/Generate AI Map ID Catalog", false, 605)]
+        public static void GenerateAiMapIdCatalogFromMenu()
+        {
+            CampusAiMapAuthoringImporter.GenerateCatalogFromMenu();
+        }
+
+        [MenuItem("Tools/Nting Campus/Import AI Map JSON", false, 606)]
+        public static void ImportAiMapJsonFromMenu()
+        {
+            CampusAiMapAuthoringImporter.ImportFromMenu();
+        }
+
         [MenuItem("Tools/Nting Campus/Ensure Map Light And Max Shadows")]
         public static void EnsureMapLightingFromMenu()
         {
